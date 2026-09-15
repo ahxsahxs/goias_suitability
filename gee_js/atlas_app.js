@@ -89,7 +89,7 @@ Map.onClick(function (coords) {
   f.evaluate(function (feat) {
     if (!feat) { infoPanel.add(ui.Label('Outside GO + DF.', {fontSize: '12px'})); return; }
     var p = feat.properties;
-    infoPanel.add(ui.Label(p.ADM2_NAME + ' (' + p.ADM1_NAME + ')',
+    infoPanel.add(ui.Label(p.NM_MUN + ' (' + p.NM_UF + ')',
                            {fontWeight: 'bold', fontSize: '13px'}));
     SEGS.forEach(function (s) {
       if (p['suit_' + s] !== undefined) {

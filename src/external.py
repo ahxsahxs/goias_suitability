@@ -1,4 +1,4 @@
-"""Phase-B data builders (Parts 12-14, GEE-only): GAUL-L2 municipal units,
+"""Phase-B data builders (Parts 12-14, GEE-only): IBGE malha-municipal units,
 MapBiomas realized-use masks/fractions, and the MODIS MOD17 productivity proxy.
 
 Guardrail: land cover / productivity are **mask + validation + descriptive
@@ -41,24 +41,25 @@ GROWING_MONTHS = [10, 11, 12, 1, 2, 3]
 
 
 # =============================================================================
-# Part 12 — municipal units (GAUL level-2)
+# Part 12 — municipal units (IBGE malha municipal)
 # =============================================================================
 def municipal_fc() -> "ee.FeatureCollection":
-    """GO+DF ADM2 municipal units from GAUL level-2 (243 features)."""
-    g = cfg()["gaul_l2"]
-    return (
-        ee.FeatureCollection(g["asset"])
-        .filter(ee.Filter.eq("ADM0_NAME", g["adm0_name"]))
-        .filter(ee.Filter.inList("ADM1_NAME", g["adm1_names"]))
-    )
+    """GO+DF municipalities from the IBGE 2025 malha municipal mesh (247
+    features: 246 Goiás municipalities + Distrito Federal)."""
+    import ibge_mesh
+
+    return ibge_mesh.municipal_ee_fc()
 
 
 def municipal_means(fc, img, scale: int = 250):
     """Per-municipality mean of every band of ``img`` (``reduceRegions``).
 
-    Keeps the join key (``ADM2_NAME``) and ADM1 name; drops geometry-heavy
-    properties. The result is a FeatureCollection ready for an ``Export.table``
-    to CSV or a small ``getInfo`` for offline joins/rankings.
+    ``reduceRegions`` carries every existing property of ``fc`` through
+    unmodified onto each output feature (no ``.select``/``.filter`` here), in
+    addition to the reducer's per-band outputs — so the join key (``NM_MUN``)
+    and UF fields (``SIGLA_UF``/``NM_UF``) all ride along automatically. The
+    result is a FeatureCollection ready for an ``Export.table`` to CSV or a
+    small ``getInfo`` for offline joins/rankings.
     """
     return img.reduceRegions(
         collection=fc, reducer=ee.Reducer.mean(), scale=scale, tileScale=8

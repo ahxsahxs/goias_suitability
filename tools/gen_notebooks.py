@@ -63,10 +63,10 @@ write(
             "`config/datasets.yaml` pinned and verified against the live catalog."
         ),
         code(INIT),
-        md("### Build the AOI (GAUL level-1: Goiás + Distrito Federal)"),
+        md("### Build the AOI (IBGE malha municipal: Goiás + Distrito Federal)"),
         code(
             "aoi_fc = features.aoi_fc()\n"
-            "print('states:', aoi_fc.aggregate_array('ADM1_NAME').getInfo())\n"
+            "print('states:', aoi_fc.aggregate_array('NM_UF').distinct().getInfo())\n"
             "aoi = features.aoi_geometry()\n"
             "print('AOI area (km^2):', round(aoi.area(1000).divide(1e6).getInfo(), 1))"
         ),
@@ -579,22 +579,22 @@ write(
     "12_municipal_gaul.ipynb",
     [
         md(
-            "# Part 12 — Municipal units (GAUL level-2)\n\n"
-            "Load the GO+DF ADM2 municipalities from the GEE catalog (no upload) and "
+            "# Part 12 — Municipal units (IBGE malha municipal)\n\n"
+            "Load the GO+DF municipalities from the local IBGE mesh (client-side, no upload) and "
             "aggregate present suitability, zones and the CMIP6 Δ per municipality with "
             "`reduceRegions` — the join table for offline rankings (Parts 14–15). "
-            "Engine: `src/external.py`.\n\n"
+            "Engine: `src/external.py` + `src/ibge_mesh.py`.\n\n"
             "**Output:** `municipal_godf` (table asset) + a per-municipality CSV. **DoD:** "
             "GO+DF municipalities load (DF present as Brasília); `reduceRegions` runs; "
-            "`ADM2_NAME` is the join key."
+            "`NM_MUN` is the join key."
         ),
         code(INIT + "\nimport external"),
         code(LOAD_AOI),
-        md("### Load the municipal units (GAUL L2, GO+DF)"),
+        md("### Load the municipal units (IBGE malha municipal, GO+DF)"),
         code(
             "muni = external.municipal_fc()\n"
             "print('municipalities:', muni.size().getInfo())\n"
-            "print('states:', muni.aggregate_array('ADM1_NAME').distinct().getInfo())"
+            "print('states:', muni.aggregate_array('NM_UF').distinct().getInfo())"
         ),
         md("### Aggregate present suitability + zone + Δ per municipality"),
         code(
@@ -609,8 +609,8 @@ write(
         md("### Peek — a few municipalities' mean suitability"),
         code(
             "import pandas as pd\n"
-            "key = utils.cfg()['gaul_l2']['join_key']\n"
-            "props = [key, 'ADM1_NAME'] + [f'suit_{s}' for s in segs]\n"
+            "key = utils.cfg()['municipal_mesh']['join_key']\n"
+            "props = [key, 'NM_UF'] + [f'suit_{s}' for s in segs]\n"
             "rows = table.select(props, None, False).limit(8).getInfo()['features']\n"
             "pd.DataFrame([f['properties'] for f in rows]).round(3)"
         ),
@@ -620,7 +620,7 @@ write(
             "# asset export keeps geometry (Export.table.toAsset rejects null geometry);\n"
             "# the CSV drops it via property selectors for a light offline join.\n"
             "t1 = utils.export_table(table, project, 'municipal_godf')\n"
-            "csv_cols = [key, 'ADM1_NAME'] + [f'suit_{s}' for s in segs] + ['zone']\n"
+            "csv_cols = [key, 'NM_UF'] + [f'suit_{s}' for s in segs] + ['zone']\n"
             "t2 = ee.batch.Export.table.toDrive(collection=table.select(csv_cols, None, False),\n"
             "        description='municipal_suit_summary', fileFormat='CSV')\n"
             "t2.start()\n"
@@ -838,13 +838,13 @@ write(
             "agg = (suit.select(['suit_soybean', 'suit_sugarcane'])\n"
             "       .addBands(uu.select(['underused_soybean', 'underused_sugarcane']))\n"
             "       .addBands(delta.select('delta_other_crops')))\n"
-            "cols = ['ADM2_NAME', 'suit_soybean', 'underused_soybean', 'delta_other_crops']\n"
+            "cols = ['NM_MUN', 'suit_soybean', 'underused_soybean', 'delta_other_crops']\n"
             "feats = external.municipal_means(muni, agg).select(cols, None, False).getInfo()['features']\n"
             "df = pd.DataFrame([f['properties'] for f in feats]).dropna()\n"
             "df['opportunity'] = df['suit_soybean'] * df['underused_soybean']\n"
             "df.sort_values('opportunity', ascending=False).round(3).to_csv('figures/municipal_ranking.csv', index=False)\n"
-            "print('TOP OPPORTUNITY:'); print(df.nlargest(5, 'opportunity')[['ADM2_NAME','opportunity']].to_string(index=False))\n"
-            "print('TOP VULNERABILITY:'); print(df.nsmallest(5, 'delta_other_crops')[['ADM2_NAME','delta_other_crops']].to_string(index=False))"
+            "print('TOP OPPORTUNITY:'); print(df.nlargest(5, 'opportunity')[['NM_MUN','opportunity']].to_string(index=False))\n"
+            "print('TOP VULNERABILITY:'); print(df.nsmallest(5, 'delta_other_crops')[['NM_MUN','delta_other_crops']].to_string(index=False))"
         ),
         md(
             "### Interactive GEE App\n"

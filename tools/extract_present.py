@@ -110,12 +110,20 @@ def presence_metrics():
 
 # F. municipal summary + rankings (Table 4.13) -----------------------------------
 def municipal():
-    muni = ee.FeatureCollection(aid("municipal_godf"))
+    # IBGE malha municipal, built client-side (src/ibge_mesh.py) on every run —
+    # NOT the stale `municipal_godf` export, which still reflects GAUL until an
+    # explicitly-approved Part 12 asset rebuild (CLAUDE.md §4/§10).
+    muni = external.municipal_fc()
     # add per-municipality underused shares for the opportunity score
     uu = ee.Image(aid("realized_vs_potential")).select(
         ["underused_soybean", "underused_sugarcane"]).unmask(0)
-    uu_m = external.municipal_means(muni, uu, scale=250)
-    props = ["ADM2_NAME", "zone", "suit_soybean", "suit_sugarcane",
+    delta = ee.Image(aid("delta_ssp585_2051_2070"))
+    agg = (suit.select(["suit_soybean", "suit_sugarcane"])
+           .addBands(zones)
+           .addBands(delta.select("delta_other_crops"))
+           .addBands(uu))
+    uu_m = external.municipal_means(muni, agg, scale=250)
+    props = ["NM_MUN", "zone", "suit_soybean", "suit_sugarcane",
              "delta_other_crops", "underused_soybean", "underused_sugarcane"]
     feats = uu_m.select(props, None, False).getInfo()["features"]
     df = pd.DataFrame([f["properties"] for f in feats]).dropna(subset=["suit_soybean"])
@@ -133,14 +141,14 @@ def municipal():
     print(f"  opportunity > 0.4: {(df.opportunity > 0.4).sum()}")
     print("  TOP-5 OPPORTUNITY (suit_soybean x underused_soybean):")
     for _, r in df.nlargest(5, "opportunity").iterrows():
-        print(f"    {r.ADM2_NAME:28s} opp={r.opportunity:.3f} "
+        print(f"    {r.NM_MUN:28s} opp={r.opportunity:.3f} "
               f"suit={r.suit_soybean:.3f} unused={r.underused_soybean:.3f}")
     print("  TOP-5 VULNERABILITY (most negative delta_other_crops):")
     for _, r in df.nsmallest(5, "delta_other_crops").iterrows():
-        print(f"    {r.ADM2_NAME:28s} dS={r.delta_other_crops:.3f} zone={int(round(r.zone))}")
+        print(f"    {r.NM_MUN:28s} dS={r.delta_other_crops:.3f} zone={int(round(r.zone))}")
     out_path = "thesis/Chapters/Figures/municipal_ranking.csv"
     df.to_csv(out_path, index=False,
-              columns=["ADM2_NAME", "delta_other_crops", "suit_soybean", "suit_sugarcane",
+              columns=["NM_MUN", "delta_other_crops", "suit_soybean", "suit_sugarcane",
                        "underused_soybean", "underused_sugarcane", "zone", "opportunity"])
     print(f"  wrote {out_path}")
 

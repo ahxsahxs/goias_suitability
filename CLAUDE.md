@@ -58,8 +58,8 @@ uploads** (no local archive of IBGE/MapBiomas source data is kept; see §7).
   generic land-cover mask + siting/conservation side-features + the 250 m feature-stack, then
   knowledge-based suitability, unsupervised zoning, **and** the CMIP6 forecast. Produces a complete
   *unvalidated* potential atlas + future projection from the bare catalog. **Parts 1–11.**
-- **Phase B — Realized-use & validation (GEE-only).** Brings in MapBiomas land use, GAUL-L2
-  municipalities, and the MOD17 productivity proxy — for masking, potential-vs-realized analysis,
+- **Phase B — Realized-use & validation (GEE-only).** Brings in MapBiomas land use, IBGE malha
+  municipal boundaries, and the MOD17 productivity proxy — for masking, potential-vs-realized analysis,
   productivity validation, the data-driven RF cross-check, and municipal decisions. **Parts 12–15.**
 
 The split is *biophysical potential* (A) vs *realized-use & validation* (B) — not catalog-vs-upload
@@ -78,7 +78,7 @@ yet published from the Code Editor.
 | 9 — suitability | **BUILT** | `suit_present` / `suit_present_comp` / `suit_present_sens`: 7 `suit_*` (0–1) + 7 `class_*` (FAO S1/S2/S3/N) + 7 `sens_*` (±20% AHP). Conservation is a value/priority index (arithmetic-mean aggregation — compensatory); the other six segments use the weighted geometric mean. |
 | 10 — zoning | **BUILT — K=7** | `zones_present`, offline sklearn KMeans on a decorrelated PCA input (`src/zoning.py`), classified server-side by nearest-centroid band math. Zones labelled by `comparative_segment` (argmax of each segment's z-normalized suitability), not raw dominance. `zone_profiles.csv` + `zoning_kselect.csv`. |
 | 11 — CMIP6 shift | **BUILT** | `suit_future_*`, `delta_*`, `agreement_*` assets across SSP2-4.5/SSP5-8.5 × 2031–2050/2051–2070 × 5-GCM ensemble. Delta-change engine validated against an identity change-factor (Δ=0.000). No structurally climate-invariant segment remains — every segment (including conservation and solar) moves under at least one climate lever. |
-| 12–14 — Phase B | **BUILT** | `realized_vs_potential`, `municipal_godf` (GAUL-L2 aggregation), MOD17 productivity validation (municipal Spearman + within-crop GPP gradient), RF presence cross-check, AHP consistency ratios. See `config/ahp_matrices.yaml` and `thesis/Chapters/04_results.tex` / `05_discussion_conclusion.tex` for the numbers. |
+| 12–14 — Phase B | **BUILT** | `realized_vs_potential`, `municipal_godf` (IBGE malha municipal aggregation), MOD17 productivity validation (municipal Spearman + within-crop GPP gradient), RF presence cross-check, AHP consistency ratios. See `config/ahp_matrices.yaml` and `thesis/Chapters/04_results.tex` / `05_discussion_conclusion.tex` for the numbers. |
 | 15 — synthesis | **App script written, NOT published** | `gee_js/atlas_app.js` (present suitability, zones, realized use, CMIP6 shift, municipal click-to-read) is ready; publishing from the GEE Code Editor is the one remaining manual step. Figures already regenerated via `tools/make_figures.py` into `thesis/Chapters/Figures/`. |
 
 - **Asset backups:** pre-recalibration and pre-reconceptualization snapshots were copied server-side
@@ -88,12 +88,18 @@ yet published from the Code Editor.
   compute quota) confirms every asset is **EPSG:4326 @ 250 m (0.002246°)** with the exact GO+DF
   footprint (lon [-53.25, -45.90], lat [-19.50, -12.39]) — no displacement / scale error.
   ```bash
-  EE_PROJECT=probformer .venv/bin/python tools/verify_assets.py
+  EE_PROJECT=probformer uv run python tools/verify_assets.py
   ```
 
 **Immediate next step:** publish Part 15's Earth Engine App (`gee_js/atlas_app.js`) from the GEE
 Code Editor. Everything else needed for the thesis (all §4 tables, figures, and the three RQs) is
 already built and written.
+
+**Pending rebuild (2026-09-15):** `src/features.py`/`src/external.py` now derive the AOI and
+municipal boundaries from the local IBGE malha municipal mesh (`src/ibge_mesh.py`) instead of
+GAUL — see §7. The already-built `aoi` EE asset (and everything downstream: Parts 1–14, plus
+`municipal_godf`) still reflects the old GAUL-derived boundary until Part 1 is explicitly
+re-run and the cascade rebuilt — an approval-gated step (§10), not done as part of this change.
 
 ---
 
@@ -109,8 +115,10 @@ src/features.py               # ALL Part 1-8 feature builders (one source of tru
 src/membership.py             # Part 9 suitability engine: fuzzy membership + geomean + FAO + AHP/sensitivity
 src/zoning.py                 # Part 10 zoning: sklearn KMeans (offline) + server-side nearest-centroid + profiling
 src/cmip6.py                  # Part 11 CMIP6 delta-change: change factors + future climate + future suitability + Δ + agreement
-src/external.py               # Parts 12-14: GAUL municipalities, MapBiomas realized-use, MOD17 productivity proxy
+src/external.py               # Parts 12-14: IBGE malha municipal boundaries, MapBiomas realized-use, MOD17 productivity proxy
+src/ibge_mesh.py              # Local IBGE malha municipal loader (geopandas) -> client-side ee.FeatureCollection/ee.Geometry, no upload
 src/metrics.py                # Part 14 offline validation stats (AUC, Boyce, Cohen's kappa, Spearman, spatial-block CV)
+tools/build_malha_municipal.py # merges data/input/ibge/{GO,DF}_Municipios_2025.zip -> data/mart/malha_municipal.gpkg (Part 1/12)
 tools/gen_notebooks.py        # regenerates notebooks from a spec; optional arg = only that notebook
 tools/run_phase_a.sh          # executes 01->08 in order, waits for exports, assembles the stack
 tools/wait_for_assets.py      # blocks until named EE assets exist (gates the stack step)
@@ -149,11 +157,15 @@ lazy (no server call at import), so `src/` is import-/syntax-checkable without E
 09_suitability_fuzzy_ahp.ipynb-> Part 9   (src/membership.py + config/segments.yaml + config/ahp_matrices.yaml)
 10_zoning_kmeans.ipynb        -> Part 10  (src/zoning.py)
 11_cmip6_shift.ipynb          -> Part 11  (src/cmip6.py)
-12_municipal_gaul.ipynb       -> Part 12  (src/external.py)        ┐
+12_municipal_gaul.ipynb       -> Part 12  (src/external.py + src/ibge_mesh.py)┐
 13_mapbiomas.ipynb            -> Part 13  (src/external.py)        ├ Phase B — BUILT
 14_validation_proxy_rf.ipynb  -> Part 14  (src/external.py+metrics)┘
 15_atlas_app.ipynb            -> Part 15  (tools/make_figures.py + gee_js/atlas_app.js) ── script written, not published
 ```
+
+`12_municipal_gaul.ipynb` keeps its historical filename (reflects the last executed GAUL-based
+run) even though `tools/gen_notebooks.py`'s Part-12 spec now targets the IBGE mesh — the notebook
+itself isn't regenerated until the pending rebuild (see §4, §7) to avoid wiping its saved outputs.
 
 ## 6. Outputs (EE assets under `projects/<project>/assets/goias/`)
 
@@ -173,7 +185,7 @@ lazy (no server call at import), so `src/` is import-/syntax-checkable without E
 | 9 | 09_suitability_fuzzy_ahp | `suit_present`, `suit_present_sens` | 7 `suit_*` (0–1) + 7 `class_*` (FAO S1/S2/S3/N) + 7 `sens_*` (±20% AHP) |
 | 10 | 10_zoning_kmeans | `zones_present` (+ `zone_profiles.csv`) | biophysical zones (offline KMeans, nearest-centroid classify) + profile cards |
 | 11 | 11_cmip6_shift | `suit_future_*`, `delta_*`, `agreement_*` | future suitability per SSP/window, Δ, GCM ensemble agreement |
-| 12–15 | 12..15 | `municipal_godf`, `feat_realized`, `realized_vs_potential`, … | Phase B (GAUL municipalities, MapBiomas realized use, MOD17 validation) |
+| 12–15 | 12..15 | `municipal_godf`, `feat_realized`, `realized_vs_potential`, … | Phase B (IBGE malha municipal boundaries, MapBiomas realized use, MOD17 validation) |
 
 The 34-band stack = climate 14 + terrain 6 + soil 6 + water 3 + phenology 4 + access 1; **land cover
 is deliberately excluded** (guardrail, §7).
@@ -196,21 +208,39 @@ is deliberately excluded** (guardrail, §7).
   consumes a land-cover band.
 - **MapBiomas (Phase B) is mask + validation + descriptive profiling only** — same guardrail; it
   never becomes a suitability/clustering input even as its use expands.
-- **`data/` archive removed.** The project used to keep a local archive of IBGE municipal-mesh and
-  PAM/PPM files plus a MapBiomas offline cross-check under `data/`. That directory has since been
-  removed — the pipeline is fully GEE-native (GAUL level-2 for municipalities, MOD17 for
-  productivity validation) and needs no local archive to run. If you need the original IBGE/GAUL
-  reasoning, it is written up in `thesis/Chapters/03_methodology.tex`.
+- **`data/` is a one-off exception for the IBGE municipal mesh, not a general archive.** The
+  project used to keep a local archive of IBGE municipal-mesh and PAM/PPM files plus a MapBiomas
+  offline cross-check under `data/`; that broad archive was removed and the pipeline stayed
+  GEE-native (GAUL for municipalities/AOI, MOD17 for productivity validation) for everything else.
+  Revision point 6 (§10) reintroduced `data/` for exactly one thing: the official IBGE
+  *Malha Municipal Digital* (2025 edition, SIRGAS 2000 / EPSG:4674, 246 GO + 1 DF municipalities),
+  downloaded from IBGE's `malhas-territoriais` portal. Raw per-state zips live in
+  `data/input/ibge/*.zip` and are **gitignored** (regenerable from IBGE's site, rebuilt via
+  `tools/build_malha_municipal.py`); only the small merged artifact
+  (`data/mart/malha_municipal.gpkg`, EPSG:4326, full precision, committed) leaves that step.
+  **GAUL is fully retired from the code** — `src/ibge_mesh.py` now loads this geopackage and
+  builds an `ee.FeatureCollection`/`ee.Geometry` **client-side, in memory, on every run** (never
+  uploaded/exported as a persistent EE asset, preserving the zero-external-uploads guardrail in
+  §2) for **both** the Part-1 AOI dissolve and the Part-12 municipal reporting join — not just the
+  boundary layer for the ranking output. Join key / property names are `NM_MUN`/`SIGLA_UF`/`NM_UF`
+  (not GAUL's `ADM2_NAME`/`ADM1_NAME`). Geometries are simplified in memory
+  (`simplify_tolerance_deg` in `config/datasets.yaml`, default ~111 m, ~5x finer than
+  `GAUL_SIMPLIFIED_500m`) before being embedded in any EE request — the committed `.gpkg` itself
+  stays full precision. **Caveat:** this is a code-level swap only — the already-built `aoi` EE
+  asset and everything downstream (Parts 1–14, `municipal_godf`) still reflect the old
+  GAUL-derived boundary until an explicitly-approved rebuild (see §4, §10). If you need the
+  original IBGE/GAUL reasoning, it is written up in `thesis/Chapters/03_methodology.tex` (not yet
+  updated for this swap).
 - **Small artifacts only leave GEE** (PNG thumbnails, GeoTIFFs, CSV sample/summary tables).
 
 ## 8. Environment & running
 
-**Always run Python through the venv at the repo root (`.venv/`), never system Python, and always
-with `EE_PROJECT=probformer` set.** Two equivalent ways:
+**Always run Python through `uv run`, never `.venv/bin/python` directly and never system Python,
+and always with `EE_PROJECT=probformer` set.** Two equivalent ways:
 
 ```bash
 # A) per-command (preferred for one-offs and scripts)
-EE_PROJECT=probformer .venv/bin/python <script.py>
+EE_PROJECT=probformer uv run python <script.py>
 
 # B) activate the venv once, then `python ...` for the rest of the session
 source .venv/bin/activate            # bash/zsh
@@ -223,6 +253,12 @@ The environment is managed with `uv` (`pyproject.toml` + `uv.lock`); `uv sync` c
 `.venv/` from the lockfile. Jupyter kernel name is `goias`. Earth Engine needs a live login first.
 EE project resolves from `$EE_PROJECT` → the credentials file; current project: **`probformer`** —
 keep it set so assets resolve under `projects/probformer/assets/goias/`.
+
+> **Assistant note (2026-09-15):** GDAL and geopandas were installed on the host for the IBGE
+> municipal-mesh work (§10 point 6 — local vector join between the official IBGE malha and the
+> municipal ranking table). Invoke Python exclusively via `uv run python ...` (or `uv run
+> <tool>`), not `.venv/bin/python` or a bare `python3` — some host-level geo packages only
+> resolve correctly through `uv run`'s environment.
 
 ```bash
 # one-time setup
@@ -316,7 +352,10 @@ The 7 points, in brief (see the artifact for the full day-by-day mapping):
 4. κ=0.07 needs more explanation (vs. AUC=0.83) → Day 3.
 5. Climate at ~4 km vs. 250 m for everything else needs explicit callout in the results reading,
    plus a spike into higher-resolution alternatives → Day 4–5, possible pipeline upgrade weeks 2.
-6. Why not the official IBGE municipal mesh instead of GAUL? → Days 2–3, 11.
+6. Why not the official IBGE municipal mesh instead of GAUL? → Days 2–3, 11. **Code done
+   (2026-09-15):** `src/ibge_mesh.py` replaces GAUL for both AOI and municipal reporting (§7);
+   still pending the approved EE rebuild + the thesis text update (`02_materials.tex`,
+   `06_annex.tex` still describe GAUL).
 7. Code/atlas/ranking should ship now, not stay "future work" → Days 1–12 (this README/CLAUDE.md
    rewrite is part of point 7).
 

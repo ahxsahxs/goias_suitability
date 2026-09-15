@@ -26,17 +26,17 @@ _DEG2RAD = math.pi / 180.0
 # Part 1 — AOI
 # =============================================================================
 def aoi_fc() -> "ee.FeatureCollection":
-    """Goiás + DF state polygons from GAUL level-1."""
-    a = cfg()["aoi"]
-    return (
-        ee.FeatureCollection(a["gaul"])
-        .filter(ee.Filter.eq("ADM0_NAME", a["adm0_name"]))
-        .filter(ee.Filter.inList("ADM1_NAME", a["adm1_names"]))
-    )
+    """Goiás + DF municipalities from the IBGE 2025 malha municipal mesh."""
+    import ibge_mesh
+
+    return ibge_mesh.municipal_ee_fc()
 
 
 def aoi_geometry() -> "ee.Geometry":
-    return aoi_fc().geometry().dissolve(maxError=100)
+    """Dissolved GO+DF outer boundary — see ibge_mesh.aoi_ee_geometry."""
+    import ibge_mesh
+
+    return ibge_mesh.aoi_ee_geometry()
 
 
 def aoi_dissolved_fc() -> "ee.FeatureCollection":

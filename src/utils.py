@@ -133,7 +133,8 @@ def export_table(fc, project: str, name: str, start: bool = True):
 
 
 def load_aoi(project: str):
-    """Return the AOI geometry from the cached asset, or build it from GAUL."""
+    """Return the AOI geometry from the cached asset, or build it from the
+    local IBGE malha municipal mesh (see src/ibge_mesh.py)."""
     import features  # local import to avoid an import cycle
 
     aid = asset_id(project, "aoi")

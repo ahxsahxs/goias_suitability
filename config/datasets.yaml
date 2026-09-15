@@ -14,11 +14,24 @@ grid:
 asset:
   subfolder: goias        # -> projects/<project>/assets/goias/<name>
 
-# --- Part 1: AOI -------------------------------------------------------------
-aoi:
-  gaul: FAO/GAUL_SIMPLIFIED_500m/2015/level1
-  adm0_name: Brazil
-  adm1_names: [Goias, Distrito Federal]   # GAUL spelling (no accent)
+# --- Part 1 & 12: municipal boundaries (IBGE Malha Municipal Digital 2025) --
+# Official IBGE mesh (SIRGAS2000/EPSG:4674 source, reprojected to EPSG:4326 on
+# load), replacing both the GAUL level-1 AOI dissolve and the GAUL level-2
+# municipal units. data/mart/malha_municipal.gpkg is built by
+# tools/build_malha_municipal.py from the gitignored zips in data/input/ibge/.
+# Loaded and converted to an ee.FeatureCollection/ee.Geometry client-side, in
+# memory, on every run by src/ibge_mesh.py — never uploaded/exported as a
+# persistent EE asset (zero-external-uploads guardrail, CLAUDE.md §7).
+municipal_mesh:
+  path: data/mart/malha_municipal.gpkg
+  layer: malha_municipal
+  code_col: CD_MUN
+  name_col: NM_MUN
+  uf_col: SIGLA_UF
+  state_name_col: NM_UF
+  uf_values: [GO, DF]            # defensive filter (file is already exactly GO+DF)
+  join_key: NM_MUN
+  simplify_tolerance_deg: 0.001  # ~111 m; ~5x finer than GAUL_SIMPLIFIED_500m
 
 # --- Part 2: climate & water balance ----------------------------------------
 climate:
@@ -131,22 +144,11 @@ cmip6:
 
 # =============================================================================
 # PHASE B — GEE-only modelling/validation (Parts 12-15). No external uploads.
-# See docs/phase_b_data.md. Municipal units come from GAUL L2 and
-# productivity validation from MODIS MOD17; the `gaul_l2:`/`productivity:` sections
-# are added in the Phase B build pass. (The old IBGE `mesh:`/`ibge:` config sections
-# and tools/prep_mesh.sh + tools/fetch_sidra.py were removed in the GEE-only redesign.)
+# Municipal units (Part 12) come from `municipal_mesh:` above (IBGE, local,
+# client-side — no upload); productivity validation from MODIS MOD17 below.
+# GAUL level-2 was retired in favor of the IBGE mesh for both accuracy and
+# consistency with the Part-1 AOI, which now derives from the same file.
 # =============================================================================
-
-# --- Part 12: municipal units (GAUL level-2, GEE catalog; no upload) --------
-# 243 GO+DF ADM2 units (242 Goias municipalities + Distrito Federal). Verified
-# 2026-07-02: both ADM1 values present, ADM2_NAME populated, DF present as one
-# unit. Simplified 500 m boundaries — coarser than the IBGE 2025 mesh, the
-# accepted upload-free trade-off for aggregating a 250 m product.
-gaul_l2:
-  asset: FAO/GAUL_SIMPLIFIED_500m/2015/level2
-  adm0_name: Brazil
-  adm1_names: [Goias, Distrito Federal]   # GAUL spelling (no accent)
-  join_key: ADM2_NAME
 
 # --- Part 13: MapBiomas land use (GEE-hosted; no upload) --------------------
 # Covers GO+DF and all years server-side. The local data/mapbiomas-lulc GO clip

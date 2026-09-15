@@ -10,6 +10,10 @@ __pycache__/
 /zoning_kselect.csv
 /factor_variance.csv
 
+# Raw IBGE malha municipal downloads (regenerable from IBGE's site — see CLAUDE.md §7);
+# only the small merged data/mart/malha_municipal.gpkg output is committed.
+/data/input/
+
 # LaTeX build artifacts (thesis/)
 thesis/*.aux
 thesis/*.bbl
