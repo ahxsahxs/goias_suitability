@@ -12,7 +12,11 @@ carbono onde a viabilidade de culturas colapsa e a conservação é o melhor uso
 78\% de Cerrado nativo). Essa partição usa apenas atributos biofísicos --- nunca a cobertura da
 terra --- e ainda assim reproduz a geografia observada do uso do território, o que sustenta sua
 plausibilidade. O padrão subjacente é que GO~e~DF é climaticamente quase uniforme: quem separa
-terra boa de terra ruim é o solo e o terreno, não o clima.
+terra boa de terra ruim é o solo e o terreno, não o clima. Essa leitura carrega, portanto, o peso
+de dois produtos globais herdados sem validação local: o solo vem do OpenLandMap a 250~m, e o
+terreno do SRTM GL1 bruto a 30~m \citep{Farr2007}, reamostrado para a mesma grade; é a acurácia
+desse par de camadas --- não a do clima --- que se propaga diretamente para as fronteiras finas
+entre zonas (detalhado em~\S\ref{sec:limitations}).
 
 A projeção climática estende essa leitura a meados do século (QP3). A mudança é de magnitude
 pequena a moderada, mas direcionalmente coerente em todo o conjunto de modelos, e para as
@@ -93,10 +97,15 @@ para trabalho futuro.
     um \emph{proxy} de acessibilidade por tempo de viagem --- não preços, posse da terra,
     crédito ou logística. Parte da lacuna potencial \emph{versus} realizado é exatamente essa
     geografia econômica ausente.
-  \item \textbf{Solo de um único produto global.} A decomposição por fator mostra que, com o
-    clima quase uniforme, solo e terreno carregam a maior parte da discriminação espacial; o
-    atlas herda, portanto, a acurácia do OpenLandMap a 250~m, que o desenho sem \emph{upload}
-    impede de validar contra um levantamento nacional de solos.
+  \item \textbf{Solo e terreno de produtos globais únicos.} A decomposição por fator mostra que,
+    com o clima quase uniforme, solo e terreno carregam a maior parte da discriminação espacial
+    (\S\ref{sec:interpretation}); o atlas herda, portanto, a acurácia de dois produtos globais que
+    o desenho sem \emph{upload} impede de validar contra um levantamento local. O solo vem do
+    OpenLandMap a 250~m. O terreno vem do SRTM GL1 bruto a 30~m \citep{Farr2007} --- não uma
+    versão com preenchimento de vazio, como o NASADEM ou o CGIAR-CSI v4.1 ---, com acurácia
+    vertical absoluta especificada em~16~m (\emph{linear error} a 90\% de confiança) e vazios de
+    sombra de radar/água que o \emph{pipeline} não trata antes de reamostrar para 250~m por média
+    (elevação, declive, orientação) ou interpolação bilinear (índice topográfico de umidade).
   \item \textbf{Descompasso de escala clima--solo.} As entradas climáticas ($\approx$4~km) são
     bem mais grosseiras que solo e terreno (250~m); como o clima atua como comporta e não como
     fonte de estrutura fina, o impacto prático é pequeno, mas a resolução nominal é enganosa.
