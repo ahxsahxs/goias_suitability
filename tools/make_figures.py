@@ -2,14 +2,14 @@
 
 Fetches per-layer PNG thumbnails via ``ee.Image.getThumbURL`` (a small artifact
 leaving GEE, within the project cost policy), composes multi-panel figures with
-matplotlib, and writes them to ``docs/thesis/figures/``. Palettes mirror the
+matplotlib, and writes them to ``thesis/Chapters/Figures/``. Palettes mirror the
 notebooks (09/10/13/11). No assets are written.
 
 Every map figure carries a geographic-coordinate graticule (degree ticks with
 hemisphere suffix), a north arrow and an approximate scale bar. All figure text is
-localised: ``--lang pt`` (default) or ``--lang en`` / ``FIG_LANG``. Rendered PNGs
-are also copied into the matching LaTeX tree (``docs/thesis/latex_pt/figures`` for
-pt, ``docs/thesis/latex/figures`` for en); set ``FIG_COPY_LATEX=0`` to skip.
+localised: ``--lang pt`` (default) or ``--lang en`` / ``FIG_LANG``. Both languages
+render into the same ``thesis/Chapters/Figures/`` directory (``FIG_COPY_LATEX``
+is a no-op today since pt/en share one figure tree; kept for compatibility).
 
 Usage:
     EE_PROJECT=probformer ../.venv/bin/python tools/make_figures.py [present|future|diag|all]
@@ -68,7 +68,7 @@ SEGMENTS = ["soybean", "sugarcane", "other_crops", "pisciculture", "cattle",
 # Keys are stable; `en` entries are the strings previously hard-coded in this
 # module (zone labels excepted — those were stale and are corrected to the
 # 2026-07-25 re-profiling described in both theses). `pt` entries are taken from
-# docs/thesis/latex_pt/chapters/04_results.tex and 06_annex.tex.
+# thesis/Chapters/04_results.tex and 06_annex.tex.
 TR = {
     "en": {
         "seg": {

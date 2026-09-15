@@ -2,7 +2,7 @@
 name = "goias-suitability"
 version = "0.1.0"
 description = "Multi-segment agro-market suitability atlas and CMIP6-projected zoning of Goiás + Distrito Federal (Google Earth Engine-native)."
-readme = "CLAUDE.md"
+readme = "README.md"
 requires-python = ">=3.10"
 
 # Runtime dependencies for the analysis pipeline (src/) and the headless tools/

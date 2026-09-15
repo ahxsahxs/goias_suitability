@@ -11,7 +11,7 @@ no asset is written, no export is submitted. The zoning sweep is deterministic
 same capped-sample pattern.
 
 Output goes where ``tools/make_figures.py`` looks for it: ``$SCRATCHPAD`` if set,
-otherwise ``docs/thesis/``.
+otherwise ``thesis/Chapters/``.
 
 Run:
     EE_PROJECT=probformer uv run python tools/gen_diag_csvs.py [zoning|variance|all]
@@ -37,7 +37,7 @@ P = utils.init()
 AOI = utils.load_aoi(P)
 SEG = utils.cfg("segments")
 SEGS = list(SEG["segments"])
-THESIS_DIR = Path(__file__).resolve().parent.parent / "docs" / "thesis"
+THESIS_DIR = Path(__file__).resolve().parent.parent / "thesis" / "Chapters"
 OUT = Path(os.environ.get("SCRATCHPAD", str(THESIS_DIR)))
 TS = 8
 CAP = 4500

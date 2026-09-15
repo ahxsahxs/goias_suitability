@@ -138,10 +138,11 @@ def municipal():
     print("  TOP-5 VULNERABILITY (most negative delta_other_crops):")
     for _, r in df.nsmallest(5, "delta_other_crops").iterrows():
         print(f"    {r.ADM2_NAME:28s} dS={r.delta_other_crops:.3f} zone={int(round(r.zone))}")
-    df.to_csv("docs/thesis/figures/municipal_ranking.csv", index=False,
+    out_path = "thesis/Chapters/Figures/municipal_ranking.csv"
+    df.to_csv(out_path, index=False,
               columns=["ADM2_NAME", "delta_other_crops", "suit_soybean", "suit_sugarcane",
                        "underused_soybean", "underused_sugarcane", "zone", "opportunity"])
-    print("  wrote docs/thesis/figures/municipal_ranking.csv")
+    print(f"  wrote {out_path}")
 
 
 def main():

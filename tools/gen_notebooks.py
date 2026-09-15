@@ -816,13 +816,13 @@ write(
             "(present + future), the municipal opportunity/vulnerability ranking over "
             "`municipal_godf`, and the interactive Earth Engine App. Figure rendering lives in "
             "`tools/make_figures.py`; the App source in `gee_js/atlas_app.js`.\n\n"
-            "**Output:** `docs/thesis/figures/*.png`, `docs/thesis/figures/municipal_ranking.csv`, "
+            "**Output:** `thesis/Chapters/Figures/*.png`, `thesis/Chapters/Figures/municipal_ranking.csv`, "
             "and a published App URL (manual one-click). **DoD:** all RQs reported with uncertainty; "
             "atlas figures rendered; municipal rankings produced; App source ready to publish."
         ),
         code(INIT + "\nsys.path.insert(0, os.path.abspath('../tools'))\nimport external, make_figures"),
         code(LOAD_AOI),
-        md("### Render the atlas figures (present + future) → `docs/thesis/figures/`"),
+        md("### Render the atlas figures (present + future) → `thesis/Chapters/Figures/`"),
         code(
             "r = make_figures.Renderer()\n"
             "for name in make_figures.PRESENT + make_figures.FUTURE:\n"
