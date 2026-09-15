@@ -1,0 +1,175 @@
+# =============================================================================
+# Pinned Earth Engine dataset IDs, bands, and scale factors  (Part 1 / verify-at-build)
+# -----------------------------------------------------------------------------
+# "scale" = multiply the raw stored band by this factor to obtain physical units.
+# Entries tagged  VERIFY  must be confirmed with the live-catalog cell in
+# notebooks/01_setup_aoi.ipynb (prints actual band ranges) once EE is authed.
+# =============================================================================
+
+grid:
+  scale_m: 250            # analysis resolution
+  crs: EPSG:4326          # processing CRS (areas via ee.Image.pixelArea())
+  baseline: [1991, 2020]  # WMO climate normal window (leak-free reference)
+
+asset:
+  subfolder: goias        # -> projects/<project>/assets/goias/<name>
+
+# --- Part 1: AOI -------------------------------------------------------------
+aoi:
+  gaul: FAO/GAUL_SIMPLIFIED_500m/2015/level1
+  adm0_name: Brazil
+  adm1_names: [Goias, Distrito Federal]   # GAUL spelling (no accent)
+
+# --- Part 2: climate & water balance ----------------------------------------
+climate:
+  terraclimate:
+    id: IDAHO_EPSCOR/TERRACLIMATE
+    period: ["1991-01-01", "2021-01-01"]   # exclusive end
+    bands:                                  # scale -> physical unit
+      pr:   {scale: 1.0,  unit: mm}
+      pet:  {scale: 0.1,  unit: mm}
+      def:  {scale: 0.1,  unit: mm}
+      pdsi: {scale: 0.01, unit: index}
+      soil: {scale: 0.1,  unit: mm}
+      vpd:  {scale: 0.01, unit: kPa}
+      srad: {scale: 0.1,  unit: W/m2}
+      tmmx: {scale: 0.1,  unit: degC}
+      tmmn: {scale: 0.1,  unit: degC}
+      aet:  {scale: 0.1,  unit: mm}
+  params:
+    dry_month_pr_mm: 60     # a month counts as "dry" if mean P < this
+    gdd_base_c: 10          # base temperature for growing-degree-days
+
+# --- Part 3: terrain ---------------------------------------------------------
+terrain:
+  srtm: USGS/SRTMGL1_003
+  hydrosheds_acc: WWF/HydroSHEDS/15ACC    # 15 arc-sec flow accumulation (band b1)
+  tpi_radius_m: 500
+
+# --- Part 4: soil (OpenLandMap, 250 m) --------------------------------------
+soil:
+  depths_bands: [b0, b10, b30]            # 0-30 cm mean
+  layers:
+    clay: {id: "OpenLandMap/SOL/SOL_CLAY-WFRACTION_USDA-3A1A1A_M/v02", scale: 1.0,  unit: pct}
+    sand: {id: "OpenLandMap/SOL/SOL_SAND-WFRACTION_USDA-3A1A1A_M/v02", scale: 1.0,  unit: pct}
+    soc:  {id: "OpenLandMap/SOL/SOL_ORGANIC-CARBON_USDA-6A1C_M/v02",   scale: 5.0,  unit: "g/kg"}   # verified: mean ~13 g/kg
+    ph:   {id: "OpenLandMap/SOL/SOL_PH-H2O_USDA-4C1A2A_M/v02",         scale: 0.1,  unit: pH}        # verified: 4.7-7.3
+    bdod: {id: "OpenLandMap/SOL/SOL_BULKDENS-FINEEARTH_USDA-4A1H_M/v02", scale: 10.0, unit: "kg/m3"} # verified: mean ~1259 kg/m3
+    awc:  {id: "OpenLandMap/SOL/SOL_WATERCONTENT-33KPA_USDA-4B1C_M/v02", scale: 1.0,  unit: pct}
+
+# --- Part 5: hydrology & water access ---------------------------------------
+water:
+  gsw: JRC/GSW1_4/GlobalSurfaceWater
+  occurrence_threshold: 80     # permanent water if occurrence > this
+  seasonal_occurrence_threshold: 50   # semi-permanent water (>= ~6 mo) for pisciculture siting distance
+  hydrosheds_acc: WWF/HydroSHEDS/15ACC
+  stream_acc_threshold: 1000   # flow-accum cells above which a pixel is a "stream"
+  drainage_radius_m: 2500      # window for drainage-density (stream fraction)
+
+# --- Part 6: vegetation phenology -------------------------------------------
+phenology:
+  modis: MODIS/061/MOD13Q1
+  period: ["2001-01-01", "2021-01-01"]
+  ndvi_scale: 0.0001
+  qa_band: SummaryQA           # 0 good, 1 marginal, 2 snow/ice, 3 cloudy
+  harmonics: 2                 # annual + semiannual
+
+# --- Part 7: market access ---------------------------------------------------
+access:
+  # non-deprecated successor to Oxford/MAP/accessibility_to_cities_2015_v1_0
+  oxford: projects/malariaatlasproject/assets/accessibility/accessibility_to_cities/2015_v1_0
+  band: accessibility          # minutes of travel to nearest city
+
+# --- Part 7b: generic land-cover mask (ESA WorldCover) ----------------------
+landcover:
+  worldcover: ESA/WorldCover/v200
+  band: Map
+  classes:                     # ESA WorldCover class codes
+    tree: 10
+    shrub: 20
+    grass: 30
+    crop: 40
+    built: 50
+    bare: 60
+    snow: 70
+    water: 80
+    herb_wetland: 90
+    mangrove: 95
+    moss: 100
+  excluded: [50, 80, 90]       # never eligible: built-up, water, herbaceous wetland
+  available: [20, 30, 40, 60]  # generic convertible: shrub, grass, crop, bare
+
+# --- Part 7d: conservation-value side bands (feat_conservation; NOT in the stack) ---
+# Catalog-only conservation-VALUE / priority factors (connectivity, habitat
+# heterogeneity, carbon service). Consumed by conservation membership via the `cv_`
+# band-routing; NEVER stacked or clustered. WDPA is a governance layer (not land
+# cover); biomass carbon is an ecosystem-service value. Verify-at-build: both ids
+# resolve and band names match (ranges printed by range_report in the 07d notebook).
+conservation:
+  wdpa: WCMC/WDPA/current/polygons                    # protected-area polygons (governance layer)
+  biomass:                                            # Spawn et al. 2020 aboveground live woody biomass carbon
+    id: "NASA/ORNL/biomass_carbon_density/v1"
+    band: agb                                         # aboveground biomass carbon density (Mg C/ha)
+  ruggedness_radius_px: 3                             # neighborhood radius (250 m pixels) for elevation-std ruggedness
+
+# --- Part 11: CMIP6 delta-change future projection (NASA NEX-GDDP-CMIP6) -----
+# Monthly change factors (ratio for pr, additive K==degC delta for tasmax/tasmin)
+# are applied to the TerraClimate 1991-2020 baseline; the Part-9 membership is
+# re-run on a future stack (terrain/soil static). See src/cmip6.py + docs.
+# Bands/models/scenarios verified live against the catalog 2026-06-21 (33 models
+# carry ssp245+ssp585; the 5 below are a standard, well-behaved subset).
+cmip6:
+  id: NASA/GDDP-CMIP6
+  bands: [pr, tasmax, tasmin]   # pr kg m-2 s-1 (ratio is unit-free); tas* in K (delta == degC)
+  historical: [1991, 2014]      # model historical window (NEX-GDDP historical ends 2014)
+  hargreaves_c: 17.8            # Hargreaves additive temp constant (degC); 0.0023*Ra cancels in the PET ratio
+  scenarios: [ssp245, ssp585]   # SSP2-4.5 & SSP5-8.5
+  windows:                      # name -> [start_year, end_year] inclusive
+    "2031_2050": [2031, 2050]
+    "2051_2070": [2051, 2070]
+  models: [ACCESS-CM2, EC-Earth3, GFDL-ESM4, MPI-ESM1-2-HR, MRI-ESM2-0]
+
+# =============================================================================
+# PHASE B — GEE-only modelling/validation (Parts 12-15). No external uploads.
+# See docs/phase_b_data.md. Municipal units come from GAUL L2 and
+# productivity validation from MODIS MOD17; the `gaul_l2:`/`productivity:` sections
+# are added in the Phase B build pass. (The old IBGE `mesh:`/`ibge:` config sections
+# and tools/prep_mesh.sh + tools/fetch_sidra.py were removed in the GEE-only redesign.)
+# =============================================================================
+
+# --- Part 12: municipal units (GAUL level-2, GEE catalog; no upload) --------
+# 243 GO+DF ADM2 units (242 Goias municipalities + Distrito Federal). Verified
+# 2026-07-02: both ADM1 values present, ADM2_NAME populated, DF present as one
+# unit. Simplified 500 m boundaries — coarser than the IBGE 2025 mesh, the
+# accepted upload-free trade-off for aggregating a 250 m product.
+gaul_l2:
+  asset: FAO/GAUL_SIMPLIFIED_500m/2015/level2
+  adm0_name: Brazil
+  adm1_names: [Goias, Distrito Federal]   # GAUL spelling (no accent)
+  join_key: ADM2_NAME
+
+# --- Part 13: MapBiomas land use (GEE-hosted; no upload) --------------------
+# Covers GO+DF and all years server-side. The local data/mapbiomas-lulc GO clip
+# (DF masked out) is kept only for offline cross-check. Class remap lives in
+# config/mapbiomas_classes.yaml.
+mapbiomas:
+  # Collection 10 verified public 2026-07-02 (1985-2024, band classification_YYYY,
+  # covers GO+DF); legend codes over AOI match config/mapbiomas_classes.yaml. Prefer
+  # it over collection 9 (adds 2024 + DF). Coll-9 path kept as documented fallback.
+  asset: projects/mapbiomas-public/assets/brazil/lulc/collection10/mapbiomas_brazil_collection10_integration_v1
+  asset_coll9: projects/mapbiomas-public/assets/brazil/lulc/collection9/mapbiomas_collection90_integration_v1
+  band_pattern: classification_{year}
+  current_year: 2024
+  years: [2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024]
+
+# --- Part 14: MODIS MOD17 productivity proxy (validation only; never a feature)
+# Yield surrogate for the potential-vs-realized productivity check. Verified
+# 2026-07-02: MOD17A3HGF carries annual Npp (+Npp_QC); MOD17A2H carries 8-day Gpp.
+# Reduced to a multi-year mean on the 250 m grid, cropland/pasture-restricted.
+productivity:
+  npp: {id: MODIS/061/MOD17A3HGF, band: Npp, qa: Npp_QC, scale: 0.0001, unit: "gC/m2/yr"}
+  # GAP-FILLED 8-day GPP (MOD17A2HGF, 2000-2025). Corrected 2026-07-14: the non-GF
+  # MOD17A2H in collection 061 only starts 2021 (does not cover the 2001-2020 normal),
+  # so use the GF product — consistent with the GF annual NPP (MOD17A3HGF) above.
+  gpp: {id: MODIS/061/MOD17A2HGF, band: Gpp, qa: Psn_QC, scale: 0.0001, unit: "kgC/m2"}
+  period: [2001, 2020]       # MODIS annual-NPP record start; multi-year mean

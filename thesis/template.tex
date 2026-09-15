@@ -1,0 +1,219 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% NOVA-IMS Thesis Template (adapted version)
+%%
+%% This project was adapted by:
+%%   Prof. Dr. Paulo Vitor de Campos Souza
+%%   NOVA Information Management School (NOVA-IMS)
+%%   psouza@novaims.unl.pt
+%%
+%% This template is intended exclusively for students of NOVA-IMS
+%% for the preparation of Master's dissertations and other academic work
+%% within the School.
+%%
+%% This project uses and adapts components from the original NOVAthesis
+%% template developed by João Lourenço (joaomlourenco@fct.unl.pt), which is
+%% distributed under the LaTeX Project Public License (LPPL), version 1.3c.
+%%
+%% The use of this template must preserve the original credits to the
+%% NOVAthesis authors and contributors, as required by the LPPL license:
+%%    https://www.latex-project.org/lppl/lppl-1-3c/
+%%
+%% Main modifications introduced in this NOVA-IMS version include:
+%%   - Custom cover and back-cover layouts for NOVA-IMS
+%%   - Inclusion of institutional visual elements
+%%   - Adjustments for all NOVA-IMS programs and specializations
+%%   - Structural corrections and formatting improvements
+%%
+%% The original NOVAthesis author is not responsible for any issues,
+%% errors, or unexpected behavior resulting from the modifications
+%% performed in this adapted version.
+%%
+%% For support on the original NOVAthesis project:
+%%   https://github.com/joaomlourenco/novathesis/
+%%
+%% For support regarding this NOVA-IMS adapted template,
+%% please contact Prof. Paulo Souza directly.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% PLEASE DO NOT CHANGE THIS FILE
+% ALL THE CUSTOMIZATION WAS MOVED TO THE files in the ”Config” FOLDER
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+%%============================================================
+%% BLACK VOID AHEAD!  DO NOT TRESPASS!
+%%============================================================
+
+
+
+
+
+
+
+
+
+
+%%============================================================
+%% YOU'VE BEEN WARNED.  GO BACK TO SAFE GROUND.  NOW!!!
+%%============================================================
+
+
+
+
+
+
+
+
+
+
+%%============================================================
+%%  DO NOT GO BEYOND THIS POINT!
+%%  IF YOU DO… YOU DESERVE WHATEVER HAPPENS AFTERWARDS!
+%%============================================================
+
+
+
+
+
+%%------------------------------------------------------------
+%% The novathesis class is based in “memoir”.  To set memoir
+%%  options, edit “Config/0_memoir.tex”.
+\RequirePackage{NOVAthesisFiles/fix-profiling}
+\benchmarktic
+\documentclass[msc,english]{novathesis} 
+
+
+%============================================================
+%  MEMOIR CUSTOMIZATION
+%      Please open and edit the appropriate
+%       configuration file “Config/0_memoir.tex”
+%============================================================
+
+%============================================================
+%  TEMPLATE CUSTOMIZATION / OPTIONS (document type, university, school, etc)
+%      Please open and edit the appropriate
+%       configuration file “Config/1_novathesis.tex”
+%============================================================
+
+%============================================================
+% BIBLATEX CUSTOMIZATION (citation and bibliography styles)
+%      Please open and edit the appropriate
+%       configuration file “Config/2_biblatex.tex”
+%============================================================
+
+%============================================================
+%  COVER CUSTOMIZATION (title, author, etc)
+%   Please open and edit the appropriate
+%       configuration file “Config/3_cover.tex”
+%============================================================
+
+%============================================================
+%  THESIS/DISSERTATION FILES
+%   Please open and edit the appropriate
+%       configuration file “Config/4_files.tex”
+%============================================================
+
+%============================================================
+%  PERSONAL (YOUR) CUSTOMIZATION
+%   Please open and edit the appropriate
+%       configuration file “Config/5_packages.tex”
+%============================================================
+
+%============================================================
+%  WHICH LIST_OF TO PRINT
+%   Please open and edit the appropriate
+%       configuration file “Config/6_list_of.tex”
+%============================================================
+
+%============================================================
+% SPECIAL UNIVERSITY/SCHOOL CUSTOMIZATION
+%      Please open and edit the appropriate
+%       configuration file “Config/9_UNIVERSITY.tex”
+%============================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+%%============================================================
+%% HAVE I NOT TOLD YOU TO NOT EDIT/CHANGE THIS FILE???  YES I DID!!!
+%%============================================================
+
+%%------------------------------------------------------------
+\begin{document}          % Beginning of document
+\benchmarktoc
+\typeout{TIME class loading=\the\pdfelapsedtime}%
+%%------------------------------------------------------------
+%% Print covers
+\benchmarktic
+\ntthesisfrontmatter      % Before the main text (TOC, etc) — Roman page numbering
+\ntprint{covers}          % The cover page
+\benchmarktoc
+\typeout{TIME process covers=\the\pdfelapsedtime}%
+%%------------------------------------------------------------
+%% Print front matter
+\benchmarktic
+\ntprint{frontmatter}     % The default order is listed below, but can be changed
+\benchmarktoc
+\typeout{TIME process frontmatter=\the\pdfelapsedtime}%
+%%------------------------------------------------------------
+%% Print main matter
+\benchmarktic
+\ntthesismainmatter     % The main text — Arabic page numbering
+\pagestyle{ruled} 
+\ntprint{mainmatter}      % The default order is listed below, but can be changed
+\benchmarktoc
+\typeout{TIME process mainmatter=\the\pdfelapsedtime}%
+%%------------------------------------------------------------
+%% Print back cover and spine
+\benchmarktic
+\ntprint{backcover}       % Print the back cover, if any!
+\benchmarktoc
+\typeout{TIME process backcover=\the\pdfelapsedtime}%
+%%------------------------------------------------------------
+\end{document}          % End of document

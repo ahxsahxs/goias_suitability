@@ -1,0 +1,864 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%3%%%%%%%%%%%%%%%%%%
+%% nova/ims/nova-ims-defaults.ldf
+%% NOVA thesis document template
+%%
+%% This work is licensed under the
+%% The LaTeX project public license (LPPL), version 1.3c
+%% To view a copy of this license, visit
+%% https://www.latex-project.org/lppl/lppl-1-3c/
+%%
+%% Authors / Contributors:
+%%      - João Lourenço <joao.lourenco@fct.unl.pt>
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\typeout{NT FILE nova/ims/nova-ims-defaults.ldf}%
+
+
+% Faculty / School
+\school(pt):={Instituto Superior de Estatística e Gestão de Informação}
+\school(en):={NOVA Information Management School}
+\school(fr):={NOVA Information Management School}
+\school(it):={NOVA Information Management School}
+
+% Redefinition of "Master in" to "Master of Science in"
+\degreenameprefix(msc,en):={Master of Science in}
+\degreenameprefix(pt):={Mestre em}
+
+\ntdegreename(ddm,en){Data-Driven Marketing}
+\ntdegreename(ddm,pt){Data-Driven Marketing}
+\ntdegreename(dsaa,en){Data Science and Advanced Analytics}
+\ntdegreename(dsaa,pt){Data Science and Advanced Analytics}
+\ntdegreename(egi,en){Statistics and Information Management}
+\ntdegreename(egi,pt){Estatística e Gestão de Informação}
+\ntdegreename(gi,en){Information Management}
+\ntdegreename(gi,pt){Gestão de Informação}
+\ntdegreename(csig,en){Geographical Information Systems and Science}
+\ntdegreename(csig,pt){Ciência e Sistemas de Informação Geográfica}
+\ntdegreename(gt,en){Geospatial Technologies}
+\ntdegreename(gt,pt){Tecnologias Geo-Espaciais}
+
+\newdata{degreeacr}
+\degreeacr(ddm):={MDDM}
+\degreeacr(dsaa):={MDSAA}
+\degreeacr(egi):={MEGI}
+\degreeacr(gi):={MGI}
+\degreeacr(csig):={CSIG}
+\degreeacr(gt):={MGT}
+
+\newdata{by}
+\by(en):={by}
+\by(pt):={por}
+
+\newdata{imsfront} % capa
+\newdata{imsback}  % contracapa
+
+% ============================
+% MGI — Business Intelligence
+% ============================
+
+% EN
+\imsfront(mgi,bi,en):={Chapters/Figures/Covers/1up/templates/MGI/MGI-BI-EN/Capa_MGI-BI-EN}
+\imsback (mgi,bi,en):={Chapters/Figures/Covers/1up/templates/MGI/MGI-BI-EN/ContraCapa_MGI}
+
+% PT
+\imsfront(mgi,bi,pt):={Chapters/Figures/Covers/1up/templates/MGI/MGI-BI-PT/Capa_MGI-BI-PT}
+\imsback (mgi,bi,pt):={Chapters/Figures/Covers/1up/templates/MGI/MGI-BI-PT/ContraCapa_MGI}
+
+% MGI — Governance of Cybersecurity and Business Intelligence
+% EN
+\imsfront(mgi,gcbi,en):={Chapters/Figures/Covers/1up/templates/MGI/MGI-GCBI-EN/Capa_MGI-GCBI-EN}
+\imsback (mgi,gcbi,en):={Chapters/Figures/Covers/1up/templates/MGI/MGI-GCBI-EN/ContraCapa_MGI}
+% PT
+\imsfront(mgi,gcbi,pt):={Chapters/Figures/Covers/1up/templates/MGI/MGI-GCBI-PT/Capa_MGI-GCBI-PT}
+\imsback (mgi,gcbi,pt):={Chapters/Figures/Covers/1up/templates/MGI/MGI-GCBI-PT/ContraCapa_MGI}
+
+% MGI — Governance of Information Systems and Technologies
+% EN
+\imsfront(mgi,gsti,en):={Chapters/Figures/Covers/1up/templates/MGI/MGI-GSTI-EN/Capa_MGI-GSTI-EN}
+\imsback (mgi,gsti,en):={Chapters/Figures/Covers/1up/templates/MGI/MGI-GSTI-EN/ContraCapa_MGI}
+% PT
+\imsfront(mgi,gsti,pt):={Chapters/Figures/Covers/1up/templates/MGI/MGI-GSTI-PT/Capa_MGI-GSTI-PT}
+\imsback (mgi,gsti,pt):={Chapters/Figures/Covers/1up/templates/MGI/MGI-GSTI-PT/ContraCapa_MGI}
+
+% MGI — Geographic Information Systems
+% EN
+\imsfront(mgi,gsi,en):={Chapters/Figures/Covers/1up/templates/MGI/MGI-GSI-EN/Capa_MGI-GSI-EN}
+\imsback (mgi,gsi,en):={Chapters/Figures/Covers/1up/templates/MGI/MGI-GSI-EN/ContraCapa_MGI}
+% PT
+\imsfront(mgi,gsi,pt):={Chapters/Figures/Covers/1up/templates/MGI/MGI-GSI-PT/Capa_MGI-GSI-PT}
+\imsback (mgi,gsi,pt):={Chapters/Figures/Covers/1up/templates/MGI/MGI-GSI-PT/ContraCapa_MGI}
+
+% MGI — Marketing Intelligence
+% EN
+\imsfront(mgi,mi,en):={Chapters/Figures/Covers/1up/templates/MGI/MGI-MI-EN/Capa_MGI-MI-EN}
+\imsback (mgi,mi,en):={Chapters/Figures/Covers/1up/templates/MGI/MGI-MI-EN/ContraCapa_MGI}
+% PT
+\imsfront(mgi,mi,pt):={Chapters/Figures/Covers/1up/templates/MGI/MGI-MI-PT/Capa_MGI-MI-PT}
+\imsback (mgi,mi,pt):={Chapters/Figures/Covers/1up/templates/MGI/MGI-MI-PT/ContraCapa_MGI}
+
+% MGI — Technologies for Decision
+% EN
+\imsfront(mgi,td,en):={Chapters/Figures/Covers/1up/templates/MGI/MGI-TD-EN/Capa_MGI-TD-EN}
+\imsback (mgi,td,en):={Chapters/Figures/Covers/1up/templates/MGI/MGI-TD-EN/ContraCapa_MGI}
+% PT
+\imsfront(mgi,td,pt):={Chapters/Figures/Covers/1up/templates/MGI/MGI-TD-PT/Capa_MGI-TD-PT}
+\imsback (mgi,td,pt):={Chapters/Figures/Covers/1up/templates/MGI/MGI-TD-PT/ContraCapa_MGI}
+
+% MDSAA — Business Analytics
+% EN
+\imsfront(mdsaa,ba,en):={Chapters/Figures/Covers/1up/templates/MDSAA/MDSAA-BA-EN/Capa_MDSAA-BA-EN}
+\imsback (mdsaa,ba,en):={Chapters/Figures/Covers/1up/templates/MDSAA/MDSAA-BA-EN/ContraCapa_MDSAA}
+% PT
+\imsfront(mdsaa,ba,pt):={Chapters/Figures/Covers/1up/templates/MDSAA/MDSAA-BA-PT/Capa_MDSAA-BA-PT}
+\imsback (mdsaa,ba,pt):={Chapters/Figures/Covers/1up/templates/MDSAA/MDSAA-BA-PT/ContraCapa_MDSAA}
+
+% MDSAA — Data Science
+% EN
+\imsfront(mdsaa,ds,en):={Chapters/Figures/Covers/1up/templates/MDSAA/MDSAA-DS-EN/Capa_MDSAA-DS-EN}
+\imsback (mdsaa,ds,en):={Chapters/Figures/Covers/1up/templates/MDSAA/MDSAA-DS-EN/ContraCapa_MDSAA}
+% PT
+\imsfront(mdsaa,ds,pt):={Chapters/Figures/Covers/1up/templates/MDSAA/MDSAA-DS-PT/Capa_MDSAA-DS-PT}
+\imsback (mdsaa,ds,pt):={Chapters/Figures/Covers/1up/templates/MDSAA/MDSAA-DS-PT/ContraCapa_MDSAA}
+
+% MDDM — Digital Marketing and Analytics
+% EN
+\imsfront(mddm,dma,en):={Chapters/Figures/Covers/1up/templates/MDDM/MDDM-DMA-EN/Capa_MDDM-DMA-EN}
+\imsback (mddm,dma,en):={Chapters/Figures/Covers/1up/templates/MDDM/MDDM-DMA-EN/ContraCapa_MDDM}
+% PT
+\imsfront(mddm,dma,pt):={Chapters/Figures/Covers/1up/templates/MDDM/MDDM-DMA-PT/Capa_MDDM-DMA-PT}
+\imsback (mddm,dma,pt):={Chapters/Figures/Covers/1up/templates/MDDM/MDDM-DMA-PT/ContraCapa_MDDM}
+
+% MDDM — Data Science for Marketing
+% EN
+\imsfront(mddm,ds4m,en):={Chapters/Figures/Covers/1up/templates/MDDM/MDDM-DS4M-EN/Capa_MDDM-DS4M-EN}
+\imsback (mddm,ds4m,en):={Chapters/Figures/Covers/1up/templates/MDDM/MDDM-DS4M-EN/ContraCapa_MDDM}
+% PT
+\imsfront(mddm,ds4m,pt):={Chapters/Figures/Covers/1up/templates/MDDM/MDDM-DS4M-PT/Capa_MDDM-DS4M-PT}
+\imsback (mddm,ds4m,pt):={Chapters/Figures/Covers/1up/templates/MDDM/MDDM-DS4M-PT/ContraCapa_MDDM}
+
+% MDDM — Marketing Intelligence
+% EN
+\imsfront(mddm,mi,en):={Chapters/Figures/Covers/1up/templates/MDDM/MDDM-MI-EN/Capa_MDDM-MI-EN}
+\imsback (mddm,mi,en):={Chapters/Figures/Covers/1up/templates/MDDM/MDDM-MI-EN/ContraCapa_MDDM}
+% PT
+\imsfront(mddm,mi,pt):={Chapters/Figures/Covers/1up/templates/MDDM/MDDM-MI-PT/Capa_MDDM-MI-PT}
+\imsback (mddm,mi,pt):={Chapters/Figures/Covers/1up/templates/MDDM/MDDM-MI-PT/ContraCapa_MDDM}
+
+% MDDM — Marketing Research and CRM
+% EN
+\imsfront(mddm,mrcrm,en):={Chapters/Figures/Covers/1up/templates/MDDM/MDDM-MRCRM-EN/Capa_MDDM-MRCRM-EN}
+\imsback (mddm,mrcrm,en):={Chapters/Figures/Covers/1up/templates/MDDM/MDDM-MRCRM-EN/ContraCapa_MDDM}
+% PT
+\imsfront(mddm,mrcrm,pt):={Chapters/Figures/Covers/1up/templates/MDDM/MDDM-MRCRM-PT/Capa_MDDM-MRCRM-PT}
+\imsback (mddm,mrcrm,pt):={Chapters/Figures/Covers/1up/templates/MDDM/MDDM-MRCRM-PT/ContraCapa_MDDM}
+
+% MCSIG — Ciência e Sistemas de Informação Geográfica
+% EN
+\imsfront(mcsig,csig,en):={Chapters/Figures/Covers/1up/templates/MCSIG/MCSIG-CSIG-EN/Capa_MCSIG-CSIG-EN}
+\imsback (mcsig,csig,en):={Chapters/Figures/Covers/1up/templates/MCSIG/MCSIG-CSIG-EN/ContraCapa_MCSIG}
+% PT
+\imsfront(mcsig,csig,pt):={Chapters/Figures/Covers/1up/templates/MCSIG/MCSIG-CSIG-PT/Capa_MCSIG-CSIG-PT}
+\imsback (mcsig,csig,pt):={Chapters/Figures/Covers/1up/templates/MCSIG/MCSIG-CSIG-PT/ContraCapa_MCSIG}
+
+% MCSIG — Cartography and Geographic Data (CDG)
+% EN
+\imsfront(mcsig,cdg,en):={Chapters/Figures/Covers/1up/templates/MCSIG/MCSIG-CDG-EN/Capa_MCSIG-CDG-EN}
+\imsback (mcsig,cdg,en):={Chapters/Figures/Covers/1up/templates/MCSIG/MCSIG-CDG-EN/ContraCapa_MCSIG}
+% PT
+\imsfront(mcsig,cdg,pt):={Chapters/Figures/Covers/1up/templates/MCSIG/MCSIG-CDG-PT/Capa_MCSIG-CDG-PT}
+\imsback (mcsig,cdg,pt):={Chapters/Figures/Covers/1up/templates/MCSIG/MCSIG-CDG-PT/ContraCapa_MCSIG}
+
+% MEGI — Applied Geographic Information
+% EN
+\imsfront(megi,agi,en):={Chapters/Figures/Covers/1up/templates/MEGI/MEGI-AGI-EN/Capa_MEGI-AGI-EN}
+\imsback (megi,agi,en):={Chapters/Figures/Covers/1up/templates/MEGI/MEGI-AGI-EN/ContraCapa_MEGI}
+% PT
+\imsfront(megi,agi,pt):={Chapters/Figures/Covers/1up/templates/MEGI/MEGI-AGI-PT/Capa_MEGI-AGI-PT}
+\imsback (megi,agi,pt):={Chapters/Figures/Covers/1up/templates/MEGI/MEGI-AGI-PT/ContraCapa_MEGI}
+
+% MEGI — Agribusiness
+% EN
+\imsfront(megi,agr,en):={Chapters/Figures/Covers/1up/templates/MEGI/MEGI-AGR-EN/Capa_MEGI-AGR-EN}
+\imsback (megi,agr,en):={Chapters/Figures/Covers/1up/templates/MEGI/MEGI-AGR-EN/ContraCapa_MEGI}
+% PT
+\imsfront(megi,agr,pt):={Chapters/Figures/Covers/1up/templates/MEGI/MEGI-AGR-PT/Capa_MEGI-AGR-PT}
+\imsback (megi,agr,pt):={Chapters/Figures/Covers/1up/templates/MEGI/MEGI-AGR-PT/ContraCapa_MEGI}
+
+% MEGI — Marketing Research and CRM
+% EN
+\imsfront(megi,mrcrm,en):={Chapters/Figures/Covers/1up/templates/MEGI/MEGI-MRCRM-EN/Capa_MEGI-MRCRM-EN}
+\imsback (megi,mrcrm,en):={Chapters/Figures/Covers/1up/templates/MEGI/MEGI-MRCRM-EN/ContraCapa_MEGI}
+% PT
+\imsfront(megi,mrcrm,pt):={Chapters/Figures/Covers/1up/templates/MEGI/MEGI-MRCRM-PT/Capa_MEGI-MRCRM-PT}
+\imsback (megi,mrcrm,pt):={Chapters/Figures/Covers/1up/templates/MEGI/MEGI-MRCRM-PT/ContraCapa_MEGI}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% DGI  (sem especialização)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% EN
+\imsfront(dgi,main,en):={Chapters/Figures/Covers/1up/templates/DGI/DGI-EN/Capa_DGI-EN}
+\imsback (dgi,main,en):={Chapters/Figures/Covers/1up/templates/DGI/DGI-EN/ContraCapa_DGI}
+
+% PT
+\imsfront(dgi,main,pt):={Chapters/Figures/Covers/1up/templates/DGI/DGI-PT/Capa_DGI-PT}
+\imsback (dgi,main,pt):={Chapters/Figures/Covers/1up/templates/DGI/DGI-PT/ContraCapa_DGI}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% MGT  (sem especialização, só EN)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\imsfront(mgt,main,en):={Chapters/Figures/Covers/1up/templates/MGT/MGT-EN/Capa_MGT-EN}
+\imsback (mgt,main,en):={Chapters/Figures/Covers/1up/templates/MGT/MGT-EN/ContraCapa_MGT}
+
+% ----------------------------------------------------------------
+% Imagens de CABEÇALHO e RODAPÉ (miolo da tese)
+% ----------------------------------------------------------------
+\newdata{imshead} % cabeçalho
+\newdata{imsfoot} % rodapé
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% MDSAA
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% MDSAA-BA-EN
+\imshead(mdsaa,ba,en):={Chapters/Figures/Covers/1up/templates/MDSAA/MDSAA-BA-EN/IMS_Tese2025__curvas_olho}
+\imsfoot(mdsaa,ba,en):={Chapters/Figures/Covers/1up/templates/MDSAA/MDSAA-BA-EN/IMS_Tese2025__curvas_rodape}
+
+% MDSAA-BA-PT
+\imshead(mdsaa,ba,pt):={Chapters/Figures/Covers/1up/templates/MDSAA/MDSAA-BA-PT/IMS_Tese2025__curvas_olho}
+\imsfoot(mdsaa,ba,pt):={Chapters/Figures/Covers/1up/templates/MDSAA/MDSAA-BA-PT/IMS_Tese2025__curvas_rodape}
+
+% MDSAA-DS-EN
+\imshead(mdsaa,ds,en):={Chapters/Figures/Covers/1up/templates/MDSAA/MDSAA-DS-EN/IMS_Tese2025__curvas_olho}
+\imsfoot(mdsaa,ds,en):={Chapters/Figures/Covers/1up/templates/MDSAA/MDSAA-DS-EN/IMS_Tese2025__curvas_rodape}
+
+% MDSAA-DS-PT
+\imshead(mdsaa,ds,pt):={Chapters/Figures/Covers/1up/templates/MDSAA/MDSAA-DS-PT/IMS_Tese2025__curvas_olho}
+\imsfoot(mdsaa,ds,pt):={Chapters/Figures/Covers/1up/templates/MDSAA/MDSAA-DS-PT/IMS_Tese2025__curvas_rodape}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% MDDM
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% MDDM-DMA-EN
+\imshead(mddm,dma,en):={Chapters/Figures/Covers/1up/templates/MDDM/MDDM-DMA-EN/IMS_Tese2025__curvas_olho}
+\imsfoot(mddm,dma,en):={Chapters/Figures/Covers/1up/templates/MDDM/MDDM-DMA-EN/IMS_Tese2025__curvas_rodape}
+
+% MDDM-DMA-PT
+\imshead(mddm,dma,pt):={Chapters/Figures/Covers/1up/templates/MDDM/MDDM-DMA-PT/IMS_Tese2025__curvas_olho}
+\imsfoot(mddm,dma,pt):={Chapters/Figures/Covers/1up/templates/MDDM/MDDM-DMA-PT/IMS_Tese2025__curvas_rodape}
+
+% MDDM-DS4M-EN
+\imshead(mddm,ds4m,en):={Chapters/Figures/Covers/1up/templates/MDDM/MDDM-DS4M-EN/IMS_Tese2025__curvas_olho}
+\imsfoot(mddm,ds4m,en):={Chapters/Figures/Covers/1up/templates/MDDM/MDDM-DS4M-EN/IMS_Tese2025__curvas_rodape}
+
+% MDDM-DS4M-PT
+\imshead(mddm,ds4m,pt):={Chapters/Figures/Covers/1up/templates/MDDM/MDDM-DS4M-PT/IMS_Tese2025__curvas_olho}
+\imsfoot(mddm,ds4m,pt):={Chapters/Figures/Covers/1up/templates/MDDM/MDDM-DS4M-PT/IMS_Tese2025__curvas_rodape}
+
+% MDDM-MI-EN
+\imshead(mddm,mi,en):={Chapters/Figures/Covers/1up/templates/MDDM/MDDM-MI-EN/IMS_Tese2025__curvas_olho}
+\imsfoot(mddm,mi,en):={Chapters/Figures/Covers/1up/templates/MDDM/MDDM-MI-EN/IMS_Tese2025__curvas_rodape}
+
+% MDDM-MI-PT
+\imshead(mddm,mi,pt):={Chapters/Figures/Covers/1up/templates/MDDM/MDDM-MI-PT/IMS_Tese2025__curvas_olho}
+\imsfoot(mddm,mi,pt):={Chapters/Figures/Covers/1up/templates/MDDM/MDDM-MI-PT/IMS_Tese2025__curvas_rodape}
+
+% MDDM-MRCRM-EN
+\imshead(mddm,mrcrm,en):={Chapters/Figures/Covers/1up/templates/MDDM/MDDM-MRCRM-EN/IMS_Tese2025__curvas_olho}
+\imsfoot(mddm,mrcrm,en):={Chapters/Figures/Covers/1up/templates/MDDM/MDDM-MRCRM-EN/IMS_Tese2025__curvas_rodape}
+
+% MDDM-MRCRM-PT
+\imshead(mddm,mrcrm,pt):={Chapters/Figures/Covers/1up/templates/MDDM/MDDM-MRCRM-PT/IMS_Tese2025__curvas_olho}
+\imsfoot(mddm,mrcrm,pt):={Chapters/Figures/Covers/1up/templates/MDDM/MDDM-MRCRM-PT/IMS_Tese2025__curvas_rodape}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% MCSIG
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% MCSIG-CSIG-EN
+\imshead(mcsig,csig,en):={Chapters/Figures/Covers/1up/templates/MCSIG/MCSIG-CSIG-EN/IMS_Tese2025__curvas_olho}
+\imsfoot(mcsig,csig,en):={Chapters/Figures/Covers/1up/templates/MCSIG/MCSIG-CSIG-EN/IMS_Tese2025__curvas_rodape}
+
+% MCSIG-CSIG-PT
+\imshead(mcsig,csig,pt):={Chapters/Figures/Covers/1up/templates/MCSIG/MCSIG-CSIG-PT/IMS_Tese2025__curvas_olho}
+\imsfoot(mcsig,csig,pt):={Chapters/Figures/Covers/1up/templates/MCSIG/MCSIG-CSIG-PT/IMS_Tese2025__curvas_rodape}
+
+% MCSIG-CDG-EN
+\imshead(mcsig,cdg,en):={Chapters/Figures/Covers/1up/templates/MCSIG/MCSIG-CDG-EN/IMS_Tese2025__curvas_olho}
+\imsfoot(mcsig,cdg,en):={Chapters/Figures/Covers/1up/templates/MCSIG/MCSIG-CDG-EN/IMS_Tese2025__curvas_rodape}
+
+% MCSIG-CDG-PT
+\imshead(mcsig,cdg,pt):={Chapters/Figures/Covers/1up/templates/MCSIG/MCSIG-CDG-PT/IMS_Tese2025__curvas_olho}
+\imsfoot(mcsig,cdg,pt):={Chapters/Figures/Covers/1up/templates/MCSIG/MCSIG-CDG-PT/IMS_Tese2025__curvas_rodape}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% MGI
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% MGI — Business Intelligence — EN
+\imsfront(mgi,bi,en):={Chapters/Figures/Covers/1up/templates/MGI/MGI-BI-EN/Capa_MGI-BI-EN}
+\imsback (mgi,bi,en):={Chapters/Figures/Covers/1up/templates/MGI/MGI-BI-EN/ContraCapa_MGI}
+
+\imshead(mgi,bi,en):={Chapters/Figures/Covers/1up/templates/MGI/MGI-BI-EN/IMS_Tese2025__curvas_olho}
+\imsfoot(mgi,bi,en):={Chapters/Figures/Covers/1up/templates/MGI/MGI-BI-EN/IMS_Tese2025__curvas_rodape}
+
+% MGI — Business Intelligence — PT
+\imsfront(mgi,bi,pt):={Chapters/Figures/Covers/1up/templates/MGI/MGI-BI-PT/Capa_MGI-BI-PT}
+\imsback (mgi,bi,pt):={Chapters/Figures/Covers/1up/templates/MGI/MGI-BI-PT/ContraCapa_MGI}
+
+\imshead(mgi,bi,pt):={Chapters/Figures/Covers/1up/templates/MGI/MGI-BI-PT/IMS_Tese2025__curvas_olho}
+\imsfoot(mgi,bi,pt):={Chapters/Figures/Covers/1up/templates/MGI/MGI-BI-PT/IMS_Tese2025__curvas_rodape}
+
+
+% MGI-GCBI-EN
+\imshead(mgi,gcbi,en):={Chapters/Figures/Covers/1up/templates/MGI/MGI-GCBI-EN/IMS_Tese2025__curvas_olho}
+\imsfoot(mgi,gcbi,en):={Chapters/Figures/Covers/1up/templates/MGI/MGI-GCBI-EN/IMS_Tese2025__curvas_rodape}
+
+% MGI-GCBI-PT
+\imshead(mgi,gcbi,pt):={Chapters/Figures/Covers/1up/templates/MGI/MGI-GCBI-PT/IMS_Tese2025__curvas_olho}
+\imsfoot(mgi,gcbi,pt):={Chapters/Figures/Covers/1up/templates/MGI/MGI-GCBI-PT/IMS_Tese2025__curvas_rodape}
+
+% MGI-GSTI-EN
+\imshead(mgi,gsti,en):={Chapters/Figures/Covers/1up/templates/MGI/MGI-GSTI-EN/IMS_Tese2025__curvas_olho}
+\imsfoot(mgi,gsti,en):={Chapters/Figures/Covers/1up/templates/MGI/MGI-GSTI-EN/IMS_Tese2025__curvas_rodape}
+
+% MGI-GSTI-PT
+\imshead(mgi,gsti,pt):={Chapters/Figures/Covers/1up/templates/MGI/MGI-GSTI-PT/IMS_Tese2025__curvas_olho}
+\imsfoot(mgi,gsti,pt):={Chapters/Figures/Covers/1up/templates/MGI/MGI-GSTI-PT/IMS_Tese2025__curvas_rodape}
+
+% MGI-GSI-EN
+\imshead(mgi,gsi,en):={Chapters/Figures/Covers/1up/templates/MGI/MGI-GSI-EN/IMS_Tese2025__curvas_olho}
+\imsfoot(mgi,gsi,en):={Chapters/Figures/Covers/1up/templates/MGI/MGI-GSI-EN/IMS_Tese2025__curvas_rodape}
+
+% MGI-GSI-PT
+\imshead(mgi,gsi,pt):={Chapters/Figures/Covers/1up/templates/MGI/MGI-GSI-PT/IMS_Tese2025__curvas_olho}
+\imsfoot(mgi,gsi,pt):={Chapters/Figures/Covers/1up/templates/MGI/MGI-GSI-PT/IMS_Tese2025__curvas_rodape}
+
+% MGI-MI-EN
+\imshead(mgi,mi,en):={Chapters/Figures/Covers/1up/templates/MGI/MGI-MI-EN/IMS_Tese2025__curvas_olho}
+\imsfoot(mgi,mi,en):={Chapters/Figures/Covers/1up/templates/MGI/MGI-MI-EN/IMS_Tese2025__curvas_rodape}
+
+% MGI-MI-PT
+\imshead(mgi,mi,pt):={Chapters/Figures/Covers/1up/templates/MGI/MGI-MI-PT/IMS_Tese2025__curvas_olho}
+\imsfoot(mgi,mi,pt):={Chapters/Figures/Covers/1up/templates/MGI/MGI-MI-PT/IMS_Tese2025__curvas_rodape}
+
+% MGI-TD-EN
+\imshead(mgi,td,en):={Chapters/Figures/Covers/1up/templates/MGI/MGI-TD-EN/IMS_Tese2025__curvas_olho}
+\imsfoot(mgi,td,en):={Chapters/Figures/Covers/1up/templates/MGI/MGI-TD-EN/IMS_Tese2025__curvas_rodape}
+
+% MGI-TD-PT
+\imshead(mgi,td,pt):={Chapters/Figures/Covers/1up/templates/MGI/MGI-TD-PT/IMS_Tese2025__curvas_olho}
+\imsfoot(mgi,td,pt):={Chapters/Figures/Covers/1up/templates/MGI/MGI-TD-PT/IMS_Tese2025__curvas_rodape}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% MEGI
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% MEGI-AGI-EN
+\imshead(megi,agi,en):={Chapters/Figures/Covers/1up/templates/MEGI/MEGI-AGI-EN/IMS_Tese2025__curvas_olho}
+\imsfoot(megi,agi,en):={Chapters/Figures/Covers/1up/templates/MEGI/MEGI-AGI-EN/IMS_Tese2025__curvas_rodape}
+
+% MEGI-AGI-PT
+\imshead(megi,agi,pt):={Chapters/Figures/Covers/1up/templates/MEGI/MEGI-AGI-PT/IMS_Tese2025__curvas_olho}
+\imsfoot(megi,agi,pt):={Chapters/Figures/Covers/1up/templates/MEGI/MEGI-AGI-PT/IMS_Tese2025__curvas_rodape}
+
+% MEGI-AGR-EN
+\imshead(megi,agr,en):={Chapters/Figures/Covers/1up/templates/MEGI/MEGI-AGR-EN/IMS_Tese2025__curvas_olho}
+\imsfoot(megi,agr,en):={Chapters/Figures/Covers/1up/templates/MEGI/MEGI-AGR-EN/IMS_Tese2025__curvas_rodape}
+
+% MEGI-AGR-PT
+\imshead(megi,agr,pt):={Chapters/Figures/Covers/1up/templates/MEGI/MEGI-AGR-PT/IMS_Tese2025__curvas_olho}
+\imsfoot(megi,agr,pt):={Chapters/Figures/Covers/1up/templates/MEGI/MEGI-AGR-PT/IMS_Tese2025__curvas_rodape}
+
+% MEGI-MRCRM-EN
+\imshead(megi,mrcrm,en):={Chapters/Figures/Covers/1up/templates/MEGI/MEGI-MRCRM-EN/IMS_Tese2025__curvas_olho}
+\imsfoot(megi,mrcrm,en):={Chapters/Figures/Covers/1up/templates/MEGI/MEGI-MRCRM-EN/IMS_Tese2025__curvas_rodape}
+
+% MEGI-MRCRM-PT
+\imshead(megi,mrcrm,pt):={Chapters/Figures/Covers/1up/templates/MEGI/MEGI-MRCRM-PT/IMS_Tese2025__curvas_olho}
+\imsfoot(megi,mrcrm,pt):={Chapters/Figures/Covers/1up/templates/MEGI/MEGI-MRCRM-PT/IMS_Tese2025__curvas_rodape}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% DGI  (doutoramento, sem especialização)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Aqui use os MESMOS índices que você usou nas capas
+% Exemplo, se a capa estiver como \imsfront(dgi,en,en) e \imsfront(dgi,pt,pt):
+
+\imshead(dgi,main,en):={Chapters/Figures/Covers/1up/templates/DGI/DGI-EN/IMS_Tese2025__curvas_olho}
+\imsfoot(dgi,main,en):={Chapters/Figures/Covers/1up/templates/DGI/DGI-EN/IMS_Tese2025__curvas_rodape}
+
+\imshead(dgi,main,pt):={Chapters/Figures/Covers/1up/templates/DGI/DGI-PT/IMS_Tese2025__curvas_olho}
+\imsfoot(dgi,main,pt):={Chapters/Figures/Covers/1up/templates/DGI/DGI-PT/IMS_Tese2025__curvas_rodape}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% MGT  (só inglês)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% De novo, usar os mesmos índices que nas capas
+% Supondo \imsfront(mgt,en,en):
+
+\imshead(mgt,main,en):={Chapters/Figures/Covers/1up/templates/MGT/MGT-EN/IMS_Tese2025__curvas_olho}
+\imsfoot(mgt,main,en):={Chapters/Figures/Covers/1up/templates/MGT/MGT-EN/IMS_Tese2025__curvas_rodape}
+
+
+
+
+
+% Scientific filed
+% \majorfield(pt):={Gestão de Informação}
+% \majorfield(en):={Information Management}
+
+% Comiittee printing order
+\committeeorder():={c,r,m}%
+
+\openany
+\ntsetup{print/secondcover=true}
+\ntsetup{numberallpages=true}
+\AtEndPreamble{
+  \ifdocworking{}{\ntsetup{print/statement=true}}
+  \ntlangsetup*{pt/acronym=Lista de Siglas e Abreviaturas}
+  \ntlangsetup*{en/acronym=List of Acronyms and Abbreviations}
+}
+
+\ntbibsetup{style=apa}
+\ntsetup{spine/layout=no}
+\AtEndPreamble{\let\cite\parencite}
+
+
+% Cover background images
+%\thesiscover(1-1,bgcolor):={white}
+%\thesiscover(N-2,bgcolor):={white}
+% \thesiscover(phd,1-1,image):={1-phd-front-cover}
+% \thesiscover(phd,2-1,image):={2-phd-front-cover}
+% \thesiscover(phd,N-2,image):={3-back-cover}
+% \thesiscover(phd,spine,image):={3-back-cover}
+
+% \thesiscover(msc,1-1,image):={1-msc-front-cover}
+% \thesiscover(msc,1-2,image):={2-msc-front-cover}
+% \thesiscover(msc,N-2,image):={3-back-cover}
+% \thesiscover(msc,spine,image):={nova-ims-spine}
+% \thesiscover(msc,mmaa,1-1,image):={nova-ims-mmaa-cover}
+% \thesiscover(msc,mgi,1-1,image):={nova-ims-mgi-cover}
+% \thesiscover(msc,megi,1-1,image):={nova-ims-megi-cover}
+% \thesiscover(msc,csig,1-1,image):={nova-ims-csig-cover-debug}
+% \thesiscover(bsc,1-1,image):={nova-ims-front-cover-generic}
+% \thesiscover(bsc,N-2,image):={nova-ims-backcover}
+% \thesiscover(bsc,spine,image):={nova-ims-spine}
+
+% \thesiscover(plain,1-1,image):={nova-ims-front-cover-generic}
+%\thesiscover(msc,1-1,image):={nova-ims-msc-en}
+
+
+
+
+
+
+
+% Rename Doctor degree
+\degreestring(phd,m,en):={Doctor}
+\degreestring(phd,f,en):={Doctor}
+\degreestring(phdplan,m,en):={Doctor}
+\degreestring(phdplan,f,en):={Doctor}
+\degreestring(phdprop,m,en):={Doctor}
+\degreestring(phdprop,f,en):={Doctor}
+
+\degreestring(phd,m,en,x):={PhD}
+\degreestring(phd,f,en,x):={PhD}
+\degreestring(phdplan,m,en,x):={PhD}
+\degreestring(phdplan,f,en,x):={PhD}
+\degreestring(phdprop,m,en,x):={PhD}
+\degreestring(phdprop,f,en,x):={PhD}
+
+\degreestring(phd,m,pt):={Doutor}
+\degreestring(phd,f,pt):={Doutora}
+\degreestring(phdplan,m,pt):={Doutor}
+\degreestring(phdplan,f,pt):={Doutora}
+\degreestring(phdprop,m,pt):={Doutor}
+\degreestring(phdprop,f,pt):={Doutora}
+
+\degreestring(msc,m,en):={Master's}
+\degreestring(msc,f,en):={Master's}
+\degreestring(mscplan,m,en):={Master's}
+\degreestring(mscplan,f,en):={Master's}
+
+\degreestring(msc,m,pt):={Mestre}
+\degreestring(msc,f,pt):={Mestre}
+\degreestring(mscplan,m,pt):={Mestre}
+\degreestring(mscplan,f,pt):={Mestre}
+
+\degreestring(bsc,m,pt):={Licenciado}
+\degreestring(bsc,f,pt):={Licenciada}
+
+\newdata{degreeprefix}
+\degreeprefix(msc,en)={Master's Degree Program in}
+\degreeprefix(msc,pt)={Mestrado em}
+
+%% DARK GREY  112,121,128
+%% LIGHT GREY 200,203,206
+
+% Spine info
+\spine(order):=?{date,title,author,logo}
+\spine(row)={1.745cm}
+
+% \spine(author)={\thedocauthor(name)}
+% \spine(title)={\thedoctitle(\@LANG@COVER,main)}
+% \spine(date)={\thentdocdate(submission,year)}
+\spine(logo)={logo-novaims}
+
+\IfStrEq{\@DEGREEACR}{}{%
+  \spine(degreeacr)={\mbox{ }}%
+}{%
+  \spine(degreeacr)={\thedegreeacr(\@DEGREEACR)}%
+}
+
+\spine(text,angle)={0}
+% \spine(text,color)=black
+% \spine(spine,bg,color)={white}
+\spine(box,inspace)={1mm}
+
+\spine(margin,left)={\thespine(row)}
+\spine(margin,right)={\dimexpr\barheight+1cm+1pt\relax}
+
+\spine(box,title,margin,left)={0.5mm}
+\spine(box,title,margin,right)={0.5mm}
+\spine(box,author,margin,left)={0.5mm}
+\spine(box,author,margin,right)={0.5mm}
+\spine(box,date,margin,left)={0.5mm}
+\spine(box,date,margin,right)={0.5mm}
+
+% \spine(box,bg,color)={yellow}
+
+\spine(box,title,left)={\dimexpr\thespine(row)*3+\thespine(box,inspace)\relax}
+\spine(box,author,left)={\dimexpr\thespine(row)*11+\thespine(box,inspace)\relax}
+
+\spine(box,date,len):={\thespine(row)}
+\spine(box,title,len)={\dimexpr\thespine(row)*7-\thespine(box,inspace)*2\relax}
+\spine(box,author,len)={\dimexpr\thespine(row)*3-\thespine(box,inspace)*2\relax}
+\spine(box,logo,len):={1cm}
+\spine(box,logo,align):={r}
+
+\spine(box,degreeacr,len):={\thespine(row)}
+\spine(box,degreeacr,left):={28cm}
+\spine(box,degreeacr,bg,color)={none}
+\spine(box,degreeacr,text,color):={white}
+
+
+
+
+% Set margins for "normal" pages
+\margin(screen,top):={3.0cm}
+\margin(screen,bottom):={3.0cm}
+\margin(screen,left):={3.25cm}
+\margin(screen,right):={3.25cm}
+\margin(paper,top):={3.0cm}
+\margin(paper,bottom):={3.0cm}
+\margin(paper,left):={3.5cm}
+\margin(paper,right):={3.0cm}
+
+% Set margins for cover pages
+\margin(cover,1-1,top):={15.2cm}
+\margin(cover,1-1,bottom):={3.05cm}
+\margin(cover,1-1,left):={1.5cm}
+\margin(cover,1-1,right):={1.5cm}
+\margin(cover,top):={2.6cm}
+\margin(cover,bottom):={3cm}
+\margin(cover,left):={2.5cm}
+\margin(cover,right):={2.5cm}
+\margin(cover,N-2,bottom):={2.1cm}
+
+\adviserstring(a,1,m,en):={Supervised by}
+\adviserstring(a,1,f,en):={Supervised by}
+\adviserstring(a,2,m,en):={Supervised by}
+\adviserstring(a,2,f,en):={Supervised by}
+\adviserstring(c,1,m,en):={}
+\adviserstring(c,1,f,en):={}
+\adviserstring(c,2,m,en):={}
+\adviserstring(c,2,f,en):={}
+\adviserstring(ca,1,m,en):={}
+\adviserstring(ca,1,f,en):={}
+\adviserstring(ca,2,m,en):={}
+\adviserstring(ca,2,f,en):={}
+
+\adviserstring(a,1,m,pt):={Orientada por}
+\adviserstring(a,1,f,pt):={Orientada por}
+\adviserstring(a,2,m,pt):={Orientada por}
+\adviserstring(a,2,f,pt):={Orientada por}
+\adviserstring(c,1,m,pt):={}
+\adviserstring(c,1,f,pt):={}
+\adviserstring(c,2,m,pt):={}
+\adviserstring(c,2,f,pt):={}
+\adviserstring(ca,1,m,pt):={}
+\adviserstring(ca,1,f,pt):={}
+\adviserstring(ca,2,m,pt):={}
+\adviserstring(ca,2,f,pt):={}
+
+
+\dissertationstring(phd,en)={A thesis submitted in partial fulfilment of the requirements\\for the degree of
+    \thedegreestring(\option{/novathesis/doctype},\expanded{\thedocauthor(gender)},\@LANG@COVER)\ in
+    {\themajorfield(\@DEGREEACR,\@LANG@COVER)}}
+ \dissertationstring(phdprop,en)={A thesis proposal submitted in partial fulfilment of the requirements\\for the degree of
+     \thedegreestring(\option{/novathesis/doctype},\expanded{\thedocauthor(gender)},\@LANG@COVER)\ in
+     {\themajorfield(\@DEGREEACR,\@LANG@COVER)}}
+ \dissertationstring(phdplan,en)={A thesis pan submitted in partial fulfilment of the requirements\\for the degree of
+     \thedegreestring(\option{/novathesis/doctype},\expanded{\thedocauthor(gender)},\@LANG@COVER)\ in
+     {\themajorfield(\@DEGREEACR,\@LANG@COVER)}}
+
+\dissertationstring(phd,pt)={Uma tese apresentada em cumprimento parcial dos requisitos\\para o grau de
+    \thedegreestring(\option{/novathesis/doctype},\expanded{\thedocauthor(gender)},\@LANG@COVER)\ em\\
+    {\themajorfield(\@DEGREEACR,\@LANG@COVER)}}
+ \dissertationstring(phdprop,pt)={Uma proposata de tese apresentada em cumprimento parcial dos requisitos\\para o grau de
+    \thedegreestring(\option{/novathesis/doctype},\expanded{\thedocauthor(gender)},\@LANG@COVER)\ em\\
+    {\themajorfield(\@DEGREEACR,\@LANG@COVER)}}
+ \dissertationstring(phdplan,pt)={Um plano de tese apresentada em cumprimento parcial dos requisitos\\para o grau de
+    \thedegreestring(\option{/novathesis/doctype},\expanded{\thedocauthor(gender)},\@LANG@COVER)\ em\\
+    {\themajorfield(\@DEGREEACR,\@LANG@COVER)}}
+
+\dissertationstring(msc,en)={A dissertation submitted in partial fulfilment of the requirements\\for the degree of
+    \thedegreestring(\option{/novathesis/doctype},\expanded{\thedocauthor(gender)},\@LANG@COVER)\ in
+    {\themajorfield(\@DEGREEACR,\@LANG@COVER)}}
+ \dissertationstring(mscplan,en)={Dissertation plan presented as partial requirement for obtaining the degree of
+     \thedegreestring(\option{/novathesis/doctype},\expanded{\thedocauthor(gender)},\@LANG@COVER)\ in
+     {\themajorfield(\@DEGREEACR,\@LANG@COVER)}}
+ 
+
+\dissertationstring(msc,pt)={Dissertação apresentada como requisito parcial para obtenção do grau de
+    \thedegreestring(\option{/novathesis/doctype},\expanded{\thedocauthor(gender)},\@LANG@COVER)\ em\\
+    {\themajorfield(\@DEGREEACR,\@LANG@COVER)}}
+ \dissertationstring(mscplan,pt)={Plano de dissertação apresentada como requisito parcial para obtenção do grau de
+    \thedegreestring(\option{/novathesis/doctype},\expanded{\thedocauthor(gender)},\@LANG@COVER)\ em\\
+    {\themajorfield(\@DEGREEACR,\@LANG@COVER)}}
+
+\dissertationstring(bsc,en)={Report submitted in partial fulfilment of the requirements\\for the degree of
+    \thedegreestring(\option{/novathesis/doctype},\expanded{\thedocauthor(gender)},\@LANG@COVER)\ in
+    {\themajorfield(\@DEGREEACR,\@LANG@COVER)}}
+
+\dissertationstring(bsc,pt)={Replatório apresentado como requisito parcial para obtenção do grau de
+    \thedegreestring(\option{/novathesis/doctype},\expanded{\thedocauthor(gender)},\@LANG@COVER)\ em\\
+    {\themajorfield(\@DEGREEACR,\@LANG@COVER)}}
+
+
+\newdata{phdmsc}
+\phdmsc(phd,en):={Doctoral thesis}
+\phdmsc(phd,pt):={Tese de doutoramento}
+\phdmsc(msc,en):={Dissertation}
+\phdmsc(msc,pt):={Dissertação}
+
+\newdata{dissertationstringii}
+\dissertationstringii(en)={\thephdmsc(\@DOCTYPE,\@LANG@COVER) presented as partial requirement for obtaining the \thedegreestring(\@DOCTYPE,\expanded{\thedocauthor(gender)},\@LANG@COVER) degree in \themajorfield(\@DEGREEACR,\@LANG@COVER)}
+\dissertationstringii(specialization,en)={\StrLen{\theminorfield(\@LANG@COVER)}[\@xpto]\IfStrEq{\@xpto}{1}{}{, with a specialization in \theminorfield(\@LANG@COVER)}}
+
+\newdata{dissertationstringii}
+\dissertationstringii(pt)={\thephdmsc(\@DOCTYPE,\@LANG@COVER) apresentada como requisito parcial para obtenção do grau de \thedegreestring(\@DOCTYPE,\expanded{\thedocauthor(gender)},\@LANG@COVER) em\\
+\themajorfield(\@DEGREEACR,\@LANG@COVER)}
+\dissertationstringii(specialization,pt)={\StrLen{\theminorfield(\@LANG@COVER)}[\@xpto]\IfStrEq{\@xpto}{1}{}{, com especialização em \theminorfield(\@LANG@COVER)}}
+
+
+\definecolor{imsdarkgrey}{RGB}{100,100,100}
+\definecolor{imsmidgrey}{RGB}{175,175,175}
+\definecolor{imslightgrey}{RGB}{240,240,240}
+
+
+\AtEndPreamble{%
+  \LoadHelveticaLikeFont%
+  % \RequirePackage{gillius2}%
+}
+
+\NTAddToHook{cover/1-1/text/pre}{%
+  \sffamily%
+}
+\NTAddToHook{cover/2-1/text/pre}{%
+  \sffamily%
+}
+\NTAddToHook{cover/N-2/text/pre}{%
+  \sffamily%
+}
+
+\usetikzlibrary{calc}
+
+\def\barheight{2.97cm}
+\def\areaheight{11cm}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Add hook to print the SDG goals with the abstract
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \AddToHook{abstract/\theabstractorder(\@LANG@MAIN)/post}{\fbox{XXXXXXXXXX}\LKJJHLHJKKHHJ}
+\AtEndPreamble{%
+\NTAddToHook{abstract/\@LANG@MAIN/post}{%
+  \newcounter{sdgcnt}%
+  \vfill%
+  \raggedright%
+  \textbf{Sustainable Development Goals (SDG):}\\[1ex]
+  \noindent
+  \optionlistdo{/novathesis/nova/ims/sdg}{%
+    \stepcounter{sdgcnt}%
+    \ifnum\value{sdgcnt}=10\relax\\[2pt]\fi%
+    \includegraphics[width=1.5cm]{sdg-\@LANG@MAIN/sdg-\@LANG@MAIN-#1}\ 
+  }
+}
+\NTAddToHook{spine/pre}{%
+  \begin{tikzpicture}[remember picture, overlay]
+      \fill [color=imsdarkgrey]
+             ($(current page.north east)$)
+             rectangle ($(current page.south east)+(-\barheight,0cm)$);
+      \begin{scope}[]
+        \clip ($(current page.north east)$)
+             rectangle ($(current page.south east)+(-\barheight,0cm)$);
+        \foreach \i in {0, 1, 2, ..., 163} { % Change 10 to the number of lines you want
+            \draw[very thick,imsmidgrey] ($(current page.north east) + (0,-\i*2.4mm)$) -- ++(-\barheight-1mm,\barheight-1mm);
+        }
+      \end{scope}
+  \end{tikzpicture}
+}
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Draw the cover page
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \ntaddtocover[tikz]{1-1}{%
+%   ... (all original content)
+% }
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Draw the cover page (text above the PDF)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% 
+% TITLE (in the blank space)
+\ntaddtocover[halign=l,valign=c,height=1.8cm]{1-1}{%
+  \color{imsdarkgrey}%
+  \fontsize{16.5}{21}\selectfont\bfseries%
+  \THEdoctitle(\@LANG@COVER,main,cover)%
+}
+
+% "by / por"
+\ntaddtocover[halign=c,vspace=3cm]{1-1}{%
+  \fontsize{15}{17.5}\selectfont%
+  \theby(\@LANG@COVER)%
+}
+
+% AUTHOR
+\ntaddtocover[halign=c,vspace=16mm]{1-1}{%
+  \fontsize{12}{12}\selectfont%
+  \thedocauthor(name)%
+}
+
+% SUPERVISOR(S)
+%\ntaddtocover[halign=c,vspace=2cm]{1-1}{%
+ % \fontsize{12}{12}\selectfont%
+  %\adviserstringpre():={}%
+ % \adviserstringpost():={:\\[1.0ex]}%
+  %\adviserremainderpre():={, }%
+ % \adviserremainderfont():={}%
+  %\adviserstringfont():={\bfseries}%
+ % \ntprintpersons{1.0}{1}{adviser}{a}%
+%}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Draw the front page
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\ntaddtocover[halign=c]{2-1}{%
+  \color{imsdarkgrey}%
+  \fontsize{10.3}{15.5}\selectfont%
+  \textbf{\theschool(en)}\\
+  \textbf{\theschool(pt)}\\
+  \fontsize{8.7}{15}\selectfont%
+  \theuniversity(pt)
+}
+
+\ntaddtocover[vspace=5.3cm,halign=c,valign=c,height=1.8cm]{2-1}{%
+  \color{imsdarkgrey}%
+  \fontsize{16.5}{21}\selectfont\bfseries%
+  \THEdoctitle(\@LANG@COVER,main,cover)
+}
+
+
+\ntaddtocover[halign=c,vspace=1cm]{2-1}{%
+  \fontsize{15}{17.5}\selectfont%
+  \theby(\@LANG@COVER)%
+}
+
+
+\ntaddtocover[halign=c,vspace=8mm]{2-1}{%
+  \fontsize{12}{12}\selectfont%
+  \thedocauthor(name)%
+}
+
+
+\ntaddtocover[halign=l,vspace=2.9cm]{2-1}{%
+  \fontsize{11.5}{16}\selectfont%
+  \thedissertationstringii(\@LANG@COVER)%
+  \thedissertationstringii(specialization,\@LANG@COVER)%
+}
+
+\ntaddtocover[vspace=1cm,halign=l]{2-1}{%
+  \fontsize{12}{12}\selectfont%
+  \adviserstringpre():={\hfill}%
+  \adviserstringpost():={:\hfill\null\\[1.5ex]}%
+  \adviserremainderpre():={, }%
+  \adviserremainderfont():={}%
+  \personpre():={}%
+  \persongrouppre():={}%
+  \persongrouppost():={\\[-3ex]}%
+  \adviserstringfont():={\bfseries}%
+  \ntprintpersons{1.0}{1}{adviser}{a}%
+  \adviserstringpre():={}%
+  \adviserstringpost():={}%
+  \ntprintpersons{1.0}{1}{adviser}{c}%
+}
+
+% DATE
+\ntaddtocover[halign=c, vspace=1]{2-1}{%
+  \fontsize{11}{11}\selectfont%
+  \thentdocdate(submission,month,text), \thentdocdate(submission,year)%
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Draw the back cover page
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% REMOVER overlay de desenho na contracapa
+% \ntaddtocover[tikz]{N-2}{%
+%   ... (todo o conteúdo original)
+% }
+\ntaddtocover[tikz]{N-2}{}
+
+% ============================================================
+% PAULO — Associação automática das capas IMS
+% ============================================================
+
+\newcommand{\ims@selectcovers}{%
+  % Só faz isto para MSc
+  \IfStrEq{\@DOCTYPE}{msc}{%
+    % Capa
+    \thesiscover(msc,1-1,image):={%
+      \theimsfront(\imsDegree,\imsSpecialization,\@LANG@COVER)%
+    }%
+    % Contracapa
+    \thesiscover(msc,N-2,image):={%
+      \theimsback(\imsDegree,\imsSpecialization,\@LANG@COVER)%
+    }%
+  }{}%
+}
+
+\AtEndPreamble{\ims@selectcovers}
+
+
+
+%========================================================
+%  Pagestyle IMS – DESATIVADO TEMPORARIAMENTE
+%========================================================
+\newcommand{\ims@pagestyle}{%
+  % Pagestyle IMS desligado (sem cabeçalho/rodapé específicos)
+}
+
+
+% Ativar o pagestyle IMS no fim do preâmbulo
+\AtEndPreamble{\ims@pagestyle}
+
+
+

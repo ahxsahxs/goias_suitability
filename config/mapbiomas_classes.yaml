@@ -1,0 +1,56 @@
+# =============================================================================
+# MapBiomas (Brazil collection) class-code -> segment-role remap   (Part 13)
+# -----------------------------------------------------------------------------
+# Drives the realized-use masks and the potential-vs-realized cross-tab. Codes are
+# the MapBiomas integer legend confirmed against the local collection-10.1 GO clip
+# (data/mapbiomas-lulc/...-area.csv). Used only as MASK + VALIDATION, never as a
+# suitability or clustering input (avoids circularity).
+#
+# At 250 m: reduceResolution -> majority class (mode) AND per-role area fractions.
+# =============================================================================
+
+legend: collection_10_1   # VERIFY matches the GEE asset legend (coll. 9 vs 10/10.1)
+
+# raw class code -> human label (subset present in Goias; for reference/QA)
+names:
+  3:  Forest Formation
+  4:  Savanna Formation
+  9:  Forest Plantation
+  11: Wetland
+  12: Grassland
+  15: Pasture
+  20: Sugar Cane
+  21: Mosaic of Agriculture and Pasture
+  24: Urban Infrastructure
+  25: Other Non Vegetated Area
+  29: Rocky Outcrop
+  30: Mining
+  31: Aquaculture
+  33: River, Lake and Ocean
+  39: Soy Beans
+  40: Rice
+  41: Mosaic of Crops
+  46: Coffee
+  47: Citrus
+  48: Other Perennial Crops
+  62: Cotton
+
+# realized land use per segment (presence = these codes)
+realized:
+  soybean:      [39]
+  sugarcane:    [20]
+  other_crops:  [62, 40, 41]      # cotton, rice, mosaic-of-crops
+  pisciculture: [31]              # aquaculture
+  pasture:      [15, 21]          # pasture + agriculture/pasture mosaic
+  native:       [3, 4, 11, 12, 29]  # forest, savanna, wetland, grassland, rocky
+
+# masks (parallels the Part-7b WorldCover masks, Brazil-specific)
+# never eligible for crop/solar/pond-land:
+excluded:   [24, 30, 25, 33]     # urban, mining, other non-veg, water
+# generic convertible / foreground for crop & solar siting:
+available:  [15, 21, 39, 20, 62, 40, 41, 12]
+
+# extras carried as 250 m fractions for context/profiling (not a segment)
+context:
+  silviculture: [9]
+  perennial:    [46, 47, 48]     # coffee, citrus, other perennial

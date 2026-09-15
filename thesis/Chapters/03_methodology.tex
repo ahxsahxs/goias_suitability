@@ -1,0 +1,309 @@
+\chapter{Metodologia}\label{ch:method}
+
+O método é uma avaliação de terras multicritério na tradição do arcabouço de avaliação de terras da
+FAO (\emph{Framework for Land Evaluation}; Food and Agriculture Organization). Ele é implementado
+nativamente na plataforma de observação da Terra, estendido com um zoneamento não supervisionado e
+uma projeção CMIP6, e concebido para validação contra o uso atual da terra. O trabalho corre em duas
+fases. A \textbf{Fase~A} constrói o atlas de potencial biofísico e a projeção climática apenas a
+partir do catálogo público. A \textbf{Fase~B} integra o uso atual da terra, as unidades municipais e
+um indicador independente de produtividade para o mascaramento, a análise potencial \emph{versus}
+realizado e a validação. A Figura~\ref{fig:metodologia} resume esse fluxo, do catálogo público ao
+atlas de viabilidade final.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.75\textwidth]{Chapters/Figures/diagrama_metodologia.png}
+\caption{Visão geral do fluxo metodológico, do catálogo público do Google Earth Engine ao atlas de viabilidade multissegmento, ao zoneamento agroambiental e ao ranking municipal.}\label{fig:metodologia}
+\end{figure}
+
+\section{Engenharia de atributos --- o conjunto de 34 bandas}\label{sec:feature-eng}
+
+Todas as entradas são harmonizadas para uma grade comum de 250~m no sistema EPSG:4326. Os campos
+climáticos de resolução grossa são reamostrados bilinearmente, enquanto os rasters finos de solo e
+terreno são agregados por média espacial. Seis temas contínuos são concatenados em um único conjunto
+de 34 bandas (Tabela~\ref{tab:stack}). É produzida também uma cópia padronizada do conjunto, em que cada banda $b$ recebe um escore~z com a
+média territorial $\mu_b$ e o desvio padrão $\sigma_b$:
+\[
+  z_b(x) = \frac{x_b - \mu_b}{\sigma_b}.
+\]
+Essa padronização serve ao agrupamento, para que variáveis de unidades díspares contribuam de forma
+comparável para a distância euclidiana.
+
+Um sétimo tema --- a cobertura genérica da terra --- é construído como camada de máscara e de
+contexto e é deliberadamente excluído do conjunto. As fórmulas de derivação por variável
+(agregação climática e graus-dia de crescimento \citep{McMaster1997}, índice de umidade topográfica
+\citep{Beven1979}, regressão harmônica da fenologia \citep{LeVine2019}) estão no Anexo~\ref{anx:derivations}; os temas
+são resumidos abaixo.
+
+\begin{table}[H]
+\centering
+\caption{Composição do conjunto de 34 bandas.}\label{tab:stack}
+\begin{tabular}{@{}lp{10cm}r@{}}
+\toprule
+Tema & Variáveis & Contagem \\
+\midrule
+Clima & Precipitação anual; evapotranspiração potencial anual, evapotranspiração real e déficit
+  hídrico climático; sazonalidade da precipitação; duração da estação seca; precipitação da estação
+  chuvosa; índice de aridez; umidade do solo; déficit de pressão de vapor; radiação solar; graus-dia
+  de crescimento; temperatura média do trimestre mais quente e do mais frio & 14 \\
+Terreno & Elevação; declive; componente norte da orientação; componente leste da orientação; índice
+  de posição topográfica; índice de umidade topográfica & 6 \\
+Solo (0--30~cm) & Argila; areia; carbono orgânico; pH (H$_2$O); densidade aparente; 
+  teor de água disponível para as plantas & 6 \\
+Água & Distância para água permanente; sazonalidade da água de superfície; densidade de drenagem & 3 \\
+Fenologia & NDVI médio; amplitude sazonal; mês de pico; integral anual & 4 \\
+Acessibilidade & Logaritmo do tempo de viagem à cidade mais próxima & 1 \\
+\midrule
+\textbf{Total} & & \textbf{34} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+As variáveis climáticas derivam de uma climatologia mensal de 1991--2020 por uma transformação
+determinística reutilizada sem alteração para o clima futuro do CMIP6 (\S\ref{sec:cmip6}). É essa
+identidade dos caminhos de derivação que torna a mudança projetada um sinal puramente climático.
+
+O terreno vem de um modelo digital de elevação (MDE) de 30~m (com a orientação decomposta em
+componentes norte e leste). O solo é a média do horizonte de 0--30~cm de seis propriedades do
+OpenLandMap \citep{Hengl2026}. A água combina a distância à água permanente \citep{Pekel2016}, a
+sazonalidade e a densidade de drenagem da água de superfície (uma fração de células de canal, com
+faixa empírica $\approx$~0--0,15, que governa seus limiares de pertinência). A fenologia é composta
+por quatro parâmetros harmônicos do ciclo sazonal de NDVI. A acessibilidade é o logaritmo do tempo
+de viagem até a cidade mais próxima.
+
+A cobertura genérica da terra (ESA WorldCover) gera as máscaras de áreas \emph{excluídas} e
+\emph{disponíveis}, além de frações de cobertura por classe para contexto; na Fase~B ela é
+substituída pelo produto de uso da terra específico para a realidade brasileira.
+
+\section{Viabilidade baseada em conhecimento (pertinência fuzzy + AHP)}\label{sec:suitability}
+
+Para cada segmento, a viabilidade é um agregado ponderado de pertinências fuzzy dos fatores. Ela é
+mascarada pela cobertura da terra e classificada nas classes da FAO, seguindo a extensão fuzzy/AHP
+do arcabouço de avaliação de terras da FAO \citep{NisarAhamed2000,YaghmaeianMahabadi2012}. A
+especificação completa por segmento --- fator, peso, forma e limiares --- está na Tabela~\ref{tab:spec-longtable} do Anexo.
+
+\subsection{Padronização da pertinência fuzzy}\label{sec:fuzzy-standard}
+
+O valor $x$ de cada fator é mapeado para uma pertinência $\mu(x) \in [0,1]$ por uma função linear por
+partes, de uma entre três formas \citep{NisarAhamed2000}. A forma \textbf{crescente} (limiar inferior
+$a$, superior $b$) é
+\[
+  \mu(x) = \mathrm{clamp}\!\left(\frac{x-a}{b-a},\, 0,\, 1\right);
+\]
+a forma \textbf{decrescente} é o seu complemento $\mathrm{clamp}((b-x)/(b-a),\, 0,\, 1)$; e a forma
+\textbf{intervalar} (trapezoidal), com $a < b \le c < d$, cresce de $a$ a $b$, satura em 1 no
+intervalo ótimo $[b,c]$ e decresce de $c$ a $d$:
+\[
+  \mu(x) = \mathrm{clamp}\!\left(\min\!\left(\frac{x-a}{b-a},\; 1,\; \frac{d-x}{d-c}\right),\, 0,\, 1\right).
+\]
+
+\subsection{Agregação, mascaramento e classificação}\label{sec:aggregation}
+
+Os seis segmentos de produção e energia combinam suas pertinências por uma \textbf{média geométrica
+ponderada}. Com pesos $w_i \ge 0$ normalizados de modo que $\sum_i w_i = 1$,
+\[
+  S = \exp\!\left(\sum_{i=1}^{n} w_i \ln\!\big(\max(\mu_i,\,\varepsilon)\big)\right),
+   \qquad \varepsilon = 10^{-3}.
+\]
+
+A média geométrica impõe o comportamento de \textbf{fator limitante}: uma única pertinência próxima
+de zero deprime fortemente o agregado --- o que é agronomicamente correto, já que um bom solo não
+compensa a ausência de chuva. O piso $\varepsilon$ mantém um fator plenamente limitante como uma
+penalidade forte, porém finita, em vez de $\ln(0)$; a exclusão dura é delegada ao mascaramento.
+
+\textbf{A conservação é a exceção}: por ser um índice de valor/prioridade, e não uma viabilidade de
+crescimento, ela é agregada pela \textbf{média aritmética ponderada} compensatória
+$S = \sum_i w_i \mu_i$. O valor de conservação decorre da força em \emph{qualquer um} de vários
+critérios parcialmente substituíveis entre si --- conectividade, heterogeneidade de habitat, serviço
+de carbono, serviço de água --- de modo que uma pontuação baixa em um deles não deve vetar os demais.
+
+A viabilidade contínua $S$ é então classificada nas quatro classes da FAO nos limiares $0{,}25$,
+$0{,}50$ e $0{,}75$:
+\[
+  \text{class}(S) = \begin{cases}
+   \mathrm{N}  & S < 0{,}25 \\
+   \mathrm{S3} & 0{,}25 \le S < 0{,}50 \\
+   \mathrm{S2} & 0{,}50 \le S < 0{,}75 \\
+   \mathrm{S1} & S \ge 0{,}75,
+\end{cases}
+\]
+onde $\mathrm{N}$ é \emph{não viável} e $\mathrm{S3}$, $\mathrm{S2}$, $\mathrm{S1}$ são,
+respectivamente, \emph{marginalmente}, \emph{moderadamente} e \emph{altamente viável}.
+
+\subsection{Ponderação AHP e sensibilidade dos pesos}\label{sec:ahp}
+
+Os pesos dos fatores são prioridades do Processo Analítico Hierárquico (AHP; \citealp{Saaty1980}).
+Para um segmento com $n$ fatores, elicita-se uma matriz Saaty de comparação par a par
+$A = [a_{ij}]$ (escala 1--9, $a_{ji} = 1/a_{ij}$). O vetor de prioridades $w$ é o seu autovetor
+principal normalizado. A coerência interna da elicitação é quantificada pela razão de consistência
+\citep{Saaty1980,Frish2025}:
+\[
+  \mathrm{RC} = \frac{\mathrm{IC}}{\mathrm{RI}}, \qquad
+   \mathrm{IC} = \frac{\lambda_{\max} - n}{n - 1},
+\]
+onde $\lambda_{\max}$ é o autovalor principal e $\mathrm{RI}$ é o valor esperado do índice aleatório
+para a ordem $n$. Uma ponderação é aceita quando $\mathrm{RC} \le 0{,}10$. Cada matriz de comparação
+par a par é registrada por completo. Todos os segmentos são folgadamente consistentes: $0{,}002$ é a
+maior razão de consistência entre os sete (Tabela~\ref{tab:ahp-cr} do Anexo). Os pesos se apoiam,
+assim, em uma elicitação auditável e internamente coerente, e não em mera afirmação.
+
+Como os pesos são subjetivos, sua influência é adicionalmente limitada por uma perturbação de
+$\pm 20\%$, um peso de cada vez: cada peso é ampliado e reduzido em 20\% (com renormalização), e a
+amplitude $S_{\max} - S_{\min}$ da viabilidade resultante é relatada como banda de robustez por
+segmento --- o acompanhante de incerteza de cada superfície do presente.
+
+\section{Zoneamento não supervisionado}\label{sec:zoning}
+
+GO~e~DF são particionados em zonas agroambientais por agrupamento k-means sobre uma representação
+\textbf{descorrelacionada} do conjunto padronizado. Agrupar as 34 bandas brutas resolve apenas três
+zonas de baixa expressividade: o território é climaticamente quase uniforme, e as quatorze bandas
+climáticas colineares dominam a geometria euclidiana e puxam a partição para o gradiente climático
+fraco. Três passos descorrelacionam a entrada antes do agrupamento:
+
+\begin{enumerate}
+  \item do conjunto padronizado de 34 bandas $\rightarrow$ um subconjunto curado de 15 bandas
+    (descartando bandas colineares ou quase constantes);
+  \item o subconjunto curado $\rightarrow$ ponderação por bloco temático
+    ($1/\sqrt{\text{bandas no tema}}$);
+  \item o subconjunto ponderado $\rightarrow$ PCA (retendo $\geq$~90\% da variância) $\rightarrow$
+    k-means fora da plataforma (silhueta $+$ Davies--Bouldin $+$ \emph{gap} $\rightarrow k$)
+    $\rightarrow$ classificação pelo centroide mais próximo no espaço de componentes principais
+    $\rightarrow$ mapa de zonas.
+\end{enumerate}
+
+O \textbf{subconjunto curado de 15 bandas} remove bandas quase duplicadas --- mantendo a aridez em vez
+do par precipitação/evapotranspiração, um índice térmico, e a argila em vez do par
+areia/densidade aparente --- além das bandas quase constantes. A \textbf{ponderação por bloco temático}
+divide cada banda por $\sqrt{\text{bandas no seu tema}}$, para que a influência de um tema não escale
+com o número de bandas. E a \textbf{PCA} rotaciona o subconjunto ponderado para seus eixos principais,
+retendo o menor número de componentes que expliquem $\geq$~90\% da variância.
+
+O subespaço ajustado e a partição k-means de uma representação descorrelacionada coincidem; essa é a
+base teórica para agrupar no espaço de componentes principais em vez de sobre o conjunto bruto
+\citep{Ding2004}. O k-means, ajustado nesse espaço, busca a partição que minimiza a soma intragrupo
+dos quadrados das distâncias aos centroides $c_k$:
+\[
+  \min_{\{C_k\}} \sum_{k=1}^{K} \sum_{x \in C_k} \lVert x - c_k \rVert^2.
+\]
+
+O número de zonas é selecionado em $k = 2,\dots,10$ pela silhueta média \citep{Rousseeuw1987}, pelo
+índice de Davies--Bouldin \citep{Davies1979} e pela estatística de \emph{gap} em conjunto
+\citep{Ikotun2025}, que indicam $k = 7$.
+
+\textbf{Estimação.} O agrupamento é estimado fora da plataforma sobre uma amostra estratificada de
+$\approx$~15.000 células; o raster completo é então projetado nos eixos da PCA por aritmética de
+bandas e classificado no servidor pelo centroide mais próximo.
+
+\textbf{Caracterização das zonas.} Para cada zona calculam-se a média de cada atributo, a viabilidade
+média de cada segmento e a composição do uso atual da terra. As zonas são rotuladas pelo
+\textbf{melhor segmento comparativo}: o \emph{argmax}, entre os segmentos, da viabilidade de cada
+segmento normalizada (escore~z) sobre o território, de modo que segmentos de permissividades
+diferentes se comparem em base comum. Apenas os atributos biofísicos orientam o agrupamento; a
+viabilidade e o uso atual da terra acompanham a amostra somente para a caracterização.
+
+\section{Projeção CMIP6 por fatores de mudança}\label{sec:cmip6}
+
+A projeção utiliza o método dos fatores de mudança (\emph{delta-change}) \citep{RamirezVillegas2010},
+robusto a viés sistemático porque as mudanças de um modelo relativas à sua própria linha de base ---
+e não os valores absolutos do modelo --- são aplicadas a uma normal climática observada. Essa
+robustez ao viés, e seu compromisso frente à redução estatística de escala, é documentada
+empiricamente para bacias montanhosas por \citet{Hay2000}.
+
+A projeção é estruturada em quatro etapas. Primeiro, parte-se dos dados de projeções climáticas em
+escala reduzida do conjunto NASA NEX-GDDP-CMIP6, baseados nos modelos climáticos globais do CMIP6 e
+combinando cinco modelos de circulação geral (GCMs), dois cenários socioeconômicos compartilhados
+(SSPs) e duas janelas temporais. A partir desses dados, calculam-se fatores mensais de mudança, com a
+precipitação expressa como uma razão e a temperatura como uma diferença aditiva. Em seguida, obtêm-se
+os fatores médios do conjunto de modelos, que são aplicados à climatologia mensal observada de 1991 a
+2020 para gerar o clima mensal futuro --- incluindo a evapotranspiração potencial (ETP), calculada por
+meio de uma razão de Hargreaves.
+
+Essa estimativa do clima futuro é então processada pelo mesmo mecanismo de derivação e de pertinência
+utilizado para o presente, produzindo a viabilidade futura. Da comparação entre essa viabilidade
+futura e a atual resulta a variação projetada, $\Delta S$. Por fim, o sinal de mudança de cada modelo
+individual também é utilizado para compor uma superfície de concordância entre os modelos do
+conjunto.
+
+\textbf{Fatores de mudança.} Para cada um dos $G = 5$ GCMs do conjunto NEX-GDDP-CMIP6
+\citep{Thrasher2022}, computa-se para o mês $m$ o fator de mudança (multiplicativo no caso de
+precipitação, aditivo no caso de temperatura) relativo à base histórica do próprio modelo, promediado
+então entre os modelos:
+\[
+  f^{P}_m = \frac{1}{G}\sum_{g=1}^{G} \frac{\overline{P}^{\,\text{fut}}_{g,m}}
+                                              {\overline{P}^{\,\text{hist}}_{g,m}},
+   \qquad
+   \Delta T_m = \frac{1}{G}\sum_{g=1}^{G}
+     \left(\overline{T}^{\,\text{fut}}_{g,m} - \overline{T}^{\,\text{hist}}_{g,m}\right).
+\]
+
+\textbf{Aplicação.} Os fatores são aplicados à normal climatológica mensal de 1991 a 2020,
+$P^{\text{fut}}_m = P^{\text{obs}}_m \cdot f^{P}_m$ e
+$T^{\text{fut}}_m = T^{\text{obs}}_m + \Delta T_m$. A ETP é escalada por uma razão de Hargreaves
+\citep{Hargreaves1985,Hargreaves2003}: como
+$\mathrm{ETP} \propto R_a\,(T_{\text{méd}} + 17{,}8)\sqrt{T_{\max} - T_{\min}}$, na razão entre ETP
+futura e histórica a radiação extraterrestre $R_a$ e os termos constantes se anulam, dependendo
+apenas da temperatura média. A aridez resulta, então, da precipitação e da ETP futuras.
+
+Duas variáveis são mantidas no valor histórico: radiação solar (fora do conjunto
+precipitação/temperatura) e umidade do solo (exigiria um balanço hídrico completo). Essas ressalvas
+afetam principalmente os segmentos de geração fotovoltaica e pecuária.
+
+\textbf{Viabilidade futura e mudança.} Os atributos futuros passam pela \emph{mesma} derivação
+climática e pelas \emph{mesmas} regras de pertinência da \S\ref{sec:suitability} (terreno, solo, água, fenologia e
+acessibilidade são mantidos estáticos; apenas as variáveis climáticas mudam). A mudança projetada é
+\[
+  \Delta S = S^{\text{fut}} - S^{\text{presente}};
+\]
+dela derivam-se matrizes de transição entre classes de viabilidade, áreas ganhas ou perdidas por
+segmento e realocação de áreas entre segmentos.
+
+\textbf{Incerteza e verificação.} Uma superfície de concordância relata, por célula e por segmento, a
+fração de GCMs cujo sinal de mudança coincide com o sinal da média,
+\[
+  A = \frac{1}{G}\sum_{g=1}^{G}
+   \mathbb{1}\!\left[\operatorname{sign}(\Delta S_g) = \operatorname{sign}(\overline{\Delta S})\right],
+\]
+com $A > 0{,}5$ indicando a concordância da maioria.
+
+\section{Uso atual da terra e validação (Fase B)}\label{sec:phaseb}
+
+A Fase~B fundamenta o atlas frente ao uso atual da terra e a um indicador indireto (\emph{proxy}) de
+produtividade (NPP do MODIS), respondendo a QP2 e validando QP1.
+
+A agregação municipal constitui o primeiro eixo: os municípios agregam, por redução zonal, a
+viabilidade atual, o mapa de zonas e as mudanças projetadas. Em seguida, o uso atual da terra é
+reduzido a uma classe majoritária na grade de 250~m, com frações por função de uso da terra;
+máscaras de lavoura, pastagem e vegetação nativa são obtidas do MapBiomas, com fidelidade
+específica para o Brasil, e reaplicadas às superfícies de viabilidade. O cruzamento entre as classes
+da FAO e o uso atual produz, por município, mapas de subutilização e estatísticas de descompasso ---
+o núcleo empírico da resposta a QP2. Em paralelo, a composição do uso atual é caracterizada em
+relação às zonas produtivas, de forma estritamente descritiva.
+
+A validação reúne frentes complementares. Uma média plurianual do \emph{proxy} de NPP (produtividade
+primária líquida) anual do MODIS \citep{Zhao2005}, restrita a lavoura e pastagem, é comparada à
+viabilidade média municipal pelo coeficiente $\rho$ de Spearman. A presença de lavouras é avaliada
+frente à superfície de viabilidade pelo índice contínuo de Boyce \citep{Hirzel2006} e pela área sob
+a curva ROC (AUC). E uma ANOVA de um fator do \emph{proxy} entre zonas testa se as zonas capturam a
+estrutura de produtividade do território.
+
+Como o NPP anual é confundido pela cobertura da terra --- biomassa densa em pé tende a superar a
+lavoura em pousio, gerando uma correlação negativa espúria entre viabilidade agrícola e NPP ---,
+conduz-se um segundo teste: a GPP (produtividade primária bruta) da estação de crescimento,
+integrada na janela de outubro a março, é calculada exclusivamente sobre os pixels efetivamente
+cultivados de cada cultura e correlacionada com a viabilidade dessa mesma cultura. Por ser feita
+dentro da própria cultura, essa comparação remove tanto a confusão entre coberturas distintas quanto
+o efeito do pousio seco.
+
+Por fim, uma verificação cruzada orientada por dados usa um classificador de floresta aleatória
+treinado em modo probabilístico sobre pontos de presença e de fundo, ao longo do conjunto
+padronizado de atributos \citep{Valavi2021}; a superfície resultante, construída inteiramente a
+partir dos dados, é comparada à superfície baseada em conhecimento pelo $\kappa$ de Cohen
+\citep{Cohen1960}. Concordância reforça a confiança no modelo; discordâncias são reportadas como
+achados de discussão.
+
+Duas ressalvas são registradas. Os \emph{proxies} MODIS medem a produtividade primária da vegetação,
+não o rendimento agronômico, e confundem cultivo duplo com manejo, configurando um substituto
+grosseiro. Além disso, a integral de NDVI já presente no conjunto de bandas não pode servir de
+validador, pois é ela própria uma variável de entrada da viabilidade; por isso recorre-se a um
+produto distinto, o MOD17, ainda que subsista uma ressalva residual de sinal compartilhado entre as
+duas fontes.

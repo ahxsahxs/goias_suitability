@@ -1,0 +1,150 @@
+\chapter{Introdução}\label{ch:intro}
+
+\section{Contexto e motivação}
+
+Goiás e o Distrito Federal (daqui em diante GO~e~DF) constituem uma das fronteiras agrícolas mais dinâmicas do Brasil:
+aproximadamente 340.000~km\textsuperscript{2} situados inteiramente no Cerrado, uma savana seca tropical
+que fornece grande parte da produção nacional de soja, milho, cana-de-açúcar e carne bovina. A região incorpora
+o desafio central do planejamento produtivo dos trópicos: a pressão para expandir e intensificar a produção,
+contraposta à necessidade de preservar a vegetação nativa, os corpos d'água e os serviços ecossistêmicos
+dos quais essa produção depende \citep{Spera2017,Gomes2019}.
+
+O uso do território é alocado parcela a parcela, em geral mais motivado pelo preço das commodities e
+inércia histórica do que por uma avaliação sistemática e geográfica da capacidade biofísica. 
+Ainda assim essa capacidade --- que se manifesta na forma do regime de chuvas, ciclo da água, composição dos solos,
+acessibilidade e dinâmicas vegetacionais --- varia continuamente e restringe o que cada lugar pode
+suportar de forma sustentável. Duas outras pressões incidem sobre um método de decisão espacial. Primeiro,
+parcelas consideráveis do território estão possivelmente mal alocadas: subutilizadas em relação
+a suas capacidades, ou destinadas a uma finalidade que o ambiente local
+não sustenta de forma ótima \citep{Schneider2022}. Em segundo lugar, mudanças climáticas estão alterando
+a configuração regional, de modo que a viabilidade estabelecida sob o clima de hoje pode contrair ou
+migrar até meados do século, de forma desigual entre municípios e segmentos de uso da terra \citep{Marengo2022}.
+
+Esta dissertação trata destas questões através do desenvolvimento de um mapa de viabilidade agrícola
+e uma projeção climática para GO~e~DF. Com uma resolução de 250~m, é mapeado o potencial biofísico e climático
+das células de uma grade para sete segmentos de uso da terra, particionando o terreno em zonas agroambientais
+homogêneas e projetando como o potencial produtivo muda nas próximas décadas sob os cenários do CMIP6.
+CMIP6 (\textit{Sixth Coupled Model Intercomparison Project}) é o conjunto coordenado de experimentos com
+modelos climáticos globais que fundamenta as avaliações do IPCC (Painel Intergovernamental sobre Mudança do
+Clima). Os cenários SSP (\textit{Shared Socioeconomic Pathways}) combinam trajetórias socioeconômicas com
+trajetórias de emissões; adotam-se aqui um cenário moderado (SSP2-4.5) e um cenário de altas emissões
+(SSP5-8.5). Os sete segmentos escolhidos são: soja, cana-de-açúcar, outras culturas anuais (milho,
+algodão, sorgo), piscicultura (aquicultura de tanques e reservatórios), pecuária (gado de corte em pastagem
+cultivada), conservação de floresta e Cerrado, e geração fotovoltaica. Deste modo, o trabalho apresenta
+genuinamente uma análise comparativa multissegmentar, e não um estudo de nicho focado em uma única
+\emph{commodity}.
+
+\section{Definição do problema e da abordagem}
+
+Trabalhos já existentes de zoneamento agroclimático do Brasil --- de forma mais proeminente o
+\emph{Zoneamento Agrícola de Risco Climático (ZARC)} --- são referência consolidada, mas tipicamente
+tratam de uma única cultura, organizam-se em torno de limiares de risco e não são concebidos como modelos
+espaciais abertos e reexecutáveis. Já a modelagem puramente orientada a dados é poderosa, porém intensiva
+em dados e computação e sujeita a circularidade quando o uso da terra é previsto a partir do próprio uso da
+terra. Resta, portanto, espaço para uma abordagem que seja ao mesmo tempo: (i) \textbf{multissegmentar e
+comparativa}, tratando agricultura, pecuária, aquicultura, energia e conservação em base comum;
+(ii) \textbf{interpretável e baseada em conhecimento}, fundamentada nos requisitos agronômicos publicados
+de cada segmento, e não em um estimador opaco; (iii) \textbf{voltada ao futuro}, projetando a viabilidade
+sob mudança climática com incerteza explícita; e (iv) \textbf{reprodutível a custo marginal desprezível}.
+
+
+O enquadramento é deliberadamente restrito. O modelo caracteriza o potencial biofísico e agroclimático
+mais uma representação da acessibilidade de mercado: ele não representa toda a economia do uso da terra,
+que envolve preços, posse da terra, acesso a crédito e logística além do tempo de viagem. O ``potencial''
+é fundamentado, e não simplesmente postulado: é validado contra o uso atual da terra e um indicador
+independente de produtividade, e toda superfície primária é acompanhada de uma medida quantificada de
+incerteza.
+
+\section{Questões de pesquisa}
+
+O trabalho é organizado ao redor de três questões de pesquisa --- as duas primeiras sendo primárias e
+a terceira uma extensão voltada ao futuro.
+
+\begin{itemize}
+  \item \textbf{QP1 --- Viabilidade e segmentação.} Como GO~e~DF podem ser particionados em regiões
+    agroambientais homogêneas, e qual é o perfil de potencial produtivo através dos sete segmentos?
+  \item \textbf{QP2 --- Potencial versus uso atual.} Onde o uso atual da terra e um indicador independente
+    de produtividade divergem do potencial modelado? Isto é, onde a terra está sendo subutilizada ou seu
+    uso não corresponde ao segmento de melhor ajuste?
+  \item \textbf{QP3 --- Projeção.} Sob CMIP6 SSP2-4.5 e SSP5-8.5, como a viabilidade por segmento
+    e o mapa de zonas mudam ao longo de 2031--2050 e 2051--2070 --- quais segmentos e municípios
+    ganham ou perdem, e onde ocorre realocação entre segmentos?
+\end{itemize}
+
+\section{Prévia dos resultados}
+
+A análise cobre as três questões. \textbf{QP1:} um agrupamento não supervisionado separa
+GO~e~DF em sete zonas agroambientais que abrangem cinco vocações comparativas --- dois planaltos
+de cultivo, um planalto de pecuária, duas planícies quentes com vocação fotovoltaica, uma baixada
+ripária com vocação para aquicultura e um planalto alto e íngreme, com alta concentração de carbono,
+cujo melhor uso é a conservação.
+
+\textbf{QP2:} as zonas, construídas apenas com variáveis biofísicas, reproduzem a geografia observada
+do território sem nunca usar a cobertura da terra como entrada. A vegetação nativa alcança 78\% do
+planalto de conservação. As lavouras, por sua vez, ocupam terras sistematicamente mais viáveis do que a
+média territorial (a viabilidade média da soja é 0,93 nos pixels efetivamente cultivados, contra 0,77 em
+toda a área apta ao cultivo). Persiste um hiato relevante entre potencial e uso atual: cerca de 48\% do
+território é viável para soja mas ainda não cultivado com ela, majoritariamente sobre pastagem. Isso
+aponta para intensificação, e não para abertura de novas áreas --- um achado consistente com o padrão de
+conversão de pastagem em lavoura já documentado nacionalmente \citep{Caballero2023}. \textbf{QP3:} a
+mudança em direção a meados do século é modesta em magnitude, mas direcionalmente robusta em todo o
+conjunto de modelos (concordância entre modelos $\geq$ 0,92). Três segmentos estão expostos: a
+conservação mais do que os demais, com sua área viável (classes S1--S2) caindo para menos da metade no
+cenário mais quente; seguida do grupo milho--algodão--sorgo e da geração fotovoltaica. As áreas com
+vocação primária para soja e cana-de-açúcar permanecem essencialmente inalteradas.
+
+%%% \section{Objectives and contributions}
+
+%%% The general objective is to construct and partially validate an open, cloud-native, multi-segment
+%%% suitability atlas and climate-projected zoning of GO~e~DF. The specific contributions are:
+
+%%% \begin{enumerate}
+%%%   \item An open multi-segment suitability atlas and agro-market zoning of GO~e~DF at 250~m, spanning
+%%%     seven segments on a common methodological footing.
+%%%   \item A knowledge-based (FAO / analytic hierarchy process) versus data-driven (random forest)
+%%%     suitability cross-comparison that identifies where expert rules and the realized niche agree and
+%%%     diverge.
+%%%   \item A delta-change CMIP6 projection of suitability shifts, with ensemble-agreement confidence
+%%%     surfaces and a municipal opportunity / vulnerability ranking.
+%%%   \item A reproducible evaluation procedure, transferable to other Cerrado states, released as open,
+%%%     version-controlled code and declared parameters, so the workflow is auditable and re-executable
+%%%     at negligible marginal cost.
+%%% \end{enumerate}
+
+%%% A consistent methodological discipline supports these: a single leak-free climate normal (1991--2020)
+%%% as the projection baseline; an explicit baseline against which improvement is measured (current land
+%%% use is not assumed equal to potential); uncertainty reported quantitatively (weight sensitivity for
+%%% the present, ensemble spread for the future); and no claim of predictive skill beyond what the
+%%% validation supports.
+
+\section{Escopo e delimitação}
+
+O estudo é delimitado da seguinte forma, e estes limites são restrições declaradas, em vez de pressupostos ocultos.
+
+\begin{itemize}
+  \item \textbf{Espacial.} Goiás e Distrito Federal apenas; a análise é feita em uma grade de 250~m no sistema EPSG:4326.
+  \item \textbf{Temática.} Sete segmentos produtivos, com o potencial expresso por indicadores biofísicos, 
+    agroclimáticos e de acessibilidade ao mercado; não é uma análise econômica do uso da terra.
+  \item \textbf{Temporal.} Normal climatológica atual cobrindo 1991--2020; janelas futuras do CMIP6 para 2031--2050
+    e 2051--2070 sob os cenários SSP2-4.5 e SSP5-8.5.
+  \item \textbf{Dados.} Exclusivamente produtos públicos de satélite, reanálise e projeção climática.
+    O uso atual da terra e o indicador de produtividade nunca entram como parâmetro do modelo, para
+    evitar circularidade.
+\end{itemize}
+
+\section{Estrutura da dissertação}
+
+A dissertação segue a ordem Introdução $\rightarrow$ Materiais $\rightarrow$ Metodologia $\rightarrow$
+Resultados $\rightarrow$ Discussão \& Conclusão, com o capítulo de Metodologia definindo QP1/QP2/QP3,
+que por sua vez são respondidas no capítulo de Resultados.
+
+\textbf{Capítulo~\ref{ch:materials} (Materiais)} descreve a área de estudo, os sete segmentos, a
+plataforma de computação e o inventário de dados. \textbf{Capítulo~\ref{ch:method} (Metodologia)}
+formaliza o procedimento: as 34 bandas preditoras a 250~m, a análise de viabilidade baseada em
+conhecimento (fuzzy/AHP), o zoneamento não supervisionado, a projeção CMIP6 por fatores de mudança e o
+delineamento de validação, cada qual com suas equações governantes.
+\textbf{Capítulo~\ref{ch:results} (Resultados)} apresenta as superfícies de viabilidade atuais, o
+zoneamento, a mudança projetada pelo clima e a validação pelo uso atual da terra.
+\textbf{Capítulo~\ref{ch:discussion} (Discussão e Conclusão)} interpreta os resultados, expõe as
+contribuições e limitações e indica a direção de trabalhos futuros. Tabelas de referência, fórmulas de
+derivação dos preditores e figuras de diagnóstico são compiladas nos \textbf{Anexos}.

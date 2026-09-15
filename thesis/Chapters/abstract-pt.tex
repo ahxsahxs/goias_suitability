@@ -1,0 +1,31 @@
+Goiás e o Distrito Federal (\textasciitilde340.000~km\textsuperscript{2} do bioma Cerrado)
+concentram a tensão central do planejamento do uso da terra nos trópicos: expandir e intensificar
+a produção sem comprometer os ecossistemas e os recursos hídricos dos quais ela depende. Esta
+dissertação constrói, para GO~e~DF a 250~m, um \textbf{atlas aberto de viabilidade agrícola
+multissegmento com zoneamento e projeção climática}, abrangendo sete segmentos de uso da terra:
+soja, cana-de-açúcar, outras culturas anuais, piscicultura, pecuária, conservação de
+floresta/Cerrado e geração fotovoltaica. A viabilidade atual resulta de uma avaliação multicritério
+nos moldes da FAO (pertinência fuzzy e pesos AHP). O zoneamento agroambiental vem de um agrupamento
+k-means não supervisionado sobre uma representação descorrelacionada das variáveis. E a projeção
+para meados do século aplica o método dos fatores de mudança a um conjunto de cinco modelos
+CMIP6. Todo o processamento é executado no lado do servidor, no Google Earth Engine, \textbf{sem
+upload de dados externos}, com validação contra o uso atual da terra (MapBiomas) e um indicador de
+produtividade (MODIS MOD17). Os resultados respondem às três questões de pesquisa: superfícies de
+viabilidade atual para os sete segmentos e uma partição em \textbf{sete zonas} com vocações
+comparativas distintas, entre elas um planalto alto cuja melhor vocação é a conservação. As zonas,
+construídas apenas com variáveis biofísicas, reproduzem a geografia observada do uso da terra sem
+usar a cobertura como insumo (AUC da soja de 0,83). Elas também revelam um hiato relevante entre
+viabilidade potencial e uso atual, sobretudo em pastagens, apontando para intensificação --- não
+expansão sobre vegetação nativa --- como direção mais provável de mudança do uso da terra na
+região. A mudança climática de meados do século
+é modesta,
+porém direcionalmente robusta (concordância entre modelos $\geq$ 0,92): atinge sobretudo a
+conservação e, em menor grau, o grupo milho/algodão/sorgo e a geração fotovoltaica, enquanto os
+planaltos nobres de soja e cana permanecem essencialmente estáveis. O método roda inteiramente na
+nuvem a partir de dados públicos, sem upload, o que o torna reprodutível a custo marginal baixo
+para outros estados do Cerrado.
+
+\vspace{1em}
+\noindent\textbf{Palavras-chave:} viabilidade agrícola de terras; avaliação de terras (FAO);
+processo analítico hierárquico (AHP); zoneamento agroambiental; Cerrado; Google Earth Engine;
+projeção climática CMIP6; análise multicritério de decisão.

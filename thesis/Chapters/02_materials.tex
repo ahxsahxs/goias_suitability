@@ -1,0 +1,124 @@
+\chapter{Materiais}\label{ch:materials}
+
+Este capítulo descreve a área de estudo, os sete segmentos de uso da terra, a plataforma de computação
+e o inventário de dados. As tabelas completas de fontes de dados estão no Anexo~\ref{anx:data}.
+
+\section{Área de estudo}
+
+A área de interesse é o estado de Goiás em conjunto com o Distrito Federal (GO~e~DF)
+na região Centro-Oeste do Brasil, cerca de 340.000~km\textsuperscript{2} situados
+inteiramente no bioma Cerrado. O Cerrado é uma savana tropical com clima fortemente sazonal
+(verão úmido e inverno seco), além de solos profundos, intemperizados, naturalmente ácidos e
+de baixa fertilidade (predominantemente Latossolos, ou \emph{Ferralsols}/\emph{Oxisols}) que, no
+entanto, podem se tornar altamente produtivos uma vez feita a calagem e a correção de micronutrientes
+\citep{Yamada2005}. Nas últimas décadas, o bioma tornou-se um dos principais territórios de grãos,
+fibra e pecuária do Brasil --- precisamente o que torna a questão do potencial \emph{versus} uso
+atual (QP2) consequente aqui.
+
+A geometria da área de interesse é derivada de um produto global de limites administrativos, restrito
+a GO~e~DF e dissolvido em um polígono único que se estende aproximadamente da longitude $-53{,}25^\circ$
+a $-45{,}90^\circ$ e da latitude $-19{,}50^\circ$ a $-12{,}39^\circ$. Para a fase de uso atual da terra,
+as unidades municipais são obtidas do segundo nível administrativo do mesmo produto.
+
+\section{Os sete segmentos de uso da terra}
+
+O atlas avalia sete segmentos, escolhidos de forma a cobrir alimento, fibra, proteína animal, energia e
+conservação, de modo que a análise possa expressar genuínas compensações (\emph{trade-offs}) entre segmentos.
+
+\begin{table}[H]
+\centering
+\caption{Os sete segmentos de uso da terra.}\label{tab:segments}
+\begin{tabular}{@{}clp{9.5cm}@{}}
+\toprule
+\# & Segmento & Definição / escopo \\
+\midrule
+1 & \textbf{Soja} & Soja mecanizada de sequeiro --- a principal cultura comercial da região,
+  cuja adaptação agroclimática ao Cerrado está bem caracterizada \citep{Corbellini2024} e que, por si só,
+  já se altera sob as projeções de mudança climática \citep{deSouza2026}. \\
+2 & \textbf{Cana-de-açúcar} & Cana-de-açúcar mecanizada para açúcar e etanol, com janela de maturação
+  seca, seguindo os limiares de temperatura e precipitação estabelecidos para o zoneamento climático da
+  cultura no Brasil \citep{Aparecido2021}. \\
+3 & \textbf{Outras culturas anuais} & Milho, algodão e sorgo, incluindo a safrinha (segunda-safra). \\
+4 & \textbf{Piscicultura} & Aquicultura em tanques (açudes) e reservatórios (espécies de água quente,
+  como a tilápia), seguindo critérios de viabilidade local (temperatura da água, textura do solo,
+  declive, acesso à água) estabelecidos para aquicultura em viveiros em outras regiões
+  \citep{Ssegane2012,Assefa2018}. \\
+5 & \textbf{Pecuária} & Gado de corte em pastagem cultivada, que cobre cerca de 28\% do bioma Cerrado
+  e abrange um amplo espectro de estados de intensificação e degradação \citep{Vieira2021,Molossi2020}. \\
+6 & \textbf{Conservação} & Conservação de floresta e Cerrado --- valor de serviços da vegetação nativa,
+  da água e da biodiversidade, ecoando as compensações entre prioridade de restauração e aptidão agrícola
+  mapeadas para o bioma \citep{Schuler2022}. \\
+7 & \textbf{Geração fotovoltaica} & Geração fotovoltaica em escala de concessionária, com escolha de
+  sítio por irradiância, declive, cobertura da terra e acessibilidade, seguindo critérios de seleção de
+  local estabelecidos na literatura para usinas fotovoltaicas \citep{Rane2024}. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Plataforma de computação e filosofia de custo}
+
+A análise é executada inteiramente no lado do servidor em uma plataforma de observação da Terra na nuvem
+(Google Earth Engine), em seu nível gratuito não comercial para pesquisa \citep{Gorelick2017}.
+O objetivo desta abordagem é a reprodutibilidade com custo marginal baixo: sem \emph{hardware}
+dedicado e sem armazenamento local de imagens de satélite. A máquina local é utilizada apenas para
+desenho de gráficos, junção de tabelas e operações simples. Os produtos intermediários são
+armazenados na plataforma como imagens raster persistentes, para que etapas subsequentes não
+recalculem os grafos anteriores. O processamento permanece dentro da cota de uso, limitando as
+amostras de agrupamento e classificação à ordem de $10^5$ pontos.
+
+\begin{table}[H]
+\centering
+\caption{Matriz de análise e períodos de referência.}\label{tab:grid-periods}
+\begin{tabular}{@{}p{3.4cm}p{3.6cm}p{6cm}@{}}
+\toprule
+Convenção & Valor & Justificativa \\
+\midrule
+Resolução de análise & 250~m & Corresponde à grade de vegetação do MODIS; situa-se entre a resolução fina de solo/terreno e a grossa do clima. \\
+Sistema de referência de coordenadas & EPSG:4326 (geográfico) & A área das células vem da função planimétrica de área de pixel, nunca de um campo armazenado. \\
+Normal climatológica & 1991--2020 (padrão da OMM) & Referência única para os deltas de mudança climática. \\
+Registro da vegetação & 2001--2020 & Fenologia e indicador de produtividade. \\
+Janelas futuras & 2031--2050; 2051--2070 & Duas janelas de projeção. \\
+Cenários futuros & SSP2-4.5; SSP5-8.5 & Cenários de emissão moderada e alta. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Fontes de dados}
+
+Todos os conjuntos de dados vêm do catálogo público da própria plataforma, acessados na resolução nativa e
+convertidos para unidades físicas quando as bandas vêm empacotadas como inteiros. As variáveis
+\textbf{biofísicas e agroclimáticas} (Tabela~\ref{tab:src-biophys} do Anexo) cobrem clima e regime de água
+(TerraClimate, \citealp{Abatzoglou2018}, com CHIRPS, \citealp{Funk2026}, e WorldClim como suplementos),
+terreno (SRTM) e hidrografia (HydroSHEDS). Cobrem também solos (OpenLandMap, 0--30~cm, \citealp{Hengl2026}),
+água superficial (JRC Global Surface Water, \citealp{Pekel2016}), fenologia (MODIS NDVI) e acessibilidade
+ao mercado (Global Accessibility to Cities). Completam o conjunto a cobertura genérica da terra (ESA
+WorldCover), as áreas protegidas (WDPA), o carbono de biomassa acima do solo (Spawn \emph{et al.}) e o
+clima futuro (NASA NEX-GDDP-CMIP6, \citealp{Thrasher2022}).
+As entradas de \textbf{uso atual e validação} (Tabela~\ref{tab:src-realized} do Anexo) são as unidades municipais de segundo
+nível do GAUL, as classificações anuais de uso da terra do MapBiomas \citep{Souza2020} e os produtos de
+produtividade NPP/GPP do MODIS MOD17 \citep{Zhao2005}. O uso atual da terra e o indicador de produtividade
+servem estritamente para mascaramento, validação e caracterização descritiva; nunca entram no cálculo da
+viabilidade ou do agrupamento.
+
+\section{Cenários futuros do clima (CMIP6)}
+
+A projeção usa o conjunto NEX-GDDP-CMIP6 da NASA, de resolução temporal diária, em particular os campos de
+precipitação e de temperatura máxima e mínima do ar próximo à superfície. Um conjunto de cinco modelos ---
+ACCESS-CM2, EC-Earth3, GFDL-ESM4, MPI-ESM1-2-HR e MRI-ESM2-0 --- é usado como subconjunto padrão e
+bem-comportado de modelos de circulação geral (GCMs); todos os cinco têm dados para os dois cenários de
+interesse. A projeção cobre os cenários SSP2-4.5 e SSP5-8.5, para as janelas de 2031--2050 e 2051--2070.
+
+Relativamente à base histórica de cada modelo, que cobre 1991--2014, a precipitação entra como fator de
+mudança multiplicativo e a temperatura, como fator aditivo (em kelvin). A especificação completa está na
+Tabela~\ref{tab:cmip6-spec} do Anexo.
+
+
+\section{Ambiente computacional}
+
+A implementação é orientada a configuração: a lógica analítica é modular e todo parâmetro numérico ---
+limiares de pertinência fuzzy, pesos dos fatores, identificadores de conjuntos de dados e fatores de
+conversão de unidades --- é declarado como valor versionado, em vez de embutido no código, de modo que a
+análise possa ser auditada e reexecutada apenas a partir da especificação declarada. O software é
+deliberadamente simples: além da integração com o Google Earth Engine e da orquestração das etapas de
+análise, o código Python usa bibliotecas científicas comuns para as pequenas tarefas executadas
+localmente. Nenhum arcabouço de aprendizado profundo é utilizado.

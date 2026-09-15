@@ -1,0 +1,37 @@
+# Python / uv
+.venv/
+__pycache__/
+*.py[cod]
+
+# WSL artifacts
+*:Zone.Identifier
+
+# Local scratch outputs (CSV diagnostics land here via $SCRATCHPAD)
+/zoning_kselect.csv
+/factor_variance.csv
+
+# LaTeX build artifacts (thesis/)
+thesis/*.aux
+thesis/*.bbl
+thesis/*.bcf
+thesis/*.blg
+thesis/*.fdb_latexmk
+thesis/*.fls
+thesis/*.glg
+thesis/*.glo
+thesis/*.gls
+thesis/*.log
+thesis/*.synctex.gz
+thesis/*.toc
+thesis/*.lof
+thesis/*.lot
+thesis/*.out
+thesis/*.acn
+thesis/*.acr
+thesis/*.alg
+thesis/*.ist
+thesis/*.slg
+thesis/*.slo
+thesis/*.sls
+thesis/*.pdf
+thesis/*.run.xml

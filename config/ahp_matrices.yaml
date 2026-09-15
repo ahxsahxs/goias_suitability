@@ -1,0 +1,90 @@
+_note: AHP pairwise matrices (Saaty 1-9) reconstructed from the elicited segment priorities; CR<=0.10
+  accepts the elicitation. Priority vector reproduces config/segments.yaml weights to Saaty rounding.
+  See tools/build_ahp.py + docs/weaknesses_mitigation.md WS-C.
+segments:
+  soybean:
+    factors: [clim_pr_annual, terr_slope, soil_ph, clim_twarm_q, clim_aridity, soil_clay]
+    matrix:
+    - [1.0, 1.0, 1.5, 1.5, 1.75, 1.75]
+    - [1.0, 1.0, 1.5, 1.5, 1.75, 1.75]
+    - [0.6667, 0.6667, 1.0, 1.0, 1.25, 1.25]
+    - [0.6667, 0.6667, 1.0, 1.0, 1.25, 1.25]
+    - [0.5714, 0.5714, 0.8, 0.8, 1.0, 1.0]
+    - [0.5714, 0.5714, 0.8, 0.8, 1.0, 1.0]
+    consistency_ratio: 0.0002
+    priority_vector: [0.2231, 0.2231, 0.1522, 0.1522, 0.1246, 0.1246]
+    config_weights: [0.22, 0.22, 0.15, 0.15, 0.13, 0.13]
+  sugarcane:
+    factors: [clim_pr_annual, terr_slope, clim_twarm_q, clim_dry_months, soil_awc, soil_clay]
+    matrix:
+    - [1.0, 1.0, 1.0, 1.25, 1.5, 1.5]
+    - [1.0, 1.0, 1.0, 1.0, 1.25, 1.25]
+    - [1.0, 1.0, 1.0, 1.0, 1.25, 1.25]
+    - [0.8, 1.0, 1.0, 1.0, 1.25, 1.25]
+    - [0.6667, 0.8, 0.8, 0.8, 1.0, 1.0]
+    - [0.6667, 0.8, 0.8, 0.8, 1.0, 1.0]
+    consistency_ratio: 0.0011
+    priority_vector: [0.1966, 0.178, 0.178, 0.1715, 0.138, 0.138]
+    config_weights: [0.2, 0.18, 0.18, 0.16, 0.14, 0.14]
+  other_crops:
+    factors: [clim_pr_annual, clim_pr_cv, terr_slope, clim_gdd, soil_ph, soil_soc]
+    matrix:
+    - [1.0, 1.0, 1.0, 1.25, 1.25, 1.5]
+    - [1.0, 1.0, 1.0, 1.25, 1.25, 1.25]
+    - [1.0, 1.0, 1.0, 1.25, 1.25, 1.25]
+    - [0.8, 0.8, 0.8, 1.0, 1.0, 1.0]
+    - [0.8, 0.8, 0.8, 1.0, 1.0, 1.0]
+    - [0.6667, 0.8, 0.8, 1.0, 1.0, 1.0]
+    consistency_ratio: 0.0006
+    priority_vector: [0.1908, 0.1849, 0.1849, 0.1479, 0.1479, 0.1437]
+    config_weights: [0.2, 0.18, 0.18, 0.15, 0.15, 0.14]
+  pisciculture:
+    factors: [soil_clay, sit_water_dist_seas, terr_slope, clim_twarm_q, water_drain_density]
+    matrix:
+    - [1.0, 1.0, 1.25, 1.25, 1.5]
+    - [1.0, 1.0, 1.0, 1.25, 1.25]
+    - [0.8, 1.0, 1.0, 1.0, 1.25]
+    - [0.8, 0.8, 1.0, 1.0, 1.0]
+    - [0.6667, 0.8, 0.8, 1.0, 1.0]
+    consistency_ratio: 0.0019
+    priority_vector: [0.2353, 0.2171, 0.1986, 0.1816, 0.1674]
+    config_weights: [0.24, 0.22, 0.2, 0.18, 0.16]
+  cattle:
+    factors: [clim_pr_annual, clim_dry_months, clim_soil_moist, terr_slope, soil_soc]
+    matrix:
+    - [1.0, 1.25, 0.3333, 0.5, 0.2857]
+    - [0.8, 1.0, 0.2857, 0.4, 0.25]
+    - [3.0, 3.5, 1.0, 1.5, 0.8]
+    - [2.0, 2.5, 0.6667, 1.0, 0.5714]
+    - [3.5, 4.0, 1.25, 1.75, 1.0]
+    consistency_ratio: 0.0004
+    priority_vector: [0.0978, 0.0808, 0.2853, 0.1955, 0.3407]
+    config_weights: [0.1, 0.08, 0.28, 0.2, 0.34]
+  conservation:
+    factors: [cv_pa_dist, clim_aridity, cv_ruggedness, terr_twi, cv_carbon, water_drain_density, clim_twarm_q,
+      rl_native_frac, terr_slope]
+    matrix:
+    - [1.0, 1.25, 1.5, 1.75, 2.0, 2.0, 2.0, 2.5, 4.0]
+    - [0.8, 1.0, 1.25, 1.25, 1.5, 1.75, 1.75, 1.75, 3.0]
+    - [0.6667, 0.8, 1.0, 1.25, 1.25, 1.5, 1.5, 1.5, 2.5]
+    - [0.5714, 0.8, 0.8, 1.0, 1.0, 1.25, 1.25, 1.25, 2.0]
+    - [0.5, 0.6667, 0.8, 1.0, 1.0, 1.0, 1.0, 1.25, 2.0]
+    - [0.5, 0.5714, 0.6667, 0.8, 1.0, 1.0, 1.0, 1.0, 1.75]
+    - [0.5, 0.5714, 0.6667, 0.8, 1.0, 1.0, 1.0, 1.0, 1.75]
+    - [0.4, 0.5714, 0.6667, 0.8, 0.8, 1.0, 1.0, 1.0, 1.5]
+    - [0.25, 0.3333, 0.4, 0.5, 0.5, 0.5714, 0.5714, 0.6667, 1.0]
+    consistency_ratio: 0.001
+    priority_vector: [0.1937, 0.1523, 0.1295, 0.1086, 0.0998, 0.0901, 0.0901, 0.0843, 0.0517]
+    config_weights: [0.2, 0.15, 0.13, 0.11, 0.1, 0.09, 0.09, 0.08, 0.05]
+  solar:
+    factors: [clim_srad, sit_clearness, terr_slope, clim_twarm_q, access_logtt, terr_northing]
+    matrix:
+    - [1.0, 1.25, 1.5, 1.75, 1.75, 3.0]
+    - [0.8, 1.0, 1.0, 1.5, 1.5, 2.5]
+    - [0.6667, 1.0, 1.0, 1.25, 1.25, 2.0]
+    - [0.5714, 0.6667, 0.8, 1.0, 1.0, 1.75]
+    - [0.5714, 0.6667, 0.8, 1.0, 1.0, 1.75]
+    - [0.3333, 0.4, 0.5, 0.5714, 0.5714, 1.0]
+    consistency_ratio: 0.0009
+    priority_vector: [0.2529, 0.2025, 0.1781, 0.1417, 0.1417, 0.0832]
+    config_weights: [0.26, 0.2, 0.18, 0.14, 0.14, 0.08]

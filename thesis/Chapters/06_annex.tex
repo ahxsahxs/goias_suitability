@@ -1,0 +1,442 @@
+\chapter{Fontes de dados}\label{anx:data}
+
+Todos os conjuntos de dados provêm do catálogo público da plataforma de computação, acessados
+em resolução nativa e reescalados para unidades físicas quando o provedor armazena bandas
+empacotadas em inteiros; cada fonte foi verificada contra o catálogo ativo no momento do
+processamento.
+
+\begin{table}[H]
+\centering
+\caption{Fontes de dados biofísicos e agroclimáticos.}
+\label{tab:src-biophys}
+\begin{tabular}{@{}p{2.7cm}p{3.6cm}p{2cm}p{5.5cm}@{}}
+\toprule
+Tema & Conjunto de dados (provedor) & Resolução nativa & Variáveis utilizadas \\
+\midrule
+Clima e balanço hídrico & TerraClimate, mensal & $\approx$4~km & Precipitação,
+  evapotranspiração potencial e real, déficit hídrico climático, umidade do solo, déficit de
+  pressão de vapor, radiação solar, temperatura máxima/mínima \\
+Precipitação (suplementar) & CHIRPS, pêntada & $\approx$5~km & Chuva sazonal e sazonalidade \\
+Bioclima (suplementar) & Variáveis bioclimáticas WorldClim & $\approx$1~km & BIO1--BIO19 \\
+Terreno & Modelo digital de elevação SRTM & 30~m & Elevação, declive, orientação, posição
+  topográfica \\
+Hidrografia & Acumulação de fluxo HydroSHEDS & 15 segundos de arco & Índice de umidade
+  topográfica, densidade de drenagem \\
+Solo (0--30~cm) & Propriedades de solo OpenLandMap & 250~m & Argila, areia, carbono orgânico,
+  pH (H$_2$O), densidade aparente, teor de água disponível para as plantas \\
+Água de superfície & JRC Global Surface Water & 30~m & Ocorrência e sazonalidade
+  $\rightarrow$ distância à água permanente \\
+Fenologia da vegetação & MODIS NDVI, composições de 16 dias & 250~m & Parâmetros harmônicos
+  (média, amplitude, época de pico, integral) \\
+Acessibilidade ao mercado & Global Accessibility to Cities (2015) & $\approx$1~km & Tempo de
+  viagem à cidade mais próxima (\emph{proxy} de acessibilidade ao mercado) \\
+Cobertura genérica da terra & ESA WorldCover (2021) & 10~m & Máscara e frações por classe
+  (apenas máscara/contexto) \\
+Áreas protegidas & World Database on Protected Areas (WDPA) & vetor & Distância a reservas
+  $\rightarrow$ conectividade de conservação (camada de governança, não de cobertura da
+  terra) \\
+Biomassa acima do solo & Densidade global de carbono em biomassa acima do solo (Spawn
+  \emph{et al.}) & $\approx$300~m & Valor do serviço de armazenamento de carbono
+  (conservação) \\
+Clima futuro & NASA NEX-GDDP-CMIP6, diário com redução de escala & $\approx$25~km &
+  Precipitação, temperatura máxima e mínima $\rightarrow$ fatores de mudança
+  (\emph{delta-change}) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+As bandas de solo são a média de 0--30~cm dos horizontes de 0, 10 e 30~cm. Conversões de
+unidade verificadas: carbono orgânico do solo $\times 5$ (média territorial $\approx$
+13~g~kg$^{-1}$), pH $\times 0{,}1$ ($\approx$4,7--7,3) e densidade aparente $\times 10$
+($\approx$1259~kg~m$^{-3}$); argila, areia e teor de água não requerem reescalonamento.
+
+\begin{table}[H]
+\centering
+\caption{Fontes de dados de uso atual e validação.}
+\label{tab:src-realized}
+\begin{tabular}{@{}p{5cm}p{2.7cm}p{6cm}@{}}
+\toprule
+Fonte (provedor) & Resolução nativa & Finalidade \\
+\midrule
+Unidades administrativas de segundo nível GAUL & $\approx$500~m (simplificado) & Agregação e
+  relato municipais (sem \emph{upload}) \\
+Uso e cobertura da terra anual MapBiomas Brasil & 30~m & Máscaras, análise potencial
+  \emph{versus} realizado, caracterização descritiva da composição \\
+Produtividade primária líquida (anual) e bruta (8 dias) do MODIS & 500~m & Validação da
+  viabilidade (substituto de rendimento) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+O uso atual da terra e o \emph{proxy} de produtividade são usados estritamente para
+mascaramento, validação e caracterização descritiva; nunca entram nos cálculos de viabilidade
+ou de agrupamento.
+
+\begin{table}[H]
+\centering
+\caption{Especificação do conjunto de modelos CMIP6.}
+\label{tab:cmip6-spec}
+\begin{tabular}{@{}p{4.5cm}p{9.5cm}@{}}
+\toprule
+Parâmetro & Valor \\
+\midrule
+Modelos de circulação geral & ACCESS-CM2, EC-Earth3, GFDL-ESM4, MPI-ESM1-2-HR, MRI-ESM2-0 \\
+Cenários & SSP2-4.5, SSP5-8.5 \\
+Janelas futuras & 2031--2050 e 2051--2070 (inclusive) \\
+Linha de base histórica dos modelos & 1991--2014 (o experimento histórico com redução de
+  escala termina em 2014) \\
+Variáveis & Precipitação (fator de mudança multiplicativo); temperatura máxima e mínima
+  (fator de mudança aditivo, em kelvin) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\chapter{Especificação completa de viabilidade e pesos AHP}\label{anx:spec}
+
+A Tabela~\ref{tab:spec-longtable} reproduz a especificação completa por segmento subjacente à
+\S\ref{sec:suitability}. O declive está em graus. Os limiares são valores de primeira
+aproximação ancorados na literatura e reconciliados com a faixa realizada de cada variável
+sobre GO~e~DF pela recalibração empírica.
+
+\begin{longtable}{@{}p{2.6cm}p{3.6cm}p{1cm}p{1.7cm}p{3.3cm}@{}}
+\caption{Fatores, pesos, formas de pertinência e limiares por segmento.}\label{tab:spec-longtable} \\
+\toprule
+Segmento (máscara) & Fator & Peso & Forma & Limiares \\
+\midrule
+\endfirsthead
+\toprule
+Segmento (máscara) & Fator & Peso & Forma & Limiares \\
+\midrule
+\endhead
+\textbf{Soja} (disponível) & Precipitação anual (mm) & 0,22 & intervalar & 800, 1100, 1800, 2200 \\
+ & Declive ($^\circ$) & 0,22 & decrescente & 4,57, 8,53 \\
+ & pH do solo & 0,15 & intervalar & 4,5, 5,5, 6,8, 7,5 \\
+ & Temp. do trimestre mais quente ($^\circ$C) & 0,15 & intervalar & 18, 22, 30, 34 \\
+ & Índice de aridez & 0,13 & intervalar & 0,4, 0,7, 1,2, 1,6 \\
+ & Teor de argila (\%) & 0,13 & intervalar & 10, 20, 45, 60 \\
+\textbf{Cana-de-açúcar} (disponível) & Precipitação anual (mm) & 0,20 & intervalar & 900, 1300, 2000, 2600 \\
+ & Declive ($^\circ$) & 0,18 & decrescente & 6,84, 11,31 \\
+ & Temp. do trimestre mais quente ($^\circ$C) & 0,18 & intervalar & 20, 24, 32, 36 \\
+ & Duração da estação seca (meses) & 0,16 & intervalar & 1, 2, 5, 7 \\
+ & Teor de água disponível para as plantas & 0,14 & crescente & 5, 20 \\
+ & Teor de argila (\%) & 0,14 & intervalar & 15, 25, 50, 65 \\
+\textbf{Outras culturas} (disponível) & Precipitação anual (mm) & 0,20 & intervalar & 700, 1000, 1700, 2200 \\
+ & Sazonalidade da precipitação (CV) & 0,18 & decrescente & 0,6, 1,3 \\
+ & Declive ($^\circ$) & 0,18 & decrescente & 4,57, 8,53 \\
+ & Graus-dia de crescimento & 0,15 & intervalar & 2500, 3500, 5500, 7000 \\
+ & pH do solo & 0,15 & intervalar & 4,5, 5,5, 6,8, 7,5 \\
+ & Carbono orgânico do solo (g/kg) & 0,14 & crescente & 5, 20 \\
+\textbf{Piscicultura} (disponível) & Teor de argila (\%) & 0,24 & crescente & 15, 35 \\
+ & Distância à água (m) & 0,22 & decrescente & 500, 5000 \\
+ & Declive ($^\circ$) & 0,20 & decrescente & 2,86, 5,71 \\
+ & Temp. do trimestre mais quente ($^\circ$C) & 0,18 & intervalar & 22, 26, 32, 36 \\
+ & Densidade de drenagem & 0,16 & crescente & 0,01, 0,08 \\
+\textbf{Pecuária} (apenas exclusão) & Precipitação anual (mm) & 0,22 & intervalar & 700, 1000, 2000, 2600 \\
+ & Duração da estação seca (meses) & 0,22 & decrescente & 4, 8 \\
+ & Umidade do solo (mm) & 0,22 & crescente & 20, 120 \\
+ & Declive ($^\circ$) & 0,18 & decrescente & 8,53, 17,7 \\
+ & Carbono orgânico do solo (g/kg) & 0,16 & crescente & 4, 18 \\
+\textbf{Conservação} (nenhuma; compensatória) & Distância a área protegida (m) & 0,20 & decrescente &
+  5000, 40000 \\
+ & Índice de aridez (P/ETP) $\dagger$ & 0,15 & crescente & 0,95, 1,25 \\
+ & Rugosidade do terreno (m) & 0,13 & crescente & 5, 30 \\
+ & Índice de umidade topográfica & 0,11 & crescente & 6, 14 \\
+ & Carbono em biomassa acima do solo (Mg~C/ha) & 0,10 & crescente & 10, 20 \\
+ & Densidade de drenagem & 0,09 & crescente & 0,01, 0,08 \\
+ & Temp. do trimestre mais quente ($^\circ$C) $\dagger$ & 0,09 & decrescente & 23, 31 \\
+ & Fração de vegetação nativa & 0,08 & crescente & 0,25, 0,85 \\
+ & Declive ($^\circ$) & 0,05 & crescente & 2,86, 11,31 \\
+\textbf{Geração fotovoltaica} (disponível) & Radiação solar (W/m$^2$) & 0,34 & crescente & 180, 240 \\
+ & Declive ($^\circ$) & 0,22 & decrescente & 2,86, 8,53 \\
+ & Log do tempo de viagem à cidade & 0,20 & decrescente & 3, 6 \\
+ & Distância à água (m) & 0,12 & crescente & 200, 3000 \\
+ & Componente norte da orientação & 0,12 & crescente & $-0{,}3$, 0,5 \\
+\bottomrule
+\end{longtable}
+
+A conservação ($\dagger$) carrega dois fatores climáticos \textbf{móveis} (aridez e
+temperatura do trimestre mais quente), que a tornam responsiva ao CMIP6; é agregada pela
+média aritmética ponderada \textbf{compensatória} (\S\ref{sec:aggregation}), e sua fração de
+vegetação nativa (peso 0,08) é a única entrada de cobertura da terra, rebaixada, sancionada
+pela salvaguarda contra circularidade. Os outros seis segmentos usam a média geométrica de
+fator limitante.
+
+Os pesos de cada segmento são as prioridades de uma matriz Saaty de comparação par a par
+documentada; toda matriz é folgadamente consistente, sendo 0,002 a maior razão de
+consistência entre os sete segmentos (Tabela~\ref{tab:ahp-cr}), uma ordem de grandeza abaixo
+do limiar de aceitação de 0,10.
+
+\begin{table}[H]
+\centering
+\caption{Razão de consistência AHP por segmento.}
+\label{tab:ahp-cr}
+\begin{tabular}{@{}lrr@{}}
+\toprule
+Segmento & Fatores ($n$) & Razão de consistência \\
+\midrule
+Soja                 & 6 & 0,000 \\
+Cana-de-açúcar       & 6 & 0,001 \\
+Outras culturas anuais & 6 & 0,001 \\
+Piscicultura         & 5 & 0,002 \\
+Pecuária             & 5 & 0,000 \\
+Conservação          & 9 & 0,001 \\
+Geração fotovoltaica & 6 & 0,001 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\chapter{Derivação dos atributos}\label{anx:derivations}
+
+\textbf{Clima e balanço hídrico (14 variáveis).} Uma climatologia de 12 meses é computada
+para cada banda climática sobre o registro de 1991--2020 (a média climatológica de cada mês
+do calendário); os agregados anuais são a soma das doze médias mensais. As variáveis
+derivadas do balanço hídrico são a precipitação anual, a evapotranspiração potencial anual, o
+déficit hídrico climático, a evapotranspiração real e o índice de aridez (precipitação anual
+$\div$ evapotranspiração potencial anual). As variáveis de sazonalidade são a sazonalidade da
+precipitação (o coeficiente de variação das doze médias mensais), a duração da estação seca
+(meses com precipitação média abaixo de 60~mm) e a precipitação da estação chuvosa (a soma
+sobre os meses mais úmidos que a média mensal geral). Completam o conjunto a umidade média do
+solo, o déficit de pressão de vapor e a radiação solar médios, os graus-dia de crescimento, e
+a temperatura média do trimestre mais quente e do mais frio (o máximo e o mínimo das doze
+médias móveis de três meses). Os graus-dia de
+crescimento são acumulados a partir da climatologia mensal de temperatura média com uma
+temperatura base $T_{\text{base}} = 10\,^\circ\mathrm{C}$,
+\[
+  \mathrm{GDD} = \sum_{m=1}^{12} \max\!\left(\bar{T}_m - T_{\text{base}},\, 0\right)\, N_m,
+\]
+onde $\bar{T}_m$ é a temperatura média do mês $m$ e $N_m$ o seu número de dias. Toda a
+derivação climática é encapsulada em uma única transformação determinística reutilizada sem
+alteração para o clima futuro do CMIP6 (\S\ref{sec:cmip6}), o que é o que torna a mudança
+projetada um sinal puramente climático.
+
+\textbf{Terreno (6 variáveis).} A elevação e o declive vêm do MDE de 30~m; a orientação é
+decomposta em uma componente norte ($\cos$) e leste ($\sin$), para que a variável circular
+seja utilizável em aritmética de pixels. O índice de posição topográfica é a diferença entre
+a elevação $z_0$ de uma célula e a elevação média de sua vizinhança circular,
+$\mathrm{TPI} = z_0 - \overline{z}_{\text{focal}}$ (positivo em cristas, negativo em vales). O
+índice de umidade topográfica é $\mathrm{TWI} = \ln(\alpha / \tan\beta)$, com $\alpha$ a área
+de contribuição específica (a partir da acumulação de fluxo) e $\beta$ o declive local.
+
+\textbf{Solo (6 variáveis).} A média de 0--30~cm dos horizontes de 0, 10 e 30~cm para argila,
+areia, carbono orgânico, pH (H$_2$O), densidade aparente e teor de água disponível para as
+plantas, cada um reescalado para unidades físicas pelo seu fator de conversão verificado
+(Anexo~\ref{anx:data}).
+
+\textbf{Água (3 variáveis).} Uma máscara de água permanente (ocorrência de água superficial
+$>$ 80\%) produz uma superfície de distância euclidiana à água na grade de 250~m; a
+sazonalidade da água de superfície é carregada do produto de origem; a densidade de drenagem
+é a fração de células de canal (acumulação de fluxo acima de um limiar fixo) em uma
+vizinhança circular, com faixa empírica de $\approx$0--0,15 (percentil 90 $\approx$0,095) que
+governa seus limiares de pertinência.
+
+\textbf{Fenologia (4 variáveis).} Os parâmetros fenológicos são extraídos por uma regressão
+harmônica (de Fourier) do ciclo sazonal de NDVI, ajustada à climatologia de NDVI de 12 meses
+em vez das $\sim$460 composições de 16 dias ($\approx$38$\times$ mais barato para as mesmas
+métricas). O modelo mantém um termo constante mais harmônicos anual e semianual,
+\[
+  \mathrm{NDVI}(t) = \beta_0 + \beta_1 \cos(2\pi t) + \gamma_1 \sin(2\pi t)
+   + \beta_2 \cos(4\pi t) + \gamma_2 \sin(4\pi t) + \varepsilon(t),
+\]
+com $t$ a fração do ano, fornecendo o NDVI médio ($\beta_0$), a amplitude sazonal
+$A = \sqrt{\beta_1^2 + \gamma_1^2}$, a época de pico (a partir da fase do harmônico anual) e
+uma integral anual (NDVI médio $\times$ 365).
+
+\textbf{Acessibilidade ao mercado (1 variável).} A superfície de tempo de viagem às cidades é
+transformada em logaritmo como $\ln(t+1)$ e reamostrada para a grade.
+
+\textbf{Máscara de cobertura da terra (apenas contexto).} O produto genérico de cobertura da
+terra a 10~m é agregado a 250~m como uma classe majoritária mais frações por classe,
+produzindo uma máscara de áreas \emph{excluídas} (urbano, água permanente, área úmida
+herbácea), uma máscara de áreas \emph{disponíveis} (lavoura, campo, vegetação arbustiva, solo
+exposto) e frações de árvore/lavoura/campo para contexto. É substituída pelo produto de uso
+atual específico para o Brasil na Fase~B.
+
+\chapter{Tabelas de resultados suplementares}\label{anx:tables}
+
+\begin{table}[H]
+\centering
+\caption{Médias biofísicas discriminantes por zona.}
+\label{tab:zone-means}
+\small
+\begin{tabular}{@{}lrrrrrrr@{}}
+\toprule
+Variável & Z0 & Z1 & Z2 & Z3 & Z4 & Z5 & Z6 \\
+\midrule
+Tamanho da amostra (pontos)          & 2.938 & 734 & 1.558 & 1.600 & 3.240 & 3.177 & 1.688 \\
+Parcela da área de interesse         & 19,2\% & 4,8\% & 10,4\% & 10,6\% & 22,1\% & 21,5\% & 11,4\% \\
+Elevação (m)                         & 649 & 621 & 862 & 529 & 370 & 779 & 756 \\
+Declive ($^\circ$)                   & 3,9 & 4,7 & 5,2 & 4,1 & 3,1 & 4,5 & 13,5 \\
+Índice de umidade topográfica        & 9,8 & 9,9 & 9,5 & 10,9 & 10,1 & 9,6 & 8,3 \\
+Temp. do trimestre mais quente ($^\circ$C) & 25,3 & 25,8 & 24,2 & 25,3 & 26,8 & 24,3 & 25,4 \\
+Índice de aridez (P/ETP)             & 1,16 & 0,91 & 1,15 & 1,13 & 1,10 & 1,17 & 1,10 \\
+Umidade do solo (mm)                 & 86 & 105 & 98 & 95 & 106 & 85 & 117 \\
+Teor de argila (\%)                  & 35,9 & 31,6 & 38,9 & 30,8 & 24,2 & 34,6 & 34,6 \\
+Carbono orgânico do solo (g/kg)      & 13,4 & 11,6 & 14,5 & 13,5 & 10,6 & 13,2 & 16,1 \\
+Densidade de drenagem (fração)       & 0,01 & 0,02 & 0,01 & 0,11 & 0,01 & 0,01 & 0,01 \\
+Distância à água (m)                 & 13.117 & 23.842 & 9.536 & 12.625 & 12.473 & 22.700 & 19.998 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Mudança média territorial projetada $\Delta S$ por zona para as culturas sensíveis
+ao clima (cenário--janela mais brando e mais severo por segmento).}
+\label{tab:zone-shift}
+\footnotesize
+\begin{tabular}{@{}llrrrrrrr@{}}
+\toprule
+Segmento & Cenário--janela & Z0 & Z1 & Z2 & Z3 & Z4 & Z5 & Z6 \\
+\midrule
+Soja & SSP2-4.5 2031--50 & $+$0,001 & $+$0,000 & $+$0,001 & $+$0,000 & $+$0,000 & $+$0,002 & $+$0,000 \\
+Soja & SSP5-8.5 2051--70 & $+$0,000 & $+$0,000 & $+$0,001 & $-$0,002 & $-$0,016 & $+$0,002 & $-$0,000 \\
+Cana-de-açúcar & SSP2-4.5 2031--50 & $+$0,000 & $-$0,018 & $+$0,008 & $+$0,001 & $-$0,000 & $+$0,004 & $+$0,000 \\
+Cana-de-açúcar & SSP5-8.5 2051--70 & $+$0,000 & $-$0,094 & $+$0,008 & $-$0,001 & $-$0,002 & $+$0,004 & $-$0,001 \\
+Outras culturas anuais & SSP2-4.5 2031--50 & $-$0,017 & $-$0,020 & $-$0,008 & $-$0,016 & $-$0,039 & $-$0,010 & $-$0,006 \\
+Outras culturas anuais & SSP5-8.5 2051--70 & $-$0,063 & $-$0,067 & $-$0,024 & $-$0,052 & $-$0,127 & $-$0,033 & $-$0,018 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Parcela da terra avaliada de cada segmento rebaixada em pelo menos uma classe da
+FAO, presente $\rightarrow$ futuro (promoções desprezíveis e omitidas).}
+\label{tab:downgrade-share}
+\small
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Segmento & SSP2-4.5 2031--50 & SSP2-4.5 2051--70 & SSP5-8.5 2031--50 & SSP5-8.5 2051--70 \\
+\midrule
+Conservação           & 24,9\% & 27,5\% & 29,6\% & 43,1\% \\
+Outras culturas anuais & 9,1\%  & 14,8\% & 11,9\% & 28,0\% \\
+Geração fotovoltaica   & 7,5\%  & 11,6\% & 9,8\%  & 22,6\% \\
+Soja                   & 0,0\%  & 0,1\%  & 0,0\%  & 1,5\% \\
+Cana-de-açúcar         & 0,1\%  & 0,1\%  & 0,1\%  & 0,7\% \\
+Piscicultura           & 0,0\%  & 0,0\%  & 0,0\%  & 0,0\% \\
+Pecuária               & 0,0\%  & 0,0\%  & 0,0\%  & 0,5\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Matriz de transição de classes da FAO, presente $\rightarrow$ futuro, para as
+outras culturas anuais sob SSP5-8.5, 2051--2070 (área como percentual da terra avaliada do
+segmento).}
+\label{tab:transition-othercrops}
+\begin{tabular}{@{}lrrrrr@{}}
+\toprule
+Presente $\downarrow$ / Futuro $\rightarrow$ & N & S3 & S2 & S1 & Total presente \\
+\midrule
+N   & 32,9 & 0,0 & 0,0  & 0,0  & 32,9 \\
+S3  & 2,2  & 0,7 & 0,0  & 0,0  & 2,9 \\
+S2  & 0,4  & 4,2 & 18,8 & 0,0  & 23,4 \\
+S1  & 0,0  & 0,3 & 20,8 & 19,6 & 40,7 \\
+\midrule
+\textbf{Total futuro} & \textbf{35,5} & \textbf{5,2} & \textbf{39,6} & \textbf{19,6} & 100,0 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Composição do uso atual da terra dentro de cada zona biofísica (parcela da área da
+zona).}
+\label{tab:zone-realized}
+\small
+\begin{tabular}{@{}lrrrrrrr@{}}
+\toprule
+Uso atual & Z0 & Z1 & Z2 & Z3 & Z4 & Z5 & Z6 \\
+\midrule
+Soja                 & 28,0\% & 1,8\%  & 15,3\% & 6,2\%  & 3,4\%  & 22,1\% & 0,1\% \\
+Cana-de-açúcar       & 7,6\%  & 0,0\%  & 1,2\%  & 1,9\%  & 0,5\%  & 1,9\%  & 0,0\% \\
+Outras culturas anuais & 0,8\%  & 1,0\%  & 0,7\%  & 1,1\%  & 1,1\%  & 0,7\%  & 0,0\% \\
+Pastagem             & 44,2\% & 52,5\% & 43,3\% & 48,3\% & 60,4\% & 42,0\% & 21,4\% \\
+Vegetação nativa     & 17,9\% & 43,7\% & 31,3\% & 37,2\% & 33,0\% & 31,9\% & 77,7\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Correlação de Spearman da viabilidade média municipal com o \emph{proxy} de NPP
+anual do MODIS (terra manejada; $n = 243$ municípios).}
+\label{tab:spearman-npp}
+\begin{tabular}{@{}lrl@{}}
+\toprule
+Segmento & $\rho$ de Spearman & Significância \\
+\midrule
+Pecuária             & $+0{,}52$ & $p < 0{,}001$ \\
+Conservação          & $+0{,}47$ & $p < 0{,}001$ \\
+Cana-de-açúcar       & $+0{,}39$ & $p < 0{,}001$ \\
+Geração fotovoltaica & $+0{,}27$ & $p < 0{,}001$ \\
+Soja                 & $+0{,}12$ & n.s. ($p = 0{,}05$) \\
+Outras culturas anuais & $-0{,}06$ & n.s. \\
+Piscicultura         & $-0{,}36$ & $p < 0{,}001$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+O \emph{proxy} de NPP anual mede a produtividade primária da vegetação, não o rendimento
+agronômico, de modo que os segmentos de biomassa em pé (pecuária, conservação) pontuam mais
+alto. Por isso ele é relatado apenas como \emph{contexto} de produtividade; as métricas de
+discriminação por presença (Tabela~\ref{tab:presence-auc}) são os validadores primários das
+culturas.
+
+\chapter{Figuras de diagnóstico}\label{anx:figures}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{fig_4_2.png}
+\caption{Classes de viabilidade da FAO (N / S3 / S2 / S1) para segmentos representativos
+(soja e conservação).}
+\label{fig:fao-classes}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{fig_4_5.png}
+\caption{Concordância entre os modelos (fração de modelos que concordam quanto ao sinal da
+mudança) para as outras culturas anuais sob SSP5-8.5, 2051--2070. A concordância é
+$\approx 1{,}0$ em quase todo o território; a escala de cor inicia no 2\textsuperscript{o}
+percentil territorial para revelar o contraste residual, e a concordância média territorial
+está anotada no mapa.}
+\label{fig:ensemble-agreement}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{fig_4_6.png}
+\caption{Realocação de melhor cultura --- células em que muda a cultura mais viável entre
+soja, cana-de-açúcar e outras culturas anuais --- sob SSP5-8.5, 2051--2070.}
+\label{fig:best-crop}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{fig_4_8.png}
+\caption{Subutilização potencial \emph{versus} realizado para a soja --- células viáveis ou
+superiores mas não atualmente sob soja.}
+\label{fig:underused-soy}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{fig_4_10.png}
+\caption{Índices de validade de agrupamento (silhueta, Davies--Bouldin, estatística de
+\emph{gap}) e estabilidade em subamostras (índice de Rand ajustado) ao longo de
+$k = 2\dots10$ no espaço de componentes principais descorrelacionado. A silhueta é quase
+plana, de modo que nenhum índice isolado é decisivo; $k = 7$ (linha tracejada) atinge o
+melhor Davies--Bouldin e a melhor silhueta (empatada), mantendo estabilidade aceitável.}
+\label{fig:cluster-validity}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{fig_4_11.png}
+\caption{Parcela de cada fator na variância espacial da viabilidade de cada segmento.
+Terreno e solo dominam as culturas (fatores climáticos $\approx$ 0); umidade do solo e
+carbono orgânico governam a pecuária; conectividade e rugosidade governam a conservação.}
+\label{fig:factor-variance}
+\end{figure}

@@ -1,0 +1,29 @@
+%!TEX root = ../template.tex
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Config/0_memoir.tex
+%% NOVA thesis configuration file
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\typeout{NT FILE Config/0_memoir.tex}%
+
+%%============================================================
+%%  MEMOIR CUSTOMIZATION / OPTIONS
+%%    Any option valid for memoir can be listed here.
+%%    The memoir manual is available at
+%%        http://tug.ctan.org/tex-archive/macros/latex/contrib/memoir/memman.pdf
+%%============================================================
+
+\ntmemoirsetup{11pt}   % main text at 11pt
+\ntmemoirsetup{a4paper}   % a4paper
+% \ntmemoirsetup{b5paper}
+% \ntmemoirsetup{draft}           % Two set draft mode
+% \ntmemoirsetup{letter}          % Letter paper size
+% \ntmemoirsetup{openany}         % Two print single paged
+
+% memoir defaults to \flushbottom when twoside (the default here), which
+% stretches interline glue/\parskip/float spacing on every page to force
+% the last line to hit the bottom margin exactly — causing inconsistent
+% whitespace around images, paragraphs and formulas. \raggedbottom lets
+% each page end at its natural height instead.
+% \raggedbottom
+

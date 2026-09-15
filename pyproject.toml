@@ -1,0 +1,37 @@
+[project]
+name = "goias-suitability"
+version = "0.1.0"
+description = "Multi-segment agro-market suitability atlas and CMIP6-projected zoning of Goiás + Distrito Federal (Google Earth Engine-native)."
+readme = "CLAUDE.md"
+requires-python = ">=3.10"
+
+# Runtime dependencies for the analysis pipeline (src/) and the headless tools/
+# (figure rendering, recalibration, validation, verification). Everything runs
+# server-side in Earth Engine; these are the local-side libraries only.
+dependencies = [
+    "earthengine-api>=1.0",   # ee — server-side geoprocessing client
+    "requests>=2.31",         # tools/make_figures.py — getThumbURL fetch
+    "numpy>=1.26",
+    "pandas>=2.1",            # table joins, CSV-based diagnostic figures
+    "matplotlib>=3.7",        # figure composition (+ mpl_toolkits.axes_grid1)
+    "pillow>=10.0",           # PIL — decode GEE PNG thumbnails
+    "pyyaml>=6.0",            # config/*.yaml loaders (src/utils.py)
+    "scikit-learn>=1.3",      # src/zoning.py offline KMeans/PCA, src/metrics.py
+    "scipy>=1.11",            # src/metrics.py — spearmanr, f_oneway
+]
+
+[project.optional-dependencies]
+# Only needed to (re)generate and execute the Jupyter notebooks. The tools/ and
+# src/ code paths — including tools/make_figures.py — do not import these.
+notebooks = [
+    "geemap>=0.30",           # interactive Map previews in notebooks
+    "nbformat>=5.9",          # tools/gen_notebooks.py
+    "nbconvert>=7.9",         # headless notebook execution
+    "ipykernel>=6.25",        # the "goias" Jupyter kernel
+]
+
+[tool.uv]
+# The repo is a set of scripts, not an installable package: notebooks and tools/
+# add src/ to sys.path themselves (see CLAUDE.md §5). Tell uv not to build/install
+# the project itself — it only manages the environment.
+package = false
