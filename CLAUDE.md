@@ -359,6 +359,17 @@ The 7 points, in brief (see the artifact for the full day-by-day mapping):
 7. Code/atlas/ranking should ship now, not stay "future work" → Days 1–12 (this README/CLAUDE.md
    rewrite is part of point 7).
 
+**Note (2026-09-17) on point 5:** a first pass at resolving P5 with text alone (three paragraphs
+explaining the climate-vs-soil/terrain resolution mismatch, ~4 km vs. 250 m, inserted next to the
+`fig:atlas-present`, `fig:zones`, and `fig:shift` figures in `04_results.tex`) was tried and
+rejected — prose isn't enough here. The preferred approach instead is **magnitude maps** that
+show, visually and quantitatively, the intensity of the climate effect versus the intensity of
+the terrain/soil effect (likely spatializing the same per-factor variance decomposition already
+used for the aggregate `fig:factor-variance` Annex figure, rather than just citing it in prose).
+This is paused until the Day 5 higher-resolution-climate spike (artifact item `d5-1`) concludes —
+its outcome (keep TerraClimate at ~4 km vs. switch source) determines what the magnitude maps
+should actually show, so it's worth waiting rather than redesigning the text twice.
+
 As of this writing: **Day 1 done, Day 2 in progress** — this file and `README.md` are the last
 item of Day 2 (`d2-3`, "finish repo cleanup, write a new root README.md for GitHub visitors").
 

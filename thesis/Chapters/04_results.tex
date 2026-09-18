@@ -477,6 +477,21 @@ em blocos retidos, de modo que nenhuma célula de teste compartilhe bloco com se
 treinamento --- a concordância fora do bloco cai para $\kappa = 0{,}07$, e a parcela de alta
 probabilidade do classificador cai para 6,9\%.
 
+Esse $\kappa$ tão baixo não contradiz a AUC de 0,83 relatada na Tabela~\ref{tab:presence-auc}:
+são duas perguntas diferentes sobre o mesmo resultado. A AUC pergunta algo simples --- os pixels
+onde a soja é realmente plantada recebem, em geral, uma nota de viabilidade mais alta do que
+pixels escolhidos ao acaso? A resposta é sim, de forma consistente em diferentes partes do
+estado, por isso ela continua alta. Já o $\kappa$ pergunta algo mais rígido: as duas superfícies
+concordam sobre \emph{qual} pedaço do território marcar como viável? Aqui a resposta é não,
+porque o mapa de conhecimento marca uma área grande (60,8\%) e a floresta aleatória, sob
+validação espacial, marca uma área bem menor (6,9\%). Quando duas áreas comparadas têm tamanhos
+tão diferentes, a fórmula do $\kappa$ desconta como ``acerto por sorte'' uma fatia maior da
+concordância, e o resultado final cai bastante --- mesmo que o modelo, no fundo, continue
+apontando para os lugares certos \citep{Cicchetti1990}. Ou seja, $\kappa = 0{,}07$ não quer dizer
+que o modelo erra \emph{onde} a soja tende a ocorrer --- isso já foi respondido pela AUC --- mas
+sim que a área que o conhecimento especialista chama de ``viável'' e a área que os dados de fato
+ocupam têm tamanhos muito diferentes.
+
 Longe de ser uma falha, essa queda \emph{aguça} a interpretação. Removido o vazamento
 espacial, o nicho orientado por dados é muito mais estreito que o envelope biofísico: a maior
 parte da terra ``viável'' está genuinamente sem uso. Esse é, precisamente, o sinal potencial

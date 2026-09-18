@@ -47,6 +47,9 @@ limiares fuzzy não podem ser estreitados por ele; parte dessa permissividade re
 provavelmente regra especialista ainda um pouco larga, e parte é o próprio sinal da QP2 --- terra
 capaz deixada sem uso por razões econômicas, de posse ou de logística que o modelo não capta.
 
+Por que esse $\kappa$ cai tanto enquanto a AUC de presença continua alta (0,83) é explicado em
+\S\ref{sec:validation-present}: são, no fundo, duas perguntas diferentes sobre o mesmo resultado.
+
 Essa leitura econômica tem respaldo na literatura sobre a fronteira agrícola do Cerrado. Em
 Goiás, a intensificação registrada entre 2000 e 2016 --- e não a abertura de novas áreas ---
 respondeu por boa parte do ganho de produção: a lotação do rebanho bovino subiu de 1,17 para 1,24
@@ -112,8 +115,8 @@ para trabalho futuro.
   \item \textbf{Sobrepermissividade residual das culturas.} As superfícies de culturas
     permanecem mais permissivas que o nicho realizado ($\kappa=0{,}23$ em amostra;
     $\kappa=0{,}07$ sob validação espacial). Separar regra especialista larga de lacuna
-    potencial \emph{versus} realizado exigiria um alvo de calibração ancorado em rendimento, que
-    este desenho não usa.
+    potencial \emph{versus} realizado exigiria, ainda assim, um alvo de calibração ancorado em
+    rendimento, que este desenho não usa.
   \item \textbf{Validador de produtividade é um substituto.} O NPP/GPP do MODIS mede produção
     primária da vegetação, não rendimento agronômico \citep{Turner2006,He2018}, e a confusão
     entre coberturas limita seu uso a contexto descritivo; AUC e Boyce seguem como validadores
