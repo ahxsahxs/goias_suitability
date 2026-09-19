@@ -47,45 +47,58 @@ segments:
   soybean:
     label: Soybean
     mask: available
+    # 2026-09 weight recalibration (T8/T10 Fase-4 revision): weight now guided by each
+    # factor's discriminating power = sample IQR (P75-P25 over available land,
+    # tools/anchor_breakpoints.py) / the factor's own breakpoint span. A factor near-
+    # constant relative to its span cannot separate one cell from another regardless of
+    # literature importance. Breakpoints (shapes/spans) unchanged from 2026-07-14; only
+    # weights redistributed low-ratio -> high-ratio. Weights sum to 1.0.
     factors:
-      clim_pr_annual: {weight: 0.22, type: range,      points: [800, 1100, 1800, 2200], ref: "ZARC season ~450-800mm; annual proxy, waterlogging at top. UNIFORM in GO (1373-1635) -> membership~1, non-discriminating"}
-      terr_slope:     {weight: 0.22, type: decreasing,  points: [4, 8],                 ref: "2026-07-14: tightened from [4.57,8.53] to realized soybean flatness (p90 4.7deg)"}
-      soil_ph:        {weight: 0.15, type: range,       points: [4.5, 5.5, 6.8, 7.5],    ref: "acidic-correctable to neutral"}
-      clim_twarm_q:   {weight: 0.15, type: range,       points: [18, 22, 30, 34],        ref: "20-30C optimal (uniform in GO, non-discriminating)"}
-      clim_aridity:   {weight: 0.13, type: range,       points: [0.4, 0.7, 1.2, 1.6],    ref: "P/PET water sufficiency (uniform in GO, non-discriminating)"}
-      soil_clay:      {weight: 0.13, type: range,       points: [20, 32, 48, 62],        ref: "2026-07-14: tightened from [10,20,45,60] to penalize sandy soils the realized niche avoids (soybean clay p10 30, p50 40)"}
+      terr_slope:     {weight: 0.32, type: decreasing,  points: [4, 8],                 ref: "2026-07-14: tightened from [4.57,8.53] to realized soybean flatness (p90 4.7deg). 2026-09: ratio=iqr/span=2.246/4=0.562, highest of the segment -> weight raised 0.22->0.32"}
+      soil_clay:      {weight: 0.24, type: range,       points: [20, 32, 48, 62],        ref: "2026-07-14: tightened from [10,20,45,60] to penalize sandy soils the realized niche avoids (soybean clay p10 30, p50 40). 2026-09: ratio=12.503/42=0.298 -> weight raised 0.13->0.24"}
+      clim_twarm_q:   {weight: 0.14, type: range,       points: [18, 22, 30, 34],        ref: "20-30C optimal. 2026-09: ratio=1.812/16=0.113 (uniform in GO) -> weight trimmed 0.15->0.14"}
+      soil_ph:        {weight: 0.11, type: range,       points: [4.5, 5.5, 6.8, 7.5],    ref: "acidic-correctable to neutral. 2026-09: ratio=0.265/3=0.088 -> weight trimmed 0.15->0.11"}
+      clim_pr_annual: {weight: 0.10, type: range,      points: [800, 1100, 1800, 2200], ref: "ZARC season ~450-800mm; annual proxy, waterlogging at top. 2026-09: ratio=106.0/1400=0.076 (near-uniform 1373-1635mm in GO) -> weight cut 0.22->0.10, the segment's largest demotion"}
+      clim_aridity:   {weight: 0.09, type: range,       points: [0.4, 0.7, 1.2, 1.6],    ref: "P/PET water sufficiency. 2026-09: ratio=0.082/1.2=0.068, lowest of the segment (uniform in GO) -> weight cut 0.13->0.09"}
 
   sugarcane:
     label: Sugarcane
     mask: available
+    # 2026-09 weight recalibration (same method as soybean, see its header comment).
     factors:
-      clim_pr_annual: {weight: 0.20, type: range,      points: [900, 1300, 2000, 2600], ref: "higher water demand than soy (uniform in GO, non-discriminating)"}
-      terr_slope:     {weight: 0.18, type: decreasing,  points: [5, 10],                 ref: "2026-07-14: tightened from [6.84,11.31] to realized sugarcane flatness (p90 4.2deg)"}
-      clim_twarm_q:   {weight: 0.18, type: range,       points: [20, 24, 32, 36],        ref: "warm-loving C4"}
-      clim_dry_months: {weight: 0.16, type: range,      points: [1, 2, 5, 7],            ref: "dry ripening window. NOTE: clim_dry_months is a spatial CONSTANT (=5) in GO -> membership~1, non-discriminating (F1)"}
-      soil_awc:       {weight: 0.14, type: increasing,  points: [5, 20],                 ref: "deep water-holding"}
-      soil_clay:      {weight: 0.14, type: range,       points: [22, 32, 52, 66],        ref: "2026-07-14: tightened from [15,25,50,65] to penalize sandy soils (sugarcane clay p10 27, p50 36)"}
+      terr_slope:     {weight: 0.26, type: decreasing,  points: [5, 10],                 ref: "2026-07-14: tightened from [6.84,11.31] to realized sugarcane flatness (p90 4.2deg). 2026-09: ratio=2.246/5=0.449 -> weight raised 0.18->0.26"}
+      soil_awc:       {weight: 0.22, type: increasing,  points: [5, 20],                 ref: "deep water-holding. 2026-09: ratio=4.497/15=0.300 -> weight raised 0.14->0.22"}
+      soil_clay:      {weight: 0.22, type: range,       points: [22, 32, 52, 66],        ref: "2026-07-14: tightened from [15,25,50,65] to penalize sandy soils (sugarcane clay p10 27, p50 36). 2026-09: ratio=12.503/44=0.284 -> weight raised 0.14->0.22"}
+      clim_twarm_q:   {weight: 0.14, type: range,       points: [20, 24, 32, 36],        ref: "warm-loving C4. 2026-09: ratio=1.812/16=0.113 -> weight trimmed 0.18->0.14"}
+      clim_pr_annual: {weight: 0.10, type: range,      points: [900, 1300, 2000, 2600], ref: "higher water demand than soy. 2026-09: ratio=106.0/1700=0.062 (near-uniform in GO) -> weight cut 0.20->0.10"}
+      clim_dry_months: {weight: 0.06, type: range,      points: [1, 2, 5, 7],            ref: "dry ripening window. clim_dry_months is a spatial CONSTANT (=5) in GO -> ratio=0.000 (F1), the lowest possible discriminating power -> weight cut 0.16->0.06, the segment's floor"}
 
   other_crops:
     label: Other annual crops (corn/cotton/sorghum)
     mask: available
+    # 2026-09 weight recalibration (same method as soybean, see its header comment).
     factors:
-      clim_pr_annual: {weight: 0.20, type: range,      points: [700, 1000, 1700, 2200], ref: "rainfed second-season risk at low end (uniform in GO, non-discriminating)"}
-      clim_pr_cv:     {weight: 0.18, type: decreasing,  points: [0.6, 1.3],              ref: "rainfall reliability (lower CV better; uniform ~0.82 in GO)"}
-      terr_slope:     {weight: 0.18, type: decreasing,  points: [4, 8],                  ref: "2026-07-14: tightened from [4.57,8.53] to realized flatness (p90 4.7deg)"}
-      clim_gdd:       {weight: 0.15, type: range,       points: [2500, 3500, 5500, 7000],ref: "heat units, base 10C (uniform in GO)"}
-      soil_ph:        {weight: 0.15, type: range,       points: [4.5, 5.5, 6.8, 7.5],    ref: "fertility window"}
-      soil_soc:       {weight: 0.14, type: increasing,  points: [6, 20],                 ref: "2026-07-14: raised floor from [5,20]; organic-carbon fertility proxy (g/kg)"}
+      terr_slope:     {weight: 0.34, type: decreasing,  points: [4, 8],                  ref: "2026-07-14: tightened from [4.57,8.53] to realized flatness (p90 4.7deg). 2026-09: ratio=2.246/4=0.562, highest of the segment -> weight raised 0.18->0.34"}
+      soil_soc:       {weight: 0.23, type: increasing,  points: [6, 20],                 ref: "2026-07-14: raised floor from [5,20]; organic-carbon fertility proxy (g/kg). 2026-09: ratio=4.029/14=0.288 -> weight raised 0.14->0.23"}
+      clim_gdd:       {weight: 0.15, type: range,       points: [2500, 3500, 5500, 7000],ref: "heat units, base 10C. 2026-09: ratio=615.9/4500=0.137 -> weight unchanged"}
+      soil_ph:        {weight: 0.11, type: range,       points: [4.5, 5.5, 6.8, 7.5],    ref: "fertility window. 2026-09: ratio=0.265/3=0.088 -> weight trimmed 0.15->0.11"}
+      clim_pr_annual: {weight: 0.09, type: range,      points: [700, 1000, 1700, 2200], ref: "rainfed second-season risk at low end. 2026-09: ratio=106.0/1500=0.071 (near-uniform in GO) -> weight cut 0.20->0.09"}
+      clim_pr_cv:     {weight: 0.08, type: decreasing,  points: [0.6, 1.3],              ref: "rainfall reliability. 2026-09: ratio=0.043/0.7=0.061, lowest of the segment (uniform ~0.82 in GO) -> weight cut 0.18->0.08"}
 
   pisciculture:
     label: Pisciculture (pond/reservoir aquaculture)
     mask: available
+    # 2026-09 weight recalibration (same method as soybean; ratios computed over the
+    # `available` population, NOT the realized-pixel mask, because MapBiomas maps a
+    # single aquaculture pixel in GO+DF — too thin a sample to anchor against; T7's
+    # original design of using `available` land as the primary reference population
+    # already anticipated this).
     factors:
-      soil_clay:           {weight: 0.24, type: increasing, points: [15, 35],          ref: "clay holds pond water"}
-      sit_water_dist_seas: {weight: 0.22, type: decreasing, points: [750, 6000],       ref: "2026-07-14: REPLACES water_dist [500,5000]. Permanent water is 13.6km away (median) -> old factor floored (F2). This is distance to SEMI-PERMANENT water (GSW occ>50; median 2.3km) from feat_siting via sit_ routing"}
-      terr_slope:          {weight: 0.20, type: decreasing, points: [2.86, 5.71],      ref: "ponds need flat <5% (deg)"}
-      clim_twarm_q:        {weight: 0.18, type: range,      points: [22, 26, 32, 36],  ref: "warm-water tilapia"}
-      water_drain_density: {weight: 0.16, type: increasing, points: [0.01, 0.08],      ref: "local water availability; band is stream-cell fraction (max~0.15, p90~0.095)"}
+      terr_slope:          {weight: 0.27, type: decreasing, points: [2.86, 5.71],      ref: "ponds need flat <5% (deg). 2026-09: ratio=2.246/2.85=0.788, highest of the segment -> weight raised 0.20->0.27"}
+      soil_clay:           {weight: 0.25, type: increasing, points: [15, 35],          ref: "clay holds pond water. 2026-09: ratio=12.503/20=0.625 -> weight raised 0.24->0.25"}
+      sit_water_dist_seas: {weight: 0.24, type: decreasing, points: [750, 6000],       ref: "2026-07-14: REPLACES water_dist [500,5000]. Permanent water is 13.6km away (median) -> old factor floored (F2). Distance to SEMI-PERMANENT water (GSW occ>50; median 2.3km) from feat_siting via sit_ routing. 2026-09: ratio=2477.8/5250=0.472 -> weight raised 0.22->0.24"}
+      water_drain_density: {weight: 0.14, type: increasing, points: [0.01, 0.08],      ref: "local water availability; band is stream-cell fraction (max~0.15, p90~0.093, zero-inflated below p50). 2026-09: ratio=0.0127/0.07=0.181 -> weight trimmed 0.16->0.14"}
+      clim_twarm_q:        {weight: 0.10, type: range,      points: [22, 26, 32, 36],  ref: "warm-water tilapia. 2026-09: ratio=1.812/14=0.129, lowest of the segment -> weight cut 0.18->0.10"}
 
   cattle:
     label: Cattle / cultivated pasture
@@ -95,6 +108,11 @@ segments:
       # feasibility. GO climate is uniform (pr) or spatially CONSTANT (dry_months=5) so those factors
       # cannot discriminate -> demoted to low-weight feasibility gates; discrimination shifts to the
       # soil-moisture + SOC graders (steepened, weights raised). Weights re-normalized to sum 1.0.
+      # 2026-09 systematic recheck (T8/T10 revision, same discriminating-power method applied to all
+      # 7 segments): ratios over `available` land are dry_months=0.000 < pr_annual=0.056 <
+      # terr_slope=0.250 < soil_moist=0.338 < soil_soc=0.403 -- already monotonic with the existing
+      # weights (0.08<0.10<0.20<0.28<0.34). The 2026-07-14 ad hoc recalibration anticipated exactly
+      # what the systematic check now confirms; NO weight or breakpoint change needed here.
       clim_pr_annual:  {weight: 0.10, type: range,      points: [700, 1000, 2000, 2600], ref: "was w=0.22; UNIFORM in GO -> feasibility gate only"}
       clim_dry_months: {weight: 0.08, type: decreasing,  points: [4, 8],                  ref: "was w=0.22; spatially CONSTANT (=5) in GO -> non-discriminating, feasibility gate only (F1)"}
       clim_soil_moist: {weight: 0.28, type: increasing,  points: [55, 120],               ref: "was w=0.22 [20,120]; steepened to realized dry-tail (pasture p10 61, p25 91) -> primary moisture grader; poor-forage land now S3"}
@@ -121,17 +139,23 @@ segments:
     # rl_native_frac DEMOTED 0.35->0.08 (still the one sanctioned land-cover factor); phen_amplitude DROPPED.
     # cv_* routed from feat_conservation via `cv_` prefix (see src/membership._source_image); WDPA is a
     # governance layer, not land cover. Weights sum 1.0; finalized by the WS-C AHP elicitation.
-    # BREAKPOINTS below are placeholders -> to be percentile-anchored by tools/anchor_breakpoints.py (WS-A).
+    # 2026-09 (T8/T10 revision): breakpoints re-checked against the MapBiomas-based `available` mask
+    # (T10 swapped the mask source from ESA WorldCover; percentiles drift slightly from the 2026-07-25
+    # ESA-based numbers cited below, most visibly cv_pa_dist's lower tail). terr_twi's breakpoint (the
+    # one factor in this segment T7 never anchored) is tightened here; weights redistributed by the
+    # same discriminating-power method as the other 6 segments (see soybean's header comment) --
+    # cv_carbon's promotion is deliberately capped below its raw ratio rank because of the mild
+    # circularity caveat already on record.
     factors:
-      cv_pa_dist:          {weight: 0.20, type: decreasing, points: [5000, 40000], ref: "ANCHORED 2026-07-25 (all-land p10 1.8km/p50 22.8km/p90 50.9km; native sits closer, p50 19.2km): distance (m) to WDPA reserve; connectivity/consolidation. cv_ routing -> feat_conservation"}
-      clim_aridity:        {weight: 0.15, type: increasing, points: [0.95, 1.25],  ref: "ANCHORED 2026-07-25 (all-land p10-p90 1.05-1.21, +margin so present is engaged not saturated): MOVING water-balance viability P/PET; falls under warming -> conservation CMIP6 loser"}
-      cv_ruggedness:       {weight: 0.13, type: increasing, points: [5, 30],       ref: "ANCHORED 2026-07-25 (all-land p10 4.5/p50 13.5/p90 33.5 m; native MORE rugged p50 17.5): neighborhood elevation-std (m); habitat heterogeneity + low arability. cv_ routing"}
-      terr_twi:            {weight: 0.11, type: increasing, points: [6, 14],        ref: "wetness index -> riparian/recharge water service"}
-      cv_carbon:           {weight: 0.10, type: increasing, points: [10, 20],       ref: "ANCHORED 2026-07-25 (all-land p10 10.6/p50 14.1/p90 18.9 Mg C/ha - narrow range, Cerrado savanna; native slightly higher p50 14.9): carbon-storage service. cv_ routing. CAVEAT: biomass~forest (mild circularity), low-weight"}
-      water_drain_density: {weight: 0.09, type: increasing, points: [0.01, 0.08],  ref: "riparian/recharge water-service; stream-cell fraction (max~0.15, p90~0.095)"}
-      clim_twarm_q:        {weight: 0.09, type: decreasing, points: [23, 31],       ref: "ANCHORED 2026-07-25 (all-land p10-p90 23.8-27.2, wide ramp for a MODERATE response): MOVING heat/fire stress (warmest-quarter degC); rises under warming -> conservation CMIP6 loser"}
-      rl_native_frac:      {weight: 0.08, type: increasing, points: [0.25, 0.85],  ref: "DEMOTED 0.35->0.08 (de-circularization). The one sanctioned land-cover factor; native-veg fraction credits open Cerrado. rl_ routing"}
-      terr_slope:          {weight: 0.05, type: increasing, points: [2.86, 11.31], ref: "steep/marginal land = low opportunity cost of conservation (deg)"}
+      cv_pa_dist:          {weight: 0.17, type: decreasing, points: [5000, 40000], ref: "distance (m) to WDPA reserve; connectivity/consolidation. cv_ routing -> feat_conservation. 2026-09: ratio=24569/35000=0.702, highest of the segment (available p10 5.4km/p50 24.3km/p90 50.9km) -> weight trimmed slightly 0.20->0.17 only to make room for terr_twi/cv_ruggedness, still the top factor"}
+      cv_carbon:           {weight: 0.12, type: increasing, points: [10, 20],       ref: "carbon-storage service. cv_ routing. CAVEAT: biomass~forest (mild circularity) -- ratio=4.874/10=0.487 (2nd highest) would justify a bigger raise, but weight is deliberately held to 0.10->0.12 (not the full data-implied jump) because of that caveat"}
+      cv_ruggedness:       {weight: 0.15, type: increasing, points: [5, 30],       ref: "neighborhood elevation-std (m); habitat heterogeneity + low arability. cv_ routing. 2026-09: ratio=9.500/25=0.380 -> weight raised 0.13->0.15"}
+      terr_twi:            {weight: 0.13, type: increasing, points: [8.5, 11.2],   ref: "wetness index -> riparian/recharge water service. 2026-09 T7 gap closed: never anchored before (available p10 8.84/p90 10.97) -> tightened from placeholder [6,14] to [8.5,11.2]; ratio rises 0.936/8=0.117 -> 0.936/2.7=0.347 -> weight raised 0.11->0.13"}
+      rl_native_frac:      {weight: 0.10, type: increasing, points: [0.25, 0.85],  ref: "DEMOTED 0.35->0.08 in 2026-07-25 (de-circularization). The one sanctioned land-cover factor; native-veg fraction credits open Cerrado. rl_ routing. 2026-09: ratio=0.175/0.6=0.292 -> weight raised 0.08->0.10"}
+      clim_aridity:        {weight: 0.10, type: increasing, points: [0.95, 1.25],  ref: "MOVING water-balance viability P/PET; falls under warming -> conservation CMIP6 loser. 2026-09: ratio=0.082/0.3=0.273 -> weight trimmed 0.15->0.10"}
+      terr_slope:          {weight: 0.09, type: increasing, points: [2.86, 11.31], ref: "steep/marginal land = low opportunity cost of conservation (deg). 2026-09: ratio=2.246/8.45=0.266 -> weight raised 0.05->0.09"}
+      clim_twarm_q:        {weight: 0.08, type: decreasing, points: [23, 31],       ref: "MOVING heat/fire stress (warmest-quarter degC); rises under warming -> conservation CMIP6 loser. 2026-09: ratio=1.812/8=0.227 -> weight trimmed 0.09->0.08"}
+      water_drain_density: {weight: 0.06, type: increasing, points: [0.01, 0.08],  ref: "riparian/recharge water-service; stream-cell fraction (max~0.15, p90~0.093, zero-inflated below p50). 2026-09: ratio=0.0127/0.07=0.181, lowest of the segment -> weight cut 0.09->0.06"}
 
   solar:
     label: Solar PV generation
@@ -140,10 +164,15 @@ segments:
     # and clearness even more so (0.466-0.501); expect the variance test (membership.segment_spatial_std)
     # to flag solar as a SITING SCREEN rather than a graded surface -- an honest finding, reported not
     # hidden (robustness_plan.md 4). Dropped water_dist (minor); weights re-normalized to sum 1.0.
+    # 2026-09 (T8/T10 revision): access_logtt (the one factor T7 never anchored here) tightened to the
+    # realized range; weights redistributed by discriminating power (see soybean's header comment).
+    # Ratios are all fairly close for this segment (0.26-0.50) -- consistent with it being a near-
+    # uniform siting screen rather than a strongly graded surface -- so adjustments are milder than
+    # the crop segments.
     factors:
-      clim_srad:     {weight: 0.26, type: increasing, points: [186, 204],   ref: "2026-07-14: rescaled from [180,240] to realized p10-p90 (F3); irradiance W/m2 (primary)"}
-      sit_clearness: {weight: 0.20, type: increasing, points: [0.466, 0.501], ref: "2026-07-14 NEW: clearness index Kt=Rs/Ra (cloudiness proxy) from feat_siting via sit_ routing; p10-p90"}
-      terr_slope:    {weight: 0.18, type: decreasing, points: [2.86, 8.53], ref: "panel siting <5% optimal (deg)"}
-      clim_twarm_q:  {weight: 0.14, type: decreasing, points: [24, 31],     ref: "2026-07-14 NEW: PV panel efficiency de-rating with heat (warmest-quarter degC)"}
-      access_logtt:  {weight: 0.14, type: decreasing, points: [3, 6],       ref: "near grid/cities; log(min+1)"}
-      terr_northing: {weight: 0.08, type: increasing, points: [-0.3, 0.5],  ref: "N-facing slopes favored (S. hemisphere); cos(aspect)"}
+      clim_srad:     {weight: 0.22, type: increasing, points: [186, 204],   ref: "2026-07-14: rescaled from [180,240] to realized p10-p90 (F3); irradiance W/m2 (primary). 2026-09: ratio=7.875/18=0.437 -> weight trimmed 0.26->0.22, no longer the top discriminator once access_logtt is properly anchored"}
+      sit_clearness: {weight: 0.22, type: increasing, points: [0.466, 0.501], ref: "2026-07-14 NEW: clearness index Kt=Rs/Ra (cloudiness proxy) from feat_siting via sit_ routing; p10-p90. 2026-09: ratio=0.0154/0.035=0.439 -> weight raised 0.20->0.22"}
+      terr_northing: {weight: 0.15, type: increasing, points: [-0.3, 0.5],  ref: "N-facing slopes favored (S. hemisphere); cos(aspect). 2026-09: ratio=0.398/0.8=0.498, highest of the segment -> weight nearly doubled 0.08->0.15"}
+      terr_slope:    {weight: 0.17, type: decreasing, points: [2.86, 8.53], ref: "panel siting <5% optimal (deg). 2026-09: ratio=2.246/5.67=0.396 -> weight unchanged-ish 0.18->0.17"}
+      access_logtt:  {weight: 0.14, type: decreasing, points: [3.5, 5.4],   ref: "near grid/cities; log(min+1). 2026-09 T7 gap closed: never anchored before (available p10 3.52/p90 5.23) -> tightened from placeholder [3,6] to [3.5,5.4]; ratio rises 0.906/3=0.302 -> 0.906/1.9=0.477 -> weight unchanged 0.14->0.14"}
+      clim_twarm_q:  {weight: 0.10, type: decreasing, points: [24, 31],     ref: "2026-07-14 NEW: PV panel efficiency de-rating with heat (warmest-quarter degC). 2026-09: ratio=1.812/7=0.259, lowest of the segment -> weight cut 0.14->0.10"}

@@ -4,11 +4,11 @@
 
 O zoneamento responde à QP1: o agrupamento descorrelacionado resolve GO~e~DF em sete zonas
 biofisicamente distintas, que se agrupam em cinco vocações comparativas --- dois planaltos de
-cultivo (Zonas~0 e~5, a primeira com maior viabilidade de culturas e cultivo atual mais denso);
-um planalto alto e argiloso mais adequado à pecuária extensiva (Zona~2); duas planícies quentes
-e de alta irradiância voltadas à geração fotovoltaica (Zonas~1 e~4, esta última terra marginal);
-uma baixada ripária voltada à aquicultura (Zona~3); e um planalto alto, íngreme e rico em
-carbono onde a viabilidade de culturas colapsa e a conservação é o melhor uso (Zona~6, com
+cultivo (Zonas~1 e~6, a primeira com maior viabilidade de culturas e cultivo atual mais denso);
+um planalto alto e argiloso mais adequado à pecuária extensiva (Zona~3); duas planícies quentes
+e de alta irradiância voltadas à geração fotovoltaica (Zonas~2 e~5, esta última terra marginal);
+uma baixada ripária voltada à aquicultura (Zona~4); e um planalto alto, íngreme e rico em
+carbono onde a viabilidade de culturas colapsa e a conservação é o melhor uso (Zona~7, com
 78\% de Cerrado nativo). Essa partição usa apenas atributos biofísicos --- nunca a cobertura da
 terra --- e ainda assim reproduz a geografia observada do uso do território, o que sustenta sua
 plausibilidade. O padrão subjacente é que GO~e~DF é climaticamente quase uniforme: quem separa
@@ -109,7 +109,6 @@ para trabalho futuro.
     vertical absoluta especificada em~16~m (\emph{linear error} a 90\% de confiança) e vazios de
     sombra de radar/água que o \emph{pipeline} não trata antes de reamostrar para 250~m por média
     (elevação, declive, orientação) ou interpolação bilinear (índice topográfico de umidade).
-  % TODO acho que vale fazer uma analise de impacto dos fatores de maneira mais elaborada, ao inves de comparar clima com terreno+solo, fazer uma analise agrupada por tema levando em consideração a estrutura do modelo e da padronização das variaveis
   \item \textbf{Descompasso de escala clima--solo.} As entradas climáticas ($\approx$4,6~km,
     TerraClimate) são bem mais grosseiras que solo e terreno (250~m). Um levantamento do
     catálogo do GEE não encontrou alternativa viável: WorldClim é mais fino ($\approx$927~m) mas
@@ -125,7 +124,22 @@ para trabalho futuro.
     quase uniforme em todo o território (Figura~\ref{fig:scale-mismatch},
     Tabela~\ref{tab:scale-mismatch} do Anexo). A resolução nominal do clima é, portanto,
     enganosa apenas em aparência: o impacto prático é pequeno porque a estrutura fina do atlas
-    nunca dependeu dela.
+    nunca dependeu dela. Essa leitura --- clima \emph{versus} terreno+solo como dois blocos ---
+    simplifica, porém, a estrutura real do modelo se aplicada ingenuamente por \emph{prefixo de
+    origem do dado} em vez de por \emph{papel temático}: agregando a decomposição por fator
+    (Figura~\ref{fig:factor-variance}) por tema, e não só por segmento isolado, o clima explica
+    0,15 da variância territorial média, mas essa média esconde dois extremos. Para a geração
+    solar, a irradiância (\texttt{clim\_srad}, 0,46) é um sinal climático genuíno --- a única
+    variável verdadeiramente espacial de origem climática que domina um segmento. Já para a
+    pecuária, o fator dominante nominalmente rotulado ``clima'' é a umidade do solo do TerraClimate
+    (\texttt{clim\_soil\_moist}, 0,58): tematicamente, essa variável descreve armazenamento de
+    água no solo, não um gradiente climático espacial, e vem rotulada ``clima'' apenas porque o
+    produto de origem é um balanço hídrico climático. Reclassificando-a pelo papel temático em vez
+    do prefixo da banda, a parcela de terreno+solo da pecuária sobe de 0,42 para 1,00 e sua parcela
+    climática cai a zero --- coerente com o restante das culturas. A nomenclatura de origem do
+    dado, portanto, não deve ser confundida com o papel temático da variável no modelo: é a
+    padronização (\S\ref{sec:fuzzy-standard}) e a estrutura de agregação por fator que definem o
+    que conta como ``clima'', não o catálogo de onde a banda foi extraída.
   \item \textbf{Sobrepermissividade residual das culturas.} As superfícies de culturas
     permanecem mais permissivas que o nicho realizado ($\kappa=0{,}23$ em amostra;
     $\kappa=0{,}07$ sob validação espacial). Separar regra especialista larga de lacuna
@@ -135,6 +149,14 @@ para trabalho futuro.
     primária da vegetação, não rendimento agronômico \citep{Turner2006,He2018}, e a confusão
     entre coberturas limita seu uso a contexto descritivo; AUC e Boyce seguem como validadores
     primários de presença de cultura.
+  \item \textbf{Piscicultura tem uso realizado quase inexistente no MapBiomas.} A revisão de
+    2026-09 dos limiares e pesos (\S\ref{sec:ahp}) encontrou apenas um único pixel de aquicultura
+    mapeado pelo MapBiomas em todo o território GO~e~DF --- amostra insuficiente para ancorar
+    limiares ou validar presença contra esse uso realizado. A calibração da piscicultura
+    permanece ancorada na terra genericamente \emph{disponível}, não no nicho realizado
+    (\texttt{tools/anchor\_breakpoints.py}), e nenhum validador de presença (Boyce/AUC) é
+    reportado para esse segmento pela mesma razão --- uma lacuna genuína, não um problema de
+    metodologia corrigível dentro do desenho GEE-nativo atual.
   \item \textbf{Fronteiras municipais e projeção futura.} O limite administrativo usado é mais
     grosseiro que uma malha municipal de precisão nacional. E a projeção CMIP6, como qualquer
     projeção por fatores de mudança \citep{RamirezVillegas2010,Hay2000}, só pode ser sustentada
@@ -151,8 +173,14 @@ geração fotovoltaica e pecuária passem a carregar sinal climático completo. 
 validação: incorporar um validador ancorado em rendimento (estatísticas agrícolas municipais, por
 exemplo) e estender a verificação cruzada com floresta aleatória e blocos espaciais a todos os
 segmentos.
-Uma terceira direção é acrescentar uma camada econômica (preços, posse da terra, infraestrutura), 
+Uma terceira direção é acrescentar uma camada econômica (preços, posse da terra, infraestrutura),
 que converteria parte da lacuna potencial \emph{versus} realizado de resíduo em quantidade modelada.
+Uma quarta é explorar modelos espacialmente explícitos (por exemplo, regressão com defasagem
+espacial ou um termo autorregressivo condicional) para capturar efeitos de vizinhança entre
+células --- o mecanismo fuzzy/AHP atual trata cada pixel de forma independente, e já produz uma
+interpretação espacial coerente (\S\ref{sec:interpretation}), mas não modela explicitamente a
+dependência espacial entre células vizinhas, que poderia refinar tanto o zoneamento quanto a
+leitura de incerteza da projeção futura.
 
 Também fica pendente publicar os entregáveis (como o código fonte, um atlas interativo, um \emph{ranking}
 municipal de oportunidade/vulnerabilidade), para que estes sejam exploráveis

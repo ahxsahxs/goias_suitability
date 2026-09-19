@@ -2,6 +2,10 @@
 
   zoning_kselect.csv    — cluster-validity + stability sweep over k (fig_4_10)
   factor_variance.csv   — per-segment factor share of suitability variance (fig_4_11)
+  factor_variance_theme.csv — theme-grouped roll-up of the above (climate /
+                           terrain+soil / other), raw prefix-based grouping and a
+                           thematically-relabelled one (clim_soil_moist -> soil);
+                           offline pandas only, no new GEE compute
   theme_roughness.csv   — spatial local-std of climate vs. terrain/soil, per
                            window radius (fig_4_12; revision point 5 companion
                            to factor_variance.csv's pooled decomposition)
@@ -66,7 +70,7 @@ def gen_zoning_kselect():
                   ("soybean", "sugarcane", "other_crops", "pasture", "native")]
     bands = zoning.ZONING_BANDS
     log("zoning: sample + PCA + k-sweep + gap + stability (seed=42) ...")
-    sample = zoning.build_sample(z, raw, suit_a, AOI, bands, n=15000, seed=42,
+    sample = zoning.build_sample(z, raw, suit_a, AOI, bands, segments=SEGS, seed=42,
                                  extra=realized.select(frac_bands))
     df = zoning.fc_to_df(sample)
     X = zoning.cluster_matrix(df, bands)
@@ -122,6 +126,48 @@ def gen_factor_variance():
     out = OUT / "factor_variance.csv"
     pd.DataFrame(rows).to_csv(out, index=False)
     log(f"  wrote {out}")
+
+
+# --- factor_variance_theme.csv (theme-grouped roll-up of factor_variance.csv,
+# offline pandas only — no new GEE compute) ------------------------------------
+# clim_soil_moist is provenance-climate (TerraClimate water balance) but
+# thematically a soil/root-zone-moisture variable, not a spatial climate
+# gradient — flagged separately so a reader doesn't mistake cattle's high
+# "climate" share for genuine climatic discrimination (see discussion §Discussão).
+THEME_RELABEL = {"clim_soil_moist": "terrain_soil"}
+
+
+def _variance_theme_group(factor):
+    if factor in THEME_RELABEL:
+        return THEME_RELABEL[factor]
+    if factor.startswith("clim_"):
+        return "climate"
+    if factor.startswith(("terr_", "soil_")):
+        return "terrain_soil"
+    return "other"
+
+
+def gen_factor_variance_theme():
+    src = OUT / "factor_variance.csv"
+    if not src.exists():
+        src = THESIS_DIR / "factor_variance.csv"
+    df = pd.read_csv(src)
+    df["theme_raw"] = df["factor"].apply(
+        lambda f: "climate" if f.startswith("clim_")
+        else ("terrain_soil" if f.startswith(("terr_", "soil_")) else "other"))
+    df["theme"] = df["factor"].apply(_variance_theme_group)
+    raw = (df.pivot_table(index="segment", columns="theme_raw", values="variance_share",
+                           aggfunc="sum", fill_value=0.0)
+             .reindex(columns=["climate", "terrain_soil", "other"], fill_value=0.0)
+             .add_prefix("raw_"))
+    relabelled = (df.pivot_table(index="segment", columns="theme", values="variance_share",
+                                  aggfunc="sum", fill_value=0.0)
+                    .reindex(columns=["climate", "terrain_soil", "other"], fill_value=0.0)
+                    .add_prefix("theme_"))
+    out_df = raw.join(relabelled).round(3).reset_index()
+    out = OUT / "factor_variance_theme.csv"
+    out_df.to_csv(out, index=False)
+    log(f"  wrote {out}\n" + out_df.to_string(index=False))
 
 
 # --- theme_roughness.csv (Point 5: spatial climate vs. terrain/soil local
@@ -193,6 +239,7 @@ def main():
         gen_zoning_kselect()
     if what in ("variance", "all"):
         gen_factor_variance()
+        gen_factor_variance_theme()
     if what in ("roughness", "all"):
         gen_theme_roughness()
     log("=== done ===")

@@ -151,9 +151,10 @@ FEATURE_SPECS = [
         viz="access_logtt", vis="{'min': 0, 'max': 7, 'palette': ['green','yellow','red']}",
     ),
     dict(
-        nb="07b_landcover_mask.ipynb", part="7b", title="Generic land-cover mask (ESA WorldCover)",
-        builder="landcover_features", asset="feat_landcover",
-        source="`ESA/WorldCover/v200` (10 m, 2021), aggregated to 250 m",
+        nb="07b_landcover_mask.ipynb", part="7b", title="Generic land-cover mask (MapBiomas)",
+        builder="landcover_features_mapbiomas", asset="feat_landcover",
+        source="MapBiomas collection 10 classification (30 m), aggregated to 250 m — replaces "
+               "ESA WorldCover (T10, 2026-09; `landcover_features` kept for reference)",
         dod="built-up around Goiânia/Brasília and major reservoirs excluded.",
         viz="mask_excluded", vis="{'min': 0, 'max': 1, 'palette': ['white','black']}",
     ),
@@ -393,7 +394,7 @@ write(
             "`fc_to_df` getInfo for an `Export.table` to Drive."
         ),
         code(
-            "sample = zoning.build_sample(z, raw, suit, aoi, band_names, n=15000, seed=42,\n"
+            "sample = zoning.build_sample(z, raw, suit, aoi, band_names, segments=segs, seed=42,\n"
             "                             extra=realized.select(frac_bands))\n"
             "df = zoning.fc_to_df(sample)\n"
             "# theme-block-weighted design matrix, then PCA (>=90% variance) to decorrelate\n"

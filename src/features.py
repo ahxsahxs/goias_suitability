@@ -347,9 +347,68 @@ def access_features(aoi) -> "ee.Image":
 
 
 # =============================================================================
-# Part 7b — Generic land-cover mask (ESA WorldCover)  [mask/context only]
+# Part 7b — Generic land-cover mask  [mask/context only]
+# -----------------------------------------------------------------------------
+# T10 (2026-09 revision cycle, CLAUDE.md §10): `landcover_features_mapbiomas`
+# below is now the source for the `feat_landcover` asset, replacing the ESA
+# WorldCover builder (`landcover_features`, kept for reference/fallback and
+# still import-safe/callable). Motivation: ESA WorldCover is a global 10 m
+# product with no Brazil-specific calibration, while MapBiomas (already Phase
+# B's realized-use source, Part 13) is purpose-built for Brazilian land cover.
+# Using it for BOTH the Phase-A generic mask and the Phase-B realized-use signal
+# does not make `realized_vs_potential` (QP2) circular: this builder only reads
+# generic cover-TYPE groupings (tree/savanna/forest-plantation, cropland,
+# grassland/pasture — `config/mapbiomas_classes.yaml::landcover_groups`), never
+# a per-crop role. It is computed independently from
+# `external.realized_features` (no Phase-A -> Phase-B dependency, so the
+# Parts 1-8 -> 9-11 -> 12-14 build order is unchanged) and produces exactly the
+# same band set as the ESA builder (`lc_mode`/`lc_tree_frac`/`lc_crop_frac`/
+# `lc_grass_frac`/`mask_excluded`/`mask_available`), so no downstream code
+# (`src/membership.py`'s `apply_mask`) needs to change. See the non-circularity
+# paragraph in `thesis/Chapters/03_methodology.tex` §Uso atual da terra.
 # =============================================================================
+def landcover_features_mapbiomas(aoi, year: "int | None" = None) -> "ee.Image":
+    """Generic land-cover mask/context sourced from MapBiomas (supersedes ESA)."""
+    mb = cfg()["mapbiomas"]
+    mbcls = cfg("mapbiomas_classes")
+    band = mb["band_pattern"].format(year=year or mb["current_year"])
+    src = ee.Image(mb["asset"]).select(band)
+    proj = grid_projection()
+
+    mode = (
+        src.reduceResolution(ee.Reducer.mode(), maxPixels=1024)
+        .reproject(proj)
+        .rename("lc_mode")
+    )
+
+    groups = mbcls["landcover_groups"]
+
+    def frac(codes, name):
+        return (
+            src.remap(codes, [1] * len(codes), 0)
+            .reduceResolution(ee.Reducer.mean(), maxPixels=1024)
+            .reproject(proj)
+            .rename(name)
+        )
+
+    tree = frac(groups["tree"], "lc_tree_frac")
+    crop = frac(groups["crop"], "lc_crop_frac")
+    grass = frac(groups["grass"], "lc_grass_frac")
+
+    excluded = mode.remap(mbcls["excluded"], [1] * len(mbcls["excluded"]), 0).rename(
+        "mask_excluded"
+    )
+    available = mode.remap(mbcls["available"], [1] * len(mbcls["available"]), 0).rename(
+        "mask_available"
+    )
+
+    return ee.Image.cat([mode, tree, crop, grass, excluded, available]).clip(aoi)
+
+
 def landcover_features(aoi) -> "ee.Image":
+    """ESA WorldCover builder — superseded by `landcover_features_mapbiomas` (T10,
+    2026-09) as the `feat_landcover` source. Kept for reference/fallback; same
+    band set, so either can drive `src/membership.py` unchanged."""
     lc = cfg()["landcover"]
     cls = lc["classes"]
     coll = ee.ImageCollection(lc["worldcover"])
@@ -527,7 +586,7 @@ THEME_BUILDERS = {
     "water": water_features,
     "phenology": phenology_features,
     "access": access_features,
-    "landcover": landcover_features,
+    "landcover": landcover_features_mapbiomas,  # T10 (2026-09): was landcover_features (ESA)
     "siting": siting_features,        # Part 7c; consumed via membership sit_ routing, not stacked
     "conservation": conservation_features,  # Part 7d; consumed via membership cv_ routing, not stacked
 }

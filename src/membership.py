@@ -11,8 +11,11 @@ import-/syntax-checkable without Earth Engine authentication. Pass the segments
 config in (``utils.cfg('segments')``) — this keeps the module decoupled.
 
 Asset inputs: raw stack ``feature_stack_250m`` (Part 8) + ``feat_landcover``
-(Part 7b masks). Land cover feeds suitability only via conservation's sanctioned
-``lc_tree_frac`` supportive factor (see segments.yaml guardrail note).
+(Part 7b masks, ``lc_`` prefix). Land cover feeds suitability only via
+conservation's sanctioned ``rl_native_frac`` supportive factor, sourced from the
+Phase-B realized-use image via the ``rl_`` extras prefix (see segments.yaml
+guardrail note) — ``feat_landcover``'s own ``lc_tree_frac``/``lc_crop_frac``/
+``lc_grass_frac`` are descriptive/profiling bands, not consumed by any segment.
 """
 from __future__ import annotations
 

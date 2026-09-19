@@ -71,9 +71,13 @@ faixa empírica $\approx$~0--0,15, que governa seus limiares de pertinência). A
 por quatro parâmetros harmônicos do ciclo sazonal de NDVI. A acessibilidade é o logaritmo do tempo
 de viagem até a cidade mais próxima.
 
-A cobertura genérica da terra (ESA WorldCover) gera as máscaras de áreas \emph{excluídas} e
-\emph{disponíveis}, além de frações de cobertura por classe para contexto; na Fase~B ela é
-substituída pelo produto de uso da terra específico para a realidade brasileira.
+A cobertura genérica da terra gera as máscaras de áreas \emph{excluídas} e \emph{disponíveis}, além
+de frações de cobertura por classe para contexto. Essa camada é derivada do MapBiomas (coleção~10),
+substituindo o ESA WorldCover global de 10~m usado numa iteração anterior por um produto calibrado
+especificamente para o Brasil --- a justificativa de que isso não torna circular a comparação
+potencial-\emph{versus}-realizado está em \S\ref{sec:phaseb}. Na Fase~B, o mesmo MapBiomas alimenta,
+por uma derivação distinta (papel de uso realizado por cultura, não um agrupamento genérico de
+cobertura), o sinal de uso atual da terra.
 
 \section{Viabilidade baseada em conhecimento (pertinência fuzzy + AHP)}\label{sec:suitability}
 
@@ -82,9 +86,21 @@ mascarada pela cobertura da terra e classificada nas classes da FAO, seguindo a 
 do arcabouço de avaliação de terras da FAO \citep{NisarAhamed2000,YaghmaeianMahabadi2012}. A
 especificação completa por segmento --- fator, peso, forma e limiares --- está na Tabela~\ref{tab:spec-longtable} do Anexo.
 
-% TODO reajustar limiares de pertinencia de acordo com valores amostrais (e.g. baseados na mediana e percentis),
-% ainda mantendo coerencia com a literatura.
-
+Os limiares móveis (não fixados por um padrão técnico, como um limite legal de declive) foram
+ancorados empiricamente antes de fixados: para cada fator candidato, a distribuição percentual
+($P_5,\dots,P_{95}$) foi extraída sobre a terra \emph{disponível} da AOI e, separadamente, sobre os
+pixels realizados de cada segmento no MapBiomas (\texttt{tools/anchor\_breakpoints.py}), e o limiar
+literário só foi mantido quando coerente com essa distribuição amostral --- caso contrário,
+deslocado para dentro do intervalo realmente observado em GO~e~DF, sem abandonar a forma funcional
+nem a ordenação relativa da literatura. Esse procedimento é só-leitura e não escreve nenhum
+\emph{asset}: a máscara de uso realizado apenas informa a calibração especialista, nunca entra como
+insumo da viabilidade em si. Uma revisão de 2026-09 estendeu essa ancoragem, antes restrita a um
+subconjunto de fatores (culturas, pecuária, radiação solar), para cobrir os \textbf{sete segmentos e
+todos os seus fatores} --- incluindo os de conservação (\texttt{cv\_pa\_dist}, \texttt{cv\_ruggedness},
+\texttt{cv\_carbon}, \texttt{terr\_twi}, \texttt{rl\_native\_frac}) e os de solar/pisciculture ainda
+não cobertos (\texttt{sit\_clearness}, \texttt{terr\_northing}, \texttt{access\_logtt},
+\texttt{water\_drain\_density}) --- e a incluir pixels realizados de pisciculture e de vegetação
+nativa/conservação, antes ausentes da amostra de referência.
 
 \subsection{Padronização da pertinência fuzzy}\label{sec:fuzzy-standard}
 
@@ -151,6 +167,22 @@ par a par é registrada por completo. Todos os segmentos são folgadamente consi
 maior razão de consistência entre os sete (Tabela~\ref{tab:ahp-cr} do Anexo). Os pesos se apoiam,
 assim, em uma elicitação auditável e internamente coerente, e não em mera afirmação.
 
+Os próprios pesos, além dos limiares, foram revistos frente à distribuição amostral (revisão de
+2026-09): para cada fator, a amplitude interquartil ($P_{75}-P_{25}$) sobre a terra disponível é
+comparada à amplitude do seu próprio limiar de pertinência em \texttt{config/segments.yaml}. Um
+fator cuja distribuição real é estreita frente a esse intervalo é, na prática, quase constante em
+GO~e~DF --- toda a área recebe uma pertinência próxima de 1, e o fator não separa uma célula da
+outra --- por mais importante que a literatura o considere \emph{a priori}. A revisão desloca peso
+dos fatores de baixo poder discriminante para os de alto poder discriminante dentro do mesmo
+segmento, renormalizando para somar~1; a literatura fixa a \emph{forma} funcional de cada
+pertinência e o conjunto de fatores candidatos, mas não mais congela a ordem final de importância
+quando a evidência amostral aponta o contrário --- a mesma lógica, e a mesma direção de ajuste, já
+aplicada de forma pontual à pecuária e ao solar em 2026-07-14 (onde precipitação e meses secos,
+quase constantes no território, cederam peso à umidade do solo e ao carbono orgânico), agora
+generalizada aos sete segmentos com o mesmo critério quantitativo (a razão IQR/amplitude). A matriz
+de comparação par a par (Tabela~\ref{tab:ahp-cr} do Anexo) é reconstruída a partir dos novos pesos
+(\texttt{tools/build\_ahp.py}), preservando a razão de consistência $\le 0{,}10$.
+
 Como os pesos são subjetivos, sua influência é adicionalmente limitada por uma perturbação de
 $\pm 20\%$, um peso de cada vez: cada peso é ampliado e reduzido em 20\% (com renormalização), e a
 amplitude $S_{\max} - S_{\min}$ da viabilidade resultante é relatada como banda de robustez por
@@ -194,12 +226,16 @@ O número de zonas é selecionado em $k = 2,\dots,10$ pela silhueta média \cite
 índice de Davies--Bouldin \citep{Davies1979} e pela estatística de \emph{gap} em conjunto
 \citep{Ikotun2025}, que indicam $k = 7$.
 
-\textbf{Estimação.} O agrupamento é estimado fora da plataforma sobre uma amostra estratificada de
-$\approx$~15.000 células; o raster completo é então projetado nos eixos da PCA por aritmética de
-bandas e classificado no servidor pelo centroide mais próximo.
-
-% TODO os tamanhos amostrais deveriam ser maiores sempre que uma analise estatistica esta sendo feita
-% isso vale para todas as etapas. Alem disso é necessario ter estratificaçao espacial e por segmento
+\textbf{Estimação.} O agrupamento é estimado fora da plataforma sobre uma amostra estratificada por
+grade espacial (uma malha $8\times8$ sobre a extensão de GO~e~DF) cruzada com o segmento
+comparativamente dominante em cada pixel --- garantindo representação tanto espacial quanto de
+nichos estreitos de um único segmento (p.~ex., a faixa ripária da pisciculture) --- com alvo de
+$\approx$~40.000 pontos, mais do que o dobro da amostra uniforme anterior ($\approx$~15.000). O
+raster completo é então projetado nos eixos da PCA por aritmética de bandas e classificado no
+servidor pelo centroide mais próximo. A mesma estratificação espacial substitui a amostragem
+uniforme nas etapas de validação (\S\ref{sec:phaseb}): o teto de amostra sobe de 4.500 para 20.000
+pontos, viabilizado por uma leitura paginada (\texttt{computeFeatures}) que deixa de estar limitada
+ao teto de 5.000 elementos de uma única chamada \texttt{getInfo}.
 
 \textbf{Caracterização das zonas.} Para cada zona calculam-se a média de cada atributo, a viabilidade
 média de cada segmento e a composição do uso atual da terra. As zonas são rotuladas pelo
@@ -272,15 +308,32 @@ fração de GCMs cujo sinal de mudança coincide com o sinal da média,
 \end{equation*}
 com $A > 0{,}5$ indicando a concordância da maioria.
 
-% TODO a superficie de concordancia é praticamente toda azul, sendo portanto nao informativa.
-% Talvez de pra substituir por um numero ao inves de uma imagem.
+Na prática, essa concordância é alta e quase uniforme nos sete segmentos sob SSP5-8.5 2051--2070:
+a média territorial varia de 0,97 (pecuária) a 1,00 (pisciculture, solar e conservação), com
+mediana igual a 1,00 em todos os segmentos --- os cinco GCMs do conjunto raramente discordam do
+sinal de mudança. O corolário é que a \emph{superfície} de concordância (Figura~\ref{fig:ensemble-agreement}
+do Anexo) tem, em si, pouco contraste espacial para revelar: ela documenta que o sinal do CMIP6 é
+robusto ao GCM escolhido, mais do que localiza \emph{onde} a incerteza entre modelos se concentra.
 
 \section{Uso atual da terra e validação (Fase B)}\label{sec:phaseb}
 
 A Fase~B fundamenta o atlas frente ao uso atual da terra e a um indicador indireto (\emph{proxy}) de
 produtividade (NPP do MODIS), respondendo a QP2 e validando QP1.
 
-% TODO o Mapbiomas poderia ser utilizado como fonte unica, substituindo o ESA WorldCover na Fase A
+Até uma iteração anterior, a Fase~A usava o ESA WorldCover --- um produto global de 10~m, sem
+calibração específica para o Brasil --- apenas para as máscaras genéricas de área
+\emph{disponível}/\emph{excluída} (\S\ref{sec:suitability}), enquanto a Fase~B já usava o MapBiomas
+para o sinal de uso realizado. Esta iteração unifica a fonte: a máscara genérica da Fase~A passa a
+ser derivada do MapBiomas também, por um agrupamento de classes em cobertura arbórea, lavoura e
+pastagem (\texttt{config/mapbiomas\_classes.yaml}, chave \texttt{landcover\_groups}), computado de
+forma independente do papel por cultura da Fase~B (\texttt{rl\_role}, abaixo). Usar a mesma fonte
+nas duas fases não torna circular a comparação potencial-\emph{versus}-realizado (QP2): a máscara da
+Fase~A nunca informa \emph{onde uma cultura específica já está} --- apenas quais classes genéricas
+(urbano, água, mineração) tornam um pixel inelegível para qualquer segmento --- ao passo que o sinal
+de uso realizado por cultura, usado na comparação, vem exclusivamente do papel \texttt{rl\_role} da
+Fase~B. As duas camadas são computadas por funções independentes
+(\texttt{features.landcover\_features\_mapbiomas} e \texttt{external.realized\_features}), sem que
+uma dependa da saída da outra, preservando a ordem de construção Partes~1--8~$\rightarrow$~9--11~$\rightarrow$~12--14.
 
 A agregação municipal constitui o primeiro eixo: os municípios agregam, por redução zonal, a
 viabilidade atual, o mapa de zonas e as mudanças projetadas. Em seguida, o uso atual da terra é

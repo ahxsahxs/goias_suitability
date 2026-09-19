@@ -22,6 +22,7 @@ import pandas as pd  # noqa: E402
 import utils  # noqa: E402
 import external  # noqa: E402
 import metrics  # noqa: E402
+import zoning  # noqa: E402
 
 P = utils.init()
 AOI = utils.load_aoi(P)
@@ -42,7 +43,15 @@ suit = ee.Image(aid("suit_present"))
 realized = ee.Image(aid("feat_realized"))
 Z = ee.Image(aid("feature_stack_250m_z"))
 TS = 8  # tileScale: trade compute-tiles for lower per-tile memory
-CAP = 4500  # keep getInfo'd samples under the 5000-element collection cap
+# T8 (2026-09): CAP was 4500 to keep a plain `.sample(...).getInfo()` under the
+# 5000-element collection-query cap. Retrieval now goes through zoning.fc_to_df's
+# paged `computeFeatures` reader instead (same one Part 10 already uses), which
+# is NOT subject to that cap, so the sample can be much larger. GRID adds spatial
+# stratification (zoning.build_strat_band) on top of each block's existing
+# per-class restriction, so both dimensions T8 asks for (spatial + per-segment/
+# per-class) are covered — rf_kappa already stratified by class (`presence`).
+CAP = 20000
+GRID = zoning.build_strat_band(AOI, n_side=8)
 
 
 def block(name, fn):
@@ -72,13 +81,13 @@ def spearman_mod17():
 # 2. within-crop season-GPP gradient (repaired validator) -------------------------
 def within_crop():
     gpp = external.season_gpp(AOI)
+    n_strata = 8 * 8
     for crop in ["soybean", "sugarcane", "other_crops"]:
         m = realized.select("rl_role").eq(external.ROLE_CODES[crop])
-        smp = (suit.select(f"suit_{crop}").addBands(gpp).updateMask(m)
-               .sample(region=AOI, scale=250, numPixels=CAP, seed=7,
-                       dropNulls=True, tileScale=TS)
-               .getInfo()["features"])
-        g = pd.DataFrame([f["properties"] for f in smp])
+        smp = (suit.select(f"suit_{crop}").addBands(gpp).addBands(GRID).updateMask(m)
+               .stratifiedSample(numPoints=max(1, CAP // n_strata), classBand="strat_grid",
+                                 region=AOI, scale=250, seed=7, dropNulls=True, tileScale=TS))
+        g = zoning.fc_to_df(smp)
         r = metrics.within_crop_gradient(g[f"suit_{crop}"], g["season_gpp"])
         print(f"  {crop:12s} rho={r['rho']:+.3f} p={r['p']:.1e} n={r['n']} "
               f"monotonic={r['monotonic']}  bin_gpp={[round(v,4) for v in r['bin_gpp']]}")
@@ -86,11 +95,11 @@ def within_crop():
 
 # 3. soybean Boyce / AUC ----------------------------------------------------------
 def boyce_auc():
-    smp = (suit.select("suit_soybean").addBands(realized.select("rl_role"))
-           .sample(region=AOI, scale=250, numPixels=CAP, seed=1,
-                   dropNulls=True, tileScale=TS)
-           .getInfo()["features"])
-    sdf = pd.DataFrame([f["properties"] for f in smp])
+    n_strata = 8 * 8
+    smp = (suit.select("suit_soybean").addBands(realized.select("rl_role")).addBands(GRID)
+           .stratifiedSample(numPoints=max(1, CAP // n_strata), classBand="strat_grid",
+                             region=AOI, scale=250, seed=1, dropNulls=True, tileScale=TS))
+    sdf = zoning.fc_to_df(smp)
     pres = sdf[sdf.rl_role == external.ROLE_CODES["soybean"]]["suit_soybean"]
     print(f"  soybean presence pixels in sample: {len(pres)} / {len(sdf)}")
     print("  soybean Boyce index:",
@@ -103,11 +112,11 @@ def boyce_auc():
 def anova_zones():
     proxy = external.mod17_proxy(AOI)
     zones = ee.Image(aid("zones_present")).rename("zone")
-    zs = (proxy.addBands(zones)
-          .sample(region=AOI, scale=1000, numPixels=CAP, seed=2,
-                  dropNulls=True, tileScale=TS)
-          .getInfo()["features"])
-    zdf = pd.DataFrame([f["properties"] for f in zs])
+    n_strata = 8 * 8
+    zs = (proxy.addBands(zones).addBands(GRID)
+          .stratifiedSample(numPoints=max(1, CAP // n_strata), classBand="strat_grid",
+                            region=AOI, scale=1000, seed=2, dropNulls=True, tileScale=TS))
+    zdf = zoning.fc_to_df(zs)
     groups = {int(z): g["mod17_npp"].values for z, g in zdf.groupby("zone")}
     a = metrics.anova(groups)
     print(f"  zones present in sample: {sorted(groups)}")
@@ -121,15 +130,17 @@ def rf_kappa():
     z = Z
     lbl = realized.select("rl_role").eq(external.ROLE_CODES["soybean"]).rename("presence")
     train = z.addBands(lbl).stratifiedSample(
-        numPoints=2500, classBand="presence", region=AOI, scale=250, seed=3,
+        numPoints=6000, classBand="presence", region=AOI, scale=250, seed=3,
         dropNulls=True, tileScale=TS)
     rf = (ee.Classifier.smileRandomForest(100).setOutputMode("PROBABILITY")
           .train(train, "presence", z.bandNames()))
     rf_cls = z.classify(rf).gte(0.5).rename("rf_cls")
     cmp = rf_cls.addBands(suit.select("class_soybean").gte(2).rename("kb_cls"))
-    cs = (cmp.sample(region=AOI, scale=250, numPixels=CAP, seed=4,
-                     dropNulls=True, tileScale=TS).getInfo()["features"])
-    cdf = pd.DataFrame([f["properties"] for f in cs])
+    n_strata = 8 * 8
+    cs = (cmp.addBands(GRID)
+          .stratifiedSample(numPoints=max(1, CAP // n_strata), classBand="strat_grid",
+                            region=AOI, scale=250, seed=4, dropNulls=True, tileScale=TS))
+    cdf = zoning.fc_to_df(cs)
     k = metrics.cohen_kappa(cdf["rf_cls"], cdf["kb_cls"])
     kb_share = cdf["kb_cls"].mean()
     rf_share = cdf["rf_cls"].mean()

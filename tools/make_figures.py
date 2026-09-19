@@ -41,6 +41,7 @@ from PIL import Image
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 import utils  # noqa: E402
+import cmip6  # noqa: E402
 
 PROJECT = "probformer"
 FIG_DIR = Path(__file__).resolve().parent.parent / "thesis" / "Chapters" / "Figures"
@@ -61,6 +62,8 @@ PAL_FAO = ["#d7191c", "#fdae61", "#a6d96a", "#1a9641"]              # N, S3, S2,
 PAL_ZONE = ["#4575b4", "#91bfdb", "#f46d43", "#fdae61", "#66c2a5", "#1a9850", "#762a83"]  # 7 zones
 PAL_ROLE = ["#eeeeee", "#ffd400", "#7b3294", "#d95f0e", "#2c7fb8", "#addd8e", "#006837"]
 PAL_DIV = ["#b2182b", "#f7f7f7", "#2166ac"]                          # diverging ΔS
+PAL_PR = ["#f7fbff", "#9ecae1", "#3182bd", "#08306b"]                 # sequential, precipitation
+PAL_TEMP = ["#fff5eb", "#fd8d3c", "#d94801", "#7f2704"]               # sequential, temperature
 SEGMENTS = ["soybean", "sugarcane", "other_crops", "pisciculture", "cattle",
             "conservation", "solar"]
 
@@ -77,13 +80,13 @@ TR = {
             "cattle": "Cattle", "conservation": "Conservation", "solar": "Solar PV",
         },
         "zone": [
-            "Zone 0 — prime cropping plateau",
-            "Zone 1 — warm dry shoulder",
-            "Zone 2 — high clayey plateau",
-            "Zone 3 — riparian lowland",
-            "Zone 4 — warm sandy low plain",
-            "Zone 5 — cool moist cropping plateau",
-            "Zone 6 — steep conservation highland",
+            "Zone 1 — prime cropping plateau",
+            "Zone 2 — warm dry shoulder",
+            "Zone 3 — high clayey plateau",
+            "Zone 4 — riparian lowland",
+            "Zone 5 — warm sandy low plain",
+            "Zone 6 — cool moist cropping plateau",
+            "Zone 7 — steep conservation highland",
         ],
         "role": ["Other", "Soybean", "Sugarcane", "Other crops",
                  "Pisciculture", "Pasture", "Native"],
@@ -153,6 +156,11 @@ TR = {
         "fig_4_12.cbar_std": "mean local stdDev (z-score units)",
         "fig_4_12.cbar_ratio": "log₂ ratio (terrain+soil / climate)",
         "fig_4_12.mean": "territory-mean log₂ ratio = {val:.2f}",
+        "fig_4_14.suptitle": "Climate inputs, present vs. future (SSP5-8.5, 2051–2070 ensemble mean)",
+        "fig_4_14.col": ["Present (1991–2020 baseline)", "Future (SSP5-8.5, 2051–2070)"],
+        "fig_4_14.row": ["Annual precipitation (mm)", "Warmest-quarter mean temperature (°C)"],
+        "fig_4_14.cbar_pr": "annual precipitation (mm)",
+        "fig_4_14.cbar_temp": "warmest-quarter mean temperature (°C)",
         "legend.fao": "FAO class",
         "legend.underused": ["Other", "Under-utilized"],
         "legend.bestcrop": ["Unchanged", "Best crop changes"],
@@ -166,13 +174,13 @@ TR = {
             "solar": "Geração fotovoltaica",
         },
         "zone": [
-            "Zona 0 — planalto de cultivo privilegiado",
-            "Zona 1 — ombro quente e seco",
-            "Zona 2 — planalto alto e argiloso",
-            "Zona 3 — baixada ripária",
-            "Zona 4 — planície baixa, quente e arenosa",
-            "Zona 5 — planalto de cultivo frio e úmido",
-            "Zona 6 — planalto alto e íngreme de conservação",
+            "Zona 1 — planalto de cultivo privilegiado",
+            "Zona 2 — ombro quente e seco",
+            "Zona 3 — planalto alto e argiloso",
+            "Zona 4 — baixada ripária",
+            "Zona 5 — planície baixa, quente e arenosa",
+            "Zona 6 — planalto de cultivo frio e úmido",
+            "Zona 7 — planalto alto e íngreme de conservação",
         ],
         "role": ["Outros", "Soja", "Cana-de-açúcar", "Outras culturas",
                  "Piscicultura", "Pastagem", "Vegetação nativa"],
@@ -242,6 +250,11 @@ TR = {
         "fig_4_12.cbar_std": "desvio-padrão local médio (unidades de z-score)",
         "fig_4_12.cbar_ratio": "razão log₂ (terreno+solo / clima)",
         "fig_4_12.mean": "razão log₂ média territorial = {val:.2f}",
+        "fig_4_14.suptitle": "Entradas climáticas, presente versus futuro (SSP5-8.5, média do conjunto 2051–2070)",
+        "fig_4_14.col": ["Presente (linha de base 1991–2020)", "Futuro (SSP5-8.5, 2051–2070)"],
+        "fig_4_14.row": ["Precipitação anual (mm)", "Temperatura média do trimestre mais quente (°C)"],
+        "fig_4_14.cbar_pr": "precipitação anual (mm)",
+        "fig_4_14.cbar_temp": "temperatura média do trimestre mais quente (°C)",
         "legend.fao": "classe FAO",
         "legend.underused": ["Outros", "Subutilizada"],
         "legend.bestcrop": ["Inalterado", "Melhor cultura muda"],
@@ -484,15 +497,21 @@ class Renderer:
         self._save(fig, "fig_4_2", tight=False)
 
     def fig_4_3(self):
-        """Agro-environmental zones (k=7)."""
+        """Agro-environmental zones (k=7).
+
+        Full-width map with the legend below (not to the right): a side legend
+        forced the map itself into ~60% of the figure canvas, wasting page width
+        for a mostly-square raster. Two legend columns keep the seven long zone
+        labels legible without pushing the figure too tall.
+        """
         arr = self.thumb(self.A("zones_present").visualize(min=0, max=6, palette=PAL_ZONE))
-        fig, ax = plt.subplots(figsize=(11, 8))
+        fig, ax = plt.subplots(figsize=(9, 9.6))
         self._imshow_map(ax, arr, carto=True, labels=True)
         ax.set_title(t("fig_4_3.title"), fontsize=12)
         handles = [mpatches.Patch(color=c, label=l) for c, l in zip(PAL_ZONE, zone_labels())]
-        ax.legend(handles=handles, loc="center left", bbox_to_anchor=(1.03, 0.5),
-                  frameon=False, fontsize=9)
-        fig.subplots_adjust(left=0.09, right=0.62, top=0.93, bottom=0.08)
+        ax.legend(handles=handles, loc="upper center", bbox_to_anchor=(0.5, -0.08),
+                  frameon=False, fontsize=9, ncol=2, columnspacing=1.2, handlelength=1.4)
+        fig.subplots_adjust(left=0.09, right=0.98, top=0.95, bottom=0.20)
         self._save(fig, "fig_4_3", tight=False)
 
     def fig_4_7(self):
@@ -531,30 +550,101 @@ class Renderer:
         self._save(fig, "fig_4_8", tight=False)
 
     def fig_4_9(self):
-        """Municipal choropleth: mean soybean suitability + projected-decline vulnerability."""
+        """Municipal choropleth: mean soybean suitability + projected-decline vulnerability.
+
+        Stacked vertically (not side by side): GO~e~DF is taller than it is wide, so two
+        square-ish panels side by side each shrank to a fraction of the page width; stacking
+        lets each map use the full page width instead."""
         muni = ee.FeatureCollection(utils.asset_id(PROJECT, "municipal_godf"))
         suit_img = ee.Image().float().paint(muni, "suit_soybean")
         vuln = muni.filter(ee.Filter.lt("delta_other_crops", -0.05))
         vuln_img = ee.Image().byte().paint(vuln, 1).paint(muni, 0, 1)  # fill flag + muni borders
-        fig, axes = plt.subplots(1, 2, figsize=(13, 6.5))
+        fig, axes = plt.subplots(2, 1, figsize=(8, 13))
         self._imshow_map(
             axes[0], self.thumb(suit_img.visualize(min=0.3, max=0.9, palette=PAL_SUIT)),
-            left=True, bottom=True, labels=True)
+            left=True, bottom=False, labels=True)
         axes[0].set_title(t("fig_4_9.left"), fontsize=11)
         cax = make_axes_locatable(axes[0]).append_axes("right", size="4%", pad=0.1)
         cb = fig.colorbar(ScalarMappable(Normalize(0.3, 0.9), _cmap(PAL_SUIT)), cax=cax)
         cb.set_label(t("cbar.meansuit"))
         self._imshow_map(
             axes[1], self.thumb(vuln_img.visualize(min=0, max=1, palette=["#ffffff", "#762a83"])),
-            left=False, bottom=True, labels=True)
+            left=True, bottom=True, labels=True)
         axes[1].set_title(t("fig_4_9.right"), fontsize=11)
         vlab = t("legend.vuln")
         axes[1].legend(
             handles=[mpatches.Patch(facecolor="#ffffff", edgecolor="0.4", label=vlab[0]),
                      mpatches.Patch(facecolor="#762a83", label=vlab[1])],
             loc="lower right", fontsize=8, framealpha=0.9)
-        fig.subplots_adjust(wspace=0.2, bottom=0.1)
+        fig.subplots_adjust(hspace=0.15, bottom=0.05, top=0.96, left=0.1, right=0.92)
         self._save(fig, "fig_4_9", tight=False)
+
+    def fig_4_13(self):
+        """Municipal choropleth of mean suitability, all 7 segments (companion to fig_4_9,
+        which only shows soybean at municipal level)."""
+        muni = ee.FeatureCollection(utils.asset_id(PROJECT, "municipal_godf"))
+        panels = [(seg_title(s), self.thumb(
+            ee.Image().float().paint(muni, f"suit_{s}").visualize(min=0, max=1, palette=PAL_SUIT)))
+            for s in SEGMENTS]
+        fig, axes = plt.subplots(2, 4, figsize=(18, 9.5))
+        flat = axes.ravel()
+        for i, (ax, (title, arr)) in enumerate(zip(flat, panels)):
+            self._imshow_map(ax, arr, left=(i % 4 == 0),
+                             bottom=(i // 4 == 1 or i == 3), labels=True)
+            ax.set_title(title, fontsize=11)
+        flat[7].remove()
+        fig.subplots_adjust(left=0.06, right=0.985, top=0.95, bottom=0.14,
+                            wspace=0.10, hspace=0.16)
+        cax = fig.add_axes([0.30, 0.06, 0.40, 0.018])
+        cb = fig.colorbar(ScalarMappable(Normalize(0, 1), _cmap(PAL_SUIT)),
+                          cax=cax, orientation="horizontal")
+        cb.set_label(t("cbar.suit"))
+        self._save(fig, "fig_4_13", tight=False)
+
+    def fig_4_14(self):
+        """Present vs. future climate inputs (precipitation, warmest-quarter temperature),
+        SSP5-8.5 2051-2070 ensemble mean --- makes concrete what the CMIP6 delta-change
+        projection actually moves, ahead of \\S\\ref{sec:shift}'s viability-space reading of it.
+        Same ensemble machinery as the cached agreement_*/delta_* assets, computed live here
+        (climate-only, no membership/suitability recompute) since no future-climate asset is
+        cached; a getThumbURL render of it is cheap (~seconds), unlike a per-point getInfo pull
+        of the full monthly GCM time series (CLAUDE.md \\S11)."""
+        cfg = utils.cfg()["cmip6"]
+        aoi = self.geom
+        present = self.A("feat_climate").select(["clim_pr_annual", "clim_twarm_q"])
+        baseline = cmip6.baseline_monthly(aoi)
+        factors = cmip6.ensemble_factors(cfg["models"], "ssp585", cfg["windows"]["2051_2070"], aoi)
+        future = cmip6.future_climate_image(baseline, factors, aoi).select(
+            ["clim_pr_annual", "clim_twarm_q"])
+        pr_rng, temp_rng = (1150, 1700), (23, 32)
+        fig, axes = plt.subplots(2, 2, figsize=(12, 11))
+        cols = [present, future]
+        col_labels = t("fig_4_14.col")
+        row_labels = t("fig_4_14.row")
+        for row, (band, pal, rng) in enumerate(
+                [("clim_pr_annual", PAL_PR, pr_rng), ("clim_twarm_q", PAL_TEMP, temp_rng)]):
+            for col, img in enumerate(cols):
+                ax = axes[row, col]
+                arr = self.thumb(img.select(band).visualize(
+                    min=rng[0], max=rng[1], palette=pal))
+                self._imshow_map(ax, arr, left=(col == 0), bottom=(row == 1), labels=False)
+                if row == 0:
+                    ax.set_title(col_labels[col], fontsize=11)
+                if col == 0:
+                    ax.text(-0.16, 0.5, row_labels[row], transform=ax.transAxes,
+                             rotation=90, va="center", ha="center", fontsize=10)
+                if row == 1:
+                    ax.set_xlabel(t("axis.lon"), fontsize=9)
+        fig.subplots_adjust(left=0.12, right=0.86, top=0.93, bottom=0.10,
+                            wspace=0.12, hspace=0.18)
+        cax1 = fig.add_axes([0.89, 0.53, 0.02, 0.35])
+        fig.colorbar(ScalarMappable(Normalize(*pr_rng), _cmap(PAL_PR)),
+                     cax=cax1).set_label(t("fig_4_14.cbar_pr"), fontsize=9)
+        cax2 = fig.add_axes([0.89, 0.10, 0.02, 0.35])
+        fig.colorbar(ScalarMappable(Normalize(*temp_rng), _cmap(PAL_TEMP)),
+                     cax=cax2).set_label(t("fig_4_14.cbar_temp"), fontsize=9)
+        fig.suptitle(t("fig_4_14.suptitle"), fontsize=12)
+        self._save(fig, "fig_4_14", tight=False)
 
     # --- future scenario (atlas) --------------------------------------------
     def _crops3(self, img, prefix):
@@ -829,8 +919,8 @@ class Renderer:
         self._save(fig, "fig_4_12", tight=False)
 
 
-PRESENT = ["fig_4_1", "fig_4_2", "fig_4_3", "fig_4_7", "fig_4_8", "fig_4_9"]
-FUTURE = ["fig_4_4", "fig_4_5", "fig_4_6"]
+PRESENT = ["fig_4_1", "fig_4_2", "fig_4_3", "fig_4_7", "fig_4_8", "fig_4_9", "fig_4_13"]
+FUTURE = ["fig_4_4", "fig_4_5", "fig_4_6", "fig_4_14"]
 DIAG = ["fig_4_10", "fig_4_11", "fig_4_12"]   # CSV-based + spatial diagnostics (k-selection,
                                                # factor variance, climate/terrain-soil roughness)
 

@@ -22,10 +22,6 @@ viabilidade média de cada segmento por zona (Tabela~\ref{tab:zone-suit}, \S\ref
 acompanhada da parcela da terra avaliada de cada segmento que alcança a classe S2 da FAO ou
 superior.
 
-% TODO embora ja tenhamos uma interpretação espacial dos modelos, seria interessante verificar 
-% se nao podemos melhorar a metodologia usando modelos espacialmente explícitos para capturar
-% efeitos da vizinhança.
-
 Soja e cana-de-açúcar pontuam mais alto nos planaltos mais frios, altos e argilosos (parcelas
 S2+ de 62,2\% e 60,8\%) e caem acentuadamente em terreno íngreme ou arenoso. As outras culturas
 anuais acompanham a confiabilidade da chuva e o calor acumulado, além do declive e da
@@ -44,7 +40,7 @@ heterogeneidade do terreno, o serviço de armazenamento de carbono, o serviço d
 marginalidade da terra. É bem graduada (média 0,45, desvio padrão espacial 0,12) e identifica
 uma zona cujo melhor uso absoluto é a própria conservação --- o planalto alto, íngreme e rico
 em carbono orgânico onde a viabilidade de culturas colapsa (\S\ref{sec:zoning-results},
-Zona~6). A geração fotovoltaica atinge 27,3\% em S2+, discriminando as planícies mais baixas,
+Zona~7). A geração fotovoltaica atinge 27,3\% em S2+, discriminando as planícies mais baixas,
 quentes e de alta irradiância dos planaltos mais frios. Essas planícies são favorecidas pela
 irradiância e por um fator de índice de claridade, mas penalizadas por uma redução de
 desempenho por calor no trimestre mais quente.
@@ -89,14 +85,31 @@ toda a extensão de GO~e~DF, enquanto o clima permanece quase plano até mesmo n
 escala nativa.
 
 
-% TODO mostrar mapas de clima sumarizando as variaveis no presente e no futuro. Creio que isso vai
-% esclarecer muitos pontos sobre como a projeção esta sendo realizada.
-
 Essa uniformidade é \emph{espacial} (entre lugares, num mesmo instante), não \emph{temporal}
 (num mesmo lugar, ao longo do tempo): uma superfície climática pode ser quase plana no espaço e
 ainda assim se deslocar substancialmente no tempo, em todo o território de uma vez. É
 precisamente esse deslocamento temporal --- não a estrutura espacial fina, que continua a cargo
 do terreno e do solo --- que a projeção CMIP6 explora (\S\ref{sec:shift}).
+
+A Figura~\ref{fig:climate-shift} torna esse deslocamento concreto para as duas entradas
+climáticas mais diretamente movidas pelo conjunto de GCMs: a precipitação anual cai (mediana
+territorial de 1.531~mm para 1.429~mm) e a temperatura média do trimestre mais quente sobe
+substancialmente (de 25,3~$^\circ$C para 29,1~$^\circ$C) sob SSP5-8.5 2051--2070. Note-se que o
+padrão espacial de cada mapa --- suave, sem a estrutura fina de bacias e microrregiões que
+aparece nos mapas de solo e terreno --- permanece igualmente suave no futuro: é a mesma
+transformação por fatores de mudança (\S\ref{sec:cmip6}) aplicada ponto a ponto, deslocando o
+território inteiro de uma vez, sem introduzir estrutura espacial nova. O mecanismo de projeção
+em si --- fatores de mudança do conjunto de GCMs aplicados à climatologia mensal observada --- é
+detalhado em \S\ref{sec:cmip6}.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{fig_4_14.png}
+\caption{Entradas climáticas no presente (linha de base 1991--2020) e no futuro (SSP5-8.5,
+média do conjunto 2051--2070): precipitação anual (acima) e temperatura média do trimestre mais
+quente (abaixo).}
+\label{fig:climate-shift}
+\end{figure}
 
 \begin{figure}[H]
 \centering
@@ -143,33 +156,31 @@ Geração fotovoltaica  & 0,32 & 0,49 & 0,38 & 0,27 & 0,36 & 0,26 & 0,11 \\
 \end{table}
 
 As sete zonas admitem uma interpretação fisiográfica clara, resolvendo cinco vocações
-comparativas distintas, incluindo a \textbf{conservação} na Zona~6.
-
-% TODO renomear as bandas para começar em 1, não 0
+comparativas distintas, incluindo a \textbf{conservação} na Zona~7.
 
 \begin{itemize}
-  \item \textbf{Zona 0 (19,2\%) --- planalto de cultivo privilegiado.} Argiloso (36\%), de
+  \item \textbf{Zona 1 (19,2\%) --- planalto de cultivo privilegiado.} Argiloso (36\%), de
     elevação moderada, suavemente inclinado (3,9$^\circ$), com a maior viabilidade de
     culturas de qualquer zona (soja 0,75, cana 0,78); melhor uso comparativo cana-de-açúcar.
     Este é o núcleo agrícola.
-  \item \textbf{Zona 1 (4,8\%) --- ombro quente e seco.} Uma zona pequena e a mais seca
+  \item \textbf{Zona 2 (4,8\%) --- ombro quente e seco.} Uma zona pequena e a mais seca
     (aridez 0,91), com a maior viabilidade solar (0,49); melhor uso comparativo é a
     \textbf{geração fotovoltaica}.
-  \item \textbf{Zona 2 (10,4\%) --- planalto alto e argiloso.} A zona mais alta (862~m) e
+  \item \textbf{Zona 3 (10,4\%) --- planalto alto e argiloso.} A zona mais alta (862~m) e
     mais argilosa (39\%), mais próxima da água permanente (9,5~km); seu melhor uso comparativo
     é a \textbf{pecuária} (0,66, a mais alta de qualquer zona).
-  \item \textbf{Zona 3 (10,6\%) --- baixada ripária.} Densidade de drenagem uma ordem de
+  \item \textbf{Zona 4 (10,6\%) --- baixada ripária.} Densidade de drenagem uma ordem de
     grandeza maior (0,11 contra $\sim$0,01 nas demais) e a maior umidade topográfica (10,9);
     com o melhor uso comparativo sendo a \textbf{piscicultura} (0,35, de longe a maior de qualquer zona).
-  \item \textbf{Zona 4 (22,1\%) --- planície baixa, quente e arenosa.} A zona mais baixa
+  \item \textbf{Zona 5 (22,1\%) --- planície baixa, quente e arenosa.} A zona mais baixa
     (370~m), mais plana (3,1$^\circ$), mais quente (26,8~$^\circ$C) e mais arenosa (24\% de
     argila); viabilidade de culturas apenas moderada, estando portanto mais propícia à \textbf{geração
-    fotovoltaica} do que ao cultivo. Como mostra a validação (\S\ref{sec:validation-present}), 
+    fotovoltaica} do que ao cultivo. Como mostra a validação (\S\ref{sec:validation-present}),
       esta é a zona menos produtiva.
-  \item \textbf{Zona 5 (21,5\%) --- planalto de cultivo frio e úmido.} Alto (779~m), frio
+  \item \textbf{Zona 6 (21,5\%) --- planalto de cultivo frio e úmido.} Alto (779~m), frio
     (24,3~$^\circ$C), a zona mais úmida (aridez 1,17); a segunda zona de cultivo (soja 0,66,
     cana 0,70), novamente com pendor para a cana.
-  \item \textbf{Zona 6 (11,4\%) --- planalto alto e íngreme de conservação.} De longe a mais
+  \item \textbf{Zona 7 (11,4\%) --- planalto alto e íngreme de conservação.} De longe a mais
     íngreme (13,5$^\circ$, $\sim$três vezes qualquer outra zona), a mais alta em carbono
     orgânico (16,1~g/kg) e em umidade do solo (117~mm). A viabilidade de culturas colapsa
     aqui (soja 0,15), enquanto a viabilidade de conservação é a mais alta de todas (0,58).
@@ -179,15 +190,13 @@ comparativas distintas, incluindo a \textbf{conservação} na Zona~6.
 \end{itemize}
 
 As zonas são rotuladas pelo melhor segmento comparativo (\S\ref{sec:zoning}), separando o
-território em dois planaltos de cultivo (Zonas 0 e 5), um planalto alto de pecuária (Zona 2),
-duas planícies quentes com pendor solar (Zonas 1 e 4), uma baixada ripária com pendor para
-piscicultura (Zona 3) e um planalto alto de conservação (Zona 6).
-
-% TODO melhorar essa imagem para ocupar toda a largura da pagina, mover legenda para baixo
+território em dois planaltos de cultivo (Zonas 1 e 6), um planalto alto de pecuária (Zona 3),
+duas planícies quentes com pendor solar (Zonas 2 e 5), uma baixada ripária com pendor para
+piscicultura (Zona 4) e um planalto alto de conservação (Zona 7).
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.9\textwidth]{fig_4_3.png}
+\includegraphics[width=\textwidth]{fig_4_3.png}
 \caption{Zonas agroambientais ($k = 7$) sobre GO~e~DF.}
 \label{fig:zones}
 \end{figure}
@@ -316,15 +325,15 @@ $\pm 0{,}001$ de zero.
 
 Resolvida por zona (Tabela~\ref{tab:zone-shift} do Anexo), a mudança nas culturas
 \textbf{acentua o gradiente agroambiental existente, em vez de deslocá-lo.} As perdas nas
-culturas concentram-se na planície baixa, quente e arenosa (Zona~4). Na zona mais quente e
+culturas concentram-se na planície baixa, quente e arenosa (Zona~5). Na zona mais quente e
 menos produtiva, sob o cenário e janela mais quente, as outras culturas anuais caem $-0{,}127$,
 e mesmo a soja --- estável na escala territorial --- declina $-0{,}016$ nessa planície,
 a única zona em que cai de forma material.
 
-Nos planaltos de cultivo (Zonas 0 e 5) as mesmas
-culturas ficam inalteradas ou melhoram marginalmente, e o planalto alto e íngreme (Zona~6)
+Nos planaltos de cultivo (Zonas 1 e 6) as mesmas
+culturas ficam inalteradas ou melhoram marginalmente, e o planalto alto e íngreme (Zona~7)
 mostra apenas pequenos declínios nas culturas. A única perda acentuada da cana-de-açúcar é no
-ombro quente e seco (Zona~1, $-0{,}094$), cuja aridez já baixa cruza seu limiar.
+ombro quente e seco (Zona~2, $-0{,}094$), cuja aridez já baixa cruza seu limiar.
 O sinal climático, assim, penaliza mais as culturas onde elas já são marginais e
 menos onde já são melhores.
 
@@ -404,11 +413,11 @@ Piscicultura (aquicultura)                                        & $<$0,01\% \\
 
 \textbf{O zoneamento aprendido separa o uso atual da terra de forma condizente.} 
 Caracterizando a composição atual dentro de cada zona biofísica
-(Tabela~\ref{tab:zone-realized} do Anexo), o planalto de cultivo privilegiado (Zona~0) carrega
+(Tabela~\ref{tab:zone-realized} do Anexo), o planalto de cultivo privilegiado (Zona~1) carrega
 soja em 28,0\% de sua área e cana-de-açúcar em 7,6\% --- as maiores parcelas de culturas de
 qualquer zona --- contra a menor cobertura nativa (17,9\%). Já a vegetação nativa sobe para
-\textbf{77,7\% do planalto alto e íngreme de conservação (Zona~6)}, justamente a zona cujo
-melhor uso modelado é a conservação. A planície quente e arenosa (Zona~4), identificada como
+\textbf{77,7\% do planalto alto e íngreme de conservação (Zona~7)}, justamente a zona cujo
+melhor uso modelado é a conservação. A planície quente e arenosa (Zona~5), identificada como
 marginal, é dominada por pastagem (60,4\%), com apenas 3,4\% de soja. A validação cruzada mais
 forte disponível para a QP1 é justamente esta: uma partição não supervisionada de variáveis
 biofísicas reproduz a geografia observada de cultivo, pastejo e vegetação remanescente, e a
@@ -514,14 +523,26 @@ varia pouco dentro da estação de dossel de uma única cultura. As amostras de 
 de outras culturas, por sua vez, são pequenas demais ($n = 119$ e $16$) para serem conclusivas.
 As métricas de presença permanecem, portanto, os validadores primários das culturas.
 
-% TODO os testes descritos nos tres paragrafos anteriores são pouco conclusivos 
-% talvez haja uma maneira de reformular essa validação ou explicala melhor
+Os três testes acima --- correlação municipal com NPP, explicação da mistura de sinais e
+gradiente intracultura de GPP --- são, deliberadamente, verificações \emph{secundárias} e não
+tentativas independentes de validar rendimento: nenhum dos três tem poder estatístico para
+confirmar ou refutar a viabilidade modelada por si só. A correlação municipal mistura sinal de
+biomassa em pé com sinal de rendimento agrícola, por isso é lida como contexto, não como prova;
+o gradiente intracultura é estatisticamente fraco porque a GPP varia pouco dentro da janela de
+dossel de uma única cultura, e as amostras de cana-de-açúcar e outras culturas são pequenas
+demais para qualquer leitura. A conclusão sólida que os três sustentam, em conjunto, é negativa e
+mais modesta do que positiva: nenhum deles contradiz a viabilidade modelada, e a mistura de
+sinais observada é exatamente a esperada de um \emph{proxy} de biomassa em pé, não uma anomalia.
+Por isso as métricas de presença (Tabela~\ref{tab:presence-auc}) --- com poder estatístico maior
+e alvo mais próximo do que se quer validar --- continuam sendo os validadores primários; os três
+testes de produtividade abaixo e acima seguem como evidência corroborativa, não como
+substitutos.
 
 O \emph{proxy} de NPP anual também separa fortemente as zonas. Uma ANOVA de um fator entre as
 sete zonas é altamente significativa ($F = 592{,}1$, $p < 0{,}001$): a planície quente e
-arenosa (Zona~4) é marcadamente menos produtiva (média do grupo 0,575, em unidades
-escalonadas) do que o planalto alto e argiloso (Zona~2, o mais produtivo, com 0,858) e os
-planaltos de cultivo (Zonas 0 e 5, com 0,729 e 0,822). O zoneamento, assim, capta um gradiente
+arenosa (Zona~5) é marcadamente menos produtiva (média do grupo 0,575, em unidades
+escalonadas) do que o planalto alto e argiloso (Zona~3, o mais produtivo, com 0,858) e os
+planaltos de cultivo (Zonas 1 e 6, com 0,729 e 0,822). O zoneamento, assim, capta um gradiente
 real de produtividade realizada, e não apenas um gradiente presente nas variáveis de entrada.
 
 \textbf{Verificação cruzada orientada por dados.} Uma floresta aleatória foi treinada na
@@ -617,14 +638,19 @@ Sanclerlândia  & 0,60 & Bonópolis               & $-0{,}156$ \\
 \label{fig:realized-use}
 \end{figure}
 
-% TODO quebrar os mapas para exibilos um em cima do outro
-% Por que falamos de soja no primeiro e outras cultras no segundo? Talvez seja melhor ter estes mapas para todos os segmentos
+A soja e as outras culturas anuais foram escolhidas para este par de mapas municipais por papéis
+distintos e complementares, não por uma preferência arbitrária entre culturas: a soja é a cultura
+de maior viabilidade absoluta e maior estabilidade climática (\S\ref{sec:shift}), de modo que seu
+mapa de oportunidade lê a lacuna potencial \emph{versus} realizado onde ela é mais informativa; as
+outras culturas anuais, por sua vez, são o grupo de culturas com a queda de viabilidade projetada
+mais acentuada (\S\ref{sec:shift}), o que as torna o sinal natural de vulnerabilidade municipal. O
+equivalente para os demais cinco segmentos está na Figura~\ref{fig:all-segment-suit} do Anexo.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.95\textwidth]{fig_4_9.png}
-\caption{Viabilidade média municipal da soja e municípios sinalizados como vulneráveis pelo
-declínio projetado das outras culturas. O mapa de subutilização potencial \emph{versus}
-realizado da soja está na Figura~\ref{fig:underused-soy} do Anexo.}
+\includegraphics[width=0.62\textwidth]{fig_4_9.png}
+\caption{Viabilidade média municipal da soja (acima) e municípios sinalizados como vulneráveis
+pelo declínio projetado das outras culturas (abaixo). O mapa de subutilização potencial
+\emph{versus} realizado da soja está na Figura~\ref{fig:underused-soy} do Anexo.}
 \label{fig:municipal}
 \end{figure}

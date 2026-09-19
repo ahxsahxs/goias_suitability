@@ -54,3 +54,14 @@ available:  [15, 21, 39, 20, 62, 40, 41, 12]
 context:
   silviculture: [9]
   perennial:    [46, 47, 48]     # coffee, citrus, other perennial
+
+# Generic tree/crop/grass cover-type groupings (Part 7b, T10 revision 2026-09) —
+# parallel to config/datasets.yaml::landcover.classes, for the MapBiomas-sourced
+# feat_landcover (src/features.py::landcover_features_mapbiomas). Purely a
+# descriptive cover-type fraction grouping (like-for-like swap-in for the ESA
+# WorldCover tree/crop/grass fractions), NOT the segment-role remap above —
+# no code here encodes "where a given crop already is" at the per-crop level.
+landcover_groups:
+  tree:  [3, 4, 9]                          # forest formation, savanna formation, forest plantation
+  crop:  [39, 20, 62, 40, 41, 46, 47, 48]   # soy, sugarcane, cotton, rice, mosaic crops, coffee, citrus, other perennial
+  grass: [12, 15, 21]                       # grassland, pasture, mosaic agriculture/pasture

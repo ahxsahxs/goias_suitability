@@ -30,7 +30,7 @@ Fenologia da vegetação & MODIS NDVI, composições de 16 dias & 250~m & Parâm
   (média, amplitude, época de pico, integral) \\
 Acessibilidade ao mercado & Global Accessibility to Cities (2015) & $\approx$1~km & Tempo de
   viagem à cidade mais próxima (\emph{proxy} de acessibilidade ao mercado) \\
-Cobertura genérica da terra & ESA WorldCover (2021) & 10~m & Máscara e frações por classe
+Cobertura genérica da terra & MapBiomas, coleção~10 (2024) & 30~m & Máscara e frações por classe
   (apenas máscara/contexto) \\
 Áreas protegidas & World Database on Protected Areas (WDPA) & vetor & Distância a reservas
   $\rightarrow$ conectividade de conservação (camada de governança, não de cobertura da
@@ -96,7 +96,9 @@ Variáveis & Precipitação (fator de mudança multiplicativo); temperatura máx
 A Tabela~\ref{tab:spec-longtable} reproduz a especificação completa por segmento subjacente à
 \S\ref{sec:suitability}. O declive está em graus. Os limiares são valores de primeira
 aproximação ancorados na literatura e reconciliados com a faixa realizada de cada variável
-sobre GO~e~DF pela recalibração empírica.
+sobre GO~e~DF pela recalibração empírica; os pesos, por sua vez, são reconciliados com o poder
+discriminante amostral de cada fator (\S\ref{sec:ahp}), de modo que um fator quase constante em
+GO~e~DF --- por mais importante que a literatura o considere --- carrega um peso baixo.
 
 \begin{longtable}{@{}p{2.6cm}p{3.6cm}p{1cm}p{1.7cm}p{3.3cm}@{}}
 \caption{Fatores, pesos, formas de pertinência e limiares por segmento.}\label{tab:spec-longtable} \\
@@ -108,50 +110,50 @@ Segmento (máscara) & Fator & Peso & Forma & Limiares \\
 Segmento (máscara) & Fator & Peso & Forma & Limiares \\
 \midrule
 \endhead
-\textbf{Soja} (disponível) & Precipitação anual (mm) & 0,22 & intervalar & 800, 1100, 1800, 2200 \\
- & Declive ($^\circ$) & 0,22 & decrescente & 4,57, 8,53 \\
- & pH do solo & 0,15 & intervalar & 4,5, 5,5, 6,8, 7,5 \\
- & Temp. do trimestre mais quente ($^\circ$C) & 0,15 & intervalar & 18, 22, 30, 34 \\
- & Índice de aridez & 0,13 & intervalar & 0,4, 0,7, 1,2, 1,6 \\
- & Teor de argila (\%) & 0,13 & intervalar & 10, 20, 45, 60 \\
-\textbf{Cana-de-açúcar} (disponível) & Precipitação anual (mm) & 0,20 & intervalar & 900, 1300, 2000, 2600 \\
- & Declive ($^\circ$) & 0,18 & decrescente & 6,84, 11,31 \\
- & Temp. do trimestre mais quente ($^\circ$C) & 0,18 & intervalar & 20, 24, 32, 36 \\
- & Duração da estação seca (meses) & 0,16 & intervalar & 1, 2, 5, 7 \\
- & Teor de água disponível para as plantas & 0,14 & crescente & 5, 20 \\
- & Teor de argila (\%) & 0,14 & intervalar & 15, 25, 50, 65 \\
-\textbf{Outras culturas} (disponível) & Precipitação anual (mm) & 0,20 & intervalar & 700, 1000, 1700, 2200 \\
- & Sazonalidade da precipitação (CV) & 0,18 & decrescente & 0,6, 1,3 \\
- & Declive ($^\circ$) & 0,18 & decrescente & 4,57, 8,53 \\
+\textbf{Soja} (disponível) & Declive ($^\circ$) & 0,32 & decrescente & 4, 8 \\
+ & Teor de argila (\%) & 0,24 & intervalar & 20, 32, 48, 62 \\
+ & Temp. do trimestre mais quente ($^\circ$C) & 0,14 & intervalar & 18, 22, 30, 34 \\
+ & pH do solo & 0,11 & intervalar & 4,5, 5,5, 6,8, 7,5 \\
+ & Precipitação anual (mm) & 0,10 & intervalar & 800, 1100, 1800, 2200 \\
+ & Índice de aridez & 0,09 & intervalar & 0,4, 0,7, 1,2, 1,6 \\
+\textbf{Cana-de-açúcar} (disponível) & Declive ($^\circ$) & 0,26 & decrescente & 5, 10 \\
+ & Teor de água disponível para as plantas & 0,22 & crescente & 5, 20 \\
+ & Teor de argila (\%) & 0,22 & intervalar & 22, 32, 52, 66 \\
+ & Temp. do trimestre mais quente ($^\circ$C) & 0,14 & intervalar & 20, 24, 32, 36 \\
+ & Precipitação anual (mm) & 0,10 & intervalar & 900, 1300, 2000, 2600 \\
+ & Duração da estação seca (meses) & 0,06 & intervalar & 1, 2, 5, 7 \\
+\textbf{Outras culturas} (disponível) & Declive ($^\circ$) & 0,34 & decrescente & 4, 8 \\
+ & Carbono orgânico do solo (g/kg) & 0,23 & crescente & 6, 20 \\
  & Graus-dia de crescimento & 0,15 & intervalar & 2500, 3500, 5500, 7000 \\
- & pH do solo & 0,15 & intervalar & 4,5, 5,5, 6,8, 7,5 \\
- & Carbono orgânico do solo (g/kg) & 0,14 & crescente & 5, 20 \\
-\textbf{Piscicultura} (disponível) & Teor de argila (\%) & 0,24 & crescente & 15, 35 \\
- & Distância à água (m) & 0,22 & decrescente & 500, 5000 \\
- & Declive ($^\circ$) & 0,20 & decrescente & 2,86, 5,71 \\
- & Temp. do trimestre mais quente ($^\circ$C) & 0,18 & intervalar & 22, 26, 32, 36 \\
- & Densidade de drenagem & 0,16 & crescente & 0,01, 0,08 \\
+ & pH do solo & 0,11 & intervalar & 4,5, 5,5, 6,8, 7,5 \\
+ & Precipitação anual (mm) & 0,09 & intervalar & 700, 1000, 1700, 2200 \\
+ & Sazonalidade da precipitação (CV) & 0,08 & decrescente & 0,6, 1,3 \\
+\textbf{Piscicultura} (disponível) & Declive ($^\circ$) & 0,27 & decrescente & 2,86, 5,71 \\
+ & Teor de argila (\%) & 0,25 & crescente & 15, 35 \\
+ & Distância à água semipermanente (m) & 0,24 & decrescente & 750, 6000 \\
+ & Densidade de drenagem & 0,14 & crescente & 0,01, 0,08 \\
+ & Temp. do trimestre mais quente ($^\circ$C) & 0,10 & intervalar & 22, 26, 32, 36 \\
 \textbf{Pecuária} (apenas exclusão) & Carbono orgânico do solo (g/kg) & 0,34 & crescente & 8, 18 \\
  & Umidade do solo (mm) & 0,28 & crescente & 55, 120 \\
  & Declive ($^\circ$) & 0,20 & decrescente & 6, 15 \\
  & Precipitação anual (mm) & 0,10 & intervalar & 700, 1000, 2000, 2600 \\
  & Duração da estação seca (meses) & 0,08 & decrescente & 4, 8 \\
-\textbf{Conservação} (nenhuma; compensatória) & Distância a área protegida (m) & 0,20 & decrescente &
+\textbf{Conservação} (nenhuma; compensatória) & Distância a área protegida (m) & 0,17 & decrescente &
   5000, 40000 \\
- & Índice de aridez (P/ETP) $\dagger$ & 0,15 & crescente & 0,95, 1,25 \\
- & Rugosidade do terreno (m) & 0,13 & crescente & 5, 30 \\
- & Índice de umidade topográfica & 0,11 & crescente & 6, 14 \\
- & Carbono em biomassa acima do solo (Mg~C/ha) & 0,10 & crescente & 10, 20 \\
- & Densidade de drenagem & 0,09 & crescente & 0,01, 0,08 \\
- & Temp. do trimestre mais quente ($^\circ$C) $\dagger$ & 0,09 & decrescente & 23, 31 \\
- & Fração de vegetação nativa & 0,08 & crescente & 0,25, 0,85 \\
- & Declive ($^\circ$) & 0,05 & crescente & 2,86, 11,31 \\
-\textbf{Geração fotovoltaica} (disponível) & Radiação solar (W/m$^2$) & 0,26 & crescente & 186, 204 \\
- & Índice de claridade (cobertura de nuvens) & 0,20 & crescente & 0,466, 0,501 \\
- & Declive ($^\circ$) & 0,18 & decrescente & 2,86, 8,53 \\
- & Temp. do trimestre mais quente ($^\circ$C) & 0,14 & decrescente & 24, 31 \\
- & Log do tempo de viagem à cidade & 0,14 & decrescente & 3, 6 \\
- & Componente norte da orientação & 0,08 & crescente & $-0{,}3$, 0,5 \\
+ & Rugosidade do terreno (m) & 0,15 & crescente & 5, 30 \\
+ & Índice de umidade topográfica & 0,13 & crescente & 8,5, 11,2 \\
+ & Carbono em biomassa acima do solo (Mg~C/ha) & 0,12 & crescente & 10, 20 \\
+ & Fração de vegetação nativa & 0,10 & crescente & 0,25, 0,85 \\
+ & Índice de aridez (P/ETP) $\dagger$ & 0,10 & crescente & 0,95, 1,25 \\
+ & Declive ($^\circ$) & 0,09 & crescente & 2,86, 11,31 \\
+ & Temp. do trimestre mais quente ($^\circ$C) $\dagger$ & 0,08 & decrescente & 23, 31 \\
+ & Densidade de drenagem & 0,06 & crescente & 0,01, 0,08 \\
+\textbf{Geração fotovoltaica} (disponível) & Radiação solar (W/m$^2$) & 0,22 & crescente & 186, 204 \\
+ & Índice de claridade (cobertura de nuvens) & 0,22 & crescente & 0,466, 0,501 \\
+ & Declive ($^\circ$) & 0,17 & decrescente & 2,86, 8,53 \\
+ & Componente norte da orientação & 0,15 & crescente & $-0{,}3$, 0,5 \\
+ & Log do tempo de viagem à cidade & 0,14 & decrescente & 3,5, 5,4 \\
+ & Temp. do trimestre mais quente ($^\circ$C) & 0,10 & decrescente & 24, 31 \\
 \bottomrule
 \end{longtable}
 
@@ -175,13 +177,13 @@ do limiar de aceitação de 0,10.
 \toprule
 Segmento & Fatores ($n$) & Razão de consistência \\
 \midrule
-Soja                 & 6 & 0,000 \\
-Cana-de-açúcar       & 6 & 0,001 \\
+Soja                 & 6 & 0,001 \\
+Cana-de-açúcar       & 6 & 0,000 \\
 Outras culturas anuais & 6 & 0,001 \\
 Piscicultura         & 5 & 0,002 \\
 Pecuária             & 5 & 0,000 \\
 Conservação          & 9 & 0,001 \\
-Geração fotovoltaica & 6 & 0,001 \\
+Geração fotovoltaica & 6 & 0,000 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -420,6 +422,15 @@ soja, cana-de-açúcar e outras culturas anuais --- sob SSP5-8.5, 2051--2070.}
 \caption{Subutilização potencial \emph{versus} realizado para a soja --- células viáveis ou
 superiores mas não atualmente sob soja.}
 \label{fig:underused-soy}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{fig_4_13.png}
+\caption{Viabilidade média municipal para os sete segmentos --- o equivalente municipal, agregado
+por redução zonal sobre \texttt{municipal\_godf}, da Figura~\ref{fig:atlas-present} (pixel a
+pixel); companheiro da Figura~\ref{fig:municipal}, que só detalha soja e outras culturas.}
+\label{fig:all-segment-suit}
 \end{figure}
 
 \begin{figure}[H]

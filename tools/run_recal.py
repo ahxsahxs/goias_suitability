@@ -144,7 +144,7 @@ def main():
     frac_bands = [f"rl_{r}_frac" for r in
                   ("soybean", "sugarcane", "other_crops", "pasture", "native")]
     bands = zoning.ZONING_BANDS
-    sample = zoning.build_sample(z, stack, suit_a, AOI, bands, n=15000, seed=42,
+    sample = zoning.build_sample(z, stack, suit_a, AOI, bands, segments=SEGS, seed=42,
                                  extra=realized.select(frac_bands))
     df = zoning.fc_to_df(sample)
     X = zoning.cluster_matrix(df, bands)

@@ -91,21 +91,85 @@ def theme_weight_vector(band_names):
 
 
 # --- EE-side: sampling + classification ------------------------------------
-def build_sample(z, raw, suit, region, band_names,
-                 n=15000, scale=250, seed=42, tile_scale=4, extra=None):
+def build_strat_band(region, n_side=8, name="strat_grid"):
+    """Coarse ``n_side`` x ``n_side`` spatial-grid cell id over ``region``'s bounds.
+
+    Stratification-only band (never a clustering input): one small ``getInfo`` on
+    the bounding box, then per-pixel bin math. Used so a training/validation
+    sample is spread across the territory instead of wherever a uniform draw
+    happens to land (T8, 2026-09 — CLAUDE.md §10 revision cycle).
+    """
+    coords = ee.Geometry(region).bounds().coordinates().get(0).getInfo()
+    lons = [c[0] for c in coords]
+    lats = [c[1] for c in coords]
+    lon0, lon1 = min(lons), max(lons)
+    lat0, lat1 = min(lats), max(lats)
+    ll = ee.Image.pixelLonLat()
+    gx = (ll.select("longitude").subtract(lon0).divide((lon1 - lon0) / n_side)
+          .floor().clamp(0, n_side - 1))
+    gy = (ll.select("latitude").subtract(lat0).divide((lat1 - lat0) / n_side)
+          .floor().clamp(0, n_side - 1))
+    return gx.multiply(n_side).add(gy).rename(name)
+
+
+def dominant_segment_band(suit, segments, name="strat_segment"):
+    """Per-pixel argmax segment index (0..len(segments)-1) over ``suit_<seg>``.
+
+    Stratification-only: identifies each pixel's single best-fit segment so a
+    sample keeps proportional representation of every segment's high-suitability
+    niche (e.g. pisciculture's narrow riparian band) instead of being swamped by
+    whichever segment's suitable area is largest. Never an input to the
+    clusterer itself — only to the sampling stratum (T8, 2026-09).
+    """
+    stacked = ee.Image.cat([suit.select(f"suit_{s}") for s in segments]).rename(segments)
+    return stacked.toArray().arrayArgmax().arrayGet([0]).rename(name)
+
+
+def build_sample(z, raw, suit, region, band_names, segments=None,
+                 n=40000, scale=250, seed=42, tile_scale=4, extra=None,
+                 stratify=True, n_grid=8, points_per_stratum=None):
     """One aligned sample carrying z-features (clustering) + raw + suit (profiling).
 
     Returns a FeatureCollection with, per point: ``z_<band>`` (clustering),
     ``<band>`` (raw, interpretable profiling means) and ``suit_<segment>``. If
     ``extra`` (an ``ee.Image``, e.g. realized-use fractions) is given, its bands
     ride along for descriptive zone composition — profiling only, never clustered.
+
+    **Stratified by default (T8, 2026-09 revision).** With ``stratify=True``
+    (default), draws via ``ee.Image.stratifiedSample`` on a combined stratum =
+    coarse spatial-grid cell (``build_strat_band``, ``n_grid`` x ``n_grid`` over
+    ``region``) x dominant comparative segment (``dominant_segment_band``, when
+    ``segments`` is given; grid-only otherwise) — both spatial and per-segment
+    representation, instead of one uniform ``.sample()`` draw that can under-
+    represent a segment's small, specialized niche. ``n`` is the total target
+    sample size, split across strata as ``points_per_stratum`` (derived from
+    ``n`` when not given explicitly). Pass ``stratify=False`` for the original
+    uniform-sample behavior.
     """
     zp = z.select(band_names).rename(zbands(band_names))
     combo = zp.addBands(raw.select(band_names)).addBands(suit)
     if extra is not None:
         combo = combo.addBands(extra)
-    return combo.sample(region=region, scale=scale, numPixels=n, seed=seed,
-                        tileScale=tile_scale, dropNulls=True, geometries=False)
+
+    if not stratify:
+        return combo.sample(region=region, scale=scale, numPixels=n, seed=seed,
+                            tileScale=tile_scale, dropNulls=True, geometries=False)
+
+    grid = build_strat_band(region, n_side=n_grid)
+    if segments:
+        dom = dominant_segment_band(suit, segments)
+        n_strata = n_grid * n_grid * len(segments)
+        strat = grid.multiply(len(segments)).add(dom).rename("strat").toInt()
+    else:
+        n_strata = n_grid * n_grid
+        strat = grid.rename("strat").toInt()
+
+    pts = points_per_stratum or max(1, n // n_strata)
+    fc = combo.addBands(strat).stratifiedSample(
+        numPoints=pts, classBand="strat", region=region, scale=scale, seed=seed,
+        tileScale=tile_scale, dropNulls=True, geometries=False,
+    )
+    return fc.select(combo.bandNames())
 
 
 def nearest_centroid_image(z, band_names, centroids, name="zone"):
