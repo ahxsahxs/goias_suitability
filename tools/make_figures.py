@@ -89,28 +89,28 @@ TR = {
                  "Pisciculture", "Pasture", "Native"],
         "fao": ["N", "S3", "S2", "S1"],
         "factor": {
-            "access_logtt": "Log travel time to city",
-            "clim_aridity": "Aridity index (P/PET)",
+            "access_logtt": "Log travel time",
+            "clim_aridity": "Aridity index",
             "clim_dry_months": "Dry-season length",
             "clim_gdd": "Growing degree-days",
             "clim_pr_annual": "Annual precipitation",
-            "clim_pr_cv": "Rainfall seasonality (CV)",
+            "clim_pr_cv": "Rainfall CV",
             "clim_soil_moist": "Soil moisture",
             "clim_srad": "Solar radiation",
-            "clim_twarm_q": "Warmest-quarter temperature",
-            "cv_carbon": "Above-ground biomass carbon",
-            "cv_pa_dist": "Distance to protected area",
+            "clim_twarm_q": "Warmest temp.",
+            "cv_carbon": "Biomass carbon",
+            "cv_pa_dist": "Dist. protected area",
             "cv_ruggedness": "Terrain ruggedness",
-            "rl_native_frac": "Native-vegetation fraction",
+            "rl_native_frac": "Native-veg. fraction",
             "sit_clearness": "Clearness index",
-            "sit_water_dist_seas": "Distance to seasonal water",
-            "soil_awc": "Plant-available water",
+            "sit_water_dist_seas": "Dist. seasonal water",
+            "soil_awc": "Available water",
             "soil_clay": "Clay content",
             "soil_ph": "Soil pH",
-            "soil_soc": "Soil organic carbon",
+            "soil_soc": "Soil org. carbon",
             "terr_northing": "Slope northing",
             "terr_slope": "Slope",
-            "terr_twi": "Topographic wetness index",
+            "terr_twi": "TWI",
             "water_drain_density": "Drainage density",
         },
         "axis.lon": "Longitude",
@@ -135,7 +135,24 @@ TR = {
         "fig_4_10.kline": "selected k (7)",
         "fig_4_10.xlabel": "k",
         "fig_4_11.suptitle": "Factor share of the spatial variance of each segment's suitability",
-        "fig_4_11.xlabel": "variance share",
+        "fig_4_11.xlabel": "variance share (symmetric-log scale)",
+        "fig_4_11.legend_title": "Legend",
+        "fig_4_11.legend_climate": "Climate",
+        "fig_4_11.legend_terrain_soil": "Terrain + soil",
+        "fig_4_11.legend_other": "Other (water, siting, access, extras)",
+        "fig_4_11.legend_dominant": "Segment's dominant factor",
+        "fig_4_11.legend_negative": "Negative contribution\n(correlated with another factor)",
+        "fig_4_11.legend_note": "x-axis: symmetric-log scale (linear threshold = 0.005)\n"
+                                 "so near-zero shares stay visible without\n"
+                                 "misrepresenting their true (small) magnitude.",
+        "fig_4_12.suptitle": "Local spatial variability: climate vs. terrain+soil\n"
+                              "(z-scored bands, 4.75 km window ≈ TerraClimate's native cell)",
+        "fig_4_12.panel": ["Climate (local σ, 14 bands)",
+                            "Terrain + soil (local σ, 12 bands)",
+                            "log₂(terrain+soil / climate)"],
+        "fig_4_12.cbar_std": "mean local stdDev (z-score units)",
+        "fig_4_12.cbar_ratio": "log₂ ratio (terrain+soil / climate)",
+        "fig_4_12.mean": "territory-mean log₂ ratio = {val:.2f}",
         "legend.fao": "FAO class",
         "legend.underused": ["Other", "Under-utilized"],
         "legend.bestcrop": ["Unchanged", "Best crop changes"],
@@ -161,28 +178,28 @@ TR = {
                  "Piscicultura", "Pastagem", "Vegetação nativa"],
         "fao": ["N", "S3", "S2", "S1"],
         "factor": {
-            "access_logtt": "Log do tempo de viagem à cidade",
-            "clim_aridity": "Índice de aridez (P/ETP)",
-            "clim_dry_months": "Duração da estação seca",
+            "access_logtt": "Log tempo de viagem",
+            "clim_aridity": "Índice de aridez",
+            "clim_dry_months": "Duração estação seca",
             "clim_gdd": "Graus-dia de crescimento",
             "clim_pr_annual": "Precipitação anual",
-            "clim_pr_cv": "Sazonalidade da precipitação (CV)",
+            "clim_pr_cv": "Sazonalidade da precip.",
             "clim_soil_moist": "Umidade do solo",
             "clim_srad": "Radiação solar",
-            "clim_twarm_q": "Temp. do trimestre mais quente",
-            "cv_carbon": "Carbono em biomassa acima do solo",
-            "cv_pa_dist": "Distância a área protegida",
+            "clim_twarm_q": "Temp. mais quente",
+            "cv_carbon": "Carbono na biomassa",
+            "cv_pa_dist": "Dist. área protegida",
             "cv_ruggedness": "Rugosidade do terreno",
-            "rl_native_frac": "Fração de vegetação nativa",
+            "rl_native_frac": "Fração veg. nativa",
             "sit_clearness": "Índice de claridade",
-            "sit_water_dist_seas": "Distância à água sazonal",
-            "soil_awc": "Água disponível para as plantas",
+            "sit_water_dist_seas": "Dist. água sazonal",
+            "soil_awc": "Água disponível (solo)",
             "soil_clay": "Teor de argila",
             "soil_ph": "pH do solo",
-            "soil_soc": "Carbono orgânico do solo",
-            "terr_northing": "Componente norte da orientação",
+            "soil_soc": "Carbono orgânico (solo)",
+            "terr_northing": "Orientação (norte)",
             "terr_slope": "Declive",
-            "terr_twi": "Índice de umidade topográfica",
+            "terr_twi": "TWI",
             "water_drain_density": "Densidade de drenagem",
         },
         "axis.lon": "Longitude",
@@ -207,7 +224,24 @@ TR = {
         "fig_4_10.kline": "k selecionado (7)",
         "fig_4_10.xlabel": "k",
         "fig_4_11.suptitle": "Parcela de cada fator na variância espacial da viabilidade, por segmento",
-        "fig_4_11.xlabel": "parcela da variância",
+        "fig_4_11.xlabel": "parcela da variância (escala simétrica-log)",
+        "fig_4_11.legend_title": "Legenda",
+        "fig_4_11.legend_climate": "Clima",
+        "fig_4_11.legend_terrain_soil": "Terreno + solo",
+        "fig_4_11.legend_other": "Outros (água, sítio, acesso, extras)",
+        "fig_4_11.legend_dominant": "Fator dominante do segmento",
+        "fig_4_11.legend_negative": "Contribuição negativa\n(correlacionada com outro fator)",
+        "fig_4_11.legend_note": "eixo x: escala simétrica-log (limiar linear = 0,005)\n"
+                                 "para manter parcelas próximas de zero visíveis\n"
+                                 "sem exagerar sua magnitude real (pequena).",
+        "fig_4_12.suptitle": "Variabilidade espacial local: clima × terreno+solo\n"
+                              "(bandas padronizadas, janela de 4,75 km ≈ célula nativa do TerraClimate)",
+        "fig_4_12.panel": ["Clima (σ local, 14 bandas)",
+                            "Terreno + solo (σ local, 12 bandas)",
+                            "log₂(terreno+solo / clima)"],
+        "fig_4_12.cbar_std": "desvio-padrão local médio (unidades de z-score)",
+        "fig_4_12.cbar_ratio": "razão log₂ (terreno+solo / clima)",
+        "fig_4_12.mean": "razão log₂ média territorial = {val:.2f}",
         "legend.fao": "classe FAO",
         "legend.underused": ["Outros", "Subutilizada"],
         "legend.bestcrop": ["Inalterado", "Melhor cultura muda"],
@@ -254,6 +288,20 @@ def factor_name(f):
         if f.startswith(p):
             return f[len(p):].replace("_", " ")
     return f
+
+
+# Theme grouping for fig_4_11's legend — mirrors the climate vs. terrain+soil split
+# already established for fig_4_12 (point 5); remaining prefixes (water_, sit_,
+# rl_, cv_, access_) fold into "other" rather than a wall of extra legend entries.
+THEME_COLOR = {"climate": "#E69F00", "terrain_soil": "#009E73", "other": "#0072B2"}
+
+
+def _theme_group(factor):
+    if factor.startswith("clim_"):
+        return "climate"
+    if factor.startswith(("terr_", "soil_")):
+        return "terrain_soil"
+    return "other"
 
 
 def _lon_fmt(x, _pos=None):
@@ -389,7 +437,7 @@ class Renderer:
         if tight:
             fig.tight_layout()
         path = FIG_DIR / f"{name}.png"
-        dpi = 200 if name in ("fig_4_1", "fig_4_11") else 150
+        dpi = 200 if name in ("fig_4_1", "fig_4_11", "fig_4_12") else 150
         fig.savefig(path, dpi=dpi, bbox_inches="tight")
         plt.close(fig)
         if os.environ.get("FIG_COPY_LATEX", "1") != "0":
@@ -630,39 +678,161 @@ class Renderer:
         self._save(fig, "fig_4_10")
 
     def fig_4_11(self):
-        """Per-segment factor-variance decomposition (share of suitability variance)."""
+        """Per-segment factor-variance decomposition (share of suitability variance).
+
+        Full-page landscape layout (paired with \\sidewaysfigure in the annex): a
+        symmetric-log x-axis keeps every bar at its true value while still making
+        near-zero shares (climate, mostly) visually legible instead of collapsing
+        into an indistinguishable sliver against a linear axis dominated by
+        terr_slope/soil_clay bars near 0.9-1.0. Bars are coloured by input theme
+        (climate / terrain+soil / other) rather than by sign/rank, with a hatch for
+        negative shares and a bold outline for each panel's dominant factor — all
+        explained in the legend panel (8th grid slot, otherwise unused for 7
+        segments).
+        """
         df = self._read_diag("factor_variance.csv")
         segs = [s for s in SEGMENTS if s in set(df["segment"])]
         nc = max(1, math.ceil(len(segs) / 2))
-        fig, axes = plt.subplots(2, nc, figsize=(4.2 * nc, 10), squeeze=False)
+        LINTHRESH = 0.005
+        # constrained_layout (not tight_layout, which cannot dynamically shrink
+        # axes and silently overlaps long y-tick labels across columns) reserves
+        # space for tick/label bounding boxes per-panel.
+        fig, axes = plt.subplots(2, nc, figsize=(4.6 * nc, 9.5), squeeze=False,
+                                  constrained_layout=True)
+        fig.set_constrained_layout_pads(wspace=0.06, hspace=0.05)
         flat = axes.ravel()
-        xmin = min(0.0, float(df["variance_share"].min()) * 1.08)
-        xmax = float(df["variance_share"].max()) * 1.08
+        xmin = min(0.0, float(df["variance_share"].min()) * 1.3)
+        xmax = float(df["variance_share"].max()) * 1.4
         for k, seg in enumerate(segs):
             ax = flat[k]
             d = df[df.segment == seg].sort_values("variance_share")
             vmax = d["variance_share"].max()
-            colors = ["#1a9850" if v == vmax else ("#d7191c" if v < 0 else "#2166ac")
-                      for v in d["variance_share"]]
-            bars = ax.barh(range(len(d)), d["variance_share"], color=colors)
+            colors = [THEME_COLOR[_theme_group(f)] for f in d["factor"]]
+            bars = ax.barh(range(len(d)), d["variance_share"], color=colors,
+                            edgecolor="none", height=0.68)
+            for bar, v in zip(bars, d["variance_share"]):
+                if v < 0:
+                    bar.set_hatch("///")
+                    bar.set_edgecolor("#333333")
+                if v == vmax:
+                    bar.set_edgecolor("black")
+                    bar.set_linewidth(1.8)
+            ax.set_xscale("symlog", linthresh=LINTHRESH, linscale=0.6)
             ax.set_yticks(range(len(d)))
-            ax.set_yticklabels([factor_name(f) for f in d["factor"]], fontsize=9)
+            ax.set_yticklabels([factor_name(f) for f in d["factor"]], fontsize=10.5)
             ax.set_xlim(xmin, xmax)
             ax.axvline(0, color="#333", lw=0.6)
-            ax.bar_label(bars, fmt="%.2f", fontsize=8, padding=2)
-            ax.set_title(seg_title(seg), fontsize=11)
+            # Manual value labels (not ax.bar_label): for a near-zero negative bar,
+            # bar_label's point-padding pushes the text further *away* from zero —
+            # i.e. deeper into the negative region where the y-tick labels sit,
+            # causing text to collide with them. Anchoring negative labels at x=0
+            # with a small fixed leftward offset keeps them clear of the tick
+            # labels regardless of how tiny the bar is.
+            for bar, v in zip(bars, d["variance_share"]):
+                y = bar.get_y() + bar.get_height() / 2
+                if v >= 0:
+                    ax.annotate(f"{v:.3f}", xy=(v, y), xytext=(3, 0),
+                                textcoords="offset points", va="center", ha="left",
+                                fontsize=8.5)
+                else:
+                    ax.annotate(f"{v:.3f}", xy=(0, y), xytext=(-3, 0),
+                                textcoords="offset points", va="center", ha="right",
+                                fontsize=8.5)
+            ax.set_title(seg_title(seg), fontsize=13, fontweight="bold")
+            ax.tick_params(axis="x", labelsize=8.5)
             if k + nc >= len(segs):                         # nothing visible below -> label x
-                ax.set_xlabel(t("fig_4_11.xlabel"), fontsize=9)
+                ax.set_xlabel(t("fig_4_11.xlabel"), fontsize=10)
         for j in range(len(segs), len(flat)):
             flat[j].axis("off")
-        fig.suptitle(t("fig_4_11.suptitle"), fontsize=12)
-        fig.tight_layout(rect=[0, 0, 1, 0.95])
+
+        # Legend panel in the otherwise-empty 8th slot.
+        legend_ax = flat[len(flat) - 1]
+        handles = [
+            mpatches.Patch(facecolor=THEME_COLOR["climate"], label=t("fig_4_11.legend_climate")),
+            mpatches.Patch(facecolor=THEME_COLOR["terrain_soil"],
+                            label=t("fig_4_11.legend_terrain_soil")),
+            mpatches.Patch(facecolor=THEME_COLOR["other"], label=t("fig_4_11.legend_other")),
+            mpatches.Patch(facecolor="white", edgecolor="black", linewidth=1.8,
+                            label=t("fig_4_11.legend_dominant")),
+            mpatches.Patch(facecolor="white", edgecolor="#333333", hatch="///",
+                            label=t("fig_4_11.legend_negative")),
+        ]
+        leg = legend_ax.legend(handles=handles, loc="center", frameon=False, fontsize=10.5,
+                                title=t("fig_4_11.legend_title"), title_fontsize=12,
+                                handlelength=1.6, labelspacing=1.1)
+        legend_ax.add_artist(leg)
+        legend_ax.text(0.5, 0.06, t("fig_4_11.legend_note"), transform=legend_ax.transAxes,
+                        ha="center", va="bottom", fontsize=8.5, color="#444444")
+
+        fig.suptitle(t("fig_4_11.suptitle"), fontsize=15)
         self._save(fig, "fig_4_11", tight=False)
+
+    def fig_4_12(self):
+        """Spatial companion to fig_4_11 (revision point 5): local stdDev of the
+        z-scored climate bands vs. terrain+soil bands at the TerraClimate-anchor
+        window radius (4.75 km). Mapped from theme_roughness_points.csv — the
+        same capped sample that feeds the headline ratio in theme_roughness.csv
+        — rather than a GEE raster thumbnail: a full-AOI render of this moving-
+        window computation at native 250 m resolution (required for the kernel
+        radius to be physically correct) exceeds getThumbURL's interactive
+        compute/size limits, and pre-coarsening the input first would smooth
+        away exactly the fine-scale variance this figure exists to show."""
+        R = 4750
+        pts = self._read_diag("theme_roughness_points.csv")
+        clim = pts[f"rough_climate_r{R}"].to_numpy()
+        ts = pts[f"rough_terrain_soil_r{R}"].to_numpy()
+        lon = pts["longitude"].to_numpy()
+        lat = pts["latitude"].to_numpy()
+        ratio = np.log2(ts / np.maximum(clim, 1e-6))
+
+        vmax = float(np.percentile(np.concatenate([clim, ts]), 98))
+
+        # Annotate with the pooled ratio from theme_roughness.csv (not a fresh
+        # stat off this same sample) so the map's headline number matches the
+        # annex table exactly.
+        mean_ratio = None
+        try:
+            rdf = self._read_diag("theme_roughness.csv")
+            rdf = rdf[rdf.radius_m == R]
+            c_std = float(rdf[rdf.group == "climate"]["mean_std"].iloc[0])
+            t_std = float(rdf[rdf.group == "terrain_soil"]["mean_std"].iloc[0])
+            mean_ratio = math.log2(t_std / c_std)
+        except Exception as e:
+            print(f"  fig_4_12: theme_roughness.csv ratio unavailable ({e})")
+
+        pal_seq = ["#fff7bc", "#fec44f", "#d95f0e", "#993404"]
+        cmap_seq, cmap_div = _cmap(pal_seq), _cmap(PAL_DIV)
+        panels = [(clim, cmap_seq, 0, vmax), (ts, cmap_seq, 0, vmax), (ratio, cmap_div, -3, 3)]
+        titles = t("fig_4_12.panel")
+        extent = (self.extent[0], self.extent[1], self.extent[2], self.extent[3])
+        fig, axes = plt.subplots(1, 3, figsize=(17, 6.5))
+        for i, (ax, (vals, cmap, vmin_, vmax_), title) in enumerate(zip(axes, panels, titles)):
+            ax.hexbin(lon, lat, C=vals, gridsize=55, cmap=cmap, vmin=vmin_, vmax=vmax_,
+                      extent=extent, linewidths=0.1, mincnt=1)
+            ax.set_aspect("equal")
+            self._map_axes(ax, left=(i == 0), bottom=True, labels=(i == 0))
+            ax.set_title(title, fontsize=11)
+        fig.subplots_adjust(left=0.05, right=0.98, top=0.86, bottom=0.18, wspace=0.10)
+        cax1 = fig.add_axes([0.06, 0.07, 0.36, 0.02])
+        cb1 = fig.colorbar(ScalarMappable(Normalize(0, vmax), cmap_seq),
+                           cax=cax1, orientation="horizontal")
+        cb1.set_label(t("fig_4_12.cbar_std"), fontsize=9)
+        cax2 = fig.add_axes([0.64, 0.07, 0.30, 0.02])
+        cb2 = fig.colorbar(ScalarMappable(Normalize(-3, 3), cmap_div),
+                           cax=cax2, orientation="horizontal")
+        cb2.set_label(t("fig_4_12.cbar_ratio"), fontsize=9)
+        if mean_ratio is not None:
+            axes[2].text(0.02, 0.03, t("fig_4_12.mean", val=mean_ratio),
+                        transform=axes[2].transAxes, fontsize=9, va="bottom",
+                        bbox=dict(fc="white", ec="0.5", alpha=0.85, pad=2))
+        fig.suptitle(t("fig_4_12.suptitle"), fontsize=12)
+        self._save(fig, "fig_4_12", tight=False)
 
 
 PRESENT = ["fig_4_1", "fig_4_2", "fig_4_3", "fig_4_7", "fig_4_8", "fig_4_9"]
 FUTURE = ["fig_4_4", "fig_4_5", "fig_4_6"]
-DIAG = ["fig_4_10", "fig_4_11"]   # WS-D CSV-based diagnostics (k-selection, factor variance)
+DIAG = ["fig_4_10", "fig_4_11", "fig_4_12"]   # CSV-based + spatial diagnostics (k-selection,
+                                               # factor variance, climate/terrain-soil roughness)
 
 
 def _parse_args(argv):

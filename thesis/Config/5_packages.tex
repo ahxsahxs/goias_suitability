@@ -14,7 +14,10 @@
 %%============================================================
 \usepackage{float}        % FOR DEMO PURPOSES ONLY --- PLEASE REMOVE
 \usepackage{wrapfig}      % FOR DEMO PURPOSES ONLY --- PLEASE REMOVE
-\restylefloat{figure}     % FOR DEMO PURPOSES ONLY --- PLEASE REMOVE
+% \restylefloat{figure}     % DISABLED: redefines figure-caption internals (@fs@capt) in a way
+                             % that conflicts with rotating's \sidewaysfigure (Undefined control
+                             % sequence at \caption time); never needed anything from it besides
+                             % the [H] placement specifier, which \usepackage{float} alone provides.
 \usepackage{metalogo}     % FOR DEMO PURPOSES ONLY --- PLEASE REMOVE
 \usepackage{lipsum}       % FOR DEMO PURPOSES ONLY --- PLEASE REMOVE
 \IfFileExists{byo-twemojiss.sty}{
@@ -45,6 +48,7 @@
 \usepackage{makecell}      % Multiline table cells and control vertical and horizontal alignment
 
 \usepackage{tcolorbox}    % pretty print color boxes
+\usepackage{rotating}     % \sidewaysfigure / \sidewaystable (full-page landscape floats)
 
 % \usepackage{indentfirst}       % Indent first list after a (sub)section title
 

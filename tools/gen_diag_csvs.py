@@ -1,20 +1,24 @@
-"""Regenerate the two diagnostic CSVs that feed fig_4_10 / fig_4_11.
+"""Regenerate the diagnostic CSVs that feed fig_4_10 / fig_4_11 / fig_4_12.
 
-  zoning_kselect.csv  — cluster-validity + stability sweep over k (fig_4_10)
-  factor_variance.csv — per-segment factor share of suitability variance (fig_4_11)
+  zoning_kselect.csv    — cluster-validity + stability sweep over k (fig_4_10)
+  factor_variance.csv   — per-segment factor share of suitability variance (fig_4_11)
+  theme_roughness.csv   — spatial local-std of climate vs. terrain/soil, per
+                           window radius (fig_4_12; revision point 5 companion
+                           to factor_variance.csv's pooled decomposition)
 
-Both are normally emitted as a side effect of the heavy re-export cascades
-(``tools/run_conservation_recal.py`` Stage 4 and ``tools/run_ws_analysis.py`` D1).
-This tool reproduces *only* those two computations from the already-built assets —
-no asset is written, no export is submitted. The zoning sweep is deterministic
-(seed=42) and label-identical to the cascade; the variance decomposition uses the
-same capped-sample pattern.
+The first two are normally emitted as a side effect of the heavy re-export
+cascades (``tools/run_conservation_recal.py`` Stage 4 and
+``tools/run_ws_analysis.py`` D1). This tool reproduces *only* those computations
+from the already-built assets — no asset is written, no export is submitted. The
+zoning sweep is deterministic (seed=42) and label-identical to the cascade; the
+variance decomposition and the roughness decomposition use the same
+capped-sample pattern.
 
 Output goes where ``tools/make_figures.py`` looks for it: ``$SCRATCHPAD`` if set,
 otherwise ``thesis/Chapters/``.
 
 Run:
-    EE_PROJECT=probformer uv run python tools/gen_diag_csvs.py [zoning|variance|all]
+    EE_PROJECT=probformer uv run python tools/gen_diag_csvs.py [zoning|variance|roughness|all]
 """
 from __future__ import annotations
 
@@ -30,6 +34,7 @@ import pandas as pd  # noqa: E402
 
 import utils  # noqa: E402
 import external  # noqa: E402
+import features  # noqa: E402
 import membership  # noqa: E402
 import zoning  # noqa: E402
 
@@ -119,6 +124,67 @@ def gen_factor_variance():
     log(f"  wrote {out}")
 
 
+# --- theme_roughness.csv (Point 5: spatial climate vs. terrain/soil local
+# variability, companion to factor_variance.csv's pooled decomposition) -------
+RADII_M = [250, 750, 4750]   # native cell, cv_ruggedness's own radius, TerraClimate's native cell
+THEME_PREFIX = {
+    "climate": ("clim_",),
+    "terrain_soil": ("terr_", "soil_"),
+    "water": ("water_",),
+    "phenology": ("phen_",),
+    "access": ("access_",),
+}
+
+
+def gen_theme_roughness():
+    z = ee.Image(aid("feature_stack_250m_z"))
+    names = z.bandNames().getInfo()
+    groups = {g: [b for b in names if b.startswith(prefixes)]
+              for g, prefixes in THEME_PREFIX.items()}
+    log(f"roughness: local stdDev per theme group at radii {RADII_M} m ...")
+    lonlat = ee.Image.pixelLonLat()
+    # One .sample() call per radius (not all 3 at once): the r=4750 m kernel
+    # (~19 px, ~1100 px/window) across 34 bands times out as a single combined
+    # request even at tileScale=8. Splitting keeps each interactive call small;
+    # tileScale=16 gives extra headroom for the heaviest (largest-radius) call.
+    frames = []
+    for r_m in RADII_M:
+        rough = features.theme_roughness_image(z, groups, [r_m])
+        log(f"  sampling r={r_m} m ...")
+        feats = (rough.addBands(lonlat)
+                 .sample(region=AOI, scale=250, numPixels=CAP, seed=5,
+                         dropNulls=True, tileScale=16)
+                 .getInfo()["features"])
+        pts = pd.DataFrame([f["properties"] for f in feats])
+        frames.append(pts)
+        if r_m == RADII_M[-1]:
+            # fig_4_12 needs a spatial map at this (headline, TerraClimate-
+            # anchor) radius, but a full-AOI raster render of this moving-
+            # window computation exceeds getThumbURL's interactive compute/
+            # size limits. Reuse these already-sampled points (same call that
+            # feeds the headline ratio below) as the map's spatial support
+            # instead of exporting a new EE asset just to render a thumbnail.
+            headline_cols = ["longitude", "latitude",
+                              f"rough_climate_r{r_m}", f"rough_terrain_soil_r{r_m}"]
+            pts_out = OUT / "theme_roughness_points.csv"
+            pts[headline_cols].dropna().to_csv(pts_out, index=False)
+            log(f"  wrote {pts_out}")
+    df = pd.concat(frames, ignore_index=True, sort=False)
+    rough_cols = [c for c in df.columns if c.startswith("rough_")]
+    long = (df.melt(value_vars=rough_cols, var_name="band", value_name="value")
+            .dropna(subset=["value"]))
+    parsed = long["band"].str.extract(r"rough_(?P<group>.+)_r(?P<radius_m>\d+)$")
+    long = pd.concat([long.drop(columns="band"), parsed], axis=1)
+    long["radius_m"] = long["radius_m"].astype(int)
+    summary = (long.groupby(["group", "radius_m"])["value"]
+               .agg(mean_std="mean", median_std="median", n="count")
+               .reset_index()
+               .sort_values(["radius_m", "group"]))
+    out = OUT / "theme_roughness.csv"
+    summary.to_csv(out, index=False)
+    log(f"  wrote {out}\n" + summary.round(3).to_string(index=False))
+
+
 def main():
     what = sys.argv[1] if len(sys.argv) > 1 else "all"
     OUT.mkdir(parents=True, exist_ok=True)
@@ -127,6 +193,8 @@ def main():
         gen_zoning_kselect()
     if what in ("variance", "all"):
         gen_factor_variance()
+    if what in ("roughness", "all"):
+        gen_theme_roughness()
     log("=== done ===")
 
 

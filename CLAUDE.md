@@ -112,6 +112,8 @@ config/ahp_matrices.yaml      # Part 9: AHP pairwise-comparison matrices + consi
 config/mapbiomas_classes.yaml # MapBiomas code -> segment-role remap (Phase B, Part 13)
 src/utils.py                  # EE init, config loader, 250 m grid, asset/export helpers
 src/features.py               # ALL Part 1-8 feature builders (one source of truth; lazy ee, import-safe)
+                                # + theme_roughness_image (revision point 5: local-stdDev magnitude
+                                # map of climate vs. terrain/soil, §10)
 src/membership.py             # Part 9 suitability engine: fuzzy membership + geomean + FAO + AHP/sensitivity
 src/zoning.py                 # Part 10 zoning: sklearn KMeans (offline) + server-side nearest-centroid + profiling
 src/cmip6.py                  # Part 11 CMIP6 delta-change: change factors + future climate + future suitability + Δ + agreement
@@ -124,9 +126,11 @@ tools/run_phase_a.sh          # executes 01->08 in order, waits for exports, ass
 tools/wait_for_assets.py      # blocks until named EE assets exist (gates the stack step)
 tools/verify_assets.py        # metadata-only footprint/CRS/scale check of built assets (no compute)
 tools/make_figures.py         # renders thesis figures (PNG) straight into thesis/Chapters/Figures/
+                                # (fig_4_12 is CSV/hexbin-only, no GEE thumbnail — see §10 note)
 tools/extract_present.py      # Part 9/10 summary tables; also writes municipal_ranking.csv (see §11 gotcha)
 tools/extract_cmip6.py        # Part 11 summary tables
-tools/gen_diag_csvs.py        # regenerates zoning_kselect.csv / factor_variance.csv diagnostics
+tools/gen_diag_csvs.py        # regenerates zoning_kselect.csv / factor_variance.csv /
+                                # theme_roughness(_points).csv diagnostics
 notebooks/01..15               # thin: import src/, build, range-report, view, export — one per Part
 docs/                          # supporting notes: _search_terms.md (lit-search scaffolding, not part of
                                 # the thesis), metodologia_diagrama.md (PT methodology diagrams)
@@ -352,6 +356,10 @@ The 7 points, in brief (see the artifact for the full day-by-day mapping):
 4. κ=0.07 needs more explanation (vs. AUC=0.83) → Day 3.
 5. Climate at ~4 km vs. 250 m for everything else needs explicit callout in the results reading,
    plus a spike into higher-resolution alternatives → Day 4–5, possible pipeline upgrade weeks 2.
+   **Done (2026-09-18):** catalog spike found no viable alternative (TerraClimate stays; week 2
+   pipeline-swap items skipped); a spatial magnitude-map (`fig:scale-mismatch`,
+   `tab:scale-mismatch`) now evidences the claim instead of asserting it in prose — see the
+   note below.
 6. Why not the official IBGE municipal mesh instead of GAUL? → Days 2–3, 11. **Code done
    (2026-09-15):** `src/ibge_mesh.py` replaces GAUL for both AOI and municipal reporting (§7);
    still pending the approved EE rebuild + the thesis text update (`02_materials.tex`,
@@ -359,16 +367,38 @@ The 7 points, in brief (see the artifact for the full day-by-day mapping):
 7. Code/atlas/ranking should ship now, not stay "future work" → Days 1–12 (this README/CLAUDE.md
    rewrite is part of point 7).
 
-**Note (2026-09-17) on point 5:** a first pass at resolving P5 with text alone (three paragraphs
-explaining the climate-vs-soil/terrain resolution mismatch, ~4 km vs. 250 m, inserted next to the
-`fig:atlas-present`, `fig:zones`, and `fig:shift` figures in `04_results.tex`) was tried and
-rejected — prose isn't enough here. The preferred approach instead is **magnitude maps** that
-show, visually and quantitatively, the intensity of the climate effect versus the intensity of
-the terrain/soil effect (likely spatializing the same per-factor variance decomposition already
-used for the aggregate `fig:factor-variance` Annex figure, rather than just citing it in prose).
-This is paused until the Day 5 higher-resolution-climate spike (artifact item `d5-1`) concludes —
-its outcome (keep TerraClimate at ~4 km vs. switch source) determines what the magnitude maps
-should actually show, so it's worth waiting rather than redesigning the text twice.
+**Update (2026-09-18) on point 5 — DONE.** A first pass at resolving P5 with text alone (three
+paragraphs explaining the climate-vs-soil/terrain resolution mismatch, ~4 km vs. 250 m) was tried
+and rejected — prose isn't enough on its own. Both halves are now landed:
+
+1. **Catalog spike (d5-1):** checked the GEE catalog for a higher-resolution TerraClimate
+   replacement compatible with the 1991–2020 normal, without breaking the zero-upload design.
+   Verdict: **no alternative works** — WorldClim (~927 m) has the wrong climatology window
+   (1960–1990) and lacks PET/VPD/soil-moisture; CHIRPS/CHIRTS are single-variable and, at 0.05°
+   (~5.6 km), actually *coarser* than TerraClimate's 1/24° (~4.64 km); ERA5-Land/AgERA5 have the
+   right variables/period but sit at 0.1° (~9–11 km, 2×+ worse), and AgERA5 isn't in the official
+   catalog. TerraClimate stays; checkpoint option **C** applies — week 2's conditional
+   climate-pipeline-swap sub-items (`d6-1`–`d10-1`) are no-go/skipped.
+2. **Magnitude-map evidence:** rather than asserting "terrain leads because it's fine-grained" in
+   prose, added a genuine spatial statistic — local (moving-window) stdDev of the z-scored
+   feature-stack bands, grouped climate vs. terrain+soil, at three window radii (250 m / 750 m /
+   4,750 m, the last anchored to TerraClimate's own native pixel). New: `theme_roughness_image()`
+   in `src/features.py`; `gen_theme_roughness()` in `tools/gen_diag_csvs.py` (writes
+   `theme_roughness.csv` and `theme_roughness_points.csv`); `fig_4_12()` in `tools/make_figures.py`.
+   Headline: even at TerraClimate's own native scale (4,750 m), terrain+soil local variability is
+   **42× climate's (log₂ = 5.40)**, rising to 320× at 250 m — and the pattern is near-uniform
+   across the territory, not a few outlier cells. Landed in `thesis/Chapters/06_annex.tex`
+   (`fig:scale-mismatch`, `tab:scale-mismatch`), `04_results.tex` (new paragraph after the
+   `fig:factor-variance` discussion), and `05_discussion_conclusion.tex`'s "Descompasso de escala
+   clima–solo" bullet (now cites the ratio instead of asserting impact is small unsupported).
+   **Gotcha for future readers:** `fig_4_12` deliberately does **not** call `self.thumb()` /
+   `getThumbURL` — a full-AOI raster render of this moving-window computation at native 250 m
+   (required for the kernel radius to be physically correct) exceeds GEE's interactive
+   compute/size limits, and pre-coarsening the input first would smooth away the exact fine-scale
+   variance the figure exists to show. It instead plots a hexbin map straight from
+   `theme_roughness_points.csv` — the same capped `.sample()` points (lon/lat + values) that
+   already feed the headline ratio in `theme_roughness.csv`, so the map and the annex table are
+   numerically consistent by construction. Don't "fix" this back to a thumbnail-based render.
 
 As of this writing: **Day 1 done, Day 2 in progress** — this file and `README.md` are the last
 item of Day 2 (`d2-3`, "finish repo cleanup, write a new root README.md for GitHub visitors").

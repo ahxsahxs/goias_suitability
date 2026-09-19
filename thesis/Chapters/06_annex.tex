@@ -131,11 +131,11 @@ Segmento (máscara) & Fator & Peso & Forma & Limiares \\
  & Declive ($^\circ$) & 0,20 & decrescente & 2,86, 5,71 \\
  & Temp. do trimestre mais quente ($^\circ$C) & 0,18 & intervalar & 22, 26, 32, 36 \\
  & Densidade de drenagem & 0,16 & crescente & 0,01, 0,08 \\
-\textbf{Pecuária} (apenas exclusão) & Precipitação anual (mm) & 0,22 & intervalar & 700, 1000, 2000, 2600 \\
- & Duração da estação seca (meses) & 0,22 & decrescente & 4, 8 \\
- & Umidade do solo (mm) & 0,22 & crescente & 20, 120 \\
- & Declive ($^\circ$) & 0,18 & decrescente & 8,53, 17,7 \\
- & Carbono orgânico do solo (g/kg) & 0,16 & crescente & 4, 18 \\
+\textbf{Pecuária} (apenas exclusão) & Carbono orgânico do solo (g/kg) & 0,34 & crescente & 8, 18 \\
+ & Umidade do solo (mm) & 0,28 & crescente & 55, 120 \\
+ & Declive ($^\circ$) & 0,20 & decrescente & 6, 15 \\
+ & Precipitação anual (mm) & 0,10 & intervalar & 700, 1000, 2000, 2600 \\
+ & Duração da estação seca (meses) & 0,08 & decrescente & 4, 8 \\
 \textbf{Conservação} (nenhuma; compensatória) & Distância a área protegida (m) & 0,20 & decrescente &
   5000, 40000 \\
  & Índice de aridez (P/ETP) $\dagger$ & 0,15 & crescente & 0,95, 1,25 \\
@@ -146,11 +146,12 @@ Segmento (máscara) & Fator & Peso & Forma & Limiares \\
  & Temp. do trimestre mais quente ($^\circ$C) $\dagger$ & 0,09 & decrescente & 23, 31 \\
  & Fração de vegetação nativa & 0,08 & crescente & 0,25, 0,85 \\
  & Declive ($^\circ$) & 0,05 & crescente & 2,86, 11,31 \\
-\textbf{Geração fotovoltaica} (disponível) & Radiação solar (W/m$^2$) & 0,34 & crescente & 180, 240 \\
- & Declive ($^\circ$) & 0,22 & decrescente & 2,86, 8,53 \\
- & Log do tempo de viagem à cidade & 0,20 & decrescente & 3, 6 \\
- & Distância à água (m) & 0,12 & crescente & 200, 3000 \\
- & Componente norte da orientação & 0,12 & crescente & $-0{,}3$, 0,5 \\
+\textbf{Geração fotovoltaica} (disponível) & Radiação solar (W/m$^2$) & 0,26 & crescente & 186, 204 \\
+ & Índice de claridade (cobertura de nuvens) & 0,20 & crescente & 0,466, 0,501 \\
+ & Declive ($^\circ$) & 0,18 & decrescente & 2,86, 8,53 \\
+ & Temp. do trimestre mais quente ($^\circ$C) & 0,14 & decrescente & 24, 31 \\
+ & Log do tempo de viagem à cidade & 0,14 & decrescente & 3, 6 \\
+ & Componente norte da orientação & 0,08 & crescente & $-0{,}3$, 0,5 \\
 \bottomrule
 \end{longtable}
 
@@ -432,11 +433,70 @@ melhor Davies--Bouldin e a melhor silhueta (empatada), mantendo estabilidade ace
 \label{fig:cluster-validity}
 \end{figure}
 
+\begin{sidewaysfigure}[p]
+\centering
+\includegraphics[width=0.95\textheight]{fig_4_11.png}
+\caption{Parcela de cada fator na variância espacial da viabilidade de cada segmento
+(decomposição exata de covariância entre cada fator ponderado e o agregado --- sobre
+log-pertinências para os seis segmentos de média geométrica, sobre pertinências brutas para a
+conservação, de média aritmética; as parcelas somam exatamente~1 por construção). Eixo
+horizontal em escala simétrica-log (limiar
+linear~$=0{,}005$) para manter visíveis as parcelas próximas de zero sem exagerar sua
+magnitude real; a cor indica o grupo temático do fator (clima, laranja; terreno+solo, verde;
+outros --- água, sítio, acesso, extras ---, azul); contorno preto grosso marca o fator
+dominante de cada segmento; hachura indica contribuição negativa, um efeito residual esperado
+de uma decomposição linear de covariância entre fatores correlacionados, não um erro. Terreno
+e solo dominam as culturas: declive responde por 0,94 da variância da soja, 0,59 da
+cana-de-açúcar e $\approx$1,0 de outras culturas anuais; para soja e outras culturas anuais,
+porém, apenas argila (e declive) de fato discriminam --- pH e carbono orgânico do solo também
+saturam (parcela $\approx$0), de modo que \emph{solo} isoladamente é um discriminador espacial
+mais estreito do que \emph{terreno e solo} em conjunto. A pecuária é governada pela umidade do
+solo (0,58) e
+pelo carbono orgânico (0,25); a piscicultura, pela distância à água sazonal (0,46) e pelo
+declive (0,33); a conservação, pela distância a áreas protegidas (0,43) e pela rugosidade do
+terreno (0,21); a geração fotovoltaica, pela radiação solar (0,46) e pelo índice de claridade
+(0,38). A concentração em um único fator para as quatro culturas/aquicultura não decorre de
+peso AHP enviesado --- os pesos de soja, cana, outras culturas e piscicultura são os
+\emph{mais equilibrados} dentre os sete segmentos (razão máx./mín. de 1,4--1,7$\times$, contra
+4,25$\times$ da pecuária, deliberadamente reponderada para fugir dos fatores climáticos
+saturados; Tabela~\ref{tab:spec-longtable}) --- mas da saturação espacial genuína das
+pertinências climáticas em GO/DF, evidenciada independentemente pelo mapa de magnitude espacial
+da Figura~\ref{fig:scale-mismatch}.}
+\label{fig:factor-variance}
+\end{sidewaysfigure}
+
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.85\textwidth]{fig_4_11.png}
-\caption{Parcela de cada fator na variância espacial da viabilidade de cada segmento.
-Terreno e solo dominam as culturas (fatores climáticos $\approx$ 0); umidade do solo e
-carbono orgânico governam a pecuária; conectividade e rugosidade governam a conservação.}
-\label{fig:factor-variance}
+\includegraphics[width=0.95\textwidth]{fig_4_12.png}
+\caption{Variabilidade espacial local (desvio-padrão em janela móvel, bandas padronizadas)
+do clima \emph{versus} terreno+solo, numa janela de 4,75~km --- aproximadamente o tamanho da
+célula nativa do TerraClimate ($\tfrac{1}{24}^\circ \approx 4{,}64$~km). O painel do clima é quase
+uniformemente plano (variação local desprezível em toda a extensão do território); o painel de
+terreno+solo mostra estrutura espacial genuína, mais acentuada no norte/nordeste (transição de
+relevo do planalto); o painel da razão log$_2$ é quase uniformemente positivo, confirmando que
+terreno+solo domina a estrutura espacial fina mesmo na própria escala nativa do clima. Mapa
+construído a partir da mesma amostra limitada por orçamento computacional (4.500 pontos) que
+alimenta a Tabela~\ref{tab:scale-mismatch}, e não de uma composição rasterizada completa do
+território --- ver \texttt{tools/gen\_diag\_csvs.py}.}
+\label{fig:scale-mismatch}
 \end{figure}
+
+\begin{table}[H]
+\centering
+\caption{Desvio-padrão local médio (bandas padronizadas) do clima \emph{versus}
+terreno+solo, por raio de janela móvel, e razão terreno+solo/clima correspondente. O raio de
+4.750~m ancora na célula nativa do TerraClimate ($\approx$4,64~km); 250~m é a célula nativa da
+pilha de atributos; 750~m reutiliza o raio já usado para a rugosidade do terreno na
+conservação (\S\ref{anx:derivations}). Amostra de $\approx$4.480 pontos por raio, limitada por
+orçamento computacional (\S\ref{anx:data}).}
+\label{tab:scale-mismatch}
+\begin{tabular}{@{}rrrrr@{}}
+\toprule
+Raio (m) & $\sigma$ clima & $\sigma$ terreno+solo & Razão & $\log_2$(razão) \\
+\midrule
+250 & 0,001 & 0,437 & 320 & 8,33 \\
+750 & 0,003 & 0,655 & 198 & 7,63 \\
+4.750 & 0,021 & 0,900 & 42 & 5,40 \\
+\bottomrule
+\end{tabular}
+\end{table}

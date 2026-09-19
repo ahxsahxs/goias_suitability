@@ -109,9 +109,22 @@ para trabalho futuro.
     vertical absoluta especificada em~16~m (\emph{linear error} a 90\% de confiança) e vazios de
     sombra de radar/água que o \emph{pipeline} não trata antes de reamostrar para 250~m por média
     (elevação, declive, orientação) ou interpolação bilinear (índice topográfico de umidade).
-  \item \textbf{Descompasso de escala clima--solo.} As entradas climáticas ($\approx$4~km) são
-    bem mais grosseiras que solo e terreno (250~m); como o clima atua como comporta e não como
-    fonte de estrutura fina, o impacto prático é pequeno, mas a resolução nominal é enganosa.
+  \item \textbf{Descompasso de escala clima--solo.} As entradas climáticas ($\approx$4,6~km,
+    TerraClimate) são bem mais grosseiras que solo e terreno (250~m). Um levantamento do
+    catálogo do GEE não encontrou alternativa viável: WorldClim é mais fino ($\approx$927~m) mas
+    sua climatologia (1960--1990) não cobre a normal 1991--2020 usada neste trabalho e falta-lhe
+    PET/VPD/umidade do solo; CHIRPS/CHIRTS cobrem só uma variável cada e, a 0,05\textdegree{}
+    ($\approx$5,6~km), são \emph{mais} grosseiros que o TerraClimate; ERA5-Land/AgERA5 têm o
+    conjunto completo de variáveis e o período correto mas ficam a 0,1\textdegree{}
+    ($\approx$9--11~km, mais de 2$\times$ pior), e o AgERA5 sequer está no catálogo oficial. Que
+    o clima atue como comporta e não como fonte de estrutura fina não é apenas uma leitura
+    qualitativa: a variabilidade espacial local (desvio-padrão em janela móvel, bandas
+    padronizadas) de terreno+solo é 42$\times$ maior que a do clima mesmo na janela de 4,75~km
+    --- a própria escala nativa do TerraClimate, a mais favorável possível a ele --- e o padrão é
+    quase uniforme em todo o território (Figura~\ref{fig:scale-mismatch},
+    Tabela~\ref{tab:scale-mismatch} do Anexo). A resolução nominal do clima é, portanto,
+    enganosa apenas em aparência: o impacto prático é pequeno porque a estrutura fina do atlas
+    nunca dependeu dela.
   \item \textbf{Sobrepermissividade residual das culturas.} As superfícies de culturas
     permanecem mais permissivas que o nicho realizado ($\kappa=0{,}23$ em amostra;
     $\kappa=0{,}07$ sob validação espacial). Separar regra especialista larga de lacuna

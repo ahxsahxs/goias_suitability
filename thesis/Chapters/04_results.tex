@@ -55,10 +55,39 @@ soja, o declive responde por 0,93 da variância e a argila por 0,07, com o clima
 cana-de-açúcar se divide entre declive (0,59) e argila (0,41). A pecuária é governada pela
 umidade do solo (0,58) e pelo carbono orgânico (0,25). E a conservação, pela conectividade a
 reservas (0,43) e pela rugosidade do terreno (0,21), com a fração de vegetação nativa
-respondendo por 0,16 e os fatores climáticos móveis em $\approx$ 0 no presente. Os fatores
-climáticos atuam, assim, como comportas de viabilidade: eles abrem ou fecham o intervalo
-possível, mas não desenham a estrutura espacial fina do atlas, que repousa sobre solo e terreno
---- uma dependência retomada como limitação (\S\ref{sec:limitations}).
+respondendo por 0,16 e os fatores climáticos móveis em $\approx$ 0 no presente. Essa
+concentração em um único fator para as culturas não decorre de peso AHP enviesado --- os pesos
+de soja, cana-de-açúcar, outras culturas anuais e piscicultura são os \emph{mais equilibrados}
+dentre os sete segmentos (razão máx./mín. de 1,4--1,7$\times$; Tabela~\ref{tab:spec-longtable}
+do Anexo), inclusive mais que os da pecuária (4,25$\times$, deliberadamente reponderada para
+fugir dos fatores climáticos saturados) --- mas da saturação espacial genuína já descrita acima.
+Ressalva: para soja e outras culturas anuais, apenas argila (e declive) de fato discriminam
+espaço --- pH e carbono orgânico do solo também saturam (parcela $\approx$ 0, apesar de não
+serem climáticos), de modo que ``solo'' é, para essas duas culturas, um discriminador mais
+estreito do que ``solo e terreno'' em conjunto. Os fatores climáticos atuam, assim, como
+comportas de viabilidade: eles abrem ou fecham o intervalo possível, mas não desenham a
+estrutura espacial fina do atlas, que repousa sobre solo e terreno --- uma dependência retomada
+como limitação (\S\ref{sec:limitations}).
+
+A decomposição por fator é agregada por pixel amostrado --- ela mostra \emph{quanto} cada fator
+contribui em média, mas não \emph{onde} nem em qual escala espacial essa contribuição se
+sustenta. Para responder a isso diretamente, o desvio-padrão local (janela móvel) de cada banda
+padronizada da pilha de atributos foi calculado e agregado por tema --- clima
+\emph{versus} terreno+solo --- em três raios de janela, incluindo 4,75~km, o tamanho da própria
+célula nativa do TerraClimate (Figura~\ref{fig:scale-mismatch} e Tabela~\ref{tab:scale-mismatch}
+do Anexo). Mesmo nessa escala --- a mais favorável possível ao clima, por ser a sua própria
+resolução nativa --- a variabilidade espacial local de terreno+solo é 42$\times$ maior que a do
+clima ($\log_2 = 5{,}40$); em janelas mais finas (750~m, 250~m) a razão sobe para 198$\times$ e
+320$\times$. O mapa confirma que esse padrão é quase uniforme em todo o território, não um
+artefato de algumas células: terreno e solo produzem estrutura espacial fina em praticamente
+toda a extensão de GO~e~DF, enquanto o clima permanece quase plano até mesmo na sua própria
+escala nativa.
+
+Essa uniformidade é \emph{espacial} (entre lugares, num mesmo instante), não \emph{temporal}
+(num mesmo lugar, ao longo do tempo): uma superfície climática pode ser quase plana no espaço e
+ainda assim se deslocar substancialmente no tempo, em todo o território de uma vez. É
+precisamente esse deslocamento temporal --- não a estrutura espacial fina, que continua a cargo
+do terreno e do solo --- que a projeção CMIP6 explora (\S\ref{sec:shift}).
 
 \begin{figure}[H]
 \centering
@@ -160,6 +189,23 @@ Apenas o bloco climático do conjunto avança: terreno, solo, água, fenologia, 
 e os fatores laterais estáticos são mantidos fixos. Duas variáveis climáticas (radiação
 solar e umidade do solo) também são mantidas na linha de base, o que suprime parte dos
 sinais de geração solar e pecuária.
+
+Que apenas o clima avance não contradiz a quase-uniformidade espacial documentada em
+\S\ref{sec:atlas-present} (Figura~\ref{fig:scale-mismatch}): hoje, a maioria das pertinências
+climáticas está \textbf{saturada} ($\approx$1,0, ex.: a precipitação anual da soja já está bem
+dentro da faixa ótima em quase todo o território), e é por isso que o clima quase não
+discrimina espaço no presente --- um fator no teto não distingue lugares. Sob os fatores de
+mudança do CMIP6, porém, a mesma variável pode sair desse patamar e entrar no trecho inclinado
+da curva de pertinência (ou cruzar um limiar), e como a agregação é uma média geométrica
+ponderada (produto de pertinências), essa queda se propaga de forma multiplicativa. O
+deslocamento climático em si é espacialmente suave (\S\ref{sec:atlas-present}), mas o efeito
+resultante em $\Delta S$ \emph{não} é uniforme: um local já perto de uma fronteira de classe
+FAO por causa de terreno/solo marginais é empurrado para a classe inferior por um pequeno
+recuo climático, enquanto um local com terreno/solo excelentes absorve o mesmo recuo sem mudar
+de classe --- daí a realocação de melhor cultura concentrada em fronteiras específicas
+(Figura~\ref{fig:best-crop} do Anexo), e não um deslocamento uniforme do mapa inteiro. Em suma:
+terreno e solo determinam \emph{onde} o sistema está sensível; o clima fornece o empurrão
+\emph{temporal} que decide se essa sensibilidade se materializa.
 
 O sinal projetado é \textbf{modesto em magnitude, mas altamente consistente em direção.} As
 mudanças médias territoriais vão de alguns milésimos, nas culturas comerciais resilientes, a

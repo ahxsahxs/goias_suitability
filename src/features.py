@@ -578,3 +578,58 @@ def assemble_stack(images: dict, aoi, stats_scale: int | None = None):
     std_img = ee.Image.constant(stds.values(bn)).rename(bn)
     z = raw.subtract(mean_img).divide(std_img).clip(aoi)
     return raw, z
+
+
+# =============================================================================
+# Revision point 5 — spatial magnitude of climate vs. terrain/soil local
+# variability (companion to membership.variance_shares' pooled decomposition).
+# =============================================================================
+def local_std(z_img, bands, radius_px, proj=None):
+    """Neighbourhood stdDev of each band in ``bands`` of a z-scored image.
+
+    Generalizes the ``cv_ruggedness`` idiom (this module, conservation_features)
+    from a single band (elevation) to an arbitrary band list. One output band
+    per input band, named ``<band>_std``.
+    """
+    proj = proj or grid_projection()
+    return (
+        z_img.select(bands)
+        .reduceNeighborhood(ee.Reducer.stdDev(), ee.Kernel.circle(radius_px, "pixels"))
+        .reproject(proj)
+        .rename([f"{b}_std" for b in bands])
+    )
+
+
+def theme_roughness_image(z_img, theme_bands, radii_m, scale=None):
+    """Per-theme-group local roughness at multiple window radii.
+
+    ``theme_bands`` maps group name -> list of z-scored band names (e.g.
+    ``{"climate": [...14 clim_* bands], "terrain_soil": [...12 terr_/soil_
+    bands], "water": [...], "phenology": [...], "access": [...]}``). Bands are
+    already z-scored, so the mean local stdDev across a group's bands is
+    directly comparable across groups without further normalization — the same
+    rationale ``membership.variance_shares`` uses to pool across AHP factors.
+
+    Returns one ``ee.Image`` with bands ``rough_<group>_r<radius_m>``.
+    """
+    scale = scale or scale_m()
+    proj = grid_projection()
+    out = []
+    for r_m in radii_m:
+        r_px = max(1, round(r_m / scale))
+        kernel = ee.Kernel.circle(r_px, "pixels")
+        for group, bands in theme_bands.items():
+            # Accumulate one band at a time (never hold all of a group's N
+            # per-band stdDev results as a single N-band Image): a multi-band
+            # intermediate node at this kernel radius blows getThumbURL's
+            # per-node output-size cap (observed: 14 climate bands at ~1M
+            # output pixels ~= 112 MiB > 80 MiB), even though the final output
+            # here is just one averaged band.
+            acc = ee.Image.constant(0).float()
+            for b in bands:
+                std = (z_img.select(b)
+                       .reduceNeighborhood(ee.Reducer.stdDev(), kernel)
+                       .reproject(proj))
+                acc = acc.add(std)
+            out.append(acc.divide(len(bands)).rename(f"rough_{group}_r{r_m}"))
+    return ee.Image.cat(out)
