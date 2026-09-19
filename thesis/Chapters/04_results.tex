@@ -22,6 +22,10 @@ viabilidade média de cada segmento por zona (Tabela~\ref{tab:zone-suit}, \S\ref
 acompanhada da parcela da terra avaliada de cada segmento que alcança a classe S2 da FAO ou
 superior.
 
+% TODO embora ja tenhamos uma interpretação espacial dos modelos, seria interessante verificar 
+% se nao podemos melhorar a metodologia usando modelos espacialmente explícitos para capturar
+% efeitos da vizinhança.
+
 Soja e cana-de-açúcar pontuam mais alto nos planaltos mais frios, altos e argilosos (parcelas
 S2+ de 62,2\% e 60,8\%) e caem acentuadamente em terreno íngreme ou arenoso. As outras culturas
 anuais acompanham a confiabilidade da chuva e o calor acumulado, além do declive e da
@@ -44,6 +48,7 @@ Zona~6). A geração fotovoltaica atinge 27,3\% em S2+, discriminando as planíc
 quentes e de alta irradiância dos planaltos mais frios. Essas planícies são favorecidas pela
 irradiância e por um fator de índice de claridade, mas penalizadas por uma redução de
 desempenho por calor no trimestre mais quente.
+
 
 GO~e~DF é climaticamente quase uniforme, por isso as pertinências climáticas saturam, e a 
 discriminação real entre terra boa e ruim vem do \textbf{solo e do terreno}. 
@@ -82,6 +87,10 @@ clima ($\log_2 = 5{,}40$); em janelas mais finas (750~m, 250~m) a razão sobe pa
 artefato de algumas células: terreno e solo produzem estrutura espacial fina em praticamente
 toda a extensão de GO~e~DF, enquanto o clima permanece quase plano até mesmo na sua própria
 escala nativa.
+
+
+% TODO mostrar mapas de clima sumarizando as variaveis no presente e no futuro. Creio que isso vai
+% esclarecer muitos pontos sobre como a projeção esta sendo realizada.
 
 Essa uniformidade é \emph{espacial} (entre lugares, num mesmo instante), não \emph{temporal}
 (num mesmo lugar, ao longo do tempo): uma superfície climática pode ser quase plana no espaço e
@@ -136,6 +145,8 @@ Geração fotovoltaica  & 0,32 & 0,49 & 0,38 & 0,27 & 0,36 & 0,26 & 0,11 \\
 As sete zonas admitem uma interpretação fisiográfica clara, resolvendo cinco vocações
 comparativas distintas, incluindo a \textbf{conservação} na Zona~6.
 
+% TODO renomear as bandas para começar em 1, não 0
+
 \begin{itemize}
   \item \textbf{Zona 0 (19,2\%) --- planalto de cultivo privilegiado.} Argiloso (36\%), de
     elevação moderada, suavemente inclinado (3,9$^\circ$), com a maior viabilidade de
@@ -171,6 +182,8 @@ As zonas são rotuladas pelo melhor segmento comparativo (\S\ref{sec:zoning}), s
 território em dois planaltos de cultivo (Zonas 0 e 5), um planalto alto de pecuária (Zona 2),
 duas planícies quentes com pendor solar (Zonas 1 e 4), uma baixada ripária com pendor para
 piscicultura (Zona 3) e um planalto alto de conservação (Zona 6).
+
+% TODO melhorar essa imagem para ocupar toda a largura da pagina, mover legenda para baixo
 
 \begin{figure}[H]
 \centering
@@ -413,8 +426,6 @@ FAO com o uso atual, obtém-se, por segmento, a parcela do território viável o
 não atualmente sob esse uso (Tabela~\ref{tab:pot-real-gap}). Para a soja essa parcela
 subutilizada é de 48,0\% do território e para a cana-de-açúcar 57,9\%. Como a pastagem é de
 longe o maior uso atual, o grosso dessa folga é pastagem existente, e não vegetação nativa.
-Isto aponta para um padrão de \textbf{intensificação de terra já convertida}, e não para o
-desmatamento.
 
 \begin{table}[H]
 \centering
@@ -503,6 +514,9 @@ varia pouco dentro da estação de dossel de uma única cultura. As amostras de 
 de outras culturas, por sua vez, são pequenas demais ($n = 119$ e $16$) para serem conclusivas.
 As métricas de presença permanecem, portanto, os validadores primários das culturas.
 
+% TODO os testes descritos nos tres paragrafos anteriores são pouco conclusivos 
+% talvez haja uma maneira de reformular essa validação ou explicala melhor
+
 O \emph{proxy} de NPP anual também separa fortemente as zonas. Uma ANOVA de um fator entre as
 sete zonas é altamente significativa ($F = 592{,}1$, $p < 0{,}001$): a planície quente e
 arenosa (Zona~4) é marcadamente menos produtiva (média do grupo 0,575, em unidades
@@ -522,6 +536,8 @@ dobras com blocos espaciais} --- treinando em blocos inteiros de $\sim$0,5$^\cir
 em blocos retidos, de modo que nenhuma célula de teste compartilhe bloco com seus dados de
 treinamento --- a concordância fora do bloco cai para $\kappa = 0{,}07$, e a parcela de alta
 probabilidade do classificador cai para 6,9\%.
+
+% Cabe explicitar a forma de calculo do kappa de Cohen para que essa explicação faça mais sentido.
 
 Esse $\kappa$ tão baixo não contradiz a AUC de 0,83 relatada na Tabela~\ref{tab:presence-auc}:
 são duas perguntas diferentes sobre o mesmo resultado. A AUC pergunta algo simples --- os pixels
@@ -547,7 +563,7 @@ solo e o terreno são as únicas alavancas de estreitamento disponíveis, de mod
 permissividade residual não pode ser atribuída ao clima. 
 
 Em suma: o mapa baseado em conhecimento responde ``onde a terra é capaz'', e a floresta aleatória 
-responde ``onde a soja é de fato plantada''. A divergência entre os dois, controlada espacialmente,
+responde ``onde a soja é de fato plantada''. A divergência entre os dois
 é exatamente a lacuna quantificada em \S\ref{sec:pot-vs-real}.
 
 \subsection{Unidades municipais de decisão}\label{sec:municipal}
@@ -596,14 +612,17 @@ Sanclerlândia  & 0,60 & Bonópolis               & $-0{,}156$ \\
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.85\textwidth]{fig_4_7.png}
+\includegraphics[width=0.95\textwidth]{fig_4_7.png}
 \caption{Uso atual da terra de GO~e~DF agregado a 250~m, colorido por função de segmento.}
 \label{fig:realized-use}
 \end{figure}
 
+% TODO quebrar os mapas para exibilos um em cima do outro
+% Por que falamos de soja no primeiro e outras cultras no segundo? Talvez seja melhor ter estes mapas para todos os segmentos
+
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.85\textwidth]{fig_4_9.png}
+\includegraphics[width=0.95\textwidth]{fig_4_9.png}
 \caption{Viabilidade média municipal da soja e municípios sinalizados como vulneráveis pelo
 declínio projetado das outras culturas. O mapa de subutilização potencial \emph{versus}
 realizado da soja está na Figura~\ref{fig:underused-soy} do Anexo.}

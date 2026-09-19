@@ -91,9 +91,14 @@
 \usepackage{iftex}
 \ifPDFTeX
   % Fallback (compila, mas NÃO é Arial):
+  % NOTA: NÃO carregar lmodern aqui -- ele redefine as fontes de símbolos/extensão
+  % matemáticas (OMS/OMX) para Latin Modern *depois* que newpxmath (carregado pela
+  % classe via FontStyles/newpx.ldf) já as configurou para Palatino/newpx, causando
+  % glifos ausentes (parênteses grandes, \sum, ≤, ≥, ...) em todo o documento.
+  % newpxtext já fornece uma fonte de texto T1 completa, então lmodern é
+  % desnecessário aqui.
   \usepackage[T1]{fontenc}
   \usepackage[utf8]{inputenc}
-  \usepackage{lmodern}
 \else
   % Preferido: XeLaTeX ou LuaLaTeX -> Arial real
   \usepackage{fontspec}

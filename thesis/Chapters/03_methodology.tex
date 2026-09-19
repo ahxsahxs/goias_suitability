@@ -23,9 +23,9 @@ climáticos de resolução grossa são reamostrados bilinearmente, enquanto os r
 terreno são agregados por média espacial. Seis temas contínuos são concatenados em um único conjunto
 de 34 bandas (Tabela~\ref{tab:stack}). É produzida também uma cópia padronizada do conjunto, em que cada banda $b$ recebe um escore~z com a
 média territorial $\mu_b$ e o desvio padrão $\sigma_b$:
-\[
+\begin{equation*}
   z_b(x) = \frac{x_b - \mu_b}{\sigma_b}.
-\]
+\end{equation*}
 Essa padronização serve ao agrupamento, para que variáveis de unidades díspares contribuam de forma
 comparável para a distância euclidiana.
 
@@ -82,29 +82,33 @@ mascarada pela cobertura da terra e classificada nas classes da FAO, seguindo a 
 do arcabouço de avaliação de terras da FAO \citep{NisarAhamed2000,YaghmaeianMahabadi2012}. A
 especificação completa por segmento --- fator, peso, forma e limiares --- está na Tabela~\ref{tab:spec-longtable} do Anexo.
 
+% TODO reajustar limiares de pertinencia de acordo com valores amostrais (e.g. baseados na mediana e percentis),
+% ainda mantendo coerencia com a literatura.
+
+
 \subsection{Padronização da pertinência fuzzy}\label{sec:fuzzy-standard}
 
 O valor $x$ de cada fator é mapeado para uma pertinência $\mu(x) \in [0,1]$ por uma função linear por
 partes, de uma entre três formas \citep{NisarAhamed2000}. A forma \textbf{crescente} (limiar inferior
 $a$, superior $b$) é
-\[
+\begin{equation*}
   \mu(x) = \mathrm{clamp}\!\left(\frac{x-a}{b-a},\, 0,\, 1\right);
-\]
+\end{equation*}
 a forma \textbf{decrescente} é o seu complemento $\mathrm{clamp}((b-x)/(b-a),\, 0,\, 1)$; e a forma
 \textbf{intervalar} (trapezoidal), com $a < b \le c < d$, cresce de $a$ a $b$, satura em 1 no
 intervalo ótimo $[b,c]$ e decresce de $c$ a $d$:
-\[
+\begin{equation*}
   \mu(x) = \mathrm{clamp}\!\left(\min\!\left(\frac{x-a}{b-a},\; 1,\; \frac{d-x}{d-c}\right),\, 0,\, 1\right).
-\]
+\end{equation*}
 
 \subsection{Agregação, mascaramento e classificação}\label{sec:aggregation}
 
 Os seis segmentos de produção e energia combinam suas pertinências por uma \textbf{média geométrica
 ponderada}. Com pesos $w_i \ge 0$ normalizados de modo que $\sum_i w_i = 1$,
-\[
+\begin{equation*}
   S = \exp\!\left(\sum_{i=1}^{n} w_i \ln\!\big(\max(\mu_i,\,\varepsilon)\big)\right),
    \qquad \varepsilon = 10^{-3}.
-\]
+\end{equation*}
 
 A média geométrica impõe o comportamento de \textbf{fator limitante}: uma única pertinência próxima
 de zero deprime fortemente o agregado --- o que é agronomicamente correto, já que um bom solo não
@@ -119,14 +123,14 @@ de carbono, serviço de água --- de modo que uma pontuação baixa em um deles 
 
 A viabilidade contínua $S$ é então classificada nas quatro classes da FAO nos limiares $0{,}25$,
 $0{,}50$ e $0{,}75$:
-\[
+\begin{equation*}
   \text{class}(S) = \begin{cases}
    \mathrm{N}  & S < 0{,}25 \\
    \mathrm{S3} & 0{,}25 \le S < 0{,}50 \\
    \mathrm{S2} & 0{,}50 \le S < 0{,}75 \\
    \mathrm{S1} & S \ge 0{,}75,
 \end{cases}
-\]
+\end{equation*}
 onde $\mathrm{N}$ é \emph{não viável} e $\mathrm{S3}$, $\mathrm{S2}$, $\mathrm{S1}$ são,
 respectivamente, \emph{marginalmente}, \emph{moderadamente} e \emph{altamente viável}.
 
@@ -137,10 +141,10 @@ Para um segmento com $n$ fatores, elicita-se uma matriz Saaty de comparação pa
 $A = [a_{ij}]$ (escala 1--9, $a_{ji} = 1/a_{ij}$). O vetor de prioridades $w$ é o seu autovetor
 principal normalizado. A coerência interna da elicitação é quantificada pela razão de consistência
 \citep{Saaty1980,Frish2025}:
-\[
+\begin{equation*}
   \mathrm{RC} = \frac{\mathrm{IC}}{\mathrm{RI}}, \qquad
    \mathrm{IC} = \frac{\lambda_{\max} - n}{n - 1},
-\]
+\end{equation*}
 onde $\lambda_{\max}$ é o autovalor principal e $\mathrm{RI}$ é o valor esperado do índice aleatório
 para a ordem $n$. Uma ponderação é aceita quando $\mathrm{RC} \le 0{,}10$. Cada matriz de comparação
 par a par é registrada por completo. Todos os segmentos são folgadamente consistentes: $0{,}002$ é a
@@ -182,9 +186,9 @@ O subespaço ajustado e a partição k-means de uma representação descorrelaci
 base teórica para agrupar no espaço de componentes principais em vez de sobre o conjunto bruto
 \citep{Ding2004}. O k-means, ajustado nesse espaço, busca a partição que minimiza a soma intragrupo
 dos quadrados das distâncias aos centroides $c_k$:
-\[
+\begin{equation*}
   \min_{\{C_k\}} \sum_{k=1}^{K} \sum_{x \in C_k} \lVert x - c_k \rVert^2.
-\]
+\end{equation*}
 
 O número de zonas é selecionado em $k = 2,\dots,10$ pela silhueta média \citep{Rousseeuw1987}, pelo
 índice de Davies--Bouldin \citep{Davies1979} e pela estatística de \emph{gap} em conjunto
@@ -193,6 +197,9 @@ O número de zonas é selecionado em $k = 2,\dots,10$ pela silhueta média \cite
 \textbf{Estimação.} O agrupamento é estimado fora da plataforma sobre uma amostra estratificada de
 $\approx$~15.000 células; o raster completo é então projetado nos eixos da PCA por aritmética de
 bandas e classificado no servidor pelo centroide mais próximo.
+
+% TODO os tamanhos amostrais deveriam ser maiores sempre que uma analise estatistica esta sendo feita
+% isso vale para todas as etapas. Alem disso é necessario ter estratificaçao espacial e por segmento
 
 \textbf{Caracterização das zonas.} Para cada zona calculam-se a média de cada atributo, a viabilidade
 média de cada segmento e a composição do uso atual da terra. As zonas são rotuladas pelo
@@ -228,13 +235,13 @@ conjunto.
 \citep{Thrasher2022}, computa-se para o mês $m$ o fator de mudança (multiplicativo no caso de
 precipitação, aditivo no caso de temperatura) relativo à base histórica do próprio modelo, promediado
 então entre os modelos:
-\[
+\begin{equation*}
   f^{P}_m = \frac{1}{G}\sum_{g=1}^{G} \frac{\overline{P}^{\,\text{fut}}_{g,m}}
                                               {\overline{P}^{\,\text{hist}}_{g,m}},
    \qquad
    \Delta T_m = \frac{1}{G}\sum_{g=1}^{G}
      \left(\overline{T}^{\,\text{fut}}_{g,m} - \overline{T}^{\,\text{hist}}_{g,m}\right).
-\]
+\end{equation*}
 
 \textbf{Aplicação.} Os fatores são aplicados à normal climatológica mensal de 1991 a 2020,
 $P^{\text{fut}}_m = P^{\text{obs}}_m \cdot f^{P}_m$ e
@@ -251,24 +258,29 @@ afetam principalmente os segmentos de geração fotovoltaica e pecuária.
 \textbf{Viabilidade futura e mudança.} Os atributos futuros passam pela \emph{mesma} derivação
 climática e pelas \emph{mesmas} regras de pertinência da \S\ref{sec:suitability} (terreno, solo, água, fenologia e
 acessibilidade são mantidos estáticos; apenas as variáveis climáticas mudam). A mudança projetada é
-\[
+\begin{equation*}
   \Delta S = S^{\text{fut}} - S^{\text{presente}};
-\]
+\end{equation*}
 dela derivam-se matrizes de transição entre classes de viabilidade, áreas ganhas ou perdidas por
 segmento e realocação de áreas entre segmentos.
 
 \textbf{Incerteza e verificação.} Uma superfície de concordância relata, por célula e por segmento, a
 fração de GCMs cujo sinal de mudança coincide com o sinal da média,
-\[
+\begin{equation*}
   A = \frac{1}{G}\sum_{g=1}^{G}
    \mathbb{1}\!\left[\operatorname{sign}(\Delta S_g) = \operatorname{sign}(\overline{\Delta S})\right],
-\]
+\end{equation*}
 com $A > 0{,}5$ indicando a concordância da maioria.
+
+% TODO a superficie de concordancia é praticamente toda azul, sendo portanto nao informativa.
+% Talvez de pra substituir por um numero ao inves de uma imagem.
 
 \section{Uso atual da terra e validação (Fase B)}\label{sec:phaseb}
 
 A Fase~B fundamenta o atlas frente ao uso atual da terra e a um indicador indireto (\emph{proxy}) de
 produtividade (NPP do MODIS), respondendo a QP2 e validando QP1.
+
+% TODO o Mapbiomas poderia ser utilizado como fonte unica, substituindo o ESA WorldCover na Fase A
 
 A agregação municipal constitui o primeiro eixo: os municípios agregam, por redução zonal, a
 viabilidade atual, o mapa de zonas e as mudanças projetadas. Em seguida, o uso atual da terra é

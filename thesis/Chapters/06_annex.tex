@@ -202,9 +202,9 @@ a temperatura média do trimestre mais quente e do mais frio (o máximo e o mín
 médias móveis de três meses). Os graus-dia de
 crescimento são acumulados a partir da climatologia mensal de temperatura média com uma
 temperatura base $T_{\text{base}} = 10\,^\circ\mathrm{C}$,
-\[
+\begin{equation*}
   \mathrm{GDD} = \sum_{m=1}^{12} \max\!\left(\bar{T}_m - T_{\text{base}},\, 0\right)\, N_m,
-\]
+\end{equation*}
 onde $\bar{T}_m$ é a temperatura média do mês $m$ e $N_m$ o seu número de dias. Toda a
 derivação climática é encapsulada em uma única transformação determinística reutilizada sem
 alteração para o clima futuro do CMIP6 (\S\ref{sec:cmip6}), o que é o que torna a mudança
@@ -234,10 +234,10 @@ governa seus limiares de pertinência.
 harmônica (de Fourier) do ciclo sazonal de NDVI, ajustada à climatologia de NDVI de 12 meses
 em vez das $\sim$460 composições de 16 dias ($\approx$38$\times$ mais barato para as mesmas
 métricas). O modelo mantém um termo constante mais harmônicos anual e semianual,
-\[
+\begin{equation*}
   \mathrm{NDVI}(t) = \beta_0 + \beta_1 \cos(2\pi t) + \gamma_1 \sin(2\pi t)
    + \beta_2 \cos(4\pi t) + \gamma_2 \sin(4\pi t) + \varepsilon(t),
-\]
+\end{equation*}
 com $t$ a fração do ano, fornecendo o NDVI médio ($\beta_0$), a amplitude sazonal
 $A = \sqrt{\beta_1^2 + \gamma_1^2}$, a época de pico (a partir da fase do harmônico anual) e
 uma integral anual (NDVI médio $\times$ 365).
