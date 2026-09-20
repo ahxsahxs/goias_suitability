@@ -109,7 +109,7 @@ def build_strat_band(region, n_side=8, name="strat_grid"):
           .floor().clamp(0, n_side - 1))
     gy = (ll.select("latitude").subtract(lat0).divide((lat1 - lat0) / n_side)
           .floor().clamp(0, n_side - 1))
-    return gx.multiply(n_side).add(gy).rename(name)
+    return gx.multiply(n_side).add(gy).toInt().rename(name)
 
 
 def dominant_segment_band(suit, segments, name="strat_segment"):

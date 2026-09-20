@@ -42,6 +42,16 @@ from PIL import Image
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 import utils  # noqa: E402
 import cmip6  # noqa: E402
+from palettes import (  # noqa: E402
+    PAL_DIV,
+    PAL_FAO,
+    PAL_PR,
+    PAL_ROLE,
+    PAL_SUIT,
+    PAL_TEMP,
+    PAL_ZONE,
+    SEGMENTS,
+)
 
 PROJECT = "probformer"
 FIG_DIR = Path(__file__).resolve().parent.parent / "thesis" / "Chapters" / "Figures"
@@ -56,16 +66,7 @@ AOI_EXTENT = [-53.25, -45.90, -19.50, -12.39]   # [lon0, lon1, lat0, lat1] fallb
 LANG = "pt"
 CARTO = True
 
-# palettes (mirror the notebooks)
-PAL_SUIT = ["#d7191c", "#fdae61", "#ffffbf", "#a6d96a", "#1a9641"]  # 0..1 red->green
-PAL_FAO = ["#d7191c", "#fdae61", "#a6d96a", "#1a9641"]              # N, S3, S2, S1
-PAL_ZONE = ["#4575b4", "#91bfdb", "#f46d43", "#fdae61", "#66c2a5", "#1a9850", "#762a83"]  # 7 zones
-PAL_ROLE = ["#eeeeee", "#ffd400", "#7b3294", "#d95f0e", "#2c7fb8", "#addd8e", "#006837"]
-PAL_DIV = ["#b2182b", "#f7f7f7", "#2166ac"]                          # diverging ΔS
-PAL_PR = ["#f7fbff", "#9ecae1", "#3182bd", "#08306b"]                 # sequential, precipitation
-PAL_TEMP = ["#fff5eb", "#fd8d3c", "#d94801", "#7f2704"]               # sequential, temperature
-SEGMENTS = ["soybean", "sugarcane", "other_crops", "pisciculture", "cattle",
-            "conservation", "solar"]
+# palettes: imported from tools/palettes.py (shared with the dashboard build, §2.2)
 
 # --- i18n --------------------------------------------------------------------
 # Keys are stable; `en` entries are the strings previously hard-coded in this
@@ -457,7 +458,9 @@ class Renderer:
             dest = LATEX_FIG.get(LANG)
             if dest is not None and dest.parent.exists():
                 dest.mkdir(parents=True, exist_ok=True)
-                shutil.copyfile(path, dest / f"{name}.png")
+                dest_path = dest / f"{name}.png"
+                if dest_path != path:
+                    shutil.copyfile(path, dest_path)
         rel = path.relative_to(FIG_DIR.parent.parent.parent)
         print(f"wrote {rel}  ({path.stat().st_size // 1024} KB, lang={LANG})")
 

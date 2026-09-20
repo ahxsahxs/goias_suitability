@@ -76,7 +76,7 @@ yet published from the Code Editor.
 |---|---|---|
 | 1–8 | **BUILT & footprint-verified** | Ten feature assets incl. `feature_stack_250m(_z)` (34-band stack) + `feat_siting` (solar clearness / seasonal water distance) + `feat_conservation` (WDPA distance / ruggedness / carbon) — the latter two are side-images kept **out** of the stack (routed into suitability via the `sit_`/`cv_` extras prefix). |
 | 9 — suitability | **BUILT** | `suit_present` / `suit_present_comp` / `suit_present_sens`: 7 `suit_*` (0–1) + 7 `class_*` (FAO S1/S2/S3/N) + 7 `sens_*` (±20% AHP). Conservation is a value/priority index (arithmetic-mean aggregation — compensatory); the other six segments use the weighted geometric mean. |
-| 10 — zoning | **BUILT — K=7** | `zones_present`, offline sklearn KMeans on a decorrelated PCA input (`src/zoning.py`), classified server-side by nearest-centroid band math. Zones labelled by `comparative_segment` (argmax of each segment's z-normalized suitability), not raw dominance. `zone_profiles.csv` + `zoning_kselect.csv`. |
+| 10 — zoning | **BUILT — K=10** (rebuilt 2026-09-19/20, was K=7) | `zones_present`, offline sklearn KMeans on a decorrelated PCA input (`src/zoning.py`), classified server-side by nearest-centroid band math. Zones labelled by `comparative_segment` (argmax of each segment's z-normalized suitability), not raw dominance. `zone_profiles.csv` + `zoning_kselect.csv`. See §4-bis for the sweep that confirmed K=10. |
 | 11 — CMIP6 shift | **BUILT** | `suit_future_*`, `delta_*`, `agreement_*` assets across SSP2-4.5/SSP5-8.5 × 2031–2050/2051–2070 × 5-GCM ensemble. Delta-change engine validated against an identity change-factor (Δ=0.000). No structurally climate-invariant segment remains — every segment (including conservation and solar) moves under at least one climate lever. |
 | 12–14 — Phase B | **BUILT** | `realized_vs_potential`, `municipal_godf` (IBGE malha municipal aggregation), MOD17 productivity validation (municipal Spearman + within-crop GPP gradient), RF presence cross-check, AHP consistency ratios. See `config/ahp_matrices.yaml` and `thesis/Chapters/04_results.tex` / `05_discussion_conclusion.tex` for the numbers. |
 | 15 — synthesis | **App script written, NOT published** | `gee_js/atlas_app.js` (present suitability, zones, realized use, CMIP6 shift, municipal click-to-read) is ready; publishing from the GEE Code Editor is the one remaining manual step. Figures already regenerated via `tools/make_figures.py` into `thesis/Chapters/Figures/`. |
@@ -95,11 +95,51 @@ yet published from the Code Editor.
 Code Editor. Everything else needed for the thesis (all §4 tables, figures, and the three RQs) is
 already built and written.
 
-**Pending rebuild (2026-09-15):** `src/features.py`/`src/external.py` now derive the AOI and
-municipal boundaries from the local IBGE malha municipal mesh (`src/ibge_mesh.py`) instead of
-GAUL — see §7. The already-built `aoi` EE asset (and everything downstream: Parts 1–14, plus
-`municipal_godf`) still reflects the old GAUL-derived boundary until Part 1 is explicitly
-re-run and the cascade rebuilt — an approval-gated step (§10), not done as part of this change.
+**Rebuild done (2026-09-19/20), supersedes the 2026-09-15 "pending rebuild" note below.**
+`src/features.py`/`src/external.py` now derive the AOI and municipal boundaries from the local
+IBGE malha municipal mesh (`src/ibge_mesh.py`) instead of GAUL — see §7. The full cascade (Parts
+1–13, combining the IBGE-mesh AOI swap with T8 stratified sampling, T10 MapBiomas land cover, and
+the 2026-09 fuzzy-membership/AHP recalibration) was re-run end to end via
+`tools/run_rebuild_full.py` (approval-gated per §10) and footprint-verified. Numbers and the one
+bug found along the way are in **§4-bis** below; the thesis text (`04_results.tex`,
+`05_discussion_conclusion.tex`, `06_annex.tex`) has not yet been updated to match.
+
+### §4-bis. Post-rebuild results (2026-09-20)
+
+- **Rebuild:** `tools/run_rebuild_full.py`, Parts 1→13, completed 2026-09-19 23:30 (resumed once
+  after a spurious `wait_for` timeout — see script docstring). `tools/verify_assets.py` confirms
+  every rebuilt asset (`feature_stack_250m(_z)`, `suit_present*`, `zones_present`,
+  `suit_future_*`/`delta_*`/`agreement_*` ×4 scenario-windows, `realized_vs_potential`,
+  `municipal_godf`) is EPSG:4326 @ 250 m with the correct GO+DF footprint.
+- **Zoning K changed 7 → 10.** The `k=2..10` sweep peaks at k=10 (silhouette 0.187). Re-checked
+  with an extended offline sweep (`k=2..20`, same seed=42 stratified sample) to rule out a
+  boundary artifact: silhouette drops to 0.177 at k=11 and never exceeds 0.187 through k=20 — a
+  genuine interior maximum, not a truncated-range artifact. (Note: the gap-statistic's own elbow
+  rule would suggest k=14, but gap rises almost monotonically with ~constant SE across the whole
+  range, so it has no clean kink here — weaker signal than silhouette's isolated peak. Keeping
+  K=10.)
+- **Bug found + fixed:** `zoning.build_strat_band()` (`src/zoning.py:112`) built its grid-cell-id
+  band via `.floor()`/`.clamp()`/`.multiply()`/`.add()` without ever casting to int, so
+  `ee.Image.stratifiedSample(classBand=...)` rejected it (`"class band must be integer typed"`)
+  in 4 of `tools/run_validation.py`'s 5 blocks (`within_crop`, `boyce_auc`, `anova_zones`,
+  `rf_kappa`). Fixed by adding `.toInt()` in `build_strat_band()` itself. Did not affect
+  `zones_present`/`municipal_godf` — `zoning.build_sample()` (used by the rebuild) already
+  applied its own redundant `.toInt()` on the combined stratum band.
+- **Part 14 validation (`tools/run_validation.py`), rerun clean after the fix:**
+  - Spearman ρ vs. MOD17 NPP (municipal, n=247): soybean +0.305, sugarcane +0.453, other_crops
+    +0.108 (n.s., p=0.09), pisciculture −0.322, cattle +0.520, conservation +0.455, solar +0.395.
+  - Within-crop season-GPP gradient: soybean ρ=+0.417, sugarcane ρ=−0.085, other_crops ρ=+0.370
+    (monotonic only for other_crops).
+  - Soybean Boyce index = 0.964, AUC = 0.871.
+  - ANOVA of MOD17 across the 10 zones: F=2191.0, p≈0 (zone means range 0.47–0.89).
+  - RF-vs-knowledge Cohen's κ (soybean) = **+0.269** (n=16160) — up from the old κ=0.07 already
+    discussed in the Semana 1 revision-cycle text (parecer point 4); AUC also rose (0.83 → 0.871).
+    **The existing κ=0.07 discussion in `05_discussion_conclusion.tex` is now stale and needs a
+    rewrite, not just a number swap.**
+- **Not yet run:** `tools/extract_present.py`, `tools/extract_cmip6.py`, `tools/gen_diag_csvs.py`,
+  `tools/make_figures.py all` — next step before touching the thesis text. No AHP weights changed
+  in this rebuild (T8/T10 changed sampling/land-cover source, not weights), so
+  `config/ahp_matrices.yaml` does not need regenerating.
 
 ---
 
