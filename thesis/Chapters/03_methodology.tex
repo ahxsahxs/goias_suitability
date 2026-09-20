@@ -163,7 +163,7 @@ principal normalizado. A coerência interna da elicitação é quantificada pela
 \end{equation*}
 onde $\lambda_{\max}$ é o autovalor principal e $\mathrm{RI}$ é o valor esperado do índice aleatório
 para a ordem $n$. Uma ponderação é aceita quando $\mathrm{RC} \le 0{,}10$. Cada matriz de comparação
-par a par é registrada por completo. Todos os segmentos são folgadamente consistentes: $0{,}002$ é a
+par a par é registrada por completo. Todos os segmentos são folgadamente consistentes: $0{,}0015$ é a
 maior razão de consistência entre os sete (Tabela~\ref{tab:ahp-cr} do Anexo). Os pesos se apoiam,
 assim, em uma elicitação auditável e internamente coerente, e não em mera afirmação.
 
@@ -223,8 +223,15 @@ dos quadrados das distâncias aos centroides $c_k$:
 \end{equation*}
 
 O número de zonas é selecionado em $k = 2,\dots,10$ pela silhueta média \citep{Rousseeuw1987}, pelo
-índice de Davies--Bouldin \citep{Davies1979} e pela estatística de \emph{gap} em conjunto
-\citep{Ikotun2025}, que indicam $k = 7$.
+índice de Davies--Bouldin \citep{Davies1979}, pela estatística de \emph{gap} \citep{Ikotun2025} e
+pela estabilidade de subamostras (índice de Rand ajustado, \emph{bootstrap}), que em conjunto
+indicam $k = 10$. Neste território fracamente agrupado a silhueta é quase plana ao longo de todo
+o intervalo (0,17--0,19) e o Davies--Bouldin não decide sozinho, por ficar próximo em $k=7$, $8$
+e $10$; o argumento decisivo é a estabilidade: $k = 10$ tem a silhueta mais alta do intervalo
+($0{,}187$) \textbf{e} é o k mais estável sob subamostragem (ARI $= 0{,}962$), contra uma
+estabilidade bem mais fraca em $k=7$ (ARI $= 0{,}687$). Um \emph{sweep} estendido a
+$k = 2,\dots,20$ sobre a mesma amostra confirma que $k=10$ não é um artefato de faixa truncada: a
+silhueta cai para $0{,}177$ em $k=11$ e nunca volta a superar $0{,}187$ até $k=20$.
 
 \textbf{Estimação.} O agrupamento é estimado fora da plataforma sobre uma amostra estratificada por
 grade espacial (uma malha $8\times8$ sobre a extensão de GO~e~DF) cruzada com o segmento
@@ -308,12 +315,13 @@ fração de GCMs cujo sinal de mudança coincide com o sinal da média,
 \end{equation*}
 com $A > 0{,}5$ indicando a concordância da maioria.
 
-Na prática, essa concordância é alta e quase uniforme nos sete segmentos sob SSP5-8.5 2051--2070:
-a média territorial varia de 0,97 (pecuária) a 1,00 (pisciculture, solar e conservação), com
-mediana igual a 1,00 em todos os segmentos --- os cinco GCMs do conjunto raramente discordam do
-sinal de mudança. O corolário é que a \emph{superfície} de concordância (Figura~\ref{fig:ensemble-agreement}
-do Anexo) tem, em si, pouco contraste espacial para revelar: ela documenta que o sinal do CMIP6 é
-robusto ao GCM escolhido, mais do que localiza \emph{onde} a incerteza entre modelos se concentra.
+Na prática, essa concordância é alta: para outras culturas anuais sob SSP5-8.5 2051--2070 --- o
+segmento e a combinação mais expostos ao clima (\S\ref{sec:shift}) e por isso o teste mais
+rigoroso --- a concordância média territorial é $0{,}999$ (Figura~\ref{fig:ensemble-agreement} do
+Anexo), com uma pequena bolsa de concordância mais baixa ($\approx 0{,}99$) no extremo sudeste do
+território. O corolário é que a \emph{superfície} de concordância tem, em si, pouco contraste
+espacial para revelar: ela documenta que o sinal do CMIP6 é robusto ao GCM escolhido, mais do que
+localiza \emph{onde} a incerteza entre modelos se concentra.
 
 \section{Uso atual da terra e validação (Fase B)}\label{sec:phaseb}
 

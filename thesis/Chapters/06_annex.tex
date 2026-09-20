@@ -58,8 +58,8 @@ unidade verificadas: carbono orgânico do solo $\times 5$ (média territorial $\
 \toprule
 Fonte (provedor) & Resolução nativa & Finalidade \\
 \midrule
-Unidades administrativas de segundo nível GAUL & $\approx$500~m (simplificado) & Agregação e
-  relato municipais (sem \emph{upload}) \\
+Malha Municipal Digital do IBGE (2025) & $\approx$111~m (simplificado, em memória) & Agregação e
+  relato municipais (247 municípios; sem \emph{upload}) \\
 Uso e cobertura da terra anual MapBiomas Brasil & 30~m & Máscaras, análise potencial
   \emph{versus} realizado, caracterização descritiva da composição \\
 Produtividade primária líquida (anual) e bruta (8 dias) do MODIS & 500~m & Validação da
@@ -165,7 +165,7 @@ pela salvaguarda contra circularidade. Os outros seis segmentos usam a média ge
 fator limitante.
 
 Os pesos de cada segmento são as prioridades de uma matriz Saaty de comparação par a par
-documentada; toda matriz é folgadamente consistente, sendo 0,002 a maior razão de
+documentada; toda matriz é folgadamente consistente, sendo 0,0015 a maior razão de
 consistência entre os sete segmentos (Tabela~\ref{tab:ahp-cr}), uma ordem de grandeza abaixo
 do limiar de aceitação de 0,10.
 
@@ -177,13 +177,13 @@ do limiar de aceitação de 0,10.
 \toprule
 Segmento & Fatores ($n$) & Razão de consistência \\
 \midrule
-Soja                 & 6 & 0,001 \\
-Cana-de-açúcar       & 6 & 0,000 \\
-Outras culturas anuais & 6 & 0,001 \\
-Piscicultura         & 5 & 0,002 \\
-Pecuária             & 5 & 0,000 \\
-Conservação          & 9 & 0,001 \\
-Geração fotovoltaica & 6 & 0,000 \\
+Soja                 & 6 & 0,0013 \\
+Cana-de-açúcar       & 6 & 0,0004 \\
+Outras culturas anuais & 6 & 0,0008 \\
+Piscicultura         & 5 & 0,0015 \\
+Pecuária             & 5 & 0,0004 \\
+Conservação          & 9 & 0,0009 \\
+Geração fotovoltaica & 6 & 0,0004 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -260,46 +260,46 @@ atual específico para o Brasil na Fase~B.
 \centering
 \caption{Médias biofísicas discriminantes por zona.}
 \label{tab:zone-means}
-\small
-\begin{tabular}{@{}lrrrrrrr@{}}
+\scriptsize
+\begin{tabular}{@{}lrrrrrrrrrr@{}}
 \toprule
-Variável & Z0 & Z1 & Z2 & Z3 & Z4 & Z5 & Z6 \\
+Variável & Z1 & Z2 & Z3 & Z4 & Z5 & Z6 & Z7 & Z8 & Z9 & Z10 \\
 \midrule
-Tamanho da amostra (pontos)          & 2.938 & 734 & 1.558 & 1.600 & 3.240 & 3.177 & 1.688 \\
-Parcela da área de interesse         & 19,2\% & 4,8\% & 10,4\% & 10,6\% & 22,1\% & 21,5\% & 11,4\% \\
-Elevação (m)                         & 649 & 621 & 862 & 529 & 370 & 779 & 756 \\
-Declive ($^\circ$)                   & 3,9 & 4,7 & 5,2 & 4,1 & 3,1 & 4,5 & 13,5 \\
-Índice de umidade topográfica        & 9,8 & 9,9 & 9,5 & 10,9 & 10,1 & 9,6 & 8,3 \\
-Temp. do trimestre mais quente ($^\circ$C) & 25,3 & 25,8 & 24,2 & 25,3 & 26,8 & 24,3 & 25,4 \\
-Índice de aridez (P/ETP)             & 1,16 & 0,91 & 1,15 & 1,13 & 1,10 & 1,17 & 1,10 \\
-Umidade do solo (mm)                 & 86 & 105 & 98 & 95 & 106 & 85 & 117 \\
-Teor de argila (\%)                  & 35,9 & 31,6 & 38,9 & 30,8 & 24,2 & 34,6 & 34,6 \\
-Carbono orgânico do solo (g/kg)      & 13,4 & 11,6 & 14,5 & 13,5 & 10,6 & 13,2 & 16,1 \\
-Densidade de drenagem (fração)       & 0,01 & 0,02 & 0,01 & 0,11 & 0,01 & 0,01 & 0,01 \\
-Distância à água (m)                 & 13.117 & 23.842 & 9.536 & 12.625 & 12.473 & 22.700 & 19.998 \\
+Tamanho da amostra (pontos)          & 3.661 & 2.972 & 2.779 & 1.035 & 2.086 & 4.453 & 2.633 & 769 & 1.594 & 3.367 \\
+Parcela da área de interesse         & 21,2\% & 5,9\% & 10,5\% & 2,8\% & 11,2\% & 16,5\% & 6,6\% & 4,9\% & 3,9\% & 16,6\% \\
+Elevação (m)                         & 860 & 413 & 653 & 449 & 739 & 440 & 260 & 833 & 632 & 588 \\
+Declive ($^\circ$)                   & 4,7 & 3,0 & 4,1 & 3,2 & 14,2 & 3,5 & 2,3 & 4,8 & 4,1 & 3,7 \\
+Índice de umidade topográfica        & 9,6 & 9,9 & 9,6 & 14,6 & 8,3 & 9,9 & 10,4 & 9,7 & 9,8 & 9,9 \\
+Temp. do trimestre mais quente ($^\circ$C) & 24,0 & 26,0 & 24,6 & 25,8 & 25,5 & 26,4 & 27,6 & 24,3 & 25,9 & 25,4 \\
+Índice de aridez (P/ETP)             & 1,13 & 1,10 & 1,19 & 1,12 & 1,10 & 1,08 & 1,11 & 1,15 & 0,91 & 1,15 \\
+Umidade do solo (mm)                 & 98 & 107 & 66 & 97 & 111 & 113 & 105 & 97 & 108 & 79 \\
+Teor de argila (\%)                  & 39,7 & 25,1 & 27,7 & 29,7 & 34,1 & 25,0 & 22,9 & 37,5 & 29,7 & 32,6 \\
+Carbono orgânico do solo (g/kg)      & 14,5 & 10,9 & 12,1 & 16,5 & 15,7 & 10,1 & 11,0 & 14,1 & 11,5 & 13,0 \\
+Densidade de drenagem (fração)       & 0,010 & 0,110 & 0,021 & 0,115 & 0,010 & 0,005 & 0,032 & 0,015 & 0,018 & 0,034 \\
+Distância à água (m)                 & 15.048 & 9.269 & 22.248 & 9.990 & 21.307 & 16.824 & 6.065 & 7.710 & 22.782 & 12.588 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\begin{table}[H]
+\begin{sidewaystable}[p]
 \centering
 \caption{Mudança média territorial projetada $\Delta S$ por zona para as culturas sensíveis
 ao clima (cenário--janela mais brando e mais severo por segmento).}
 \label{tab:zone-shift}
-\footnotesize
-\begin{tabular}{@{}llrrrrrrr@{}}
+\small
+\begin{tabular}{@{}llrrrrrrrrrr@{}}
 \toprule
-Segmento & Cenário--janela & Z0 & Z1 & Z2 & Z3 & Z4 & Z5 & Z6 \\
+Segmento & Cenário--janela & Z1 & Z2 & Z3 & Z4 & Z5 & Z6 & Z7 & Z8 & Z9 & Z10 \\
 \midrule
-Soja & SSP2-4.5 2031--50 & $+$0,001 & $+$0,000 & $+$0,001 & $+$0,000 & $+$0,000 & $+$0,002 & $+$0,000 \\
-Soja & SSP5-8.5 2051--70 & $+$0,000 & $+$0,000 & $+$0,001 & $-$0,002 & $-$0,016 & $+$0,002 & $-$0,000 \\
-Cana-de-açúcar & SSP2-4.5 2031--50 & $+$0,000 & $-$0,018 & $+$0,008 & $+$0,001 & $-$0,000 & $+$0,004 & $+$0,000 \\
-Cana-de-açúcar & SSP5-8.5 2051--70 & $+$0,000 & $-$0,094 & $+$0,008 & $-$0,001 & $-$0,002 & $+$0,004 & $-$0,001 \\
-Outras culturas anuais & SSP2-4.5 2031--50 & $-$0,017 & $-$0,020 & $-$0,008 & $-$0,016 & $-$0,039 & $-$0,010 & $-$0,006 \\
-Outras culturas anuais & SSP5-8.5 2051--70 & $-$0,063 & $-$0,067 & $-$0,024 & $-$0,052 & $-$0,127 & $-$0,033 & $-$0,018 \\
+Soja & SSP2-4.5 2031--50 & $+$0,001 & $+$0,000 & $+$0,002 & $+$0,000 & $+$0,000 & $+$0,000 & $-$0,000 & $+$0,000 & $+$0,000 & $+$0,000 \\
+Soja & SSP5-8.5 2051--70 & $+$0,001 & $-$0,005 & $+$0,002 & $-$0,002 & $-$0,000 & $-$0,008 & $-$0,019 & $+$0,000 & $+$0,000 & $+$0,000 \\
+Cana-de-açúcar & SSP2-4.5 2031--50 & $+$0,004 & $+$0,000 & $+$0,000 & $+$0,000 & $-$0,000 & $-$0,000 & $+$0,000 & $+$0,003 & $-$0,007 & $+$0,000 \\
+Cana-de-açúcar & SSP5-8.5 2051--70 & $+$0,004 & $-$0,001 & $+$0,000 & $-$0,001 & $-$0,000 & $-$0,002 & $+$0,000 & $+$0,003 & $-$0,034 & $+$0,000 \\
+Outras culturas anuais & SSP2-4.5 2031--50 & $-$0,004 & $-$0,018 & $-$0,004 & $-$0,009 & $-$0,002 & $-$0,026 & $-$0,039 & $-$0,003 & $-$0,014 & $-$0,011 \\
+Outras culturas anuais & SSP5-8.5 2051--70 & $-$0,018 & $-$0,061 & $-$0,028 & $-$0,035 & $-$0,007 & $-$0,081 & $-$0,156 & $-$0,019 & $-$0,049 & $-$0,057 \\
 \bottomrule
 \end{tabular}
-\end{table}
+\end{sidewaystable}
 
 \begin{table}[H]
 \centering
@@ -311,11 +311,11 @@ FAO, presente $\rightarrow$ futuro (promoções desprezíveis e omitidas).}
 \toprule
 Segmento & SSP2-4.5 2031--50 & SSP2-4.5 2051--70 & SSP5-8.5 2031--50 & SSP5-8.5 2051--70 \\
 \midrule
-Conservação           & 24,9\% & 27,5\% & 29,6\% & 43,1\% \\
-Outras culturas anuais & 9,1\%  & 14,8\% & 11,9\% & 28,0\% \\
-Geração fotovoltaica   & 7,5\%  & 11,6\% & 9,8\%  & 22,6\% \\
-Soja                   & 0,0\%  & 0,1\%  & 0,0\%  & 1,5\% \\
-Cana-de-açúcar         & 0,1\%  & 0,1\%  & 0,1\%  & 0,7\% \\
+Conservação           & 18,7\% & 21,2\% & 22,4\% & 33,3\% \\
+Outras culturas anuais & 2,6\%  & 6,0\%  & 3,9\%  & 16,0\% \\
+Geração fotovoltaica   & 4,2\%  & 6,3\%  & 5,4\%  & 13,2\% \\
+Soja                   & 0,0\%  & 0,1\%  & 0,0\%  & 1,2\% \\
+Cana-de-açúcar         & 0,0\%  & 0,0\%  & 0,0\%  & 0,1\% \\
 Piscicultura           & 0,0\%  & 0,0\%  & 0,0\%  & 0,0\% \\
 Pecuária               & 0,0\%  & 0,0\%  & 0,0\%  & 0,5\% \\
 \bottomrule
@@ -332,12 +332,12 @@ segmento).}
 \toprule
 Presente $\downarrow$ / Futuro $\rightarrow$ & N & S3 & S2 & S1 & Total presente \\
 \midrule
-N   & 32,9 & 0,0 & 0,0  & 0,0  & 32,9 \\
-S3  & 2,2  & 0,7 & 0,0  & 0,0  & 2,9 \\
-S2  & 0,4  & 4,2 & 18,8 & 0,0  & 23,4 \\
-S1  & 0,0  & 0,3 & 20,8 & 19,6 & 40,7 \\
+N   & 39,8 & 0,0 & 0,0  & 0,0  & 39,8 \\
+S3  & 0,1  & 1,8 & 0,0  & 0,0  & 1,8 \\
+S2  & 0,5  & 6,6 & 26,8 & 0,0  & 34,0 \\
+S1  & 0,0  & 0,1 & 8,6  & 15,6 & 24,4 \\
 \midrule
-\textbf{Total futuro} & \textbf{35,5} & \textbf{5,2} & \textbf{39,6} & \textbf{19,6} & 100,0 \\
+\textbf{Total futuro} & \textbf{40,4} & \textbf{8,5} & \textbf{35,4} & \textbf{15,6} & 100,0 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -347,16 +347,16 @@ S1  & 0,0  & 0,3 & 20,8 & 19,6 & 40,7 \\
 \caption{Composição do uso atual da terra dentro de cada zona biofísica (parcela da área da
 zona).}
 \label{tab:zone-realized}
-\small
-\begin{tabular}{@{}lrrrrrrr@{}}
+\scriptsize
+\begin{tabular}{@{}lrrrrrrrrrr@{}}
 \toprule
-Uso atual & Z0 & Z1 & Z2 & Z3 & Z4 & Z5 & Z6 \\
+Uso atual & Z1 & Z2 & Z3 & Z4 & Z5 & Z6 & Z7 & Z8 & Z9 & Z10 \\
 \midrule
-Soja                 & 28,0\% & 1,8\%  & 15,3\% & 6,2\%  & 3,4\%  & 22,1\% & 0,1\% \\
-Cana-de-açúcar       & 7,6\%  & 0,0\%  & 1,2\%  & 1,9\%  & 0,5\%  & 1,9\%  & 0,0\% \\
-Outras culturas anuais & 0,8\%  & 1,0\%  & 0,7\%  & 1,1\%  & 1,1\%  & 0,7\%  & 0,0\% \\
-Pastagem             & 44,2\% & 52,5\% & 43,3\% & 48,3\% & 60,4\% & 42,0\% & 21,4\% \\
-Vegetação nativa     & 17,9\% & 43,7\% & 31,3\% & 37,2\% & 33,0\% & 31,9\% & 77,7\% \\
+Soja                 & 32,4\% & 4,1\% & 8,4\% & 1,5\% & 0,3\% & 5,5\% & 5,3\% & 11,2\% & 7,2\% & 16,9\% \\
+Cana-de-açúcar       & 0,8\%  & 1,3\% & 3,1\% & 0,9\% & 0,0\% & 0,7\% & 0,0\% & 1,1\%  & 0,0\% & 10,0\% \\
+Outras culturas anuais & 1,0\%  & 1,3\% & 0,5\% & 0,4\% & 0,0\% & 0,9\% & 2,0\% & 0,6\%  & 1,0\% & 1,0\% \\
+Pastagem             & 32,3\% & 70,1\% & 57,9\% & 39,0\% & 25,0\% & 64,1\% & 57,9\% & 39,4\% & 56,6\% & 48,2\% \\
+Vegetação nativa     & 29,9\% & 21,4\% & 29,0\% & 39,2\% & 73,9\% & 27,8\% & 32,2\% & 29,9\% & 34,2\% & 20,5\% \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -364,19 +364,19 @@ Vegetação nativa     & 17,9\% & 43,7\% & 31,3\% & 37,2\% & 33,0\% & 31,9\% & 7
 \begin{table}[H]
 \centering
 \caption{Correlação de Spearman da viabilidade média municipal com o \emph{proxy} de NPP
-anual do MODIS (terra manejada; $n = 243$ municípios).}
+anual do MODIS (terra manejada; $n = 247$ municípios).}
 \label{tab:spearman-npp}
 \begin{tabular}{@{}lrl@{}}
 \toprule
 Segmento & $\rho$ de Spearman & Significância \\
 \midrule
 Pecuária             & $+0{,}52$ & $p < 0{,}001$ \\
-Conservação          & $+0{,}47$ & $p < 0{,}001$ \\
-Cana-de-açúcar       & $+0{,}39$ & $p < 0{,}001$ \\
-Geração fotovoltaica & $+0{,}27$ & $p < 0{,}001$ \\
-Soja                 & $+0{,}12$ & n.s. ($p = 0{,}05$) \\
-Outras culturas anuais & $-0{,}06$ & n.s. \\
-Piscicultura         & $-0{,}36$ & $p < 0{,}001$ \\
+Conservação          & $+0{,}46$ & $p < 0{,}001$ \\
+Cana-de-açúcar       & $+0{,}45$ & $p < 0{,}001$ \\
+Geração fotovoltaica & $+0{,}40$ & $p < 0{,}001$ \\
+Soja                 & $+0{,}31$ & $p < 0{,}001$ \\
+Outras culturas anuais & $+0{,}11$ & n.s. ($p = 0{,}09$) \\
+Piscicultura         & $-0{,}32$ & $p < 0{,}001$ \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -439,8 +439,11 @@ pixel); companheiro da Figura~\ref{fig:municipal}, que só detalha soja e outras
 \caption{Índices de validade de agrupamento (silhueta, Davies--Bouldin, estatística de
 \emph{gap}) e estabilidade em subamostras (índice de Rand ajustado) ao longo de
 $k = 2\dots10$ no espaço de componentes principais descorrelacionado. A silhueta é quase
-plana, de modo que nenhum índice isolado é decisivo; $k = 7$ (linha tracejada) atinge o
-melhor Davies--Bouldin e a melhor silhueta (empatada), mantendo estabilidade aceitável.}
+plana (0,17--0,19) e o Davies--Bouldin fica próximo em $k=7$, $8$ e $10$, de modo que nenhum
+dos dois decide sozinho; $k = 10$ (linha tracejada) combina a silhueta mais alta do intervalo
+(0,187) com a estabilidade de longe mais alta sob subamostragem (ARI $=0{,}962$, contra
+$0{,}687$ em $k=7$). Um \emph{sweep} estendido a $k=2\dots20$ (não plotado) confirma que esse
+pico de silhueta não é um artefato de faixa truncada.}
 \label{fig:cluster-validity}
 \end{figure}
 
@@ -457,22 +460,28 @@ magnitude real; a cor indica o grupo temático do fator (clima, laranja; terreno
 outros --- água, sítio, acesso, extras ---, azul); contorno preto grosso marca o fator
 dominante de cada segmento; hachura indica contribuição negativa, um efeito residual esperado
 de uma decomposição linear de covariância entre fatores correlacionados, não um erro. Terreno
-e solo dominam as culturas: declive responde por 0,94 da variância da soja, 0,59 da
-cana-de-açúcar e $\approx$1,0 de outras culturas anuais; para soja e outras culturas anuais,
-porém, apenas argila (e declive) de fato discriminam --- pH e carbono orgânico do solo também
-saturam (parcela $\approx$0), de modo que \emph{solo} isoladamente é um discriminador espacial
-mais estreito do que \emph{terreno e solo} em conjunto. A pecuária é governada pela umidade do
-solo (0,58) e
-pelo carbono orgânico (0,25); a piscicultura, pela distância à água sazonal (0,46) e pelo
-declive (0,33); a conservação, pela distância a áreas protegidas (0,43) e pela rugosidade do
-terreno (0,21); a geração fotovoltaica, pela radiação solar (0,46) e pelo índice de claridade
-(0,38). A concentração em um único fator para as quatro culturas/aquicultura não decorre de
-peso AHP enviesado --- os pesos de soja, cana, outras culturas e piscicultura são os
-\emph{mais equilibrados} dentre os sete segmentos (razão máx./mín. de 1,4--1,7$\times$, contra
-4,25$\times$ da pecuária, deliberadamente reponderada para fugir dos fatores climáticos
-saturados; Tabela~\ref{tab:spec-longtable}) --- mas da saturação espacial genuína das
-pertinências climáticas em GO/DF, evidenciada independentemente pelo mapa de magnitude espacial
-da Figura~\ref{fig:scale-mismatch}.}
+e solo dominam as culturas, mas o fator vencedor não é sempre o mesmo: declive responde por
+0,78 da variância da soja (argila, 0,22) e por $\approx$1,0 de outras culturas anuais, ao passo
+que para a cana-de-açúcar é a argila que domina (0,69, contra 0,31 do declive). Para soja e
+outras culturas anuais, apenas argila (e declive) de fato discriminam --- pH e carbono orgânico
+do solo também saturam (parcela $\approx$0), de modo que \emph{solo} isoladamente é um
+discriminador espacial mais estreito do que \emph{terreno e solo} em conjunto. A pecuária é
+governada pela umidade do solo (0,58) e pelo carbono orgânico (0,26); a piscicultura reparte-se
+entre distância à água sazonal (0,44), declive (0,41) e densidade de drenagem (0,15); a
+conservação, o segmento mais equilibrado dos sete, divide-se em três fatores de peso
+comparável --- conectividade a áreas protegidas (0,31), rugosidade do terreno (0,23) e fração
+de vegetação nativa (0,22); a geração fotovoltaica, pelo índice de claridade (0,39) e pela
+radiação solar (0,36). A concentração em um ou dois fatores por segmento não decorre de peso
+AHP enviesado a favor deles --- pelo contrário: a revisão de pesos de 2026-09
+(\S\ref{sec:ahp}) deslocou peso deliberadamente \emph{para} os fatores de maior poder
+discriminante em cada segmento, e mesmo assim as razões máx./mín. de peso dos sete segmentos
+ficaram todas na mesma ordem de grandeza pós-recalibração (2,2--4,3$\times$;
+Tabela~\ref{tab:spec-longtable}), sem o contraste que uma calibração enviesada precisaria
+mostrar entre um segmento artificialmente concentrado e outro genuinamente equilibrado. Que
+dar mais peso justamente aos fatores mais discriminantes não tenha reduzido a concentração de
+variância é evidência de que a saturação é geográfica --- as pertinências climáticas em GO/DF
+saturam genuinamente, como evidenciado independentemente pelo mapa de magnitude espacial da
+Figura~\ref{fig:scale-mismatch} --- e não um artefato de como os pesos foram elicitados.}
 \label{fig:factor-variance}
 \end{sidewaysfigure}
 
@@ -486,7 +495,7 @@ uniformemente plano (variação local desprezível em toda a extensão do territ
 terreno+solo mostra estrutura espacial genuína, mais acentuada no norte/nordeste (transição de
 relevo do planalto); o painel da razão log$_2$ é quase uniformemente positivo, confirmando que
 terreno+solo domina a estrutura espacial fina mesmo na própria escala nativa do clima. Mapa
-construído a partir da mesma amostra limitada por orçamento computacional (4.500 pontos) que
+construído a partir da mesma amostra limitada por orçamento computacional (4.475 pontos) que
 alimenta a Tabela~\ref{tab:scale-mismatch}, e não de uma composição rasterizada completa do
 território --- ver \texttt{tools/gen\_diag\_csvs.py}.}
 \label{fig:scale-mismatch}
@@ -498,7 +507,7 @@ território --- ver \texttt{tools/gen\_diag\_csvs.py}.}
 terreno+solo, por raio de janela móvel, e razão terreno+solo/clima correspondente. O raio de
 4.750~m ancora na célula nativa do TerraClimate ($\approx$4,64~km); 250~m é a célula nativa da
 pilha de atributos; 750~m reutiliza o raio já usado para a rugosidade do terreno na
-conservação (\S\ref{anx:derivations}). Amostra de $\approx$4.480 pontos por raio, limitada por
+conservação (\S\ref{anx:derivations}). Amostra de 4.475 pontos por raio, limitada por
 orçamento computacional (\S\ref{anx:data}).}
 \label{tab:scale-mismatch}
 \begin{tabular}{@{}rrrrr@{}}

@@ -49,8 +49,8 @@ from palettes import (  # noqa: E402
     PAL_ROLE,
     PAL_SUIT,
     PAL_TEMP,
-    PAL_ZONE,
     SEGMENTS,
+    zone_palette,
 )
 
 PROJECT = "probformer"
@@ -81,13 +81,16 @@ TR = {
             "cattle": "Cattle", "conservation": "Conservation", "solar": "Solar PV",
         },
         "zone": [
-            "Zone 1 — prime cropping plateau",
-            "Zone 2 — warm dry shoulder",
-            "Zone 3 — high clayey plateau",
-            "Zone 4 — riparian lowland",
-            "Zone 5 — warm sandy low plain",
-            "Zone 6 — cool moist cropping plateau",
-            "Zone 7 — steep conservation highland",
+            "Zone 1 — high clayey plateau (cattle)",
+            "Zone 2 — riparian lowland (pisciculture)",
+            "Zone 3 — intermediate plateau (other crops)",
+            "Zone 4 — wet transitional valley (conservation)",
+            "Zone 5 — steep conservation highland",
+            "Zone 6 — sandy low-drainage plain (solar PV)",
+            "Zone 7 — hot, sandy, remote lowland (cattle/pisciculture)",
+            "Zone 8 — peri-urban high plateau (cattle)",
+            "Zone 9 — dry plateau (soybean/solar)",
+            "Zone 10 — prime cropping plateau (soybean & sugarcane)",
         ],
         "role": ["Other", "Soybean", "Sugarcane", "Other crops",
                  "Pisciculture", "Pasture", "Native"],
@@ -124,7 +127,7 @@ TR = {
         "cbar.deltaS": "ΔS (future − present), SSP5-8.5 2051–2070",
         "cbar.agreement": "fraction of GCMs agreeing on the sign of change",
         "fig_4_2.panel": "{seg} — FAO class",
-        "fig_4_3.title": "Agro-environmental zones (k = 7)",
+        "fig_4_3.title": "Agro-environmental zones (k = 10)",
         "fig_4_4.panel": "Δ {seg}",
         "fig_4_5.title": "Ensemble agreement — other annual crops\n(SSP5-8.5, 2051–2070)",
         "fig_4_5.mean": "territory-mean agreement = {val:.3f}",
@@ -134,9 +137,9 @@ TR = {
         "fig_4_8.annot": "{pct:.1f}% of assessed land",
         "fig_4_9.left": "Municipal mean soybean suitability",
         "fig_4_9.right": "Vulnerable municipalities\n(projected other-crops ΔS < −0.05)",
-        "fig_4_10.suptitle": "Cluster-validity indices and stability by k  (selected k = 7)",
+        "fig_4_10.suptitle": "Cluster-validity indices and stability by k  (selected k = 10)",
         "fig_4_10.panel": ["Silhouette ↑", "Davies–Bouldin ↓", "Gap statistic ↑", "Stability ARI ↑"],
-        "fig_4_10.kline": "selected k (7)",
+        "fig_4_10.kline": "selected k (10)",
         "fig_4_10.xlabel": "k",
         "fig_4_11.suptitle": "Factor share of the spatial variance of each segment's suitability",
         "fig_4_11.xlabel": "variance share (symmetric-log scale)",
@@ -175,13 +178,16 @@ TR = {
             "solar": "Geração fotovoltaica",
         },
         "zone": [
-            "Zona 1 — planalto de cultivo privilegiado",
-            "Zona 2 — ombro quente e seco",
-            "Zona 3 — planalto alto e argiloso",
-            "Zona 4 — baixada ripária",
-            "Zona 5 — planície baixa, quente e arenosa",
-            "Zona 6 — planalto de cultivo frio e úmido",
-            "Zona 7 — planalto alto e íngreme de conservação",
+            "Zona 1 — planalto alto e argiloso (pecuária)",
+            "Zona 2 — baixada ripária (piscicultura)",
+            "Zona 3 — planalto intermediário (outras culturas)",
+            "Zona 4 — vale úmido de transição (conservação)",
+            "Zona 5 — planalto alto e íngreme de conservação",
+            "Zona 6 — planície arenosa de baixa drenagem (geração fotovoltaica)",
+            "Zona 7 — baixada quente, arenosa e remota (pecuária/piscicultura)",
+            "Zona 8 — planalto alto periurbano (pecuária)",
+            "Zona 9 — planalto seco (soja/solar)",
+            "Zona 10 — planalto de cultivo privilegiado (soja e cana)",
         ],
         "role": ["Outros", "Soja", "Cana-de-açúcar", "Outras culturas",
                  "Piscicultura", "Pastagem", "Vegetação nativa"],
@@ -218,7 +224,7 @@ TR = {
         "cbar.deltaS": "ΔS (futuro − presente), SSP5-8.5 2051–2070",
         "cbar.agreement": "fração de modelos que concordam quanto ao sinal da mudança",
         "fig_4_2.panel": "{seg} — classe FAO",
-        "fig_4_3.title": "Zonas agroambientais (k = 7)",
+        "fig_4_3.title": "Zonas agroambientais (k = 10)",
         "fig_4_4.panel": "Δ {seg}",
         "fig_4_5.title": "Concordância entre modelos — outras culturas anuais\n(SSP5-8.5, 2051–2070)",
         "fig_4_5.mean": "concordância média territorial = {val:.3f}",
@@ -228,9 +234,9 @@ TR = {
         "fig_4_8.annot": "{pct:.1f}% da terra avaliada",
         "fig_4_9.left": "Viabilidade média municipal da soja",
         "fig_4_9.right": "Municípios vulneráveis\n(ΔS projetado de outras culturas < −0,05)",
-        "fig_4_10.suptitle": "Índices de validade de agrupamento e estabilidade por k  (k selecionado = 7)",
+        "fig_4_10.suptitle": "Índices de validade de agrupamento e estabilidade por k  (k selecionado = 10)",
         "fig_4_10.panel": ["Silhueta ↑", "Davies–Bouldin ↓", "Estatística de gap ↑", "ARI de estabilidade ↑"],
-        "fig_4_10.kline": "k selecionado (7)",
+        "fig_4_10.kline": "k selecionado (10)",
         "fig_4_10.xlabel": "k",
         "fig_4_11.suptitle": "Parcela de cada fator na variância espacial da viabilidade, por segmento",
         "fig_4_11.xlabel": "parcela da variância (escala simétrica-log)",
@@ -340,7 +346,7 @@ def _audit_i18n():
             errs.append(f"{lang}: seg labels missing for {sorted(missing)}")
     if set(en["seg"]) != set(pt["seg"]):
         errs.append("seg keys differ en/pt")
-    for key, n in (("zone", 7), ("role", 7), ("fao", 4), ("fig_4_10.panel", 4),
+    for key, n in (("zone", 10), ("role", 7), ("fao", 4), ("fig_4_10.panel", 4),
                    ("legend.underused", 2), ("legend.bestcrop", 2), ("legend.vuln", 2)):
         for lang, d in (("en", en), ("pt", pt)):
             got = len(d.get(key, []))
@@ -500,21 +506,25 @@ class Renderer:
         self._save(fig, "fig_4_2", tight=False)
 
     def fig_4_3(self):
-        """Agro-environmental zones (k=7).
+        """Agro-environmental zones (k, read from zone_labels() — currently 10).
 
         Full-width map with the legend below (not to the right): a side legend
         forced the map itself into ~60% of the figure canvas, wasting page width
-        for a mostly-square raster. Two legend columns keep the seven long zone
-        labels legible without pushing the figure too tall.
+        for a mostly-square raster. Two legend columns keep the long zone labels
+        legible without pushing the figure too tall. Palette/value-range are
+        derived from the zone count (zone_palette(n)/max=n-1), not hardcoded —
+        zoning is re-run under different K over time (see CLAUDE.md §11).
         """
-        arr = self.thumb(self.A("zones_present").visualize(min=0, max=6, palette=PAL_ZONE))
-        fig, ax = plt.subplots(figsize=(9, 9.6))
+        labels = zone_labels()
+        pal = zone_palette(len(labels))
+        arr = self.thumb(self.A("zones_present").visualize(min=0, max=len(labels) - 1, palette=pal))
+        fig, ax = plt.subplots(figsize=(9, 10.4))
         self._imshow_map(ax, arr, carto=True, labels=True)
         ax.set_title(t("fig_4_3.title"), fontsize=12)
-        handles = [mpatches.Patch(color=c, label=l) for c, l in zip(PAL_ZONE, zone_labels())]
+        handles = [mpatches.Patch(color=c, label=l) for c, l in zip(pal, labels)]
         ax.legend(handles=handles, loc="upper center", bbox_to_anchor=(0.5, -0.08),
                   frameon=False, fontsize=9, ncol=2, columnspacing=1.2, handlelength=1.4)
-        fig.subplots_adjust(left=0.09, right=0.98, top=0.95, bottom=0.20)
+        fig.subplots_adjust(left=0.09, right=0.98, top=0.95, bottom=0.22)
         self._save(fig, "fig_4_3", tight=False)
 
     def fig_4_7(self):
@@ -746,9 +756,9 @@ class Renderer:
         return pd.read_csv(path)
 
     def fig_4_10(self):
-        """k-selection: validity indices + cluster stability vs k (marks k=7)."""
+        """k-selection: validity indices + cluster stability vs k (marks k=10)."""
         df = self._read_diag("zoning_kselect.csv").sort_values("k")
-        K = 7
+        K = 10
         fig, axes = plt.subplots(1, 4, figsize=(16, 4))
         titles = t("fig_4_10.panel")
         cols = ["silhouette", "davies_bouldin", "gap", "ari"]

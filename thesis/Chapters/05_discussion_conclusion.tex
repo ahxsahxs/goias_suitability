@@ -2,53 +2,60 @@
 
 \section{Interpretação dos resultados}\label{sec:interpretation}
 
-O zoneamento responde à QP1: o agrupamento descorrelacionado resolve GO~e~DF em sete zonas
-biofisicamente distintas, que se agrupam em cinco vocações comparativas --- dois planaltos de
-cultivo (Zonas~1 e~6, a primeira com maior viabilidade de culturas e cultivo atual mais denso);
-um planalto alto e argiloso mais adequado à pecuária extensiva (Zona~3); duas planícies quentes
-e de alta irradiância voltadas à geração fotovoltaica (Zonas~2 e~5, esta última terra marginal);
-uma baixada ripária voltada à aquicultura (Zona~4); e um planalto alto, íngreme e rico em
-carbono onde a viabilidade de culturas colapsa e a conservação é o melhor uso (Zona~7, com
-78\% de Cerrado nativo). Essa partição usa apenas atributos biofísicos --- nunca a cobertura da
-terra --- e ainda assim reproduz a geografia observada do uso do território, o que sustenta sua
-plausibilidade. O padrão subjacente é que GO~e~DF é climaticamente quase uniforme: quem separa
-terra boa de terra ruim é o solo e o terreno, não o clima. Essa leitura carrega, portanto, o peso
-de dois produtos globais herdados sem validação local: o solo vem do OpenLandMap a 250~m, e o
-terreno do SRTM GL1 bruto a 30~m \citep{Farr2007}, reamostrado para a mesma grade; é a acurácia
-desse par de camadas --- não a do clima --- que se propaga diretamente para as fronteiras finas
-entre zonas (detalhado em~\S\ref{sec:limitations}).
+O zoneamento responde à QP1: o agrupamento descorrelacionado resolve GO~e~DF em dez zonas
+biofisicamente distintas, que se agrupam em seis vocações comparativas --- um planalto alto e
+argiloso voltado à pecuária (Zona~1); um planalto intermediário voltado a outras culturas anuais
+(Zona~3); o núcleo agrícola de soja e cana-de-açúcar (Zona~10); duas planícies arenosas voltadas
+à geração fotovoltaica (Zonas~6 e~9, a segunda também a mais árida do território); duas zonas
+voltadas à piscicultura, uma baixada ripária (Zona~2) e uma baixada quente e remota (Zona~7); e
+três zonas de conservação de perfis físicos bem distintos entre si --- um vale úmido de
+transição (Zona~4), um planalto periurbano (Zona~8) e um planalto alto e íngreme onde a
+viabilidade de culturas colapsa e a conservação é também o melhor uso absoluto (Zona~5, com
+74\% de Cerrado nativo). A soja, apesar de ter viabilidade absoluta alta em quase toda zona de
+cultivo, nunca é o melhor uso comparativo de nenhuma delas. Essa partição usa apenas
+atributos biofísicos --- nunca a cobertura da terra --- e ainda assim reproduz a geografia
+observada do uso do território, o que sustenta sua plausibilidade. O padrão subjacente é que
+GO~e~DF é climaticamente quase uniforme: quem separa terra boa de terra ruim é o solo e o
+terreno, não o clima. Essa leitura carrega, portanto, o peso de dois produtos globais herdados
+sem validação local: o solo vem do OpenLandMap a 250~m, e o terreno do SRTM GL1 bruto a 30~m
+\citep{Farr2007}, reamostrado para a mesma grade; é a acurácia desse par de camadas --- não a do
+clima --- que se propaga diretamente para as fronteiras finas entre zonas (detalhado
+em~\S\ref{sec:limitations}).
 
 A projeção climática estende essa leitura a meados do século (QP3). A mudança é de magnitude
 pequena a moderada, mas direcionalmente coerente em todo o conjunto de modelos, e para as
 culturas ela aguça o gradiente já existente em vez de redesenhá-lo: as perdas recaem sobre a
-planície quente já marginal, enquanto os planaltos privilegiados permanecem essencialmente
-inalterados. Três segmentos são mais expostos. A conservação é o mais afetado: sua área viável
-cai de 33,2\% para 11,4\% no cenário--janela mais quente, um resultado coerente com o fato de a
-vegetação nativa ser o uso da terra menos amortecido pelo clima, ao contrário das culturas,
-mantidas perto de seu ótimo térmico pelo manejo. As outras culturas anuais (milho, algodão,
-sorgo) recuam de 64,2\% para 59,2\%, e a geração fotovoltaica, de 27,3\% para 17,4\% por perda de
-desempenho térmico do painel. Soja e cana-de-açúcar permanecem praticamente intactas.
+baixada quente, arenosa e remota já marginal (Zona~7), enquanto os planaltos privilegiados
+permanecem essencialmente inalterados. Três segmentos são mais expostos. A conservação é o mais
+afetado: sua área viável cai de 27,8\% para 12,8\% no cenário--janela mais quente, um resultado
+coerente com o fato de a vegetação nativa ser o uso da terra menos amortecido pelo clima, ao
+contrário das culturas, mantidas perto de seu ótimo térmico pelo manejo. As outras culturas
+anuais (milho, algodão, sorgo) recuam de 58,3\% para 51,0\%, e a geração fotovoltaica, de 20,5\%
+para 14,4\% por perda de desempenho térmico do painel. Soja e cana-de-açúcar permanecem
+praticamente intactas.
 
 A fase de uso atual da terra responde à QP2 e, de quebra, valida a QP1 sem que o uso da terra
-jamais tenha informado o modelo: a soja atual alcança 28\% do planalto privilegiado contra 3\%
-da planície marginal, e as culturas ocupam terra sistematicamente mais viável que a média
-disponível (soja: 0,93 nos pixels plantados contra 0,77 na terra apta). A discriminação por
-presença é forte para a soja sob validação cruzada com blocos espaciais \citep{Valavi2019}
-(AUC~0,83, média por bloco~0,79).
+jamais tenha informado o modelo: a soja atual alcança 32\% do planalto de argila alta (Zona~1)
+contra parcelas bem menores nas zonas marginais, e as culturas ocupam terra sistematicamente
+mais viável que a média disponível (soja: 0,935 nos pixels plantados contra 0,773 na terra
+apta). A discriminação por presença é forte para a soja sobre uma amostra estratificada
+espaço$\times$segmento (AUC~0,871, Boyce~0,964).
 
 Duas tensões merecem registro. Primeira, uma lacuna substancial entre potencial e uso atual ---
-48\% do território é viável para soja e ainda não cultivado, majoritariamente sobre pastagem ---
-aponta para intensificação, não para abertura de novas áreas, o que é coerente com a trajetória
-já documentada para a fronteira agrícola do Cerrado \citep{Spera2017,Caballero2023}. Segunda, a
-verificação cruzada orientada por dados encontra o mapa baseado em conhecimento mais permissivo
-que o nicho realizado ($\kappa=0{,}23$ em amostra; $\kappa=0{,}07$ sob validação cruzada
-espacial, com o nicho de dados restrito a 7\% do território). Como o clima é quase uniforme, os
+41,8\% do território é viável para soja e ainda não cultivado, majoritariamente sobre pastagem
+--- aponta para intensificação, não para abertura de novas áreas, o que é coerente com a
+trajetória já documentada para a fronteira agrícola do Cerrado \citep{Spera2017,Caballero2023}.
+Segunda, a verificação cruzada orientada por dados encontra o mapa baseado em conhecimento mais
+permissivo que o nicho realizado ($\kappa=+0{,}269$, concordância razoável mas não forte na
+escala de Landis \& Koch; o mapa de conhecimento marca 52,8\% do território como viável,
+contra 21,6\% do classificador orientado por dados). Como o clima é quase uniforme, os
 limiares fuzzy não podem ser estreitados por ele; parte dessa permissividade residual é
 provavelmente regra especialista ainda um pouco larga, e parte é o próprio sinal da QP2 --- terra
 capaz deixada sem uso por razões econômicas, de posse ou de logística que o modelo não capta.
 
-Por que esse $\kappa$ cai tanto enquanto a AUC de presença continua alta (0,83) é explicado em
-\S\ref{sec:validation-present}: são, no fundo, duas perguntas diferentes sobre o mesmo resultado.
+Por que esse $\kappa$ fica abaixo do que a AUC de presença isoladamente sugeriria (0,871) é
+explicado em \S\ref{sec:validation-present}: são, no fundo, duas perguntas diferentes sobre o
+mesmo resultado.
 
 Essa leitura econômica tem respaldo na literatura sobre a fronteira agrícola do Cerrado. Em
 Goiás, a intensificação registrada entre 2000 e 2016 --- e não a abertura de novas áreas ---
@@ -63,7 +70,7 @@ o solo permite. Em escala de bioma, a conversão de pastagem para soja e outras 
 também a condições de mercado --- preços de commodities, câmbio, demanda por alimentos e
 biocombustíveis --- mais do que à mera disponibilidade de terra apta \citep{Caballero2023}. Preço,
 custo de recuperação do solo, posse da terra e logística de escoamento são, portanto, candidatos
-plausíveis para explicar a lacuna de 48\% aqui observada, mas nenhum deles é modelado neste
+plausíveis para explicar a lacuna de 41,8\% aqui observada, mas nenhum deles é modelado neste
 trabalho; testá-los é o objeto da camada econômica proposta em \S\ref{sec:futurework}.
 
 \section{Contribuições metodológicas}\label{sec:contributions}
@@ -80,7 +87,7 @@ vez de simplesmente repetir a cobertura nativa atual.
 
 O agrupamento k-means sobre o conjunto bruto de 34 bandas colapsava em poucas zonas pouco
 informativas, dominado pelas bandas climáticas colineares; reduzir, ponderar por tema e aplicar
-PCA antes do agrupamento \citep{Ding2004} resolveu as sete zonas relatadas. E reutilizar a mesma
+PCA antes do agrupamento \citep{Ding2004} resolveu as dez zonas relatadas. E reutilizar a mesma
 transformação de derivação climática tanto para a linha de base quanto para o futuro do CMIP6
 garante que a mudança projetada seja um sinal puramente climático (fatores de mudança identidade
 dão $\Delta S=0$), com os demais fatores mantidos estáticos para isolar essa componente. A
@@ -128,8 +135,8 @@ para trabalho futuro.
     simplifica, porém, a estrutura real do modelo se aplicada ingenuamente por \emph{prefixo de
     origem do dado} em vez de por \emph{papel temático}: agregando a decomposição por fator
     (Figura~\ref{fig:factor-variance}) por tema, e não só por segmento isolado, o clima explica
-    0,15 da variância territorial média, mas essa média esconde dois extremos. Para a geração
-    solar, a irradiância (\texttt{clim\_srad}, 0,46) é um sinal climático genuíno --- a única
+    0,13 da variância territorial média, mas essa média esconde dois extremos. Para a geração
+    solar, a irradiância (\texttt{clim\_srad}, 0,36) é um sinal climático genuíno --- a única
     variável verdadeiramente espacial de origem climática que domina um segmento. Já para a
     pecuária, o fator dominante nominalmente rotulado ``clima'' é a umidade do solo do TerraClimate
     (\texttt{clim\_soil\_moist}, 0,58): tematicamente, essa variável descreve armazenamento de
@@ -141,10 +148,10 @@ para trabalho futuro.
     padronização (\S\ref{sec:fuzzy-standard}) e a estrutura de agregação por fator que definem o
     que conta como ``clima'', não o catálogo de onde a banda foi extraída.
   \item \textbf{Sobrepermissividade residual das culturas.} As superfícies de culturas
-    permanecem mais permissivas que o nicho realizado ($\kappa=0{,}23$ em amostra;
-    $\kappa=0{,}07$ sob validação espacial). Separar regra especialista larga de lacuna
-    potencial \emph{versus} realizado exigiria, ainda assim, um alvo de calibração ancorado em
-    rendimento, que este desenho não usa.
+    permanecem mais permissivas que o nicho realizado ($\kappa=+0{,}269$ para a soja, área
+    viável 52,8\% contra 21,6\% do classificador orientado por dados). Separar regra especialista
+    larga de lacuna potencial \emph{versus} realizado exigiria, ainda assim, um alvo de
+    calibração ancorado em rendimento, que este desenho não usa.
   \item \textbf{Validador de produtividade é um substituto.} O NPP/GPP do MODIS mede produção
     primária da vegetação, não rendimento agronômico \citep{Turner2006,He2018}, e a confusão
     entre coberturas limita seu uso a contexto descritivo; AUC e Boyce seguem como validadores
@@ -198,7 +205,7 @@ reprodutível na nuvem.
 
 As três questões de pesquisa foram respondidas. Um mecanismo fuzzy/AHP produz superfícies de
 viabilidade do presente para os sete segmentos, e um agrupamento não supervisionado resolve o
-território em sete zonas que reproduzem, de forma independente, a geografia observada do uso da
+território em dez zonas que reproduzem, de forma independente, a geografia observada do uso da
 terra. A projeção CMIP6 mostra uma mudança modesta mas direcionalmente robusta até 2070, com a
 conservação como o segmento mais exposto, seguida das outras culturas anuais e da geração
 fotovoltaica, enquanto soja e cana-de-açúcar permanecem estáveis (QP3). Uma lacuna espacialmente
