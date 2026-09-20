@@ -1,0 +1,479 @@
+{
+  "fao_classes": {
+    "breaks": [
+      0.25,
+      0.5,
+      0.75
+    ],
+    "codes": {
+      "N": 0,
+      "S3": 1,
+      "S2": 2,
+      "S1": 3
+    }
+  },
+  "aggregation": {
+    "epsilon": 0.001,
+    "sensitivity_delta": 0.2
+  },
+  "segments": {
+    "soybean": {
+      "label": "Soybean",
+      "mask": "available",
+      "factors": {
+        "terr_slope": {
+          "weight": 0.32,
+          "type": "decreasing",
+          "points": [
+            4,
+            8
+          ],
+          "ref": "2026-07-14: tightened from [4.57,8.53] to realized soybean flatness (p90 4.7deg). 2026-09: ratio=iqr/span=2.246/4=0.562, highest of the segment -> weight raised 0.22->0.32"
+        },
+        "soil_clay": {
+          "weight": 0.24,
+          "type": "range",
+          "points": [
+            20,
+            32,
+            48,
+            62
+          ],
+          "ref": "2026-07-14: tightened from [10,20,45,60] to penalize sandy soils the realized niche avoids (soybean clay p10 30, p50 40). 2026-09: ratio=12.503/42=0.298 -> weight raised 0.13->0.24"
+        },
+        "clim_twarm_q": {
+          "weight": 0.14,
+          "type": "range",
+          "points": [
+            18,
+            22,
+            30,
+            34
+          ],
+          "ref": "20-30C optimal. 2026-09: ratio=1.812/16=0.113 (uniform in GO) -> weight trimmed 0.15->0.14"
+        },
+        "soil_ph": {
+          "weight": 0.11,
+          "type": "range",
+          "points": [
+            4.5,
+            5.5,
+            6.8,
+            7.5
+          ],
+          "ref": "acidic-correctable to neutral. 2026-09: ratio=0.265/3=0.088 -> weight trimmed 0.15->0.11"
+        },
+        "clim_pr_annual": {
+          "weight": 0.1,
+          "type": "range",
+          "points": [
+            800,
+            1100,
+            1800,
+            2200
+          ],
+          "ref": "ZARC season ~450-800mm; annual proxy, waterlogging at top. 2026-09: ratio=106.0/1400=0.076 (near-uniform 1373-1635mm in GO) -> weight cut 0.22->0.10, the segment's largest demotion"
+        },
+        "clim_aridity": {
+          "weight": 0.09,
+          "type": "range",
+          "points": [
+            0.4,
+            0.7,
+            1.2,
+            1.6
+          ],
+          "ref": "P/PET water sufficiency. 2026-09: ratio=0.082/1.2=0.068, lowest of the segment (uniform in GO) -> weight cut 0.13->0.09"
+        }
+      }
+    },
+    "sugarcane": {
+      "label": "Sugarcane",
+      "mask": "available",
+      "factors": {
+        "terr_slope": {
+          "weight": 0.26,
+          "type": "decreasing",
+          "points": [
+            5,
+            10
+          ],
+          "ref": "2026-07-14: tightened from [6.84,11.31] to realized sugarcane flatness (p90 4.2deg). 2026-09: ratio=2.246/5=0.449 -> weight raised 0.18->0.26"
+        },
+        "soil_awc": {
+          "weight": 0.22,
+          "type": "increasing",
+          "points": [
+            5,
+            20
+          ],
+          "ref": "deep water-holding. 2026-09: ratio=4.497/15=0.300 -> weight raised 0.14->0.22"
+        },
+        "soil_clay": {
+          "weight": 0.22,
+          "type": "range",
+          "points": [
+            22,
+            32,
+            52,
+            66
+          ],
+          "ref": "2026-07-14: tightened from [15,25,50,65] to penalize sandy soils (sugarcane clay p10 27, p50 36). 2026-09: ratio=12.503/44=0.284 -> weight raised 0.14->0.22"
+        },
+        "clim_twarm_q": {
+          "weight": 0.14,
+          "type": "range",
+          "points": [
+            20,
+            24,
+            32,
+            36
+          ],
+          "ref": "warm-loving C4. 2026-09: ratio=1.812/16=0.113 -> weight trimmed 0.18->0.14"
+        },
+        "clim_pr_annual": {
+          "weight": 0.1,
+          "type": "range",
+          "points": [
+            900,
+            1300,
+            2000,
+            2600
+          ],
+          "ref": "higher water demand than soy. 2026-09: ratio=106.0/1700=0.062 (near-uniform in GO) -> weight cut 0.20->0.10"
+        },
+        "clim_dry_months": {
+          "weight": 0.06,
+          "type": "range",
+          "points": [
+            1,
+            2,
+            5,
+            7
+          ],
+          "ref": "dry ripening window. clim_dry_months is a spatial CONSTANT (=5) in GO -> ratio=0.000 (F1), the lowest possible discriminating power -> weight cut 0.16->0.06, the segment's floor"
+        }
+      }
+    },
+    "other_crops": {
+      "label": "Other annual crops (corn/cotton/sorghum)",
+      "mask": "available",
+      "factors": {
+        "terr_slope": {
+          "weight": 0.34,
+          "type": "decreasing",
+          "points": [
+            4,
+            8
+          ],
+          "ref": "2026-07-14: tightened from [4.57,8.53] to realized flatness (p90 4.7deg). 2026-09: ratio=2.246/4=0.562, highest of the segment -> weight raised 0.18->0.34"
+        },
+        "soil_soc": {
+          "weight": 0.23,
+          "type": "increasing",
+          "points": [
+            6,
+            20
+          ],
+          "ref": "2026-07-14: raised floor from [5,20]; organic-carbon fertility proxy (g/kg). 2026-09: ratio=4.029/14=0.288 -> weight raised 0.14->0.23"
+        },
+        "clim_gdd": {
+          "weight": 0.15,
+          "type": "range",
+          "points": [
+            2500,
+            3500,
+            5500,
+            7000
+          ],
+          "ref": "heat units, base 10C. 2026-09: ratio=615.9/4500=0.137 -> weight unchanged"
+        },
+        "soil_ph": {
+          "weight": 0.11,
+          "type": "range",
+          "points": [
+            4.5,
+            5.5,
+            6.8,
+            7.5
+          ],
+          "ref": "fertility window. 2026-09: ratio=0.265/3=0.088 -> weight trimmed 0.15->0.11"
+        },
+        "clim_pr_annual": {
+          "weight": 0.09,
+          "type": "range",
+          "points": [
+            700,
+            1000,
+            1700,
+            2200
+          ],
+          "ref": "rainfed second-season risk at low end. 2026-09: ratio=106.0/1500=0.071 (near-uniform in GO) -> weight cut 0.20->0.09"
+        },
+        "clim_pr_cv": {
+          "weight": 0.08,
+          "type": "decreasing",
+          "points": [
+            0.6,
+            1.3
+          ],
+          "ref": "rainfall reliability. 2026-09: ratio=0.043/0.7=0.061, lowest of the segment (uniform ~0.82 in GO) -> weight cut 0.18->0.08"
+        }
+      }
+    },
+    "pisciculture": {
+      "label": "Pisciculture (pond/reservoir aquaculture)",
+      "mask": "available",
+      "factors": {
+        "terr_slope": {
+          "weight": 0.27,
+          "type": "decreasing",
+          "points": [
+            2.86,
+            5.71
+          ],
+          "ref": "ponds need flat <5% (deg). 2026-09: ratio=2.246/2.85=0.788, highest of the segment -> weight raised 0.20->0.27"
+        },
+        "soil_clay": {
+          "weight": 0.25,
+          "type": "increasing",
+          "points": [
+            15,
+            35
+          ],
+          "ref": "clay holds pond water. 2026-09: ratio=12.503/20=0.625 -> weight raised 0.24->0.25"
+        },
+        "sit_water_dist_seas": {
+          "weight": 0.24,
+          "type": "decreasing",
+          "points": [
+            750,
+            6000
+          ],
+          "ref": "2026-07-14: REPLACES water_dist [500,5000]. Permanent water is 13.6km away (median) -> old factor floored (F2). Distance to SEMI-PERMANENT water (GSW occ>50; median 2.3km) from feat_siting via sit_ routing. 2026-09: ratio=2477.8/5250=0.472 -> weight raised 0.22->0.24"
+        },
+        "water_drain_density": {
+          "weight": 0.14,
+          "type": "increasing",
+          "points": [
+            0.01,
+            0.08
+          ],
+          "ref": "local water availability; band is stream-cell fraction (max~0.15, p90~0.093, zero-inflated below p50). 2026-09: ratio=0.0127/0.07=0.181 -> weight trimmed 0.16->0.14"
+        },
+        "clim_twarm_q": {
+          "weight": 0.1,
+          "type": "range",
+          "points": [
+            22,
+            26,
+            32,
+            36
+          ],
+          "ref": "warm-water tilapia. 2026-09: ratio=1.812/14=0.129, lowest of the segment -> weight cut 0.18->0.10"
+        }
+      }
+    },
+    "cattle": {
+      "label": "Cattle / cultivated pasture",
+      "mask": "exclude_only",
+      "factors": {
+        "clim_pr_annual": {
+          "weight": 0.1,
+          "type": "range",
+          "points": [
+            700,
+            1000,
+            2000,
+            2600
+          ],
+          "ref": "was w=0.22; UNIFORM in GO -> feasibility gate only"
+        },
+        "clim_dry_months": {
+          "weight": 0.08,
+          "type": "decreasing",
+          "points": [
+            4,
+            8
+          ],
+          "ref": "was w=0.22; spatially CONSTANT (=5) in GO -> non-discriminating, feasibility gate only (F1)"
+        },
+        "clim_soil_moist": {
+          "weight": 0.28,
+          "type": "increasing",
+          "points": [
+            55,
+            120
+          ],
+          "ref": "was w=0.22 [20,120]; steepened to realized dry-tail (pasture p10 61, p25 91) -> primary moisture grader; poor-forage land now S3"
+        },
+        "terr_slope": {
+          "weight": 0.2,
+          "type": "decreasing",
+          "points": [
+            6,
+            15
+          ],
+          "ref": "was [8.53,17.7]; moderate slopes now start dropping forage score"
+        },
+        "soil_soc": {
+          "weight": 0.34,
+          "type": "increasing",
+          "points": [
+            8,
+            18
+          ],
+          "ref": "was w=0.16 [4,18]; steepened (pasture p10 8.75, p25 9.8, p90 16.2) -> PRIMARY fertility/forage grader; poor-forage land now S3"
+        }
+      }
+    },
+    "conservation": {
+      "label": "Forest & Cerrado conservation",
+      "mask": "none",
+      "aggregate": "arithmetic",
+      "factors": {
+        "cv_pa_dist": {
+          "weight": 0.17,
+          "type": "decreasing",
+          "points": [
+            5000,
+            40000
+          ],
+          "ref": "distance (m) to WDPA reserve; connectivity/consolidation. cv_ routing -> feat_conservation. 2026-09: ratio=24569/35000=0.702, highest of the segment (available p10 5.4km/p50 24.3km/p90 50.9km) -> weight trimmed slightly 0.20->0.17 only to make room for terr_twi/cv_ruggedness, still the top factor"
+        },
+        "cv_carbon": {
+          "weight": 0.12,
+          "type": "increasing",
+          "points": [
+            10,
+            20
+          ],
+          "ref": "carbon-storage service. cv_ routing. CAVEAT: biomass~forest (mild circularity) -- ratio=4.874/10=0.487 (2nd highest) would justify a bigger raise, but weight is deliberately held to 0.10->0.12 (not the full data-implied jump) because of that caveat"
+        },
+        "cv_ruggedness": {
+          "weight": 0.15,
+          "type": "increasing",
+          "points": [
+            5,
+            30
+          ],
+          "ref": "neighborhood elevation-std (m); habitat heterogeneity + low arability. cv_ routing. 2026-09: ratio=9.500/25=0.380 -> weight raised 0.13->0.15"
+        },
+        "terr_twi": {
+          "weight": 0.13,
+          "type": "increasing",
+          "points": [
+            8.5,
+            11.2
+          ],
+          "ref": "wetness index -> riparian/recharge water service. 2026-09 T7 gap closed: never anchored before (available p10 8.84/p90 10.97) -> tightened from placeholder [6,14] to [8.5,11.2]; ratio rises 0.936/8=0.117 -> 0.936/2.7=0.347 -> weight raised 0.11->0.13"
+        },
+        "rl_native_frac": {
+          "weight": 0.1,
+          "type": "increasing",
+          "points": [
+            0.25,
+            0.85
+          ],
+          "ref": "DEMOTED 0.35->0.08 in 2026-07-25 (de-circularization). The one sanctioned land-cover factor; native-veg fraction credits open Cerrado. rl_ routing. 2026-09: ratio=0.175/0.6=0.292 -> weight raised 0.08->0.10"
+        },
+        "clim_aridity": {
+          "weight": 0.1,
+          "type": "increasing",
+          "points": [
+            0.95,
+            1.25
+          ],
+          "ref": "MOVING water-balance viability P/PET; falls under warming -> conservation CMIP6 loser. 2026-09: ratio=0.082/0.3=0.273 -> weight trimmed 0.15->0.10"
+        },
+        "terr_slope": {
+          "weight": 0.09,
+          "type": "increasing",
+          "points": [
+            2.86,
+            11.31
+          ],
+          "ref": "steep/marginal land = low opportunity cost of conservation (deg). 2026-09: ratio=2.246/8.45=0.266 -> weight raised 0.05->0.09"
+        },
+        "clim_twarm_q": {
+          "weight": 0.08,
+          "type": "decreasing",
+          "points": [
+            23,
+            31
+          ],
+          "ref": "MOVING heat/fire stress (warmest-quarter degC); rises under warming -> conservation CMIP6 loser. 2026-09: ratio=1.812/8=0.227 -> weight trimmed 0.09->0.08"
+        },
+        "water_drain_density": {
+          "weight": 0.06,
+          "type": "increasing",
+          "points": [
+            0.01,
+            0.08
+          ],
+          "ref": "riparian/recharge water-service; stream-cell fraction (max~0.15, p90~0.093, zero-inflated below p50). 2026-09: ratio=0.0127/0.07=0.181, lowest of the segment -> weight cut 0.09->0.06"
+        }
+      }
+    },
+    "solar": {
+      "label": "Solar PV generation",
+      "mask": "available",
+      "factors": {
+        "clim_srad": {
+          "weight": 0.22,
+          "type": "increasing",
+          "points": [
+            186,
+            204
+          ],
+          "ref": "2026-07-14: rescaled from [180,240] to realized p10-p90 (F3); irradiance W/m2 (primary). 2026-09: ratio=7.875/18=0.437 -> weight trimmed 0.26->0.22, no longer the top discriminator once access_logtt is properly anchored"
+        },
+        "sit_clearness": {
+          "weight": 0.22,
+          "type": "increasing",
+          "points": [
+            0.466,
+            0.501
+          ],
+          "ref": "2026-07-14 NEW: clearness index Kt=Rs/Ra (cloudiness proxy) from feat_siting via sit_ routing; p10-p90. 2026-09: ratio=0.0154/0.035=0.439 -> weight raised 0.20->0.22"
+        },
+        "terr_northing": {
+          "weight": 0.15,
+          "type": "increasing",
+          "points": [
+            -0.3,
+            0.5
+          ],
+          "ref": "N-facing slopes favored (S. hemisphere); cos(aspect). 2026-09: ratio=0.398/0.8=0.498, highest of the segment -> weight nearly doubled 0.08->0.15"
+        },
+        "terr_slope": {
+          "weight": 0.17,
+          "type": "decreasing",
+          "points": [
+            2.86,
+            8.53
+          ],
+          "ref": "panel siting <5% optimal (deg). 2026-09: ratio=2.246/5.67=0.396 -> weight unchanged-ish 0.18->0.17"
+        },
+        "access_logtt": {
+          "weight": 0.14,
+          "type": "decreasing",
+          "points": [
+            3.5,
+            5.4
+          ],
+          "ref": "near grid/cities; log(min+1). 2026-09 T7 gap closed: never anchored before (available p10 3.52/p90 5.23) -> tightened from placeholder [3,6] to [3.5,5.4]; ratio rises 0.906/3=0.302 -> 0.906/1.9=0.477 -> weight unchanged 0.14->0.14"
+        },
+        "clim_twarm_q": {
+          "weight": 0.1,
+          "type": "decreasing",
+          "points": [
+            24,
+            31
+          ],
+          "ref": "2026-07-14 NEW: PV panel efficiency de-rating with heat (warmest-quarter degC). 2026-09: ratio=1.812/7=0.259, lowest of the segment -> weight cut 0.14->0.10"
+        }
+      }
+    }
+  }
+}

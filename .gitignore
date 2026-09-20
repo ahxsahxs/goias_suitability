@@ -39,3 +39,8 @@ thesis/*.slo
 thesis/*.sls
 thesis/*.pdf
 thesis/*.run.xml
+
+# Node / Vite dashboard (docs/dashboard — see docs/dashboard_ux_plan.md §2.5)
+docs/dashboard/node_modules/
+docs/dashboard/dist/
+docs/dashboard/*.local

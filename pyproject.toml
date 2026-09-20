@@ -20,6 +20,7 @@ dependencies = [
     "scipy>=1.11",            # src/metrics.py — spearmanr, f_oneway
     "geopandas>=1.1.4",       # geospatial files manipulation
     "GDAL<=3.8.4",           # GDAL binding
+    "rio-pmtiles>=1.2.2",
 ]
 
 [project.optional-dependencies]
