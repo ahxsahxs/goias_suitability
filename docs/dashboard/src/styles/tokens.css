@@ -25,6 +25,8 @@
   --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
   --radius: 4px;
   --content-max: 1200px;
+  --sidebar-w: 240px;
+  --sidebar-w-collapsed: 56px;
 
   /* TODO(v1): zone / suitability / delta ramps, ported from tools/palettes.py. */
 }

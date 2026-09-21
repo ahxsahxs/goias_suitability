@@ -26,7 +26,7 @@ const columns: DataTableColumn<DatasetCatalogEntry>[] = [
 
     <MapPanel :outline="true">
       <template #legend>
-        <div class="map-legend-text">Contorno da AOI (GO + DF). Limites municipais: ver Explorador Municipal.</div>
+        <div class="map-legend-text">Contorno da AOI (GO + DF). Passe o mouse sobre o mapa para ver os limites municipais.</div>
       </template>
     </MapPanel>
 

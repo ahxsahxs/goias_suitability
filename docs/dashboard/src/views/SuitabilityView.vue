@@ -120,9 +120,9 @@ const sensitivityBox = computed<PlotlyDatum[]>(() => {
 
 <template>
   <section>
-    <h1>Modelagem de Aptidão</h1>
+    <h1>Modelagem de Viabilidade</h1>
     <p>
-      Aptidão baseada em conhecimento, com pertinência fuzzy + AHP (Parte 9). Cada
+      Viabilidade baseada em conhecimento, com pertinência fuzzy + AHP (Parte 9). Cada
       fator é padronizado para [0,1] por uma função de pertinência e então combinado
       pela {{ aggregation }}.
     </p>
@@ -141,7 +141,7 @@ const sensitivityBox = computed<PlotlyDatum[]>(() => {
     <div class="chart-row">
       <div>
         <h2>{{ ahpTitle }}</h2>
-        <PlotlyChart :data="ahpBarData" :layout="{ height: 260, margin: { l: 140 } }" />
+        <PlotlyChart :data="ahpBarData" :layout="{ height: 260 }" />
       </div>
       <div>
         <h2>Pertinência fuzzy</h2>

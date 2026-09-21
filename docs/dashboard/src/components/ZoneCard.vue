@@ -47,7 +47,7 @@ const realizedFracs = computed(() =>
     </p>
     <PlotlyChart
       :data="barData"
-      :layout="{ height: 220, xaxis: { title: { text: 'aptidão comparativa z-normalizada' } } }"
+      :layout="{ height: 220, xaxis: { title: { text: 'viabilidade comparativa z-normalizada' } } }"
     />
     <p class="zone-realized">
       Composição realizada:

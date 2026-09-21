@@ -13,11 +13,11 @@ const legend = computed(() => zoneLegend(stats.value?.n_zones ?? 10))
 
 <template>
   <section>
-    <h1>Aptidão Agro-Mercadológica de Goiás &amp; Zoneamento CMIP6</h1>
+    <h1>Viabilidade Agrícola de Goiás &amp; Zoneamento CMIP6</h1>
     <p>
       Um atlas a 250 m do potencial biofísico para sete segmentos de uso da terra em
       Goiás + DF (~340.000 km²), agrupados em zonas agroambientais. Pertinência fuzzy
-      + pesos AHP nos moldes da FAO &rarr; aptidão; agrupamento não supervisionado
+      + pesos AHP nos moldes da FAO &rarr; viabilidade; agrupamento não supervisionado
       &rarr; zoneamento; fatores de mudança CMIP6 &rarr; a projeção futura.
     </p>
 
@@ -46,7 +46,7 @@ const legend = computed(() => zoneLegend(stats.value?.n_zones ?? 10))
       <StatChip label="zonas" :value="stats.n_zones" />
       <StatChip label="segmentos" :value="stats.n_segments" />
       <StatChip label="municípios" :value="stats.n_municipalities" />
-      <StatChip label="aptidão média — soja" :value="stats.mean_suit_soybean.toFixed(2)" />
+      <StatChip label="viabilidade média — soja" :value="stats.mean_suit_soybean.toFixed(2)" />
       <StatChip
         label="maior zona"
         :value="`Z${stats.top_zone} (${stats.top_zone_share_pct}%)`"

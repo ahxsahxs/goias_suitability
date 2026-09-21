@@ -10,7 +10,6 @@ export const PAL_SUIT = ['#d7191c', '#fdae61', '#ffffbf', '#a6d96a', '#1a9641'] 
 export const PAL_FAO = ['#d7191c', '#fdae61', '#a6d96a', '#1a9641'] // N, S3, S2, S1
 export const PAL_ROLE = ['#eeeeee', '#ffd400', '#7b3294', '#d95f0e', '#2c7fb8', '#addd8e', '#006837']
 export const PAL_DIV = ['#b2182b', '#f7f7f7', '#2166ac'] // diverging deltaS
-export const PAL_AGREEMENT = ['#ffffcc', '#a1dab4', '#41b6c4', '#225ea8'] // sequential, GCM sign-agreement
 export const PAL_UNDERUSED = ['#f7f7f7', '#d7301f'] // binary, potential-vs-realized gap
 
 export const FAO_ORDER = ['N', 'S3', 'S2', 'S1'] as const

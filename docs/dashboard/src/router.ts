@@ -1,6 +1,6 @@
 import { createRouter, createWebHashHistory, type RouteRecordRaw } from 'vue-router'
 
-/** A top-nav entry. `enabled: false` = declared in the IA (§3), not yet built. */
+/** A sidebar nav entry. `enabled: false` = declared in the IA (§3), not yet built. */
 export interface NavItem {
   label: string
   /** Route path as it will exist once built; also the router path when enabled. */
@@ -10,7 +10,7 @@ export interface NavItem {
   enabled: boolean
 }
 
-/** Top nav, grouped exactly as docs/dashboard_ux_plan.md §3. */
+/** Sidebar nav, grouped exactly as docs/dashboard_ux_plan.md §3. */
 export const navSections: ReadonlyArray<{ title: string; items: readonly NavItem[] }> = [
   {
     title: 'Engenharia de atributos',
@@ -23,7 +23,7 @@ export const navSections: ReadonlyArray<{ title: string; items: readonly NavItem
   {
     title: 'Modelagem',
     items: [
-      { label: 'Aptidão', path: '/suitability', part: 'Parte 9', enabled: true },
+      { label: 'Viabilidade', path: '/suitability', part: 'Parte 9', enabled: true },
       { label: 'Zoneamento', path: '/zoning', part: 'Parte 10', enabled: true },
     ],
   },

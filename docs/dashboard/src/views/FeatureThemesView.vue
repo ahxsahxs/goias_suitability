@@ -77,7 +77,7 @@ const histogramData = computed<PlotlyDatum[]>(() => {
     <p>
       Oito temas biofísicos (Partes 2-7d) harmonizados na grade de análise de 250 m.
       A cobertura da terra (Parte 7b) é apenas uma máscara — nunca uma entrada de
-      aptidão ou de agrupamento.
+      viabilidade ou de agrupamento.
     </p>
 
     <div class="theme-strip">

@@ -4,9 +4,9 @@ Architecture reference for `docs/dashboard/`, the public, static, GitHub-Pages-h
 that is the project's **only** interactive deliverable (Part 15). It superseded and replaced the
 retired `gee_js/atlas_app.js` (Earth Engine App) plan. The dashboard was built against this spec —
 see `CLAUDE.md` §4 for current build/deploy status, and the commit history
-(`41a7dfe`, `798f45e`, `be25a40`) for how it was built. Two follow-ups remain before it's linked
-from the thesis: an i18n pass + trimming some images, and enabling GitHub Pages
-(Settings → Pages → Source → "GitHub Actions").
+(`41a7dfe`, `798f45e`, `be25a40`) for how it was built. It is live at
+<https://ahxsahxs.github.io/goias_suitability>. One follow-up remains before it's linked from the
+thesis: an i18n pass + trimming some images.
 
 ---
 
@@ -578,8 +578,8 @@ them, so keeping them named 1:1 with the manifest rows above matters for future 
 ## 6. Migration from `gee_js/atlas_app.js`
 
 The migration is complete: `gee_js/atlas_app.js` (the Earth Engine App) was deleted and replaced by
-this static SPA. `CLAUDE.md` §4/§5 and `README.md` describe the current dashboard state; the only
-open infrastructure step is enabling GitHub Pages (Settings → Pages → Source → "GitHub Actions").
+this static SPA, live at <https://ahxsahxs.github.io/goias_suitability>. `CLAUDE.md` §4/§5 and
+`README.md` describe the current dashboard state.
 
 ---
 

@@ -87,7 +87,7 @@ const hexbinData = computed<PlotlyDatum[]>(() => {
     <p>
       KMeans do sklearn offline sobre uma entrada PCA descorrelacionada, classificado
       no servidor por matemática de banda do centróide mais próximo (Parte 10). As
-      zonas são rotuladas por <code>comparative_segment</code> — o argmax da aptidão
+      zonas são rotuladas por <code>comparative_segment</code> — o argmax da viabilidade
       z-normalizada de cada segmento, não a dominância bruta.
     </p>
 

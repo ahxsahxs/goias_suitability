@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import * as maplibregl from 'maplibre-gl'
 import type { LngLatLike, MapGeoJSONFeature, MapLayerMouseEvent } from 'maplibre-gl'
-import { onMounted, onUnmounted, ref, shallowRef, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref, shallowRef, watch } from 'vue'
 import { dataUrl } from '../composables/useJson'
 import { usePmtilesLayer } from '../composables/useMapLayer'
+import { promoteMunicipalOverlay, useMunicipalOverlay } from '../composables/useMunicipalOverlay'
 
 export interface ChoroplethLayer {
   /** Path under public/data/geojson/, e.g. 'municipal_ranking.geojson'. */
@@ -22,6 +23,8 @@ const props = withDefaults(
     choropleth?: ChoroplethLayer | null
     /** Show the AOI boundary as a thin outline for context. */
     outline?: boolean
+    /** NM_MUN of a municipality to draw thicker/accented on the boundary overlay. */
+    highlightMunicipality?: string | null
     center?: LngLatLike
     zoom?: number
   }>(),
@@ -30,6 +33,7 @@ const props = withDefaults(
     rasterOpacity: 0.85,
     choropleth: null,
     outline: true,
+    highlightMunicipality: null,
     // AOI centroid + a zoom that fits ~340,000 km2 of Goias/DF in a ~4:3 panel.
     center: () => [-49.6, -15.95] as LngLatLike,
     zoom: 5.4,
@@ -40,12 +44,14 @@ const emit = defineEmits<{ 'feature-click': [properties: Record<string, unknown>
 
 const container = ref<HTMLDivElement | null>(null)
 const map = shallowRef<maplibregl.Map | null>(null)
+let resizeObserver: ResizeObserver | null = null
 
 const rasterPathRef = ref(props.rasterPath)
 const opacityRef = ref(props.rasterOpacity)
 watch(() => props.rasterPath, (v) => (rasterPathRef.value = v))
 watch(() => props.rasterOpacity, (v) => (opacityRef.value = v))
 usePmtilesLayer(map, 'hero-raster', rasterPathRef, opacityRef)
+useMunicipalOverlay(map, computed(() => props.highlightMunicipality))
 
 const CHOROPLETH_SOURCE = 'choropleth'
 const OUTLINE_SOURCE = 'aoi-outline'
@@ -76,6 +82,7 @@ function addChoropleth(): void {
     source: CHOROPLETH_SOURCE,
     paint: { 'line-color': '#ffffff', 'line-width': 0.4 },
   })
+  promoteMunicipalOverlay(m)
 }
 
 function addOutline(): void {
@@ -94,6 +101,7 @@ function addOutline(): void {
       paint: { 'line-color': '#1b1f1a', 'line-width': 1.2 },
     })
     console.log('DEBUG addOutline done', m.getSource(OUTLINE_SOURCE))
+    promoteMunicipalOverlay(m)
   } catch (e) {
     console.log('DEBUG addOutline threw', e)
   }
@@ -128,11 +136,19 @@ onMounted(() => {
   m.on('mouseenter', CHOROPLETH_SOURCE, () => (m.getCanvas().style.cursor = 'pointer'))
   m.on('mouseleave', CHOROPLETH_SOURCE, () => (m.getCanvas().style.cursor = ''))
   map.value = m
+
+  // The sidebar's collapse/expand animates .app-main's width without a window
+  // resize event firing — MapLibre only auto-resizes on the latter, so without
+  // this the canvas keeps its stale size (and a stale center point) after a toggle.
+  resizeObserver = new ResizeObserver(() => m.resize())
+  resizeObserver.observe(container.value)
 })
 
 watch(() => props.choropleth, addChoropleth)
 
 onUnmounted(() => {
+  resizeObserver?.disconnect()
+  resizeObserver = null
   map.value?.remove()
   map.value = null
 })

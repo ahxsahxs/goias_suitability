@@ -14,7 +14,9 @@ validado contra o uso real da terra (MapBiomas) e um proxy de produtividade MODI
 
 Este repositório é o material de suporte computacional da dissertação de mestrado abaixo —
 se chegaste aqui a partir do PDF da tese, é este o código, os dados e as figuras por trás
-dos resultados.
+dos resultados. O atlas interativo construído a partir destes resultados vive em
+[`docs/dashboard/`](docs/dashboard/) e é publicado em
+<https://ahxsahxs.github.io/goias_suitability>.
 
 ## A dissertação
 
@@ -57,10 +59,9 @@ confirmados em CRS/escala/footprint corretos. As três perguntas de investigaç�
 (zoneamento, potencial vs. realizado, projeção CMIP6) estão respondidas e escritas nos
 capítulos 01–05.
 
-O **atlas interativo (Part 15)** também está construído — um SPA estático (Vue 3 + TypeScript +
-Vite) em [`docs/dashboard/`](docs/dashboard/), publicado via GitHub Actions para GitHub Pages.
-Falta apenas um passo manual único de configuração do repositório (Settings → Pages → Source →
-"GitHub Actions") para o deploy ficar público.
+O **atlas interativo (Part 15)** também está construído e publicado — um SPA estático (Vue 3 +
+TypeScript + Vite) em [`docs/dashboard/`](docs/dashboard/), com deploy automático via GitHub
+Actions para GitHub Pages em <https://ahxsahxs.github.io/goias_suitability>.
 
 ## Reprodução rápida
 

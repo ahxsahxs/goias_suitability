@@ -4,7 +4,7 @@ v2 scope (2026-09-20): the pipeline rebuild that was in flight when v1 was built
 completed and is footprint-verified (tools/verify_assets.py). This script now pulls
 the full asset set: feat_*, feature_stack_250m(_z), suit_present (7 suit_* + 7
 class_* bands), suit_present_sens (7 sens_* bands), zones_present, the IBGE municipal
-mesh (Part 12), suit_future_*/delta_*/agreement_* (Part 11, CMIP6), and
+mesh (Part 12), suit_future_*/delta_* (Part 11, CMIP6), and
 realized_vs_potential/feat_realized (Parts 12-13). The extended municipal ranking
 below carries all 7 suit_*, zone, all 7 delta_* (off delta_ssp585_2051_2070 only —
 not all 4 SSP/window combos), and every underused_<crop> band that actually exists
@@ -13,14 +13,13 @@ cattle/conservation/solar have none by construction, see external.ROLE_CODES). T
 is a separate file from thesis/Chapters/Figures/municipal_ranking.csv (produced by
 tools/extract_present.py::municipal()) — this script never touches that file.
 
-Delta/agreement raster coverage is deliberately curated, not exhaustive: delta_* PMTiles
-cover 5 segments (soybean/sugarcane/other_crops/conservation/solar) x 4 SSP/window
-combos = 20 files (docs/dashboard_ux_plan.md §5's manifest); agreement_* is cut down to
-just 2 representative combos (other_crops x {ssp585/2051_2070, ssp245/2031_2050}) since
-the territory-mean agreement is ~0.999 and near-uniform everywhere regardless of
-scenario/segment (see thesis/Chapters/03_methodology.tex's concordância paragraph and
-fig:ensemble-agreement) — shipping the full ~20-file combinatorial matrix would mostly
-duplicate near-identical maps.
+Delta raster coverage is deliberately curated, not exhaustive: delta_* PMTiles cover 5
+segments (soybean/sugarcane/other_crops/conservation/solar) x 4 SSP/window combos = 20
+files (docs/dashboard_ux_plan.md §5's manifest). The dashboard no longer ships
+agreement_* (GCM ensemble agreement) rasters — the territory-mean agreement is ~0.999
+and near-uniform everywhere regardless of scenario/segment (see
+thesis/Chapters/03_methodology.tex's concordância paragraph and fig:ensemble-agreement),
+so the maps were non-informative and were dropped from the dashboard.
 
 Note: the zone count is read from zone_profiles.csv at run time, NOT hardcoded — the
 zoning asset currently has 10 zones (0-9), not the 7 that CLAUDE.md's Part-10 row used
@@ -34,7 +33,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import math
 import shutil
 import subprocess
 import sys
@@ -58,7 +56,6 @@ import ibge_mesh  # noqa: E402
 import utils  # noqa: E402
 from palettes import (  # noqa: E402
     FAO_ORDER,
-    PAL_AGREEMENT,
     PAL_DIV,
     PAL_FAO,
     PAL_ROLE,
@@ -283,7 +280,7 @@ def _prep_band(
 ) -> "ee.Image":
     """Scale a band to uint8 0..254 for the 48 MiB download-cap workaround (see comment
     above). `vmin`/`vmax` is the physical domain mapped to that range — [0, 1] for bands
-    already provably bounded there (suit_*, agreement_*, underused_*). For a band that is
+    already provably bounded there (suit_*, underused_*). For a band that is
     NOT provably bounded (e.g. delta_*, which make_figures.py visualizes on a *clipped*
     [-0.15, 0.15] window, not a hard bound), an out-of-window pixel MUST be `.clamp()`ed
     before scaling — otherwise it can compute to exactly 255, the reserved
@@ -403,32 +400,12 @@ def build_rasters(only_band: str | None = None) -> None:
 
 
 # =============================================================================
-# 6b. CMIP6 shift rasters: delta_<ssp>_<window>_<segment> (diverging) +
-#     agreement_<ssp>_<window>_other_crops (2 representative combos only — see
-#     module docstring for why the full ~20-file matrix isn't shipped)
+# 6b. CMIP6 shift rasters: delta_<ssp>_<window>_<segment> (diverging)
 # =============================================================================
 CMIP6_SCENARIOS = ["ssp245", "ssp585"]
 CMIP6_WINDOWS = ["2031_2050", "2051_2070"]
 CMIP6_DELTA_SEGMENTS = ["soybean", "sugarcane", "other_crops", "conservation", "solar"]
-CMIP6_AGREEMENT_COMBOS = [("ssp585", "2051_2070"), ("ssp245", "2031_2050")]
 DELTA_DOMAIN = (-0.15, 0.15)  # matches make_figures.py's fig_4_4 vis params
-
-
-def _agreement_domain(image: "ee.Image", band: str, region) -> tuple[float, float]:
-    """Same approach as make_figures.py's fig_4_5: agreement is ~1.0 almost everywhere,
-    so pull the lower bound to the data's 2nd percentile to reveal contrast, falling
-    back to 0.5 if the reduceRegion call fails."""
-    try:
-        stat = image.select(band).reduceRegion(
-            reducer=ee.Reducer.percentile([2]), geometry=region, scale=1000,
-            bestEffort=True, tileScale=TS, maxPixels=int(1e9),
-        ).getInfo()
-        p2 = stat.get(f"{band}_p2")
-        if p2 is not None:
-            return (min(math.floor(p2 * 100) / 100, 0.99), 1.0)
-    except Exception as e:
-        log(f"  !! agreement domain lookup failed ({e}), using 0.5 fallback")
-    return (0.5, 1.0)
 
 
 def build_future_rasters(only_band: str | None = None) -> None:
@@ -446,16 +423,6 @@ def build_future_rasters(only_band: str | None = None) -> None:
                     "out_name": f"delta_{ssp}_{win}_{seg}", "categorical": False,
                     "domain": DELTA_DOMAIN,
                 })
-
-    for ssp, win in CMIP6_AGREEMENT_COMBOS:
-        agree_img = ee.Image(aid(f"agreement_{ssp}_{win}"))
-        band = "agreement_other_crops"
-        domain = _agreement_domain(agree_img, band, region)
-        jobs.append({
-            "image": agree_img, "band": band, "palette": PAL_AGREEMENT,
-            "out_name": f"agreement_{ssp}_{win}_other_crops", "categorical": False,
-            "domain": domain,
-        })
 
     _run_raster_jobs(jobs, region, only_band)
 

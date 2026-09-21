@@ -18,18 +18,29 @@ const BASE_LAYOUT: Partial<Plotly.Layout> = {
   font: { family: 'system-ui, sans-serif', size: 12, color: '#1b1f1a' },
   paper_bgcolor: 'transparent',
   plot_bgcolor: 'transparent',
+  xaxis: { automargin: true },
+  yaxis: { automargin: true },
+}
+
+function mergedLayout(): Partial<Plotly.Layout> {
+  return {
+    ...BASE_LAYOUT,
+    ...props.layout,
+    xaxis: { ...BASE_LAYOUT.xaxis, ...props.layout?.xaxis },
+    yaxis: { ...BASE_LAYOUT.yaxis, ...props.layout?.yaxis },
+  }
 }
 
 onMounted(() => {
   if (!container.value) return
-  void Plotly.newPlot(container.value, props.data, { ...BASE_LAYOUT, ...props.layout }, props.config)
+  void Plotly.newPlot(container.value, props.data, mergedLayout(), props.config)
 })
 
 watch(
   () => [props.data, props.layout],
   () => {
     if (!container.value) return
-    void Plotly.react(container.value, props.data, { ...BASE_LAYOUT, ...props.layout }, props.config)
+    void Plotly.react(container.value, props.data, mergedLayout(), props.config)
   },
   { deep: true },
 )

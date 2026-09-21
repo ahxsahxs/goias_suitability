@@ -1,6 +1,7 @@
 import type { Map as MapLibreMap, RasterSourceSpecification } from 'maplibre-gl'
 import { onUnmounted, watch, type Ref } from 'vue'
 import { dataUrl } from './useJson'
+import { promoteMunicipalOverlay } from './useMunicipalOverlay'
 
 /**
  * Add a raster PMTiles source+layer to a MapLibre map for the lifetime of the
@@ -35,6 +36,7 @@ export function usePmtilesLayer(
       source: layerId,
       paint: { 'raster-opacity': opacity.value },
     })
+    promoteMunicipalOverlay(m)
   }
 
   // A freshly-constructed maplibregl.Map's style loads asynchronously — calling

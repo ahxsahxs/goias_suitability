@@ -1,24 +1,24 @@
 /** Builds LegendSpec objects for every map layer kind in the dashboard, keeping
  * the legend colors in lockstep with the palettes actually baked into each
  * PMTiles raster (see src/palettes.ts) or passed to a MapLibre choropleth. */
-import { FAO_ORDER, PAL_AGREEMENT, PAL_DIV, PAL_FAO, PAL_ROLE, PAL_SUIT, PAL_UNDERUSED, ROLE_LABELS_PT, zonePalette } from './palettes'
+import { FAO_ORDER, PAL_DIV, PAL_FAO, PAL_ROLE, PAL_SUIT, PAL_UNDERUSED, ROLE_LABELS_PT, zonePalette } from './palettes'
 import type { CategoricalLegend, GradientLegend } from './types/legend'
 
 const FAO_LABELS_PT: Record<(typeof FAO_ORDER)[number], string> = {
-  N: 'N — inapto',
-  S3: 'S3 — aptidão marginal',
-  S2: 'S2 — moderadamente apto',
-  S1: 'S1 — altamente apto',
+  N: 'N — não viável',
+  S3: 'S3 — marginalmente viável',
+  S2: 'S2 — moderadamente viável',
+  S1: 'S1 — altamente viável',
 }
 
 export function suitabilityLegend(segmentLabel: string): GradientLegend {
   const n = PAL_SUIT.length
   return {
     kind: 'gradient',
-    title: `Aptidão — ${segmentLabel}`,
+    title: `Viabilidade — ${segmentLabel}`,
     stops: PAL_SUIT.map((color, i) => [i / (n - 1), color]),
     format: (v) => v.toFixed(2),
-    caption: '0 = inapto · 1 = altamente apto',
+    caption: '0 = não viável · 1 = altamente viável',
   }
 }
 
@@ -48,25 +48,14 @@ export function zoneLegend(n: number, zoneLabels?: Record<number, string>): Cate
 export function deltaLegend(segmentLabel: string, ssp: string, windowLabel: string): GradientLegend {
   return {
     kind: 'gradient',
-    title: `ΔAptidão — ${segmentLabel}`,
+    title: `ΔViabilidade — ${segmentLabel}`,
     stops: [
       [-0.15, PAL_DIV[0]!],
       [0, PAL_DIV[1]!],
       [0.15, PAL_DIV[2]!],
     ],
     format: (v) => (v > 0 ? `+${v.toFixed(2)}` : v.toFixed(2)),
-    caption: `${ssp.toUpperCase()}, ${windowLabel} — vermelho: perda de aptidão · azul: ganho`,
-  }
-}
-
-export function agreementLegend(): GradientLegend {
-  const n = PAL_AGREEMENT.length
-  return {
-    kind: 'gradient',
-    title: 'Concordância entre modelos (GCMs)',
-    stops: PAL_AGREEMENT.map((color, i) => [i / (n - 1), color]),
-    format: (v) => (v <= 0 ? 'menor' : v >= 1 ? 'maior' : ''),
-    caption: 'Escala relativa (do percentil 2 dos dados até 1,0) — amarelo: menor concordância · azul: maior concordância',
+    caption: `${ssp.toUpperCase()}, ${windowLabel} — vermelho: perda de viabilidade · azul: ganho`,
   }
 }
 
