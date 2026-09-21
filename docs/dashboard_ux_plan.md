@@ -1,11 +1,12 @@
-# Goiás Agro-Market Suitability Atlas — Static Dashboard UX Plan
+# Goiás Agro-Market Suitability Atlas — Static Dashboard Architecture
 
-Design plan for the public, static, GitHub-Pages-hosted dashboard that becomes the project's
-**only** interactive deliverable. `gee_js/atlas_app.js` (the Earth Engine App) is retired; this
-document replaces it as the spec for Part 15.
-
-This is a planning document only — no dashboard code exists yet. A future build session executes
-against this spec.
+Architecture reference for `docs/dashboard/`, the public, static, GitHub-Pages-hosted dashboard
+that is the project's **only** interactive deliverable (Part 15). It superseded and replaced the
+retired `gee_js/atlas_app.js` (Earth Engine App) plan. The dashboard was built against this spec —
+see `CLAUDE.md` §4 for current build/deploy status, and the commit history
+(`41a7dfe`, `798f45e`, `be25a40`) for how it was built. Two follow-ups remain before it's linked
+from the thesis: an i18n pass + trimming some images, and enabling GitHub Pages
+(Settings → Pages → Source → "GitHub Actions").
 
 ---
 
@@ -185,17 +186,13 @@ only its output path moves under Vite's `public/` so a site build picks it up au
    is worth adding once the interfaces stabilize, so a config edit that breaks the frontend fails
    at build time, not silently in the browser.
 
-### 2.4 Known risk: static asset volume
+### 2.4 Static asset volume
 
-GitHub repos/Pages have an informal ~1 GB soft ceiling and a 100 MB hard per-file limit
-(without Git LFS). Real PMTiles sizes aren't known until §2.3 step 3 runs once. Mitigations to
-evaluate at build time, not decided now: trim zoom-range further, use `git-lfs` for
-`docs/dashboard/public/data/pmtiles/`, or fetch large PMTiles from a GitHub Release asset /
-external object storage at runtime instead of bundling them into the Pages deploy (Vite's `public/`
-files still need to exist locally for dev, but the CI workflow could substitute a fetch step for a
-release download instead of a git-committed copy, if size forces the issue). Flagged here so the
-future build session budgets time for it — this also now affects local git working-tree size, not
-just the Pages hard limit, since `public/data/` is a real tracked directory in this repo.
+GitHub repos/Pages have an informal ~1 GB soft ceiling and a 100 MB hard per-file limit (without
+Git LFS). The full built manifest (~50 PMTiles files across feature themes, suitability, zoning,
+CMIP6 delta/agreement, and realized-use layers) comes to **~136 MB** under `docs/dashboard/public/
+data/`, with no single file exceeding ~7 MB — comfortably inside the budget, so no `git-lfs` /
+GitHub-Release-asset workaround was needed.
 
 ### 2.5 Site build & deploy pipeline (Vite + GitHub Actions)
 
@@ -578,54 +575,26 @@ them, so keeping them named 1:1 with the manifest rows above matters for future 
 
 ---
 
-## 6. Migration / decommission checklist
+## 6. Migration from `gee_js/atlas_app.js`
 
-- [x] Delete `gee_js/atlas_app.js`. (done 2026-09-20)
-- [ ] `CLAUDE.md` §4 — rewrite the Part 15 row: "App script written, NOT published" →
-      "Static Vue+TS dashboard (`docs/dashboard/`), built by Vite and deployed via GitHub Actions
-      — see `docs/dashboard_ux_plan.md`"; update "Immediate next step" to point at scaffolding the
-      dashboard, not publishing an EE App.
-- [ ] `CLAUDE.md` §5 (layout) — remove the `gee_js/atlas_app.js` line; add `docs/dashboard/`
-      (Vue/TS/Vite project), `tools/build_dashboard_assets.py`, `tools/palettes.py`, and
-      `.github/workflows/deploy-dashboard.yml`.
-- [ ] `CLAUDE.md` §6 — no change needed (asset table is about EE assets, not the app).
-- [ ] `CLAUDE.md` §8 (environment) — note that `docs/dashboard/` has its own Node/npm toolchain,
-      independent of the `uv`-managed Python environment; running the site never needs `uv`.
-- [ ] `README.md` — update Part 15 description for GitHub visitors to point at the live GitHub
-      Pages URL once deployed.
-- [ ] Repo **Settings → Pages**: set "Build and deployment" source to **GitHub Actions**.
-- [ ] `notebooks/15_atlas_app.ipynb` — retarget via `tools/gen_notebooks.py` once
-      `tools/build_dashboard_assets.py` exists (thin notebook: call the build script, verify
-      output counts), replacing its current "mirror gee_js/atlas_app.js" spec.
+The migration is complete: `gee_js/atlas_app.js` (the Earth Engine App) was deleted and replaced by
+this static SPA. `CLAUDE.md` §4/§5 and `README.md` describe the current dashboard state; the only
+open infrastructure step is enabling GitHub Pages (Settings → Pages → Source → "GitHub Actions").
 
 ---
 
 ## 7. Phasing
 
-**v0 (scaffold)** — `npm create vite@latest -- --template vue-ts` inside `docs/dashboard/`; add
-Vue Router (hash history) + Pinia; write `App.vue`'s shell (header/nav/`<router-view>`) and the
-`useJson`/`useCsv` composables + `src/types/data.ts` skeleton; wire the empty `deploy-dashboard.yml`
-workflow end-to-end against a placeholder "hello world" route, so the CI → Pages path is proven
-before any real content lands.
-
-**v1 (core RQ coverage)** — Home, Suitability Modelling, Agro-Environmental Zoning, Municipal
-Explorer. These four carry RQ1 and the most novel "show your work" content (membership curves, AHP
-weights, zone profiles) plus the municipal click-through that most directly succeeds
-`atlas_app.js`.
-
-**v2** — Study Area & Data, Feature Themes, Feature Stack (build out the full feature-engineering
-story), Climate Shift/CMIP6, Realized Use & Potential Gap, Validation, About.
-
-Rationale: v1 is buildable from data that already exists almost entirely as CSVs
-(`zone_profiles.csv`, `segments.yaml`, `ahp_matrices.yaml`, `municipal_ranking.csv`) plus a handful
-of GEE exports (`suit_present`, `zones_present`), so it can ship without the full ~69-PMTiles
-build-out, letting the size-risk (§2.4) get resolved with real numbers before committing to the
-full manifest. v0 is small on purpose — it exists to de-risk the CI/Pages pipeline (a new moving
-part this revision introduces) independently of any content work.
+The dashboard was delivered in three incremental phases: **v0** scaffolded the Vue Router/Pinia
+shell and proved the CI → Pages build pipeline against a placeholder route; **v1** shipped the four
+routes carrying RQ1's core content (Home, Suitability Modelling, Agro-Environmental Zoning,
+Municipal Explorer); **v2** completed the remaining seven routes (Study Area, Feature Themes,
+Feature Stack, Climate Shift/CMIP6, Realized Use & Potential Gap, Validation, About). All 11 routes
+in §3 are built.
 
 ---
 
-## 8. Verification plan (for the future build session)
+## 8. Verification plan
 
 1. **Type-check:** `cd docs/dashboard && npm run type-check` (`vue-tsc --noEmit`) — must pass with
    zero errors before every build; wired into CI (§2.5) so it gates deploys, not just a local habit.
@@ -640,205 +609,9 @@ part this revision introduces) independently of any content work.
 4. **Data-consistency spot-check:** pick 3 numbers shown on the dashboard (e.g. soy underused
    41.8%, κ=+0.269, k=10 silhouette) and confirm they match the corresponding *current* thesis
    table exactly — guards against a stale export, a stale TS interface, or a copy-paste error in
-   `validation_scorecard.json`. (The 48.0%/κ=0.07/k=7 figures once used as the example here were
-   themselves stale — see §9's v2 build-log entry.)
+   `validation_scorecard.json`.
 5. **GitHub Pages deploy dry-run:** push to a branch, open the workflow run in the Actions tab,
    confirm the `build`/`deploy` jobs both succeed and the live URL (`https://<user>.github.io/
    <repo-name>/`) matches the local `npm run preview` smoke test — including the `base` path
    resolving correctly (a common first-deploy bug: assets 404 under `/<repo-name>/` if `base` was
    left at Vite's default `/`).
-
----
-
-## 9. Build log
-
-Running log of what's actually been built against this spec, kept up to date as each phase lands —
-read this before resuming work, especially after the CMIP6/realized-use pipeline rebuild finishes.
-
-### v0 — scaffold (2026-09-19, done)
-
-Built and verified end-to-end per §7/§8: Node installed via nvm (v24.21.0 LTS, not previously
-present on this machine), `docs/dashboard/` scaffolded with `npm create vite@latest -- --template
-vue-ts`, Vue Router (hash history) + Pinia wired, `useJson`/`useCsv` composables + `src/types/
-data.ts` skeleton written, `.github/workflows/deploy-dashboard.yml` written (repo's first
-workflow — `base: '/goias_suitability/'`, confirmed from `git remote`, not the local checkout
-folder name which is `goias_suitability-main`). Verified: the type-check gate actually fails on a
-broken type (not a no-op against the template's solution-style tsconfig — required switching
-`type-check` to `vue-tsc --build --force`, not the literal `--noEmit`), `npm run build` +
-`npm run preview` served correctly under the base path with zero 404s. **Not yet pushed** — the
-GitHub Actions run / live Pages URL / repo Pages-source setting are still unverified in practice.
-
-### v1 — Home, Suitability, Zoning, Municipal Explorer (2026-09-19, done)
-
-**Scope negotiated with the user first:** the CMIP6 forecast + realized-use rebuild was running in
-the background during this session. Confirmed safe to pull: everything up to and including
-`zones_present`/`suit_present*` (Parts 1–10 + 12, the IBGE municipal mesh). Confirmed **off-limits**
-(still recomputing as of 2026-09-19): `suit_future*`, `delta_*`, `agreement_*`,
-`realized_vs_potential`, `feat_realized`. This is why Climate Shift, Realized Use, and Validation
-stayed out of v1 (they need those assets) even though the UI shell would have been easy to add —
-**re-run `tools/build_dashboard_assets.py` for those layers once the pipeline settles**, don't just
-add the routes against stale/absent data.
-
-**New tools:**
-- `tools/palettes.py` — palettes shared between `make_figures.py` and the dashboard build (as
-  §2.2 specified). `make_figures.py` now imports from it instead of redefining the constants
-  inline; behavior verified unchanged (`--check-i18n` still passes).
-- `tools/build_dashboard_assets.py` — implements §2.3 for the v1-safe asset set: vectors
-  (`aoi.geojson`, `municipios.geojson`, pure geopandas, no EE call), config→JSON
-  (`segments.json`, `ahp_matrices.json`), a **new, v1-safe** `municipal_ranking.csv`/`.geojson`
-  (all 7 `suit_*` + `zone`, no `delta_other_crops`/`underused_*` — those columns in the *existing*
-  `thesis/Chapters/Figures/municipal_ranking.csv` depend on the off-limits assets, so this is a
-  separate file, not an overwrite), diagnostic CSV passthrough, `sensitivity_<segment>.json`
-  (percentiles, not a full histogram — that's what `reduceRegion` actually gives us), and all 15
-  hero raster PMTiles layers (`suit_<segment>`×7, `class_<segment>`×7, `zones_present`). Run with
-  `--only {vectors,config,municipal,diagnostics,rasters,home_stats}` for one stage at a time.
-- **New Python deps** (`uv add rio-pmtiles`): pulled in `rasterio` and the `pmtiles` package too.
-  `pyproject.toml`/`uv.lock` now reflect this — not previously present.
-
-**Two real bugs found while building the export script (both fixed):**
-1. `getDownloadURL` has a 48 MiB cap; a full-AOI float32 250 m band is ~93 MB. Fixed by casting
-   each band to `uint8` server-side before download (continuous bands scaled ×254, sentinel value
-   255 = nodata) — ~23 MB, and plenty of precision for a colorized visualization tile. See
-   `_prep_band`/`_colorize` in `build_dashboard_assets.py`.
-2. The first vector export used **full-precision** geometry for `municipios.geojson` and
-   `municipal_ranking.geojson` (only the dissolved AOI was simplified) — 100 MB for 247 polygons.
-   Fixed by applying `config/datasets.yaml`'s `municipal_mesh.simplify_tolerance_deg` to the
-   per-municipality layer too, matching what `ibge_mesh.municipal_ee_fc()` already does. Now 6 MB
-   total for all three vector files. **Lesson for the future export passes:** always simplify
-   per-feature geometry explicitly — `ibge_mesh._load_gdf()` returns full precision by design (the
-   committed `.gpkg` is meant to stay full precision; simplification is the caller's job).
-
-**Total `public/data/` size so far: ~72 MB** (66 MB pmtiles, 6 MB geojson, <1 MB csv/json) — well
-inside the §2.4 risk budget; no LFS/release-asset workaround needed yet at this scale.
-
-**Frontend additions:** `MapPanel.vue` (MapLibre + PMTiles, blank background style — no external
-basemap tile dependency), `PlotlyChart.vue` (needed a `plotly.js-dist-min` type shim —
-`@types/plotly.js` only types the `plotly.js` module name; see `src/types/plotly-dist-min.d.ts`),
-`SegmentSelector.vue`, `StatChip.vue`, `ZoneCard.vue`, `useMapLayer.ts`. `DataTable.vue` from the
-§2.6 inventory was **not** built — its only listed consumers (Study Area, Validation) are v2 routes,
-so it would have shipped unused.
-
-**A real reactivity bug in the v0 composables surfaced immediately:** `useJson`/`useCsv` fetched
-once at call time and never reacted to the path argument changing — fine for v0's static Home
-fetch, broken for v1's per-segment sensitivity JSON. Fixed by accepting `MaybeRefOrGetter<string>`
-and wrapping the fetch in `watchEffect` (with a request-token guard against a stale response
-overwriting a newer one). Any v2 code calling these with a dynamic path should already get this for
-free; static-string call sites are unaffected.
-
-**Bundle size:** `plotly.js-dist-min` alone is ~1.4 MB gzipped. Router routes are now lazy-loaded
-(`component: () => import(...)`) so Home doesn't pay for Plotly, matching the "curated, not every
-permutation" spirit of §1. `maplibre-gl` (~140 KB gzip) still loads on every route including Home,
-since Home's hero map needs it too — that one's structural, not a splitting opportunity.
-
-**Found, deliberately NOT fixed (flagged for a separate decision):** `zone_profiles.csv` now has
-**10 zones (0–9), not 7**. CLAUDE.md §4's Part-10 row ("BUILT — K=7") and
-`tools/make_figures.py`'s zoning-figure call (`visualize(min=0, max=6, palette=PAL_ZONE)`, a
-7-color palette) are both stale against this — a rezone appears to have run since either was last
-updated (`zone_profiles.csv` was already showing as locally modified at the start of this session).
-The dashboard reads the zone count from data (`zone_count()` in the build script, never a hardcoded
-literal), so it renders correctly either way — but **the thesis PDF's zoning figure is likely
-rendering with a truncated palette/wrong value range right now.** Worth checking before the next
-`make_figures.py all` run regenerates it.
-
-**Not committed / not pushed** (per standing instruction not to commit without being asked).
-
-### v2 — full route coverage + lifted v1-safe restriction (2026-09-20, done)
-
-**Pre-check (§8 item 5, never done before this session):** v0+v1 were already pushed to
-`origin/main` (confirmed via `git log origin/main..HEAD`, empty both directions). The one
-`deploy-dashboard.yml` run (on `41a7dfe`) had its `build` job succeed but its `deploy` job fail at
-"Deploy to GitHub Pages" — root-caused via the GitHub REST API (`GET /repos/.../pages` → 404,
-`has_pages: false`): **GitHub Pages has never been enabled for this repo.** This is a one-time
-manual step (Settings → Pages → Build and deployment → Source → "GitHub Actions") that a repo
-admin has to do in the web UI — not fixable from this session (no `gh` auth). Everything else in
-this entry proceeded regardless; the live-deploy half of item 5 is still open until that setting
-is flipped.
-
-**`tools/build_dashboard_assets.py`:** the v1-safe restriction is lifted (module docstring
-rewritten). Verified all previously off-limits assets exist with the expected shape before writing
-any code against them (`delta_*`/`agreement_*`/`suit_future_*` are one 7-band multiband asset per
-SSP/window combo — never one asset per segment; `realized_vs_potential` has exactly 4
-`underused_*` bands, not 7, since `external.ROLE_CODES` only covers
-soybean/sugarcane/other_crops/pisciculture/pasture/native). New stages (`--only <stage>`):
-`future_rasters` (20 `delta_*` PMTiles × 5 segments × 4 combos + 2 curated `agreement_*` PMTiles),
-`realized_rasters` (`rl_role` + the 4 real `underused_*` bands), `datasets_catalog` (hand-curated
-from `config/datasets.yaml`, not a blind passthrough — that file has no ready-made
-theme/source/native-res/period columns), `stack_composition` (static, no GEE call),
-`band_percentiles` (P5-P95 for 8 hero feature-theme bands, ~1 min for all 8), `theme_rasters` (8
-hero PMTiles, domain = that same P5/P95 so the color stretch tracks the real data range), and
-`validation_scorecard` (hand-transcribed from the thesis's own already-published tables —
-`04_results.tex`'s `tab:presence-auc`/`tab:pot-real-gap`/kappa/ANOVA paragraphs and
-`06_annex.tex`'s `tab:spearman-npp` — re-deriving via `run_validation.py` would reproduce the same
-numbers at the cost of a 10+ minute RF/stratified-sample rerun). `build_municipal_ranking()` now
-also carries all 7 `delta_*` (off `delta_ssp585_2051_2070` only — one combo, not all 4, matching
-`extract_present.py::municipal()`'s actual pattern) and all 4 real `underused_*` bands.
-`build_home_stats()` now reads real κ/AUC/Boyce/underuse numbers from `validation_scorecard.json`
-plus a fresh territory-mean `delta_other_crops` reduceRegion.
-
-**One real bug found and fixed before it shipped:** `_prep_band`'s uint8 scaling assumed [0,1] for
-every continuous band, which is only safe for bands provably bounded there (`suit_*`,
-`agreement_*`, `underused_*`). `delta_*` is visualized on a *clipped* [-0.15, 0.15] window in
-`make_figures.py`, not a hard bound, so an unclamped out-of-window pixel could compute to exactly
-255 — the reserved nodata sentinel — and render silently transparent. Fixed by adding an explicit
-`.clamp(vmin, vmax)` before the scale, with `_prep_band`/`_build_one_raster` now taking a `domain`
-parameter (default `(0, 1)`, unchanged for every existing v1 job).
-
-**A second, more consequential bug found via the browser verification pass (§8 item 2), not
-caught by type-check or build:** every route with a `MapPanel` raster logged `Error: Style is not
-done loading` on load and — worse — **the PMTiles raster layer silently never rendered**, on
-every route, including the v1 routes (Home/Suitability/Zoning), not just the new v2 ones. Root
-cause: `useMapLayer.ts`'s `usePmtilesLayer` watches `[map, pmtilesPath]` with `{ immediate: true }`
-and calls `addSource`/`addLayer` as soon as `map.value` becomes non-null — but `MapPanel.vue` sets
-`map.value = m` synchronously right after constructing `new maplibregl.Map(...)`, well before that
-map's style finishes loading asynchronously. The watcher's real (non-null) firing routinely raced
-the style load and threw, and because the watcher had already fired once, it never got a second
-chance to add the layer. Fixed in `usePmtilesLayer`: check `m.isStyleLoaded()` and defer to
-`m.once('load', ...)` when it isn't ready yet. Verified with a full Playwright pass (headless
-Chromium, downloaded via `npx playwright install chromium` — no `sudo`/system-deps available, so
-`--with-deps` failed, but the plain browser download + `--no-sandbox` launch worked) across all 11
-routes: zero console errors post-fix, and the zones/suitability/delta/agreement rasters visibly
-render (confirmed by eye — the agreement map in particular visually confirms the thesis's
-near-uniform-~0.999 finding, and the delta map for other_crops/SSP5-8.5/2051-2070 shows the
-expected red-dominant decline).
-
-**Frontend:** built `DataTable.vue` (generic `columns`/`rows` props; had to relax the Vue
-`generic="T extends Record<string, unknown>"` constraint to `extends object` — concrete manifest
-interfaces like `DatasetCatalogEntry` don't structurally satisfy `Record<string, unknown>` even
-though they have the right fields) and `ScenarioSelector.vue` (SSP × window 2×2 toggle, from the
-§2.6 inventory, not yet built in v1). All 7 remaining routes built: StudyAreaView, FeatureThemesView
-(8 hero bands only — **no PNG gallery for the remaining ~30 bands in this pass**, deferred, see
-below), FeatureStackView, Cmip6View (agreement panel deliberately decoupled from the segment
-selector — with only 2 shipped combos, both `other_crops`, following a 5-segment selector would
-silently show an unrelated fallback 4 times out of 5), RealizedUseView, ValidationView (ported the
-thesis's *current* 52.8%/21.6% kappa framing, not the wireframe's older
-"in-sample-vs-spatial-block-CV" framing, which no longer matches what `run_validation.py` actually
-computes), AboutView. `MunicipalExplorerView.vue` (v1) was revisited to actually surface the newly
-widened municipal columns (ΔS + underused stat chips, a per-segment ΔS bar, new choropleth
-options) — the Python widening would otherwise have shipped inert data — and its zone-choropleth
-color stops were fixed from a hardcoded `length: 10` to the real, data-derived zone count (same bug
-class as the fig_4_3/fig_4_10 fix earlier this session). `HomeView.vue`'s RQ3 card is no longer
-disabled and its stat strip now shows κ/AUC/underuse.
-
-**Data size:** `public/data/` grew from 72 MB (v1) to **136 MB** (42 PMTiles → 50 PMTiles: +20
-delta, +2 agreement, +5 realized-use, +8 feature-theme hero bands). No single file exceeds ~7 MB.
-Comfortably inside the ~1 GB informal budget — no LFS/release-asset mitigation needed.
-
-**Deferred, not built in this pass:**
-- Feature Themes' ~30-band PNG gallery (§5 manifest's "G" tier) — the route only ships the 8 hero
-  PMTiles bands. Would need a `getThumbURL`-based pipeline distinct from the PMTiles path (closer
-  to `make_figures.py`'s own thumbnail machinery than to `build_dashboard_assets.py`'s existing
-  COG→PMTiles pipeline).
-- CLAUDE.md §4/§5 and README.md's Part-15 description were updated to describe the dashboard
-  instead of the retired `gee_js/atlas_app.js`; the file itself was deleted with the user's
-  confirmation (UX plan §6 checklist item).
-- The GitHub Pages enablement blocker above — the actual live-deploy verification is still open.
-- **Bugfixing checkpoint (2026-09-20):** the user flagged problems after this build and asked to
-  pause before committing — see the next log entry once that's resolved.
-
-### Still open
-
-- Repo admin enables GitHub Pages (Settings → Pages → source: GitHub Actions), then either
-  `workflow_dispatch` the existing workflow or let the next `docs/dashboard/**`-touching push
-  trigger it naturally; confirm the live URL matches the local `npm run preview` smoke test.
-- Feature Themes PNG gallery (see above) — the one manifest item deliberately left for a future
-  pass, not blocking any route from working.

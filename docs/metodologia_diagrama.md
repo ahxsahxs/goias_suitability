@@ -3,7 +3,8 @@
 > Material de apoio visual para reuniões de orientação e apresentações/pósteres.
 > Os diagramas seguem a estrutura do Capítulo 3 (Metodologia) da dissertação e o pipeline
 > efetivamente implementado no repositório (`notebooks/`, `src/`, `tools/`). Fonte de verdade
-> textual: `docs/methods.md` (racional completo) e `../CLAUDE.md` (estado de execução).
+> textual: `../thesis/Chapters/03_methodology.tex` (racional completo) e `../CLAUDE.md` (estado de
+> execução).
 
 ---
 
@@ -18,12 +19,12 @@ flowchart TD
     B --> C["Conjunto de 34 bandas<br/>(6 temas biofísicos, Tabela 3.1)"]
 
     C --> D["Viabilidade baseada em conhecimento<br/>pertinência fuzzy + pesos AHP<br/>7 segmentos → classes FAO S1/S2/S3/N"]
-    C --> E["Zoneamento não supervisionado<br/>PCA descorrelacionada + k-means (k=7)"]
+    C --> E["Zoneamento não supervisionado<br/>PCA descorrelacionada + k-means (k=10)"]
 
     D --> F["Projeção climática CMIP6<br/>fatores de mudança · 2031–50 e 2051–70"]
     F --> G["ΔViabilidade + concordância entre modelos"]
 
-    D --> H["Validação (Fase B)<br/>MapBiomas · MOD17 · municípios GAUL-L2"]
+    D --> H["Validação (Fase B)<br/>MapBiomas · MOD17 · municípios (Malha IBGE)"]
     E --> H
 
     G --> I["Atlas de viabilidade multissegmento<br/>+ zoneamento agroambiental<br/>+ ranking municipal (oportunidade/vulnerabilidade)"]
@@ -60,7 +61,7 @@ flowchart TD
         A4["Classes FAO<br/>N · S3 · S2 · S1 (limiares 0,25/0,50/0,75)"]
 
         A6["§3.3 Descorrelação<br/>34 bandas → 15 bandas curadas → peso por bloco temático → PCA (≥90% var.)"]
-        A7["k-means offline (sklearn)<br/>k=2..10 avaliado por silhueta, Davies–Bouldin, gap → k=7"]
+        A7["k-means offline (sklearn)<br/>k=2..20 avaliado por silhueta, Davies–Bouldin, gap → k=10"]
         A8["Classificação server-side<br/>centróide mais próximo no espaço de PCs"]
         A9["Perfis de zona<br/>melhor segmento comparativo (argmax do escore-z por segmento)"]
 
@@ -85,7 +86,7 @@ flowchart TD
     subgraph FaseB["FASE B — Uso atual da terra e validação"]
         direction TB
         B1["MapBiomas<br/>classe majoritária + frações de uso @ 250 m"]
-        B2["GAUL nível 2<br/>agregação municipal (sem upload)"]
+        B2["Malha Municipal IBGE<br/>agregação municipal (sem upload)"]
         B3["MOD17<br/>NPP anual (contexto) · GPP sazonal por cultura (validador intra-cultura)"]
         B4["Potencial × realizado<br/>mapas de subutilização por município — QP2"]
         B5["AUC / índice de Boyce<br/>presença de lavoura vs. viabilidade — validação QP1"]
@@ -132,7 +133,7 @@ investigação que ele responde.
 
 ```mermaid
 flowchart LR
-    M1["Atlas de viabilidade (7 segmentos)<br/>+ zoneamento agroambiental (k=7)"] --> Q1["QP1 — Como o território se<br/>partição em zonas e qual o<br/>perfil de cada uma?"]
+    M1["Atlas de viabilidade (7 segmentos)<br/>+ zoneamento agroambiental (k=10)"] --> Q1["QP1 — Como o território se<br/>partição em zonas e qual o<br/>perfil de cada uma?"]
     M2["Potencial × uso realizado<br/>(MapBiomas) + validação (MOD17)"] --> Q2["QP2 — Onde a terra está<br/>subutilizada ou desalinhada<br/>com seu melhor uso?"]
     M3["Projeção CMIP6<br/>(fatores de mudança, 2 SSPs, 2 janelas)"] --> Q3["QP3 — Como a viabilidade<br/>e o zoneamento mudam<br/>até 2050?"]
 

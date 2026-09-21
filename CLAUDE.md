@@ -69,20 +69,22 @@ The split is *biophysical potential* (A) vs *realized-use & validation* (B) — 
 
 **Phase A + Phase B modelling are complete — Parts 1–14 BUILT & footprint-verified.** All three
 RQs are answered and written into the thesis (chapters 01–05). **Part 15 (the interactive atlas)
-is also built** — a static Vue 3 + TypeScript + Vite dashboard (`docs/dashboard/`) superseding the
-old `gee_js/atlas_app.js` EE-App plan (see `docs/dashboard_ux_plan.md`); the one remaining step is
-a manual repo-settings flip (Settings → Pages → source: GitHub Actions) to make the GitHub Pages
-deploy go live — the CI workflow (`.github/workflows/deploy-dashboard.yml`) already builds and
-uploads the artifact successfully, it just has nowhere to deploy to yet.
+has a first working build** — a static Vue 3 + TypeScript + Vite dashboard (`docs/dashboard/`)
+superseding the old `gee_js/atlas_app.js` EE-App plan (see `docs/dashboard_ux_plan.md`) — all 11
+routes are in place. Two things are still open before it's finished: (1) an i18n pass and trimming
+some images (noted by the author in the commit that shipped it) before it's linked from the thesis
+(`05_discussion_conclusion.tex` still lists it as future work, deliberately), and (2) a manual
+repo-settings flip (Settings → Pages → source: GitHub Actions) so the already-succeeding
+`deploy-dashboard.yml` workflow has somewhere to deploy to.
 
 | Part | State | Notes |
 |---|---|---|
 | 1–8 | **BUILT & footprint-verified** | Ten feature assets incl. `feature_stack_250m(_z)` (34-band stack) + `feat_siting` (solar clearness / seasonal water distance) + `feat_conservation` (WDPA distance / ruggedness / carbon) — the latter two are side-images kept **out** of the stack (routed into suitability via the `sit_`/`cv_` extras prefix). |
 | 9 — suitability | **BUILT** | `suit_present` / `suit_present_comp` / `suit_present_sens`: 7 `suit_*` (0–1) + 7 `class_*` (FAO S1/S2/S3/N) + 7 `sens_*` (±20% AHP). Conservation is a value/priority index (arithmetic-mean aggregation — compensatory); the other six segments use the weighted geometric mean. |
-| 10 — zoning | **BUILT — K=10** (rebuilt 2026-09-19/20, was K=7) | `zones_present`, offline sklearn KMeans on a decorrelated PCA input (`src/zoning.py`), classified server-side by nearest-centroid band math. Zones labelled by `comparative_segment` (argmax of each segment's z-normalized suitability), not raw dominance. `zone_profiles.csv` + `zoning_kselect.csv`. See §4-bis for the sweep that confirmed K=10. |
+| 10 — zoning | **BUILT — K=10**, offline `k=2..20` sweep, silhouette peaks at k=10 (0.187) | `zones_present`, offline sklearn KMeans on a decorrelated PCA input (`src/zoning.py`), classified server-side by nearest-centroid band math. Zones labelled by `comparative_segment` (argmax of each segment's z-normalized suitability), not raw dominance. `zone_profiles.csv` + `zoning_kselect.csv`. |
 | 11 — CMIP6 shift | **BUILT** | `suit_future_*`, `delta_*`, `agreement_*` assets across SSP2-4.5/SSP5-8.5 × 2031–2050/2051–2070 × 5-GCM ensemble. Delta-change engine validated against an identity change-factor (Δ=0.000). No structurally climate-invariant segment remains — every segment (including conservation and solar) moves under at least one climate lever. |
-| 12–14 — Phase B | **BUILT** | `realized_vs_potential`, `municipal_godf` (IBGE malha municipal aggregation), MOD17 productivity validation (municipal Spearman + within-crop GPP gradient), RF presence cross-check, AHP consistency ratios. See `config/ahp_matrices.yaml` and `thesis/Chapters/04_results.tex` / `05_discussion_conclusion.tex` for the numbers. |
-| 15 — synthesis | **BUILT — pending Pages enablement** | `docs/dashboard/` (Vue 3 + TS + Vite SPA): 11 routes covering every Part, built via `tools/build_dashboard_assets.py` from the assets in this table + config YAML. CI (`.github/workflows/deploy-dashboard.yml`) builds/type-checks/uploads successfully; the live URL needs a one-time manual Settings → Pages → source: GitHub Actions flip (never done for this repo). See `docs/dashboard_ux_plan.md` §9 build log. |
+| 12–14 — Phase B | **BUILT** | `realized_vs_potential`, `municipal_godf` (IBGE malha municipal aggregation, 247 municipalities), MOD17 productivity validation (municipal Spearman + within-crop GPP gradient), RF presence cross-check (Cohen's κ = +0.269, AUC = 0.871 for soybean), AHP consistency ratios. See `config/ahp_matrices.yaml` and `thesis/Chapters/04_results.tex` / `05_discussion_conclusion.tex` for the full numbers. |
+| 15 — synthesis | **First working build shipped, needs polish + Pages enablement** | `docs/dashboard/` (Vue 3 + TS + Vite SPA): 11 routes covering every Part, built via `tools/build_dashboard_assets.py` from the assets in this table + config YAML. CI (`.github/workflows/deploy-dashboard.yml`) builds/type-checks/uploads successfully; the live URL needs a one-time manual Settings → Pages → source: GitHub Actions flip (never done for this repo). See `docs/dashboard_ux_plan.md` for the architecture. |
 
 - **Asset backups:** pre-recalibration and pre-reconceptualization snapshots were copied server-side
   under `projects/probformer/assets/goias_backup_*` before each major re-export cascade
@@ -94,56 +96,11 @@ uploads the artifact successfully, it just has nowhere to deploy to yet.
   EE_PROJECT=probformer uv run python tools/verify_assets.py
   ```
 
-**Immediate next step:** enable GitHub Pages for this repo (Settings → Pages → Build and
+**Immediate next steps:** (1) an i18n pass + image trim on the dashboard, then link it from
+`05_discussion_conclusion.tex`; (2) enable GitHub Pages for this repo (Settings → Pages → Build and
 deployment → Source → "GitHub Actions") so the already-succeeding `deploy-dashboard.yml` workflow
 has somewhere to deploy to. Everything else needed for the thesis (all §4 tables, figures, the
-three RQs, and the dashboard itself) is already built and written.
-
-**Rebuild done (2026-09-19/20), supersedes the 2026-09-15 "pending rebuild" note below.**
-`src/features.py`/`src/external.py` now derive the AOI and municipal boundaries from the local
-IBGE malha municipal mesh (`src/ibge_mesh.py`) instead of GAUL — see §7. The full cascade (Parts
-1–13, combining the IBGE-mesh AOI swap with T8 stratified sampling, T10 MapBiomas land cover, and
-the 2026-09 fuzzy-membership/AHP recalibration) was re-run end to end via
-`tools/run_rebuild_full.py` (approval-gated per §10) and footprint-verified. Numbers and the one
-bug found along the way are in **§4-bis** below; the thesis text (`04_results.tex`,
-`05_discussion_conclusion.tex`, `06_annex.tex`) has not yet been updated to match.
-
-### §4-bis. Post-rebuild results (2026-09-20)
-
-- **Rebuild:** `tools/run_rebuild_full.py`, Parts 1→13, completed 2026-09-19 23:30 (resumed once
-  after a spurious `wait_for` timeout — see script docstring). `tools/verify_assets.py` confirms
-  every rebuilt asset (`feature_stack_250m(_z)`, `suit_present*`, `zones_present`,
-  `suit_future_*`/`delta_*`/`agreement_*` ×4 scenario-windows, `realized_vs_potential`,
-  `municipal_godf`) is EPSG:4326 @ 250 m with the correct GO+DF footprint.
-- **Zoning K changed 7 → 10.** The `k=2..10` sweep peaks at k=10 (silhouette 0.187). Re-checked
-  with an extended offline sweep (`k=2..20`, same seed=42 stratified sample) to rule out a
-  boundary artifact: silhouette drops to 0.177 at k=11 and never exceeds 0.187 through k=20 — a
-  genuine interior maximum, not a truncated-range artifact. (Note: the gap-statistic's own elbow
-  rule would suggest k=14, but gap rises almost monotonically with ~constant SE across the whole
-  range, so it has no clean kink here — weaker signal than silhouette's isolated peak. Keeping
-  K=10.)
-- **Bug found + fixed:** `zoning.build_strat_band()` (`src/zoning.py:112`) built its grid-cell-id
-  band via `.floor()`/`.clamp()`/`.multiply()`/`.add()` without ever casting to int, so
-  `ee.Image.stratifiedSample(classBand=...)` rejected it (`"class band must be integer typed"`)
-  in 4 of `tools/run_validation.py`'s 5 blocks (`within_crop`, `boyce_auc`, `anova_zones`,
-  `rf_kappa`). Fixed by adding `.toInt()` in `build_strat_band()` itself. Did not affect
-  `zones_present`/`municipal_godf` — `zoning.build_sample()` (used by the rebuild) already
-  applied its own redundant `.toInt()` on the combined stratum band.
-- **Part 14 validation (`tools/run_validation.py`), rerun clean after the fix:**
-  - Spearman ρ vs. MOD17 NPP (municipal, n=247): soybean +0.305, sugarcane +0.453, other_crops
-    +0.108 (n.s., p=0.09), pisciculture −0.322, cattle +0.520, conservation +0.455, solar +0.395.
-  - Within-crop season-GPP gradient: soybean ρ=+0.417, sugarcane ρ=−0.085, other_crops ρ=+0.370
-    (monotonic only for other_crops).
-  - Soybean Boyce index = 0.964, AUC = 0.871.
-  - ANOVA of MOD17 across the 10 zones: F=2191.0, p≈0 (zone means range 0.47–0.89).
-  - RF-vs-knowledge Cohen's κ (soybean) = **+0.269** (n=16160) — up from the old κ=0.07 already
-    discussed in the Semana 1 revision-cycle text (parecer point 4); AUC also rose (0.83 → 0.871).
-    **The existing κ=0.07 discussion in `05_discussion_conclusion.tex` is now stale and needs a
-    rewrite, not just a number swap.**
-- **Not yet run:** `tools/extract_present.py`, `tools/extract_cmip6.py`, `tools/gen_diag_csvs.py`,
-  `tools/make_figures.py all` — next step before touching the thesis text. No AHP weights changed
-  in this rebuild (T8/T10 changed sampling/land-cover source, not weights), so
-  `config/ahp_matrices.yaml` does not need regenerating.
+three RQs) is already built and written.
 
 ---
 
@@ -178,7 +135,7 @@ tools/gen_diag_csvs.py        # regenerates zoning_kselect.csv / factor_variance
 notebooks/01..15               # thin: import src/, build, range-report, view, export — one per Part
 docs/                          # supporting notes: _search_terms.md (lit-search scaffolding, not part of
                                 # the thesis), metodologia_diagrama.md (PT methodology diagrams),
-                                # dashboard_ux_plan.md (Part 15 spec + build log — see below),
+                                # dashboard_ux_plan.md (Part 15 architecture reference),
                                 # dashboard/ (the Vue 3 + TS + Vite dashboard project itself)
 thesis/                        # the LaTeX dissertation itself (NOVAthesis/NOVA IMS template) — see §9
 tools/build_dashboard_assets.py # Part 15: exports GEE assets + config YAML into docs/dashboard/public/data/
@@ -216,8 +173,8 @@ lazy (no server call at import), so `src/` is import-/syntax-checkable without E
 ```
 
 `12_municipal_gaul.ipynb` keeps its historical filename (reflects the last executed GAUL-based
-run) even though `tools/gen_notebooks.py`'s Part-12 spec now targets the IBGE mesh — the notebook
-itself isn't regenerated until the pending rebuild (see §4, §7) to avoid wiping its saved outputs.
+run) even though `tools/gen_notebooks.py`'s Part-12 spec now targets the IBGE mesh — it's only
+renamed by an explicit `tools/gen_notebooks.py` run, which would also wipe its saved outputs.
 
 ## 6. Outputs (EE assets under `projects/<project>/assets/goias/`)
 
@@ -278,11 +235,9 @@ is deliberately excluded** (guardrail, §7).
   (not GAUL's `ADM2_NAME`/`ADM1_NAME`). Geometries are simplified in memory
   (`simplify_tolerance_deg` in `config/datasets.yaml`, default ~111 m, ~5x finer than
   `GAUL_SIMPLIFIED_500m`) before being embedded in any EE request — the committed `.gpkg` itself
-  stays full precision. **Caveat:** this is a code-level swap only — the already-built `aoi` EE
-  asset and everything downstream (Parts 1–14, `municipal_godf`) still reflect the old
-  GAUL-derived boundary until an explicitly-approved rebuild (see §4, §10). If you need the
-  original IBGE/GAUL reasoning, it is written up in `thesis/Chapters/03_methodology.tex` (not yet
-  updated for this swap).
+  stays full precision. The 2026-09-19/20 rebuild propagated this swap through the full cascade
+  (Parts 1–14, `aoi`, `municipal_godf`) and the thesis text (`02_materials.tex`, `06_annex.tex`) —
+  GAUL is only mentioned there historically, as the boundary source used in an earlier iteration.
 - **Small artifacts only leave GEE** (PNG thumbnails, GeoTIFFs, CSV sample/summary tables).
 
 ## 8. Environment & running
@@ -306,11 +261,10 @@ The environment is managed with `uv` (`pyproject.toml` + `uv.lock`); `uv sync` c
 EE project resolves from `$EE_PROJECT` → the credentials file; current project: **`probformer`** —
 keep it set so assets resolve under `projects/probformer/assets/goias/`.
 
-> **Assistant note (2026-09-15):** GDAL and geopandas were installed on the host for the IBGE
-> municipal-mesh work (§10 point 6 — local vector join between the official IBGE malha and the
-> municipal ranking table). Invoke Python exclusively via `uv run python ...` (or `uv run
-> <tool>`), not `.venv/bin/python` or a bare `python3` — some host-level geo packages only
-> resolve correctly through `uv run`'s environment.
+GDAL and geopandas are installed on the host for the IBGE municipal-mesh work (the local vector
+join between the official IBGE malha and the municipal ranking table, §7). Invoke Python
+exclusively via `uv run python ...` (or `uv run <tool>`), not `.venv/bin/python` or a bare
+`python3` — some host-level geo packages only resolve correctly through `uv run`'s environment.
 
 **`docs/dashboard/` (Part 15) has its own Node/npm toolchain, entirely independent of the
 `uv`-managed Python environment above** — `cd docs/dashboard && npm install && npm run dev` to
@@ -389,73 +343,37 @@ where `make_figures.py`'s own diagram readers (`_read_diag`) look for them by de
 
 ---
 
-## 10. Current revision cycle
+## 10. Post-parecer revision cycle
 
-The dissertation is under a **3-week post-parecer revision** (14 Sep → 2 Oct 2026), addressing 7
-points raised in the examiner's report, before a checkpoint with the adviser (Prof. Roberto
-Henriques) and final submission. The day-by-day plan — what's done, what's next, and which two
-steps ("requer aprovação": rewriting the published git history, and launching a heavy GEE
-re-execution) always need explicit confirmation before running — lives in this artifact:
+The dissertation went through a **post-parecer revision** (14 Sep → 2 Oct 2026), addressing 7
+points raised in the examiner's report plus a set of author TODOs left in the text, ahead of a
+final checkpoint with the adviser (Prof. Roberto Henriques). The day-by-day history and current
+checklist state live in this artifact — read it with the `Artifact` tool (`action: "read"`) before
+assuming what's done, since it's a live checklist, not a static plan:
 
 **https://claude.ai/artifact/HrMpse386bFykBeBsBeJN6** ("Cronograma de revisão — tese")
 
-Read it with the `Artifact` tool (`action: "read"`) at the start of a session touching the
-revision to see the current checkbox state (it's a live checklist, not a static plan) before
-assuming what's already done.
+All 7 examiner points and the author TODOs are resolved in the thesis text. Two follow-ups remain
+open (tracked in §4 above): the dashboard's i18n/image polish before it's linked from the thesis,
+and enabling GitHub Pages.
 
-The 7 points, in brief (see the artifact for the full day-by-day mapping):
-1. Abstract listed only results, no conclusions → rewritten (Day 1).
-2. Missing economic discussion → drafted (Day 1).
-3. Limitations should cover soil *and* elevation (SRTM) data accuracy → Day 2.
-4. κ=0.07 needs more explanation (vs. AUC=0.83) → Day 3.
-5. Climate at ~4 km vs. 250 m for everything else needs explicit callout in the results reading,
-   plus a spike into higher-resolution alternatives → Day 4–5, possible pipeline upgrade weeks 2.
-   **Done (2026-09-18):** catalog spike found no viable alternative (TerraClimate stays; week 2
-   pipeline-swap items skipped); a spatial magnitude-map (`fig:scale-mismatch`,
-   `tab:scale-mismatch`) now evidences the claim instead of asserting it in prose — see the
-   note below.
-6. Why not the official IBGE municipal mesh instead of GAUL? → Days 2–3, 11. **Code done
-   (2026-09-15):** `src/ibge_mesh.py` replaces GAUL for both AOI and municipal reporting (§7);
-   still pending the approved EE rebuild + the thesis text update (`02_materials.tex`,
-   `06_annex.tex` still describe GAUL).
-7. Code/atlas/ranking should ship now, not stay "future work" → Days 1–12 (this README/CLAUDE.md
-   rewrite is part of point 7).
-
-**Update (2026-09-18) on point 5 — DONE.** A first pass at resolving P5 with text alone (three
-paragraphs explaining the climate-vs-soil/terrain resolution mismatch, ~4 km vs. 250 m) was tried
-and rejected — prose isn't enough on its own. Both halves are now landed:
-
-1. **Catalog spike (d5-1):** checked the GEE catalog for a higher-resolution TerraClimate
-   replacement compatible with the 1991–2020 normal, without breaking the zero-upload design.
-   Verdict: **no alternative works** — WorldClim (~927 m) has the wrong climatology window
-   (1960–1990) and lacks PET/VPD/soil-moisture; CHIRPS/CHIRTS are single-variable and, at 0.05°
-   (~5.6 km), actually *coarser* than TerraClimate's 1/24° (~4.64 km); ERA5-Land/AgERA5 have the
-   right variables/period but sit at 0.1° (~9–11 km, 2×+ worse), and AgERA5 isn't in the official
-   catalog. TerraClimate stays; checkpoint option **C** applies — week 2's conditional
-   climate-pipeline-swap sub-items (`d6-1`–`d10-1`) are no-go/skipped.
-2. **Magnitude-map evidence:** rather than asserting "terrain leads because it's fine-grained" in
-   prose, added a genuine spatial statistic — local (moving-window) stdDev of the z-scored
-   feature-stack bands, grouped climate vs. terrain+soil, at three window radii (250 m / 750 m /
-   4,750 m, the last anchored to TerraClimate's own native pixel). New: `theme_roughness_image()`
-   in `src/features.py`; `gen_theme_roughness()` in `tools/gen_diag_csvs.py` (writes
-   `theme_roughness.csv` and `theme_roughness_points.csv`); `fig_4_12()` in `tools/make_figures.py`.
-   Headline: even at TerraClimate's own native scale (4,750 m), terrain+soil local variability is
-   **42× climate's (log₂ = 5.40)**, rising to 320× at 250 m — and the pattern is near-uniform
-   across the territory, not a few outlier cells. Landed in `thesis/Chapters/06_annex.tex`
-   (`fig:scale-mismatch`, `tab:scale-mismatch`), `04_results.tex` (new paragraph after the
-   `fig:factor-variance` discussion), and `05_discussion_conclusion.tex`'s "Descompasso de escala
-   clima–solo" bullet (now cites the ratio instead of asserting impact is small unsupported).
-   **Gotcha for future readers:** `fig_4_12` deliberately does **not** call `self.thumb()` /
-   `getThumbURL` — a full-AOI raster render of this moving-window computation at native 250 m
-   (required for the kernel radius to be physically correct) exceeds GEE's interactive
-   compute/size limits, and pre-coarsening the input first would smooth away the exact fine-scale
-   variance the figure exists to show. It instead plots a hexbin map straight from
-   `theme_roughness_points.csv` — the same capped `.sample()` points (lon/lat + values) that
-   already feed the headline ratio in `theme_roughness.csv`, so the map and the annex table are
-   numerically consistent by construction. Don't "fix" this back to a thumbnail-based render.
-
-As of this writing: **Day 1 done, Day 2 in progress** — this file and `README.md` are the last
-item of Day 2 (`d2-3`, "finish repo cleanup, write a new root README.md for GitHub visitors").
+One decision worth keeping visible here rather than only in the artifact: examiner point 5 (climate
+data at TerraClimate's ~4 km resolution vs. 250 m for everything else) was resolved by keeping
+TerraClimate rather than swapping pipelines. A catalog spike found no viable higher-resolution
+alternative with the right 1991–2020 climatology and variable set — WorldClim's climatology window
+is 1960–1990 and it lacks PET/VPD/soil-moisture; CHIRPS/CHIRTS are single-variable and, at 0.05°
+(~5.6 km), actually coarser than TerraClimate's 1/24° (~4.64 km); ERA5-Land/AgERA5 have the right
+variables/period but sit at 0.1° (~9–11 km, 2×+ worse), and AgERA5 isn't in the official catalog.
+The mismatch is now evidenced with a genuine spatial statistic instead of asserted in prose:
+`theme_roughness_image()` in `src/features.py` computes local (moving-window) stdDev of the
+z-scored feature-stack bands, grouped climate vs. terrain+soil, at three window radii (250 m /
+750 m / 4,750 m, the last anchored to TerraClimate's own native pixel) — even at TerraClimate's own
+scale, terrain+soil local variability is 42× climate's, rising to 320× at 250 m. Landed as
+`fig:scale-mismatch`/`tab:scale-mismatch` in `thesis/Chapters/06_annex.tex`. `fig_4_12()` in
+`tools/make_figures.py` deliberately plots a hexbin from `theme_roughness_points.csv` rather than a
+`getThumbURL` raster — a full-AOI render of this moving-window computation at native 250 m exceeds
+GEE's interactive compute/size limits, and pre-coarsening the input would smooth away the exact
+fine-scale variance the figure exists to show. Don't "fix" this back to a thumbnail-based render.
 
 ---
 
@@ -516,3 +434,8 @@ item of Day 2 (`d2-3`, "finish repo cleanup, write a new root README.md for GitH
 - If a layer looks displaced/mis-scaled in a notebook map preview, that's usually a
   `reproject`-pinned `Map.addLayer` artifact, not a real error — load the asset directly
   (`ee.Image('projects/probformer/assets/goias/<name>')`) and it renders correctly over Goiás.
+- **`zoning.build_strat_band()` must cast its grid-cell-id band to int.** Built via
+  `.floor()`/`.clamp()`/`.multiply()`/`.add()`, it needs an explicit `.toInt()` before
+  `ee.Image.stratifiedSample(classBand=...)` — EE rejects a non-integer class band. `zoning.
+  build_sample()` already applies its own `.toInt()`, but any new caller of `build_strat_band()`
+  directly needs to do the same.
