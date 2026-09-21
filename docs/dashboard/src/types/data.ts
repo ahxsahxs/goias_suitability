@@ -132,7 +132,8 @@ export interface ThemeRoughnessPointRow {
   rough_terrain_soil_r4750: number
 }
 
-// --- csv/municipal_ranking.csv (v1-safe: 7 suit_* + zone, no delta/underused) ----
+// --- csv/municipal_ranking.csv (7 suit_*, zone, 7 delta_* off delta_ssp585_2051_2070,
+// and every underused_<crop> band that exists on realized_vs_potential — currently 4) --
 export interface MunicipalRankingRow {
   NM_MUN: string
   SIGLA_UF: string
@@ -144,6 +145,17 @@ export interface MunicipalRankingRow {
   suit_cattle: number
   suit_conservation: number
   suit_solar: number
+  delta_soybean: number
+  delta_sugarcane: number
+  delta_other_crops: number
+  delta_pisciculture: number
+  delta_cattle: number
+  delta_conservation: number
+  delta_solar: number
+  underused_soybean: number
+  underused_sugarcane: number
+  underused_other_crops: number
+  underused_pisciculture: number
 }
 
 // --- geojson/municipal_ranking.geojson properties --------------------------------
@@ -160,8 +172,77 @@ export interface MunicipioProperties {
   NM_UF: string
 }
 
-// --- TODO(v2): one interface per remaining §5 manifest row, added when consumed --
-// DatasetCatalogEntry      <- json/datasets_catalog.json   (config/datasets.yaml)
-// BandPercentiles          <- json/band_percentiles.json
-// StackComposition         <- json/stack_composition.json
-// ValidationScorecardRow   <- json/validation_scorecard.json
+// --- json/datasets_catalog.json (config/datasets.yaml, hand-curated) -------------
+export interface DatasetCatalogEntry {
+  theme: string
+  source: string
+  id: string
+  native_res: string
+  period: string
+}
+
+// --- json/stack_composition.json (static, from STACK_THEMES) ---------------------
+export interface StackComposition {
+  themes: Record<string, number>
+  total_bands: number
+  excluded: string[]
+  note: string
+}
+
+// --- json/band_percentiles.json (P5/P25/P50/P75/P95 per hero band) ---------------
+export interface BandPercentileSummary {
+  p5: number
+  p25: number
+  p50: number
+  p75: number
+  p95: number
+}
+export type BandPercentiles = Record<string, BandPercentileSummary>
+
+// --- json/validation_scorecard.json (hand-transcribed from the thesis tables) ----
+export interface PresenceAucBoyceRow {
+  auc: number
+  boyce: number
+}
+export interface WithinCropGradientRow {
+  rho: number
+  n: number
+}
+export interface ZoneAnova {
+  f: number
+  p_approx: number
+  zone_mean_range: [number, number]
+}
+export interface RfKappa {
+  soybean: number
+  n: number
+  knowledge_area_pct: number
+  rf_area_pct: number
+  note: string
+}
+export interface ValidationScorecard {
+  presence_auc_boyce: Record<string, PresenceAucBoyceRow>
+  spearman_npp: Record<string, number>
+  spearman_npp_n_municipalities: number
+  spearman_npp_notes: Record<string, string>
+  within_crop_gpp_gradient: Record<string, WithinCropGradientRow>
+  zone_anova: ZoneAnova
+  rf_kappa: RfKappa
+  underuse_pct: Record<string, number>
+  source: string
+}
+
+// --- json/home_stats.json ---------------------------------------------------------
+export interface HomeStats {
+  n_zones: number
+  n_segments: number
+  n_municipalities: number
+  mean_suit_soybean: number
+  top_zone: number
+  top_zone_share_pct: number
+  kappa_soybean: number | null
+  auc_soybean: number | null
+  boyce_soybean: number | null
+  underused_soybean_pct: number | null
+  mean_delta_other_crops_ssp585_2051_2070: number | null
+}

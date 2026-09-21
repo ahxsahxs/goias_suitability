@@ -80,16 +80,23 @@ function addChoropleth(): void {
 
 function addOutline(): void {
   const m = map.value
+  console.log('DEBUG addOutline', !!m, !!m?.getStyle(), props.outline)
   if (!m || !m.getStyle() || !props.outline) return
   if (m.getLayer(OUTLINE_SOURCE)) m.removeLayer(OUTLINE_SOURCE)
   if (m.getSource(OUTLINE_SOURCE)) m.removeSource(OUTLINE_SOURCE)
-  m.addSource(OUTLINE_SOURCE, { type: 'geojson', data: dataUrl('geojson/aoi.geojson') })
-  m.addLayer({
-    id: OUTLINE_SOURCE,
-    type: 'line',
-    source: OUTLINE_SOURCE,
-    paint: { 'line-color': '#1b1f1a', 'line-width': 1.2 },
-  })
+  try {
+    console.log('DEBUG addSource url', dataUrl('geojson/aoi.geojson'))
+    m.addSource(OUTLINE_SOURCE, { type: 'geojson', data: dataUrl('geojson/aoi.geojson') })
+    m.addLayer({
+      id: OUTLINE_SOURCE,
+      type: 'line',
+      source: OUTLINE_SOURCE,
+      paint: { 'line-color': '#1b1f1a', 'line-width': 1.2 },
+    })
+    console.log('DEBUG addOutline done', m.getSource(OUTLINE_SOURCE))
+  } catch (e) {
+    console.log('DEBUG addOutline threw', e)
+  }
 }
 
 onMounted(() => {
@@ -105,7 +112,12 @@ onMounted(() => {
     zoom: props.zoom,
   })
   m.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right')
+  m.on('error', (e) => console.log('DEBUG map error', e.error?.message ?? e))
+  m.on('sourcedata', (e) => {
+    if (e.sourceId === OUTLINE_SOURCE) console.log('DEBUG sourcedata aoi-outline', e.isSourceLoaded, e.sourceDataType)
+  })
   m.on('load', () => {
+    console.log('DEBUG load fired', props.outline, props.choropleth)
     addOutline()
     addChoropleth()
   })
@@ -127,8 +139,10 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="map-panel">
-    <div ref="container" class="map-panel-canvas" />
+  <div class="map-panel-wrap">
+    <div class="map-panel">
+      <div ref="container" class="map-panel-canvas" />
+    </div>
     <div v-if="$slots.legend" class="map-panel-legend">
       <slot name="legend" />
     </div>
@@ -136,6 +150,12 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
+.map-panel-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
 .map-panel {
   position: relative;
   width: 100%;
@@ -150,15 +170,10 @@ onUnmounted(() => {
   height: 100%;
 }
 
+/* The legend lives outside the map canvas (not overlaid on it) so it never
+   obscures the choropleth/raster it describes, per the dashboard's map-reading
+   requirement — it renders below the map, full width. */
 .map-panel-legend {
-  position: absolute;
-  bottom: var(--space-2);
-  left: var(--space-2);
-  background: rgba(255, 255, 255, 0.92);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  padding: var(--space-2);
-  font-size: 0.8rem;
-  max-width: 220px;
+  width: 100%;
 }
 </style>

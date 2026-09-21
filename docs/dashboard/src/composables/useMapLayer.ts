@@ -21,9 +21,7 @@ export function usePmtilesLayer(
     if (m.getSource(layerId)) m.removeSource(layerId)
   }
 
-  function add(): void {
-    const m = map.value
-    if (!m || !pmtilesPath.value) return
+  function addNow(m: MapLibreMap): void {
     remove()
     const source: RasterSourceSpecification = {
       type: 'raster',
@@ -37,6 +35,20 @@ export function usePmtilesLayer(
       source: layerId,
       paint: { 'raster-opacity': opacity.value },
     })
+  }
+
+  // A freshly-constructed maplibregl.Map's style loads asynchronously — calling
+  // addSource/addLayer before it settles throws "Style is not done loading."
+  // map.value is set (in MapPanel.vue's onMounted) well before that 'load' event
+  // fires, so this watcher's first real (non-null) firing routinely races it.
+  function add(): void {
+    const m = map.value
+    if (!m || !pmtilesPath.value) return
+    if (m.isStyleLoaded()) {
+      addNow(m)
+    } else {
+      m.once('load', () => addNow(m))
+    }
   }
 
   watch([map, pmtilesPath], add, { immediate: true })

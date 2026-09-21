@@ -13,46 +13,65 @@ export interface NavItem {
 /** Top nav, grouped exactly as docs/dashboard_ux_plan.md §3. */
 export const navSections: ReadonlyArray<{ title: string; items: readonly NavItem[] }> = [
   {
-    title: 'Feature engineering',
+    title: 'Engenharia de atributos',
     items: [
-      { label: 'Study Area & Data', path: '/study-area', part: 'Part 1', enabled: false },
-      { label: 'Feature Themes', path: '/feature-themes', part: 'Parts 2–7d', enabled: false },
-      { label: 'Feature Stack', path: '/feature-stack', part: 'Part 8', enabled: false },
+      { label: 'Área de estudo e dados', path: '/study-area', part: 'Parte 1', enabled: true },
+      { label: 'Temas de atributos', path: '/feature-themes', part: 'Partes 2–7d', enabled: true },
+      { label: 'Pilha de atributos', path: '/feature-stack', part: 'Parte 8', enabled: true },
     ],
   },
   {
-    title: 'Modelling',
+    title: 'Modelagem',
     items: [
-      { label: 'Suitability', path: '/suitability', part: 'Part 9', enabled: true },
-      { label: 'Zoning', path: '/zoning', part: 'Part 10', enabled: true },
+      { label: 'Aptidão', path: '/suitability', part: 'Parte 9', enabled: true },
+      { label: 'Zoneamento', path: '/zoning', part: 'Parte 10', enabled: true },
     ],
   },
   {
-    title: 'Forecast & validation',
+    title: 'Projeção e validação',
     items: [
-      { label: 'Climate Shift', path: '/cmip6', part: 'Part 11', enabled: false },
-      { label: 'Realized Use', path: '/realized-use', part: 'Parts 12–13', enabled: false },
-      { label: 'Validation', path: '/validation', part: 'Part 14', enabled: false },
+      { label: 'Mudança climática', path: '/cmip6', part: 'Parte 11', enabled: true },
+      { label: 'Uso realizado', path: '/realized-use', part: 'Partes 12–13', enabled: true },
+      { label: 'Validação', path: '/validation', part: 'Parte 14', enabled: true },
     ],
   },
   {
-    title: 'Explore',
+    title: 'Explorar',
     items: [
-      { label: 'Municipal Explorer', path: '/municipal', part: 'cross-cutting', enabled: true },
-      { label: 'About', path: '/about', part: '—', enabled: false },
+      { label: 'Explorador municipal', path: '/municipal', part: 'transversal', enabled: true },
+      { label: 'Sobre', path: '/about', part: '—', enabled: true },
     ],
   },
 ]
 
 // Lazy-loaded per route: MapPanel (maplibre-gl) and PlotlyChart (plotly.js-dist-min)
-// are heavy (~1.7 MB gzipped combined) and only Suitability/Zoning/Municipal need
-// them — a static import would ship both to every route including Home's text.
+// are heavy (~1.7 MB gzipped combined) — a static import would ship both to every
+// route including text-only ones like About.
 const routes: RouteRecordRaw[] = [
   { path: '/', name: 'home', component: () => import('./views/HomeView.vue') },
+  { path: '/study-area', name: 'study-area', component: () => import('./views/StudyAreaView.vue') },
+  {
+    path: '/feature-themes/:theme?',
+    name: 'feature-themes',
+    component: () => import('./views/FeatureThemesView.vue'),
+  },
+  { path: '/feature-stack', name: 'feature-stack', component: () => import('./views/FeatureStackView.vue') },
   { path: '/suitability/:segment?', name: 'suitability', component: () => import('./views/SuitabilityView.vue') },
   { path: '/zoning', name: 'zoning', component: () => import('./views/ZoningView.vue') },
+  {
+    path: '/cmip6/:ssp?/:window?/:segment?',
+    name: 'cmip6',
+    component: () => import('./views/Cmip6View.vue'),
+  },
+  {
+    path: '/realized-use/:crop?',
+    name: 'realized-use',
+    component: () => import('./views/RealizedUseView.vue'),
+  },
+  { path: '/validation', name: 'validation', component: () => import('./views/ValidationView.vue') },
   { path: '/municipal/:name?', name: 'municipal', component: () => import('./views/MunicipalExplorerView.vue') },
-  // Anything else (including a stale deep link into a not-yet-built v2 route) falls back to Home.
+  { path: '/about', name: 'about', component: () => import('./views/AboutView.vue') },
+  // Anything else falls back to Home.
   { path: '/:pathMatch(.*)*', redirect: '/' },
 ]
 

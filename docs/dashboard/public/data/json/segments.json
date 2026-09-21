@@ -18,7 +18,7 @@
   },
   "segments": {
     "soybean": {
-      "label": "Soybean",
+      "label": "Soja",
       "mask": "available",
       "factors": {
         "terr_slope": {
@@ -88,7 +88,7 @@
       }
     },
     "sugarcane": {
-      "label": "Sugarcane",
+      "label": "Cana-de-a\u00e7\u00facar",
       "mask": "available",
       "factors": {
         "terr_slope": {
@@ -156,7 +156,7 @@
       }
     },
     "other_crops": {
-      "label": "Other annual crops (corn/cotton/sorghum)",
+      "label": "Outras culturas anuais (milho/algod\u00e3o/sorgo)",
       "mask": "available",
       "factors": {
         "terr_slope": {
@@ -222,7 +222,7 @@
       }
     },
     "pisciculture": {
-      "label": "Pisciculture (pond/reservoir aquaculture)",
+      "label": "Piscicultura (tanques/reservat\u00f3rios)",
       "mask": "available",
       "factors": {
         "terr_slope": {
@@ -275,7 +275,7 @@
       }
     },
     "cattle": {
-      "label": "Cattle / cultivated pasture",
+      "label": "Pecu\u00e1ria / pastagem cultivada",
       "mask": "exclude_only",
       "factors": {
         "clim_pr_annual": {
@@ -328,7 +328,7 @@
       }
     },
     "conservation": {
-      "label": "Forest & Cerrado conservation",
+      "label": "Conserva\u00e7\u00e3o de floresta & Cerrado",
       "mask": "none",
       "aggregate": "arithmetic",
       "factors": {
@@ -416,7 +416,7 @@
       }
     },
     "solar": {
-      "label": "Solar PV generation",
+      "label": "Gera\u00e7\u00e3o fotovoltaica",
       "mask": "available",
       "factors": {
         "clim_srad": {

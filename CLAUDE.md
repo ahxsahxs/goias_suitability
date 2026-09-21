@@ -68,9 +68,12 @@ The split is *biophysical potential* (A) vs *realized-use & validation* (B) — 
 ## 4. Execution status — project `probformer`
 
 **Phase A + Phase B modelling are complete — Parts 1–14 BUILT & footprint-verified.** All three
-RQs are answered and written into the thesis (chapters 01–05). The only remaining build item is
-**Part 15 (atlas App)** — the Earth Engine App script is written (`gee_js/atlas_app.js`) but not
-yet published from the Code Editor.
+RQs are answered and written into the thesis (chapters 01–05). **Part 15 (the interactive atlas)
+is also built** — a static Vue 3 + TypeScript + Vite dashboard (`docs/dashboard/`) superseding the
+old `gee_js/atlas_app.js` EE-App plan (see `docs/dashboard_ux_plan.md`); the one remaining step is
+a manual repo-settings flip (Settings → Pages → source: GitHub Actions) to make the GitHub Pages
+deploy go live — the CI workflow (`.github/workflows/deploy-dashboard.yml`) already builds and
+uploads the artifact successfully, it just has nowhere to deploy to yet.
 
 | Part | State | Notes |
 |---|---|---|
@@ -79,7 +82,7 @@ yet published from the Code Editor.
 | 10 — zoning | **BUILT — K=10** (rebuilt 2026-09-19/20, was K=7) | `zones_present`, offline sklearn KMeans on a decorrelated PCA input (`src/zoning.py`), classified server-side by nearest-centroid band math. Zones labelled by `comparative_segment` (argmax of each segment's z-normalized suitability), not raw dominance. `zone_profiles.csv` + `zoning_kselect.csv`. See §4-bis for the sweep that confirmed K=10. |
 | 11 — CMIP6 shift | **BUILT** | `suit_future_*`, `delta_*`, `agreement_*` assets across SSP2-4.5/SSP5-8.5 × 2031–2050/2051–2070 × 5-GCM ensemble. Delta-change engine validated against an identity change-factor (Δ=0.000). No structurally climate-invariant segment remains — every segment (including conservation and solar) moves under at least one climate lever. |
 | 12–14 — Phase B | **BUILT** | `realized_vs_potential`, `municipal_godf` (IBGE malha municipal aggregation), MOD17 productivity validation (municipal Spearman + within-crop GPP gradient), RF presence cross-check, AHP consistency ratios. See `config/ahp_matrices.yaml` and `thesis/Chapters/04_results.tex` / `05_discussion_conclusion.tex` for the numbers. |
-| 15 — synthesis | **App script written, NOT published** | `gee_js/atlas_app.js` (present suitability, zones, realized use, CMIP6 shift, municipal click-to-read) is ready; publishing from the GEE Code Editor is the one remaining manual step. Figures already regenerated via `tools/make_figures.py` into `thesis/Chapters/Figures/`. |
+| 15 — synthesis | **BUILT — pending Pages enablement** | `docs/dashboard/` (Vue 3 + TS + Vite SPA): 11 routes covering every Part, built via `tools/build_dashboard_assets.py` from the assets in this table + config YAML. CI (`.github/workflows/deploy-dashboard.yml`) builds/type-checks/uploads successfully; the live URL needs a one-time manual Settings → Pages → source: GitHub Actions flip (never done for this repo). See `docs/dashboard_ux_plan.md` §9 build log. |
 
 - **Asset backups:** pre-recalibration and pre-reconceptualization snapshots were copied server-side
   under `projects/probformer/assets/goias_backup_*` before each major re-export cascade
@@ -91,9 +94,10 @@ yet published from the Code Editor.
   EE_PROJECT=probformer uv run python tools/verify_assets.py
   ```
 
-**Immediate next step:** publish Part 15's Earth Engine App (`gee_js/atlas_app.js`) from the GEE
-Code Editor. Everything else needed for the thesis (all §4 tables, figures, and the three RQs) is
-already built and written.
+**Immediate next step:** enable GitHub Pages for this repo (Settings → Pages → Build and
+deployment → Source → "GitHub Actions") so the already-succeeding `deploy-dashboard.yml` workflow
+has somewhere to deploy to. Everything else needed for the thesis (all §4 tables, figures, the
+three RQs, and the dashboard itself) is already built and written.
 
 **Rebuild done (2026-09-19/20), supersedes the 2026-09-15 "pending rebuild" note below.**
 `src/features.py`/`src/external.py` now derive the AOI and municipal boundaries from the local
@@ -173,9 +177,13 @@ tools/gen_diag_csvs.py        # regenerates zoning_kselect.csv / factor_variance
                                 # theme_roughness(_points).csv diagnostics
 notebooks/01..15               # thin: import src/, build, range-report, view, export — one per Part
 docs/                          # supporting notes: _search_terms.md (lit-search scaffolding, not part of
-                                # the thesis), metodologia_diagrama.md (PT methodology diagrams)
+                                # the thesis), metodologia_diagrama.md (PT methodology diagrams),
+                                # dashboard_ux_plan.md (Part 15 spec + build log — see below),
+                                # dashboard/ (the Vue 3 + TS + Vite dashboard project itself)
 thesis/                        # the LaTeX dissertation itself (NOVAthesis/NOVA IMS template) — see §9
-gee_js/atlas_app.js            # Part 15 Earth Engine App script (Code Editor mirror)
+tools/build_dashboard_assets.py # Part 15: exports GEE assets + config YAML into docs/dashboard/public/data/
+tools/palettes.py              # shared vis-param/color-ramp definitions (make_figures.py + build_dashboard_assets.py)
+.github/workflows/deploy-dashboard.yml # CI: type-check + vite build + GitHub Pages deploy on push to docs/dashboard/**
 ```
 
 **Code architecture:** notebooks are intentionally thin and **generated** from
@@ -204,7 +212,7 @@ lazy (no server call at import), so `src/` is import-/syntax-checkable without E
 12_municipal_gaul.ipynb       -> Part 12  (src/external.py + src/ibge_mesh.py)┐
 13_mapbiomas.ipynb            -> Part 13  (src/external.py)        ├ Phase B — BUILT
 14_validation_proxy_rf.ipynb  -> Part 14  (src/external.py+metrics)┘
-15_atlas_app.ipynb            -> Part 15  (tools/make_figures.py + gee_js/atlas_app.js) ── script written, not published
+15_atlas_app.ipynb            -> Part 15  (docs/dashboard/ + tools/build_dashboard_assets.py) ── retitled target, notebook itself not yet regenerated
 ```
 
 `12_municipal_gaul.ipynb` keeps its historical filename (reflects the last executed GAUL-based
@@ -303,6 +311,12 @@ keep it set so assets resolve under `projects/probformer/assets/goias/`.
 > municipal ranking table). Invoke Python exclusively via `uv run python ...` (or `uv run
 > <tool>`), not `.venv/bin/python` or a bare `python3` — some host-level geo packages only
 > resolve correctly through `uv run`'s environment.
+
+**`docs/dashboard/` (Part 15) has its own Node/npm toolchain, entirely independent of the
+`uv`-managed Python environment above** — `cd docs/dashboard && npm install && npm run dev` to
+iterate on the site; running or building it never needs `uv`/EE credentials. Only
+`tools/build_dashboard_assets.py` (which populates `docs/dashboard/public/data/`) is Python and
+needs `EE_PROJECT=probformer uv run python ...` like every other tool in this repo.
 
 ```bash
 # one-time setup

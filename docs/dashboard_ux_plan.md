@@ -296,12 +296,12 @@ framework); each "Components:" line now names the actual Vue view/component doin
 │  [ RQ1: Zoning ]   [ RQ2: Potential vs. Realized ]   [ RQ3: Forecast]│
 │      ↓ /zoning            ↓ /realized-use                ↓ /cmip6   │
 │                                                                      │
-│  ┌───────────────── hero map: zones_present (K=7) ─────────────┐   │
+│  ┌───────────────── hero map: zones_present (K=10) ────────────┐   │
 │  │                [interactive MapLibre, PMTiles]               │   │
 │  └───────────────────────────────────────────────────────────────┘  │
 │                                                                      │
-│  Headline numbers:  7 zones · 7 segments · 5-GCM ensemble ·         │
-│  soy underuse 48% · κ=0.07 (spatial-block) · AUC=0.83 (soy)         │
+│  Headline numbers:  10 zones · 7 segments · 5-GCM ensemble ·        │
+│  soy underuse 41.8% · κ=0.269 (RF-vs-knowledge) · AUC=0.871 (soy)   │
 └───────────────────────────────────────────────────────────────────┘
 ```
 Components: `MapPanel.vue` (hero PMTiles `zones_present`), 3 RQ cards (plain `<RouterLink>`s) to
@@ -403,20 +403,21 @@ answer to "show intermediate modelling steps," per the user's explicit ask.
 
 ```
 ┌───────────────────────────────────────────────────────────────────┐
-│  Agro-Environmental Zoning (K=7)                       (Part 10)   │
-│  ┌───────────────── zone map (PMTiles, 7 colors) ─────────────┐   │
+│  Agro-Environmental Zoning (K=10)                      (Part 10)   │
+│  ┌───────────────── zone map (PMTiles, 10 colors) ────────────┐   │
 │  └────────────────────────────────────────────────────────────────┘│
-│  Zone: [Z1][Z2][Z3][Z4][Z5][Z6][Z7]  → click a zone card:           │
-│  ┌── Z1: "privileged crop plateau" — comparative: soy/cane ──────┐ │
-│  │  radar/bar: mean suit_* per segment (z-normalized)             │ │
-│  │  19.2% of territory · realized composition: 61% pasture...     │ │
+│  Zone: [Z0]..[Z9]  → click a zone card:                             │
+│  ┌── Z5: comparative "privileged crop plateau" — soy/cane ──────┐ │
+│  │  bar: mean rel_suit_* per segment (z-normalized)               │ │
+│  │  17.6% of territory (largest zone) · realized composition ...  │ │
 │  └───────────────────────────────────────────────────────────────┘ │
-│  k-selection diagnostics (silhouette/DB/gap/ARI vs k) — why k=7     │
+│  k-selection diagnostics (silhouette/DB/gap/ARI vs k) — why k=10    │
 │  Factor variance decomposition (per-segment, which factors drive it)│
 │  Scale-mismatch (climate vs. terrain+soil roughness, 42×–320×)      │
 └───────────────────────────────────────────────────────────────────┘
 ```
-Components: `MapPanel.vue` (PMTiles zone map), 7 `ZoneCard.vue` instances (typed `ZoneProfileRow[]`
+Components: `MapPanel.vue` (PMTiles zone map), N `ZoneCard.vue` instances — N is read from
+`zone_profiles.csv`'s row count at run time, never hardcoded to 7 or 10 (typed `ZoneProfileRow[]`
 from `useCsv<ZoneProfileRow>('zone_profiles.csv')`), a `PlotlyChart.vue` k-selection line chart
 (`zoning_kselect.csv`), a `PlotlyChart.vue` factor-variance bar (`factor_variance.csv`), and a
 `PlotlyChart.vue` scale-mismatch hexbin (`theme_roughness_points.csv` + `theme_roughness.csv`) —
@@ -451,7 +452,7 @@ transition-share bar via `PlotlyChart.vue`.
 │  │   native)                                  │ │  not-in-that-use)││
 │  └────────────────────────────────────────────┘ └────────────────────┘│
 │  Crop: [Soybean][Sugarcane][Other crops][Pisciculture]               │
-│  Realized-composition table · underused-share bar (48%/58%/63%/10%) │
+│  Realized-composition table · underused-share bar (41.8/51.6/57.3/9.4%)│
 └───────────────────────────────────────────────────────────────────┘
 ```
 Components: `SegmentSelector.vue` restricted to the 4 crops with an `underused_<crop>` layer, two
@@ -464,21 +465,25 @@ of underused shares.
 ┌───────────────────────────────────────────────────────────────────┐
 │  Validation                                            (Part 14)   │
 │  Scorecard                                                          │
-│  ┌────────────┬───────┬───────┬──────────────────┬────────────┐   │
-│  │ Segment    │ AUC   │ Boyce │ Block-CV AUC      │ note        │   │
-│  │ Soybean    │ 0.83  │ 0.66  │ 0.79 ± 0.13       │             │   │
-│  │ Sugarcane  │ 0.83  │ 0.74  │ 0.61 ± 0.13       │ spatial art.│   │
-│  │ Other crops│ 0.64  │ 0.66  │ —                 │             │   │
-│  └────────────┴───────┴───────┴──────────────────┴────────────┘   │
-│  NPP Spearman by segment (bar) · GPP within-crop gradient (scatter) │
-│  RF cross-check: in-sample κ=0.23 vs. spatial-block κ=0.07          │
-│  [ why the drop? → About explainer, ties to tab:presence-auc ]      │
+│  ┌────────────┬───────┬───────┐                                    │
+│  │ Segment    │ AUC   │ Boyce │                                    │
+│  │ Soybean    │ 0.871 │ 0.964 │                                    │
+│  │ Sugarcane  │ 0.821 │ 0.769 │                                    │
+│  │ Other crops│ 0.698 │ 0.792 │                                    │
+│  └────────────┴───────┴───────┘                                    │
+│  NPP Spearman by segment (bar) · within-crop GPP gradient (bar)     │
+│  RF cross-check: κ=+0.269 (n=16160) — knowledge map marks 52.8% of  │
+│  the territory viable vs. 21.6% for the RF classifier               │
+│  [ why the gap? → prose in the view itself, ties to 04_results.tex ]│
 └───────────────────────────────────────────────────────────────────┘
 ```
-Components: `DataTable.vue` typed against `ValidationScorecardRow[]` (`validation_scorecard.json`),
-a `PlotlyChart.vue` Spearman bar, a `PlotlyChart.vue` GPP scatter, a short prose callout
-(static content in the `.vue` template) on the AUC/κ discrepancy (point 4 of the revision cycle —
-reuse the thesis's own explanation).
+Components: `DataTable.vue` typed against a flattened `presence_auc_boyce` (`validation_scorecard.json`),
+a `PlotlyChart.vue` Spearman bar, a `PlotlyChart.vue` within-crop GPP-gradient bar (a bar of rho per
+crop, not a true point scatter — the scorecard only carries the summary statistic, not raw points),
+and a short prose callout (static content in the `.vue` template) on the AUC/κ discrepancy (point 4
+of the revision cycle) using the *current* thesis framing (52.8% vs. 21.6% area, a single
+stratified-sample kappa) — not the older "in-sample vs. spatial-block-CV" framing this wireframe
+used to describe, which no longer matches what `tools/run_validation.py` actually computes.
 
 ### 4.9 Municipal Explorer — `MunicipalExplorerView.vue` (nested by `:name?`) — the
 cross-cutting, `atlas_app.js`-replacing route
@@ -575,7 +580,7 @@ them, so keeping them named 1:1 with the manifest rows above matters for future 
 
 ## 6. Migration / decommission checklist
 
-- [ ] Delete `gee_js/atlas_app.js`.
+- [x] Delete `gee_js/atlas_app.js`. (done 2026-09-20)
 - [ ] `CLAUDE.md` §4 — rewrite the Part 15 row: "App script written, NOT published" →
       "Static Vue+TS dashboard (`docs/dashboard/`), built by Vite and deployed via GitHub Actions
       — see `docs/dashboard_ux_plan.md`"; update "Immediate next step" to point at scaffolding the
@@ -633,17 +638,15 @@ part this revision introduces) independently of any content work.
 3. **Mobile-width check:** resize to a phone-width viewport; nav must collapse/scroll sanely, maps
    must not overflow.
 4. **Data-consistency spot-check:** pick 3 numbers shown on the dashboard (e.g. soy underused
-   48.0%, κ=0.07, k=7 silhouette) and confirm they match the corresponding thesis table exactly —
-   guards against a stale export, a stale TS interface, or a copy-paste error in
-   `validation_scorecard.json`.
+   41.8%, κ=+0.269, k=10 silhouette) and confirm they match the corresponding *current* thesis
+   table exactly — guards against a stale export, a stale TS interface, or a copy-paste error in
+   `validation_scorecard.json`. (The 48.0%/κ=0.07/k=7 figures once used as the example here were
+   themselves stale — see §9's v2 build-log entry.)
 5. **GitHub Pages deploy dry-run:** push to a branch, open the workflow run in the Actions tab,
    confirm the `build`/`deploy` jobs both succeed and the live URL (`https://<user>.github.io/
    <repo-name>/`) matches the local `npm run preview` smoke test — including the `base` path
    resolving correctly (a common first-deploy bug: assets 404 under `/<repo-name>/` if `base` was
    left at Vite's default `/`).
-
-   > Item 4's example numbers are now stale — see §9: zoning is currently K=10, not
-   > k=7 (`zone_profiles.csv` row count is the ground truth, not this list).
 
 ---
 
@@ -739,14 +742,103 @@ rendering with a truncated palette/wrong value range right now.** Worth checking
 
 **Not committed / not pushed** (per standing instruction not to commit without being asked).
 
-### Still open before v2
+### v2 — full route coverage + lifted v1-safe restriction (2026-09-20, done)
 
-- Push v0+v1, confirm the Pages deploy actually works live (§8 item 5) — never done yet, only
-  simulated locally via `vite preview`.
-- Once the CMIP6/realized-use pipeline settles: re-run the build script's deferred layers
-  (`delta_*`/`agreement_*` PMTiles, `underused_*`, extend `municipal_ranking` back with those
-  columns), then build Climate Shift + Realized Use + Validation views.
-- Decide on the `zone_profiles.csv` K=7→K=10 doc drift (CLAUDE.md §4, `make_figures.py` zoning
-  figure) — separate from the dashboard, but noticed while building it.
-- `home_stats.json` deliberately has no κ/AUC/underuse numbers (those need the off-limits assets)
-  — revisit once `validation_scorecard.json` exists (v2).
+**Pre-check (§8 item 5, never done before this session):** v0+v1 were already pushed to
+`origin/main` (confirmed via `git log origin/main..HEAD`, empty both directions). The one
+`deploy-dashboard.yml` run (on `41a7dfe`) had its `build` job succeed but its `deploy` job fail at
+"Deploy to GitHub Pages" — root-caused via the GitHub REST API (`GET /repos/.../pages` → 404,
+`has_pages: false`): **GitHub Pages has never been enabled for this repo.** This is a one-time
+manual step (Settings → Pages → Build and deployment → Source → "GitHub Actions") that a repo
+admin has to do in the web UI — not fixable from this session (no `gh` auth). Everything else in
+this entry proceeded regardless; the live-deploy half of item 5 is still open until that setting
+is flipped.
+
+**`tools/build_dashboard_assets.py`:** the v1-safe restriction is lifted (module docstring
+rewritten). Verified all previously off-limits assets exist with the expected shape before writing
+any code against them (`delta_*`/`agreement_*`/`suit_future_*` are one 7-band multiband asset per
+SSP/window combo — never one asset per segment; `realized_vs_potential` has exactly 4
+`underused_*` bands, not 7, since `external.ROLE_CODES` only covers
+soybean/sugarcane/other_crops/pisciculture/pasture/native). New stages (`--only <stage>`):
+`future_rasters` (20 `delta_*` PMTiles × 5 segments × 4 combos + 2 curated `agreement_*` PMTiles),
+`realized_rasters` (`rl_role` + the 4 real `underused_*` bands), `datasets_catalog` (hand-curated
+from `config/datasets.yaml`, not a blind passthrough — that file has no ready-made
+theme/source/native-res/period columns), `stack_composition` (static, no GEE call),
+`band_percentiles` (P5-P95 for 8 hero feature-theme bands, ~1 min for all 8), `theme_rasters` (8
+hero PMTiles, domain = that same P5/P95 so the color stretch tracks the real data range), and
+`validation_scorecard` (hand-transcribed from the thesis's own already-published tables —
+`04_results.tex`'s `tab:presence-auc`/`tab:pot-real-gap`/kappa/ANOVA paragraphs and
+`06_annex.tex`'s `tab:spearman-npp` — re-deriving via `run_validation.py` would reproduce the same
+numbers at the cost of a 10+ minute RF/stratified-sample rerun). `build_municipal_ranking()` now
+also carries all 7 `delta_*` (off `delta_ssp585_2051_2070` only — one combo, not all 4, matching
+`extract_present.py::municipal()`'s actual pattern) and all 4 real `underused_*` bands.
+`build_home_stats()` now reads real κ/AUC/Boyce/underuse numbers from `validation_scorecard.json`
+plus a fresh territory-mean `delta_other_crops` reduceRegion.
+
+**One real bug found and fixed before it shipped:** `_prep_band`'s uint8 scaling assumed [0,1] for
+every continuous band, which is only safe for bands provably bounded there (`suit_*`,
+`agreement_*`, `underused_*`). `delta_*` is visualized on a *clipped* [-0.15, 0.15] window in
+`make_figures.py`, not a hard bound, so an unclamped out-of-window pixel could compute to exactly
+255 — the reserved nodata sentinel — and render silently transparent. Fixed by adding an explicit
+`.clamp(vmin, vmax)` before the scale, with `_prep_band`/`_build_one_raster` now taking a `domain`
+parameter (default `(0, 1)`, unchanged for every existing v1 job).
+
+**A second, more consequential bug found via the browser verification pass (§8 item 2), not
+caught by type-check or build:** every route with a `MapPanel` raster logged `Error: Style is not
+done loading` on load and — worse — **the PMTiles raster layer silently never rendered**, on
+every route, including the v1 routes (Home/Suitability/Zoning), not just the new v2 ones. Root
+cause: `useMapLayer.ts`'s `usePmtilesLayer` watches `[map, pmtilesPath]` with `{ immediate: true }`
+and calls `addSource`/`addLayer` as soon as `map.value` becomes non-null — but `MapPanel.vue` sets
+`map.value = m` synchronously right after constructing `new maplibregl.Map(...)`, well before that
+map's style finishes loading asynchronously. The watcher's real (non-null) firing routinely raced
+the style load and threw, and because the watcher had already fired once, it never got a second
+chance to add the layer. Fixed in `usePmtilesLayer`: check `m.isStyleLoaded()` and defer to
+`m.once('load', ...)` when it isn't ready yet. Verified with a full Playwright pass (headless
+Chromium, downloaded via `npx playwright install chromium` — no `sudo`/system-deps available, so
+`--with-deps` failed, but the plain browser download + `--no-sandbox` launch worked) across all 11
+routes: zero console errors post-fix, and the zones/suitability/delta/agreement rasters visibly
+render (confirmed by eye — the agreement map in particular visually confirms the thesis's
+near-uniform-~0.999 finding, and the delta map for other_crops/SSP5-8.5/2051-2070 shows the
+expected red-dominant decline).
+
+**Frontend:** built `DataTable.vue` (generic `columns`/`rows` props; had to relax the Vue
+`generic="T extends Record<string, unknown>"` constraint to `extends object` — concrete manifest
+interfaces like `DatasetCatalogEntry` don't structurally satisfy `Record<string, unknown>` even
+though they have the right fields) and `ScenarioSelector.vue` (SSP × window 2×2 toggle, from the
+§2.6 inventory, not yet built in v1). All 7 remaining routes built: StudyAreaView, FeatureThemesView
+(8 hero bands only — **no PNG gallery for the remaining ~30 bands in this pass**, deferred, see
+below), FeatureStackView, Cmip6View (agreement panel deliberately decoupled from the segment
+selector — with only 2 shipped combos, both `other_crops`, following a 5-segment selector would
+silently show an unrelated fallback 4 times out of 5), RealizedUseView, ValidationView (ported the
+thesis's *current* 52.8%/21.6% kappa framing, not the wireframe's older
+"in-sample-vs-spatial-block-CV" framing, which no longer matches what `run_validation.py` actually
+computes), AboutView. `MunicipalExplorerView.vue` (v1) was revisited to actually surface the newly
+widened municipal columns (ΔS + underused stat chips, a per-segment ΔS bar, new choropleth
+options) — the Python widening would otherwise have shipped inert data — and its zone-choropleth
+color stops were fixed from a hardcoded `length: 10` to the real, data-derived zone count (same bug
+class as the fig_4_3/fig_4_10 fix earlier this session). `HomeView.vue`'s RQ3 card is no longer
+disabled and its stat strip now shows κ/AUC/underuse.
+
+**Data size:** `public/data/` grew from 72 MB (v1) to **136 MB** (42 PMTiles → 50 PMTiles: +20
+delta, +2 agreement, +5 realized-use, +8 feature-theme hero bands). No single file exceeds ~7 MB.
+Comfortably inside the ~1 GB informal budget — no LFS/release-asset mitigation needed.
+
+**Deferred, not built in this pass:**
+- Feature Themes' ~30-band PNG gallery (§5 manifest's "G" tier) — the route only ships the 8 hero
+  PMTiles bands. Would need a `getThumbURL`-based pipeline distinct from the PMTiles path (closer
+  to `make_figures.py`'s own thumbnail machinery than to `build_dashboard_assets.py`'s existing
+  COG→PMTiles pipeline).
+- CLAUDE.md §4/§5 and README.md's Part-15 description were updated to describe the dashboard
+  instead of the retired `gee_js/atlas_app.js`; the file itself was deleted with the user's
+  confirmation (UX plan §6 checklist item).
+- The GitHub Pages enablement blocker above — the actual live-deploy verification is still open.
+- **Bugfixing checkpoint (2026-09-20):** the user flagged problems after this build and asked to
+  pause before committing — see the next log entry once that's resolved.
+
+### Still open
+
+- Repo admin enables GitHub Pages (Settings → Pages → source: GitHub Actions), then either
+  `workflow_dispatch` the existing workflow or let the next `docs/dashboard/**`-touching push
+  trigger it naturally; confirm the live URL matches the local `npm run preview` smoke test.
+- Feature Themes PNG gallery (see above) — the one manifest item deliberately left for a future
+  pass, not blocking any route from working.

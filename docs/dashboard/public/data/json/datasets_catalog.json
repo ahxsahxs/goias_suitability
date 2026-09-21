@@ -1,0 +1,93 @@
+[
+  {
+    "theme": "Malha municipal",
+    "source": "IBGE Malha Municipal Digital 2025",
+    "id": "data/mart/malha_municipal.gpkg",
+    "native_res": "vetorial",
+    "period": "2025"
+  },
+  {
+    "theme": "Clima",
+    "source": "TerraClimate",
+    "id": "IDAHO_EPSCOR/TERRACLIMATE",
+    "native_res": "~4,6 km",
+    "period": "normal 1991-2020"
+  },
+  {
+    "theme": "Relevo",
+    "source": "SRTM GL1",
+    "id": "USGS/SRTMGL1_003",
+    "native_res": "30 m",
+    "period": "est\u00e1tico"
+  },
+  {
+    "theme": "Solo",
+    "source": "OpenLandMap",
+    "id": "OpenLandMap/SOL/SOL_CLAY-WFRACTION_USDA-3A1A1A_M/v02",
+    "native_res": "250 m",
+    "period": "est\u00e1tico"
+  },
+  {
+    "theme": "\u00c1gua",
+    "source": "JRC Global Surface Water",
+    "id": "JRC/GSW1_4/GlobalSurfaceWater",
+    "native_res": "30 m",
+    "period": "1984-2021"
+  },
+  {
+    "theme": "Fenologia",
+    "source": "MODIS MOD13Q1 NDVI",
+    "id": "MODIS/061/MOD13Q1",
+    "native_res": "250 m",
+    "period": "2001-2020"
+  },
+  {
+    "theme": "Acesso a mercados",
+    "source": "Oxford MAP accessibility",
+    "id": "projects/malariaatlasproject/assets/accessibility/accessibility_to_cities/2015_v1_0",
+    "native_res": "~1 km",
+    "period": "2015"
+  },
+  {
+    "theme": "M\u00e1scara de cobertura da terra",
+    "source": "ESA WorldCover",
+    "id": "ESA/WorldCover/v200",
+    "native_res": "10 m",
+    "period": "2021"
+  },
+  {
+    "theme": "Conserva\u00e7\u00e3o (UCs)",
+    "source": "\u00c1reas protegidas WDPA",
+    "id": "WCMC/WDPA/current/polygons",
+    "native_res": "vetorial",
+    "period": "atual"
+  },
+  {
+    "theme": "Conserva\u00e7\u00e3o (carbono)",
+    "source": "Carbono de biomassa, Spawn et al. 2020",
+    "id": "NASA/ORNL/biomass_carbon_density/v1",
+    "native_res": "300 m",
+    "period": "2010"
+  },
+  {
+    "theme": "Proje\u00e7\u00e3o clim\u00e1tica CMIP6",
+    "source": "NASA NEX-GDDP-CMIP6",
+    "id": "NASA/GDDP-CMIP6",
+    "native_res": "~25 km",
+    "period": "2031-2070 (2 SSP x 2 janelas)"
+  },
+  {
+    "theme": "Uso realizado da terra",
+    "source": "MapBiomas Cole\u00e7\u00e3o 10",
+    "id": "projects/mapbiomas-public/assets/brazil/lulc/collection10/mapbiomas_brazil_collection10_integration_v1",
+    "native_res": "30 m",
+    "period": "1985-2024"
+  },
+  {
+    "theme": "Valida\u00e7\u00e3o de produtividade",
+    "source": "MODIS MOD17 NPP/GPP",
+    "id": "MODIS/061/MOD17A3HGF",
+    "native_res": "500 m",
+    "period": "2001-2020"
+  }
+]

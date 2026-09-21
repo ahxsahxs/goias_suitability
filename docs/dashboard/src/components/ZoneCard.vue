@@ -22,6 +22,14 @@ const barData = computed<PlotlyDatum[]>(() => [
   },
 ])
 
+const REALIZED_ROLE_LABELS_PT: Record<string, string> = {
+  soybean: 'soja',
+  sugarcane: 'cana-de-açúcar',
+  other_crops: 'outras culturas',
+  pasture: 'pastagem',
+  native: 'vegetação nativa',
+}
+
 const realizedFracs = computed(() =>
   (['soybean', 'sugarcane', 'other_crops', 'pasture', 'native'] as const)
     .map((role) => ({ role, frac: Number(props.profile[`rl_${role}_frac`] ?? 0) }))
@@ -32,19 +40,19 @@ const realizedFracs = computed(() =>
 
 <template>
   <div class="zone-card">
-    <h3>Zone {{ profile.zone }}</h3>
+    <h3>Zona {{ profile.zone }}</h3>
     <p class="zone-meta">
-      comparative: <strong>{{ labels[profile.comparative_segment] ?? profile.comparative_segment }}</strong>
-      &middot; {{ territoryShare.toFixed(1) }}% of territory ({{ profile.n }} cells)
+      comparativa: <strong>{{ labels[profile.comparative_segment] ?? profile.comparative_segment }}</strong>
+      &middot; {{ territoryShare.toFixed(1) }}% do território ({{ profile.n }} células)
     </p>
     <PlotlyChart
       :data="barData"
-      :layout="{ height: 220, xaxis: { title: { text: 'z-normalized comparative suitability' } } }"
+      :layout="{ height: 220, xaxis: { title: { text: 'aptidão comparativa z-normalizada' } } }"
     />
     <p class="zone-realized">
-      Realized composition:
+      Composição realizada:
       <span v-for="r in realizedFracs" :key="r.role">
-        {{ (100 * r.frac).toFixed(0) }}% {{ r.role }}&nbsp;
+        {{ (100 * r.frac).toFixed(0) }}% {{ REALIZED_ROLE_LABELS_PT[r.role] ?? r.role }}&nbsp;
       </span>
     </p>
   </div>

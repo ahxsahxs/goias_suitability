@@ -1,0 +1,15 @@
+{
+  "themes": {
+    "climate": 14,
+    "terrain": 6,
+    "soil": 6,
+    "water": 3,
+    "phenology": 4,
+    "access": 1
+  },
+  "total_bands": 34,
+  "excluded": [
+    "landcover"
+  ],
+  "note": "A cobertura da terra \u00e9 deliberadamente exclu\u00edda da pilha \u2014 apenas m\u00e1scara/contexto, nunca uma entrada de aptid\u00e3o ou de agrupamento."
+}

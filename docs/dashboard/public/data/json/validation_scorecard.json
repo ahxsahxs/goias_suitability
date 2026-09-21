@@ -1,0 +1,65 @@
+{
+  "presence_auc_boyce": {
+    "soybean": {
+      "auc": 0.871,
+      "boyce": 0.964
+    },
+    "sugarcane": {
+      "auc": 0.821,
+      "boyce": 0.769
+    },
+    "other_crops": {
+      "auc": 0.698,
+      "boyce": 0.792
+    }
+  },
+  "spearman_npp": {
+    "cattle": 0.52,
+    "conservation": 0.46,
+    "sugarcane": 0.45,
+    "solar": 0.4,
+    "soybean": 0.31,
+    "other_crops": 0.11,
+    "pisciculture": -0.32
+  },
+  "spearman_npp_n_municipalities": 247,
+  "spearman_npp_notes": {
+    "other_crops": "n.s., p=0,09"
+  },
+  "within_crop_gpp_gradient": {
+    "soybean": {
+      "rho": 0.417,
+      "n": 14646
+    },
+    "other_crops": {
+      "rho": 0.37,
+      "n": 12117
+    },
+    "sugarcane": {
+      "rho": -0.085,
+      "n": 6678
+    }
+  },
+  "zone_anova": {
+    "f": 2191.0,
+    "p_approx": 0,
+    "zone_mean_range": [
+      0.47,
+      0.89
+    ]
+  },
+  "rf_kappa": {
+    "soybean": 0.269,
+    "n": 16160,
+    "knowledge_area_pct": 52.8,
+    "rf_area_pct": 21.6,
+    "note": "Landis & Koch: concord\u00e2ncia razo\u00e1vel, mas n\u00e3o forte"
+  },
+  "underuse_pct": {
+    "other_crops": 57.3,
+    "sugarcane": 51.6,
+    "soybean": 41.8,
+    "pisciculture": 9.4
+  },
+  "source": "thesis/Chapters/04_results.tex + 06_annex.tex, referente ao rebuild de 2026-09"
+}

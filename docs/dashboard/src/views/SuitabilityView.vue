@@ -2,10 +2,12 @@
 import type { Data as PlotlyDatum } from 'plotly.js'
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import MapLegend from '../components/MapLegend.vue'
 import MapPanel from '../components/MapPanel.vue'
 import PlotlyChart from '../components/PlotlyChart.vue'
 import SegmentSelector from '../components/SegmentSelector.vue'
 import { useJson } from '../composables/useJson'
+import { faoClassLegend, suitabilityLegend } from '../legends'
 import type { AhpMatrices, FactorConfig, SegmentsConfig, SensitivitySummary } from '../types/data'
 
 const route = useRoute()
@@ -45,9 +47,12 @@ watch(
 
 const aggregation = computed(() =>
   segmentsCfg.value?.segments[selectedSegment.value]?.aggregate === 'arithmetic'
-    ? 'weighted arithmetic mean (compensatory)'
-    : 'weighted geometric mean (limiting-factor)',
+    ? 'média aritmética ponderada (compensatória)'
+    : 'média geométrica ponderada (fator limitante)',
 )
+
+const suitLegend = computed(() => suitabilityLegend(labels.value[selectedSegment.value] ?? selectedSegment.value))
+const classLegend = computed(() => faoClassLegend())
 
 // --- AHP weights bar --------------------------------------------------------
 const ahpSegment = computed(() => ahp.value?.segments[selectedSegment.value] ?? null)
@@ -58,7 +63,7 @@ const ahpBarData = computed<PlotlyDatum[]>(() => {
 })
 const ahpTitle = computed(() => {
   const cr = ahpSegment.value?.consistency_ratio
-  return cr === undefined ? 'AHP weights' : `AHP weights (CR=${cr.toFixed(4)})`
+  return cr === undefined ? 'Pesos AHP' : `Pesos AHP (RC=${cr.toFixed(4)})`
 })
 
 // --- Membership curve --------------------------------------------------------
@@ -115,21 +120,21 @@ const sensitivityBox = computed<PlotlyDatum[]>(() => {
 
 <template>
   <section>
-    <h1>Suitability Modelling</h1>
+    <h1>Modelagem de Aptidão</h1>
     <p>
-      Fuzzy-membership + AHP knowledge-based suitability (Part 9). Each factor is
-      standardized to [0,1] by a membership function, then combined by the
-      {{ aggregation }}.
+      Aptidão baseada em conhecimento, com pertinência fuzzy + AHP (Parte 9). Cada
+      fator é padronizado para [0,1] por uma função de pertinência e então combinado
+      pela {{ aggregation }}.
     </p>
 
     <SegmentSelector v-model="selectedSegment" :segments="segmentOrder" :labels="labels" />
 
     <div class="map-row">
       <MapPanel :raster-path="`suit_${selectedSegment}.pmtiles`">
-        <template #legend>Suitability (0-1, red -&gt; green)</template>
+        <template #legend><MapLegend :spec="suitLegend" /></template>
       </MapPanel>
       <MapPanel :raster-path="`class_${selectedSegment}.pmtiles`">
-        <template #legend>FAO class (N / S3 / S2 / S1)</template>
+        <template #legend><MapLegend :spec="classLegend" /></template>
       </MapPanel>
     </div>
 
@@ -139,19 +144,19 @@ const sensitivityBox = computed<PlotlyDatum[]>(() => {
         <PlotlyChart :data="ahpBarData" :layout="{ height: 260, margin: { l: 140 } }" />
       </div>
       <div>
-        <h2>Fuzzy membership</h2>
+        <h2>Pertinência fuzzy</h2>
         <select v-model="selectedFactor">
           <option v-for="f in factorOrder" :key="f" :value="f">{{ f }}</option>
         </select>
         <PlotlyChart
           :data="membershipCurve"
-          :layout="{ height: 220, yaxis: { title: { text: 'membership μ(x)' }, range: [0, 1] } }"
+          :layout="{ height: 220, yaxis: { title: { text: 'pertinência μ(x)' }, range: [0, 1] } }"
         />
         <p v-if="factors[selectedFactor]" class="factor-ref">{{ factors[selectedFactor]?.ref }}</p>
       </div>
     </div>
 
-    <h2>Sensitivity (±20% AHP perturbation)</h2>
+    <h2>Sensibilidade (perturbação AHP de ±20%)</h2>
     <PlotlyChart :data="sensitivityBox" :layout="{ height: 160 }" />
   </section>
 </template>

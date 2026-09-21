@@ -18,6 +18,8 @@ PAL_ROLE = ["#eeeeee", "#ffd400", "#7b3294", "#d95f0e", "#2c7fb8", "#addd8e", "#
 PAL_DIV = ["#b2182b", "#f7f7f7", "#2166ac"]                          # diverging ΔS
 PAL_PR = ["#f7fbff", "#9ecae1", "#3182bd", "#08306b"]                 # sequential, precipitation
 PAL_TEMP = ["#fff5eb", "#fd8d3c", "#d94801", "#7f2704"]               # sequential, temperature
+PAL_AGREEMENT = ["#ffffcc", "#a1dab4", "#41b6c4", "#225ea8"]          # sequential, GCM sign-agreement
+PAL_UNDERUSED = ["#f7f7f7", "#d7301f"]                                # binary, potential-vs-realized gap
 
 SEGMENTS = [
     "soybean",

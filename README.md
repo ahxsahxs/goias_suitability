@@ -41,9 +41,9 @@ config/       # YAML: datasets GEE, parâmetros de suitability/AHP, classes MapB
 src/          # motor da análise (feature engineering, suitability, zoneamento, CMIP6, validação)
 tools/        # scripts de execução: build, verificação, figuras, recalibração
 notebooks/    # 19 notebooks finos, gerados a partir de tools/gen_notebooks.py — um por Part (1-15)
-docs/         # notas de apoio (termos de pesquisa, diagrama de metodologia)
+docs/         # notas de apoio (termos de pesquisa, diagrama de metodologia) + dashboard/,
+              # o atlas interativo (Part 15) — SPA Vue 3 + TypeScript + Vite
 thesis/       # código-fonte LaTeX da dissertação (template NOVAthesis / NOVA IMS)
-gee_js/       # script do Earth Engine App (atlas interativo, Part 15)
 ```
 
 Ver [`CLAUDE.md`](CLAUDE.md) para a documentação técnica completa: metodologia, convenções de
@@ -57,9 +57,10 @@ confirmados em CRS/escala/footprint corretos. As três perguntas de investigaç�
 (zoneamento, potencial vs. realizado, projeção CMIP6) estão respondidas e escritas nos
 capítulos 01–05.
 
-Falta apenas publicar o **atlas interativo (Part 15)**: o script já está pronto em
-[`gee_js/atlas_app.js`](gee_js/atlas_app.js), só falta o passo manual de publicação no GEE
-Code Editor.
+O **atlas interativo (Part 15)** também está construído — um SPA estático (Vue 3 + TypeScript +
+Vite) em [`docs/dashboard/`](docs/dashboard/), publicado via GitHub Actions para GitHub Pages.
+Falta apenas um passo manual único de configuração do repositório (Settings → Pages → Source →
+"GitHub Actions") para o deploy ficar público.
 
 ## Reprodução rápida
 

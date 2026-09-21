@@ -45,7 +45,7 @@ aggregation:
 segments:
 
   soybean:
-    label: Soybean
+    label: Soja
     mask: available
     # 2026-09 weight recalibration (T8/T10 Fase-4 revision): weight now guided by each
     # factor's discriminating power = sample IQR (P75-P25 over available land,
@@ -62,7 +62,7 @@ segments:
       clim_aridity:   {weight: 0.09, type: range,       points: [0.4, 0.7, 1.2, 1.6],    ref: "P/PET water sufficiency. 2026-09: ratio=0.082/1.2=0.068, lowest of the segment (uniform in GO) -> weight cut 0.13->0.09"}
 
   sugarcane:
-    label: Sugarcane
+    label: Cana-de-açúcar
     mask: available
     # 2026-09 weight recalibration (same method as soybean, see its header comment).
     factors:
@@ -74,7 +74,7 @@ segments:
       clim_dry_months: {weight: 0.06, type: range,      points: [1, 2, 5, 7],            ref: "dry ripening window. clim_dry_months is a spatial CONSTANT (=5) in GO -> ratio=0.000 (F1), the lowest possible discriminating power -> weight cut 0.16->0.06, the segment's floor"}
 
   other_crops:
-    label: Other annual crops (corn/cotton/sorghum)
+    label: Outras culturas anuais (milho/algodão/sorgo)
     mask: available
     # 2026-09 weight recalibration (same method as soybean, see its header comment).
     factors:
@@ -86,7 +86,7 @@ segments:
       clim_pr_cv:     {weight: 0.08, type: decreasing,  points: [0.6, 1.3],              ref: "rainfall reliability. 2026-09: ratio=0.043/0.7=0.061, lowest of the segment (uniform ~0.82 in GO) -> weight cut 0.18->0.08"}
 
   pisciculture:
-    label: Pisciculture (pond/reservoir aquaculture)
+    label: Piscicultura (tanques/reservatórios)
     mask: available
     # 2026-09 weight recalibration (same method as soybean; ratios computed over the
     # `available` population, NOT the realized-pixel mask, because MapBiomas maps a
@@ -101,7 +101,7 @@ segments:
       clim_twarm_q:        {weight: 0.10, type: range,      points: [22, 26, 32, 36],  ref: "warm-water tilapia. 2026-09: ratio=1.812/14=0.129, lowest of the segment -> weight cut 0.18->0.10"}
 
   cattle:
-    label: Cattle / cultivated pasture
+    label: Pecuária / pastagem cultivada
     mask: exclude_only
     factors:
       # 2026-07-14 forage-productivity re-anchor: grade by forage/stocking-rate potential, not mere
@@ -120,7 +120,7 @@ segments:
       soil_soc:        {weight: 0.34, type: increasing,  points: [8, 18],                 ref: "was w=0.16 [4,18]; steepened (pasture p10 8.75, p25 9.8, p90 16.2) -> PRIMARY fertility/forage grader; poor-forage land now S3"}
 
   conservation:
-    label: Forest & Cerrado conservation
+    label: Conservação de floresta & Cerrado
     mask: none
     aggregate: arithmetic   # COMPENSATORY weighted-linear-combination (MCDA / conservation-planning
                             # standard): conservation VALUE if strong on ANY criterion. The other 6
@@ -158,7 +158,7 @@ segments:
       water_drain_density: {weight: 0.06, type: increasing, points: [0.01, 0.08],  ref: "riparian/recharge water-service; stream-cell fraction (max~0.15, p90~0.093, zero-inflated below p50). 2026-09: ratio=0.0127/0.07=0.181, lowest of the segment -> weight cut 0.09->0.06"}
 
   solar:
-    label: Solar PV generation
+    label: Geração fotovoltaica
     mask: available
     # 2026-07-14 rescale + new siting factors. srad in GO is homogeneous (186-204 W/m2, ~10% spread)
     # and clearness even more so (0.466-0.501); expect the variance test (membership.segment_spatial_std)

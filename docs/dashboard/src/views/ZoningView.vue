@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import type { Data as PlotlyDatum } from 'plotly.js'
 import { computed, ref } from 'vue'
+import MapLegend from '../components/MapLegend.vue'
 import MapPanel from '../components/MapPanel.vue'
 import PlotlyChart from '../components/PlotlyChart.vue'
 import ZoneCard from '../components/ZoneCard.vue'
 import { useCsv } from '../composables/useCsv'
 import { useJson } from '../composables/useJson'
+import { zoneLegend } from '../legends'
 import type {
   FactorVarianceRow,
   SegmentsConfig,
@@ -27,6 +29,13 @@ const { data: profiles } = useCsv<ZoneProfileRow>('csv/zone_profiles.csv')
 const zoneCount = computed(() => profiles.value?.length ?? 0)
 const totalN = computed(() => (profiles.value ?? []).reduce((sum, p) => sum + p.n, 0))
 
+const zoneLabelsByIndex = computed(() =>
+  Object.fromEntries(
+    (profiles.value ?? []).map((p) => [p.zone, labels.value[p.comparative_segment] ?? p.comparative_segment]),
+  ),
+)
+const mapLegend = computed(() => zoneLegend(zoneCount.value, zoneLabelsByIndex.value))
+
 const selectedZone = ref<number | null>(null)
 const selectedProfile = computed(() =>
   profiles.value?.find((p) => p.zone === selectedZone.value) ?? null,
@@ -36,7 +45,7 @@ const { data: kselect } = useCsv<ZoningKselectRow>('csv/zoning_kselect.csv')
 const kselectData = computed<PlotlyDatum[]>(() => {
   const rows = kselect.value ?? []
   return [
-    { type: 'scatter', mode: 'lines+markers', name: 'silhouette', x: rows.map((r) => r.k), y: rows.map((r) => r.silhouette) },
+    { type: 'scatter', mode: 'lines+markers', name: 'silhueta', x: rows.map((r) => r.k), y: rows.map((r) => r.silhouette) },
     { type: 'scatter', mode: 'lines+markers', name: 'davies_bouldin', x: rows.map((r) => r.k), y: rows.map((r) => r.davies_bouldin), yaxis: 'y2' },
   ]
 })
@@ -74,16 +83,16 @@ const hexbinData = computed<PlotlyDatum[]>(() => {
 
 <template>
   <section>
-    <h1>Agro-Environmental Zoning (K={{ zoneCount }})</h1>
+    <h1>Zoneamento Agroambiental (K={{ zoneCount }})</h1>
     <p>
-      Offline sklearn KMeans on a decorrelated PCA input, classified server-side by
-      nearest-centroid band math (Part 10). Zones are labelled by
-      <code>comparative_segment</code> — the argmax of each segment's z-normalized
-      suitability, not raw dominance.
+      KMeans do sklearn offline sobre uma entrada PCA descorrelacionada, classificado
+      no servidor por matemática de banda do centróide mais próximo (Parte 10). As
+      zonas são rotuladas por <code>comparative_segment</code> — o argmax da aptidão
+      z-normalizada de cada segmento, não a dominância bruta.
     </p>
 
     <MapPanel raster-path="zones_present.pmtiles">
-      <template #legend>Zone (click a card below for its profile)</template>
+      <template #legend><MapLegend :spec="mapLegend" /></template>
     </MapPanel>
 
     <div class="zone-buttons">
@@ -105,29 +114,29 @@ const hexbinData = computed<PlotlyDatum[]>(() => {
       :labels="labels"
       :total-n="totalN"
     />
-    <p v-else class="hint">Select a zone above to see its profile.</p>
+    <p v-else class="hint">Selecione uma zona acima para ver seu perfil.</p>
 
-    <h2>Why K={{ zoneCount }}? (k-selection diagnostics)</h2>
+    <h2>Por que K={{ zoneCount }}? (diagnóstico de seleção de k)</h2>
     <PlotlyChart
       :data="kselectData"
       :layout="{
         height: 280,
         xaxis: { title: { text: 'k' } },
-        yaxis: { title: { text: 'silhouette' } },
+        yaxis: { title: { text: 'silhueta' } },
         yaxis2: { title: { text: 'davies-bouldin' }, overlaying: 'y', side: 'right' },
       }"
     />
 
-    <h2>Factor variance decomposition</h2>
+    <h2>Decomposição da variância dos fatores</h2>
     <select v-model="selectedFvSegment">
       <option v-for="s in segmentOrder" :key="s" :value="s">{{ labels[s] ?? s }}</option>
     </select>
     <PlotlyChart :data="factorVarianceData" :layout="{ height: 260 }" />
 
-    <h2>Scale mismatch: climate vs. terrain+soil roughness</h2>
+    <h2>Descompasso de escala: rugosidade clima vs. relevo+solo</h2>
     <p v-if="roughnessRatio">
-      At TerraClimate's own native scale (4,750 m), terrain+soil local variability is
-      <strong>{{ roughnessRatio.toFixed(0) }}x</strong> climate's.
+      Mesmo na escala nativa do TerraClimate (4.750 m), a variabilidade local de
+      relevo+solo é <strong>{{ roughnessRatio.toFixed(0) }}x</strong> a do clima.
     </p>
     <PlotlyChart :data="hexbinData" :layout="{ height: 320 }" />
   </section>

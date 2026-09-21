@@ -2,14 +2,17 @@
 import type { Data as PlotlyDatum } from 'plotly.js'
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import MapLegend from '../components/MapLegend.vue'
 import type { ChoroplethLayer } from '../components/MapPanel.vue'
 import MapPanel from '../components/MapPanel.vue'
 import PlotlyChart from '../components/PlotlyChart.vue'
 import StatChip from '../components/StatChip.vue'
 import { useCsv } from '../composables/useCsv'
 import { useJson } from '../composables/useJson'
+import { gradientFromStops, zoneLegend } from '../legends'
+import { zonePalette } from '../palettes'
 import { useSelectionStore } from '../stores/useSelectionStore'
-import type { MunicipalRankingRow, SegmentsConfig } from '../types/data'
+import type { MunicipalRankingRow, SegmentsConfig, ZoneProfileRow } from '../types/data'
 
 const route = useRoute()
 const router = useRouter()
@@ -17,6 +20,10 @@ const selection = useSelectionStore()
 
 const { data: rows } = useCsv<MunicipalRankingRow>('csv/municipal_ranking.csv')
 const { data: segmentsCfg } = useJson<SegmentsConfig>('json/segments.json')
+// Zone count is read from the data, never hardcoded — zoning is K=10 today but has
+// changed before (was K=7) and may again.
+const { data: zoneProfiles } = useCsv<ZoneProfileRow>('csv/zone_profiles.csv')
+const zoneCount = computed(() => zoneProfiles.value?.length ?? 0)
 const segmentOrder = computed(() => (segmentsCfg.value ? Object.keys(segmentsCfg.value.segments) : []))
 const labels = computed<Record<string, string>>(() =>
   segmentsCfg.value
@@ -48,13 +55,47 @@ watch(
   },
 )
 
-const colorField = ref<'suit_soybean' | 'suit_sugarcane' | 'suit_other_crops' | 'zone'>('suit_soybean')
+type ColorField = 'suit_soybean' | 'suit_sugarcane' | 'suit_other_crops' | 'zone' | 'delta_other_crops' | 'underused_soybean'
+
+const COLOR_FIELD_LABELS_PT: Record<ColorField, string> = {
+  suit_soybean: 'Aptidão: Soja',
+  suit_sugarcane: 'Aptidão: Cana-de-açúcar',
+  suit_other_crops: 'Aptidão: Outras culturas',
+  zone: 'Zona',
+  delta_other_crops: 'ΔS: Outras culturas (SSP5-8.5, 2051-70)',
+  underused_soybean: 'Subutilização: Soja',
+}
+
+const colorField = ref<ColorField>('suit_soybean')
 const choropleth = computed<ChoroplethLayer>(() => {
   if (colorField.value === 'zone') {
+    const n = zoneCount.value || 10
+    const colors = zonePalette(n)
     return {
       path: 'municipal_ranking.geojson',
       property: 'zone',
-      stops: Array.from({ length: 10 }, (_, i) => [i, `hsl(${(i * 36) % 360}, 60%, 55%)`]),
+      stops: colors.map((color, i) => [i, color]),
+    }
+  }
+  if (colorField.value === 'delta_other_crops') {
+    return {
+      path: 'municipal_ranking.geojson',
+      property: colorField.value,
+      stops: [
+        [-0.1, '#b2182b'],
+        [0, '#f7f7f7'],
+        [0.1, '#2166ac'],
+      ],
+    }
+  }
+  if (colorField.value === 'underused_soybean') {
+    return {
+      path: 'municipal_ranking.geojson',
+      property: colorField.value,
+      stops: [
+        [0, '#f7f7f7'],
+        [1, '#d7301f'],
+      ],
     }
   }
   return {
@@ -66,6 +107,21 @@ const choropleth = computed<ChoroplethLayer>(() => {
       [1, '#1a9641'],
     ],
   }
+})
+
+const mapLegend = computed(() => {
+  if (colorField.value === 'zone') return zoneLegend(zoneCount.value || 10)
+  if (colorField.value === 'delta_other_crops') {
+    return gradientFromStops(COLOR_FIELD_LABELS_PT[colorField.value], choropleth.value.stops, (v) =>
+      v > 0 ? `+${v.toFixed(2)}` : v.toFixed(2),
+    )
+  }
+  if (colorField.value === 'underused_soybean') {
+    return gradientFromStops(COLOR_FIELD_LABELS_PT[colorField.value], choropleth.value.stops, (v) =>
+      v >= 1 ? 'subutilizado' : 'não subutilizado',
+    )
+  }
+  return gradientFromStops(COLOR_FIELD_LABELS_PT[colorField.value], choropleth.value.stops, (v) => v.toFixed(2))
 })
 
 function onFeatureClick(properties: Record<string, unknown>): void {
@@ -85,14 +141,30 @@ const barData = computed<PlotlyDatum[]>(() => {
     },
   ]
 })
+
+const deltaBarData = computed<PlotlyDatum[]>(() => {
+  const r = selected.value
+  if (!r) return []
+  return [
+    {
+      type: 'bar',
+      x: segmentOrder.value.map((s) => r[`delta_${s}` as keyof MunicipalRankingRow] as number),
+      y: segmentOrder.value.map((s) => labels.value[s] ?? s),
+      orientation: 'h',
+      marker: {
+        color: segmentOrder.value.map((s) => ((r[`delta_${s}` as keyof MunicipalRankingRow] as number) < 0 ? '#b2182b' : '#2166ac')),
+      },
+    },
+  ]
+})
 </script>
 
 <template>
   <section>
-    <h1>Municipal Explorer</h1>
-    <p>Click a municipality on the map, or search by name, to read its full suitability profile.</p>
+    <h1>Explorador Municipal</h1>
+    <p>Clique em um município no mapa, ou busque por nome, para ver seu perfil completo de aptidão.</p>
 
-    <input v-model="search" type="search" placeholder="Search municipality..." class="search-input" />
+    <input v-model="search" type="search" placeholder="Buscar município..." class="search-input" />
     <ul v-if="matches.length" class="search-results">
       <li v-for="m in matches" :key="m.NM_MUN">
         <button type="button" @click="selectMunicipality(m.NM_MUN)">{{ m.NM_MUN }}</button>
@@ -100,28 +172,42 @@ const barData = computed<PlotlyDatum[]>(() => {
     </ul>
 
     <label class="color-field-label">
-      Choropleth:
+      Coropletia:
       <select v-model="colorField">
-        <option value="suit_soybean">Suitability: Soybean</option>
-        <option value="suit_sugarcane">Suitability: Sugarcane</option>
-        <option value="suit_other_crops">Suitability: Other crops</option>
-        <option value="zone">Zone</option>
+        <option value="suit_soybean">Aptidão: Soja</option>
+        <option value="suit_sugarcane">Aptidão: Cana-de-açúcar</option>
+        <option value="suit_other_crops">Aptidão: Outras culturas</option>
+        <option value="zone">Zona</option>
+        <option value="delta_other_crops">&Delta;S: Outras culturas (SSP5-8.5, 2051-70)</option>
+        <option value="underused_soybean">Subutilização: Soja</option>
       </select>
     </label>
 
     <MapPanel :choropleth="choropleth" :outline="false" @feature-click="onFeatureClick">
-      <template #legend>Colored by {{ colorField }}</template>
+      <template #legend><MapLegend :spec="mapLegend" /></template>
     </MapPanel>
 
     <div v-if="selected" class="selected-panel">
       <h2>{{ selected.NM_MUN }} ({{ selected.SIGLA_UF }})</h2>
       <div class="stat-row">
-        <StatChip label="Zone" :value="selected.zone" />
-        <StatChip label="Soybean suitability" :value="selected.suit_soybean.toFixed(2)" />
+        <StatChip label="Zona" :value="selected.zone" />
+        <StatChip label="Aptidão — soja" :value="selected.suit_soybean.toFixed(2)" />
+        <StatChip
+          label="&Delta;S outras culturas (2051-70)"
+          :value="selected.delta_other_crops.toFixed(3)"
+          hint="SSP5-8.5, 2051-2070 — aptidão futura menos aptidão presente"
+        />
+        <StatChip
+          label="Subutilização: soja"
+          :value="`${(100 * selected.underused_soybean).toFixed(0)}%`"
+          hint="Parcela do município viável (S1/S2), mas não cultivada atualmente com soja"
+        />
       </div>
       <PlotlyChart :data="barData" :layout="{ height: 300, xaxis: { range: [0, 1] } }" />
+      <h3>&Delta;Aptidão por segmento (SSP5-8.5, 2051-2070)</h3>
+      <PlotlyChart :data="deltaBarData" :layout="{ height: 260 }" />
     </div>
-    <p v-else class="hint">No municipality selected yet.</p>
+    <p v-else class="hint">Nenhum município selecionado ainda.</p>
   </section>
 </template>
 
