@@ -1,4 +1,4 @@
-"""Build static data assets for docs/dashboard/public/data/ (docs/dashboard_ux_plan.md §2.3).
+"""Build static data assets for docs/dashboard/public/data/ (docs/dashboard_ux_plan.md §2).
 
 v2 scope (2026-09-20): the pipeline rebuild that was in flight when v1 was built has
 completed and is footprint-verified (tools/verify_assets.py). This script now pulls
@@ -15,7 +15,7 @@ tools/extract_present.py::municipal()) — this script never touches that file.
 
 Delta raster coverage is deliberately curated, not exhaustive: delta_* PMTiles cover 5
 segments (soybean/sugarcane/other_crops/conservation/solar) x 4 SSP/window combos = 20
-files (docs/dashboard_ux_plan.md §5's manifest). The dashboard no longer ships
+files. The dashboard no longer ships
 agreement_* (GCM ensemble agreement) rasters — the territory-mean agreement is ~0.999
 and near-uniform everywhere regardless of scenario/segment (see
 thesis/Chapters/03_methodology.tex's concordância paragraph and fig:ensemble-agreement),
@@ -456,7 +456,7 @@ def build_realized_rasters(only_band: str | None = None) -> None:
 # 6d. Feature-theme hero rasters (v2 Feature Themes route): one representative
 #     band per theme, domain from band_percentiles.json's P5/P95 (run
 #     `--only band_percentiles` first). No PNG gallery for the remaining ~30
-#     bands in this pass — deferred, see docs/dashboard_ux_plan.md §9 build log.
+#     bands in this pass — deferred.
 # =============================================================================
 HERO_BANDS = {
     "climate": "clim_aridity",

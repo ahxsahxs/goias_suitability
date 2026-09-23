@@ -2,7 +2,7 @@
 
 Single source of truth for palettes used by both `tools/make_figures.py` (thesis PNGs)
 and `tools/build_dashboard_assets.py` (dashboard PMTiles/Plotly), so the two never drift
-into different color scales for the same layer (docs/dashboard_ux_plan.md §2.2).
+into different color scales for the same layer (docs/dashboard_ux_plan.md §2).
 
 These hex lists are also mirrored by hand into `docs/dashboard/src/styles/tokens.css`.
 """
