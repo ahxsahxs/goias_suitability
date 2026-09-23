@@ -18,15 +18,12 @@ atual (QP2) consequente aqui.
 A geometria da área de interesse é derivada da Malha Municipal Digital oficial do IBGE (edição 2025,
 SIRGAS~2000/EPSG:4674, 246 municípios de Goiás mais o Distrito Federal), dissolvida em um polígono único
 que se estende aproximadamente da longitude $-53{,}25^\circ$ a $-45{,}90^\circ$ e da latitude
-$-19{,}50^\circ$ a $-12{,}39^\circ$. Essa malha substitui um produto global de limites administrativos
-(GAUL) usado numa iteração anterior: o artefato mesclado (\texttt{data/mart/malha\_municipal.gpkg}) é
+$-19{,}50^\circ$ a $-12{,}39^\circ$. O artefato mesclado (\texttt{data/mart/malha\_municipal.gpkg}) é
 carregado em memória e convertido em \texttt{ee.FeatureCollection}/\texttt{ee.Geometry} no lado do
 cliente a cada execução --- nunca exportado como \emph{asset} persistente do Earth Engine, preservando a
-filosofia de zero \emph{upload} (\S\ref{sec:cost}) --- com as geometrias simplificadas em memória
-(tolerância $\approx$111~m, cerca de 5$\times$ mais fina que a simplificação de 500~m do GAUL) antes de
-compor qualquer requisição ao Earth Engine. Para a fase de uso atual da terra, as próprias 247 unidades
-municipais dessa mesma malha --- não mais um produto administrativo global --- alimentam a agregação e
-o relato municipal.
+filosofia de zero \emph{upload} (\S\ref{sec:cost}) ---, com as geometrias simplificadas em memória antes
+de compor qualquer requisição ao Earth Engine. Para a fase de uso atual da terra, as próprias 247
+unidades municipais dessa mesma malha alimentam a agregação e o relato municipal.
 
 \section{Os sete segmentos de uso da terra}
 
@@ -104,8 +101,8 @@ ao mercado (Global Accessibility to Cities). Completam o conjunto a cobertura ge
 \S\ref{sec:phaseb} justifica o porquê), as áreas protegidas (WDPA), o carbono de biomassa acima do
 solo (Spawn \emph{et al.}) e o clima futuro (NASA NEX-GDDP-CMIP6, \citealp{Thrasher2022}).
 As entradas de \textbf{uso atual e validação} (Tabela~\ref{tab:src-realized} do Anexo) são as 247
-unidades municipais da Malha Municipal Digital do IBGE (edição 2025, substituindo o GAUL usado numa
-iteração anterior), as classificações anuais de uso da terra do MapBiomas \citep{Souza2020} e os produtos de
+unidades municipais da Malha Municipal Digital do IBGE (edição 2025), as classificações anuais de uso da
+terra do MapBiomas \citep{Souza2020} e os produtos de
 produtividade NPP/GPP do MODIS MOD17 \citep{Zhao2005}. O uso atual da terra e o indicador de produtividade
 servem estritamente para mascaramento, validação e caracterização descritiva; nunca entram no cálculo da
 viabilidade ou do agrupamento.

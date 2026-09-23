@@ -13,13 +13,13 @@ transição (Zona~4), um planalto periurbano (Zona~8) e um planalto alto e íngr
 viabilidade de culturas colapsa e a conservação é também o melhor uso absoluto (Zona~5, com
 74\% de Cerrado nativo). A soja, apesar de ter viabilidade absoluta alta em quase toda zona de
 cultivo, nunca é o melhor uso comparativo de nenhuma delas. Essa partição usa apenas
-atributos biofísicos --- nunca a cobertura da terra --- e ainda assim reproduz a geografia
+atributos biofísicos, nunca a cobertura da terra, e ainda assim reproduz a geografia
 observada do uso do território, o que sustenta sua plausibilidade. O padrão subjacente é que
 GO~e~DF é climaticamente quase uniforme: quem separa terra boa de terra ruim é o solo e o
 terreno, não o clima. Essa leitura carrega, portanto, o peso de dois produtos globais herdados
 sem validação local: o solo vem do OpenLandMap a 250~m, e o terreno do SRTM GL1 bruto a 30~m
-\citep{Farr2007}, reamostrado para a mesma grade; é a acurácia desse par de camadas --- não a do
-clima --- que se propaga diretamente para as fronteiras finas entre zonas (detalhado
+\citep{Farr2007}, reamostrado para a mesma grade; é a acurácia desse par de camadas, não a do
+clima, que se propaga diretamente para as fronteiras finas entre zonas (detalhado
 em~\S\ref{sec:limitations}).
 
 A projeção climática estende essa leitura a meados do século (QP3). A mudança é de magnitude
@@ -41,16 +41,16 @@ mais viável que a média disponível (soja: 0,935 nos pixels plantados contra 0
 apta). A discriminação por presença é forte para a soja sobre uma amostra estratificada
 espaço$\times$segmento (AUC~0,871, Boyce~0,964).
 
-Duas tensões merecem registro. Primeira, uma lacuna substancial entre potencial e uso atual ---
-41,8\% do território é viável para soja e ainda não cultivado, majoritariamente sobre pastagem
---- aponta para intensificação, não para abertura de novas áreas, o que é coerente com a
+Duas tensões merecem registro. Primeira, uma lacuna substancial separa potencial e uso atual:
+41,8\% do território é viável para soja e ainda não cultivado, majoritariamente sobre pastagem.
+Isso aponta para intensificação, não para abertura de novas áreas, o que é coerente com a
 trajetória já documentada para a fronteira agrícola do Cerrado \citep{Spera2017,Caballero2023}.
 Segunda, a verificação cruzada orientada por dados encontra o mapa baseado em conhecimento mais
 permissivo que o nicho realizado ($\kappa=+0{,}269$, concordância razoável mas não forte na
 escala de Landis \& Koch; o mapa de conhecimento marca 52,8\% do território como viável,
 contra 21,6\% do classificador orientado por dados). Como o clima é quase uniforme, os
 limiares fuzzy não podem ser estreitados por ele; parte dessa permissividade residual é
-provavelmente regra especialista ainda um pouco larga, e parte é o próprio sinal da QP2 --- terra
+provavelmente regra especialista ainda um pouco larga, e parte é o próprio sinal da QP2: terra
 capaz deixada sem uso por razões econômicas, de posse ou de logística que o modelo não capta.
 
 Por que esse $\kappa$ fica abaixo do que a AUC de presença isoladamente sugeriria (0,871) é
@@ -58,12 +58,12 @@ explicado em \S\ref{sec:validation-present}: são, no fundo, duas perguntas dife
 mesmo resultado.
 
 Essa leitura econômica tem respaldo na literatura sobre a fronteira agrícola do Cerrado. Em
-Goiás, a intensificação registrada entre 2000 e 2016 --- e não a abertura de novas áreas ---
+Goiás, a intensificação registrada entre 2000 e 2016, e não a abertura de novas áreas,
 respondeu por boa parte do ganho de produção: a lotação do rebanho bovino subiu de 1,17 para 1,24
 cabeças/hectare e a área de dupla safra soja-milho quase quadruplicou no período, ainda que entre
 50\% e 60\% das pastagens do Cerrado sigam degradadas \citep{Spera2017}. Recuperar essa pastagem
-para lavoura ou pecuária mais intensiva tem um custo de entrada --- calagem e correção da acidez
-do solo, mecanização, acesso a crédito --- que a viabilidade biofísica, por si só, não precifica;
+para lavoura ou pecuária mais intensiva tem um custo de entrada que a viabilidade biofísica, por
+si só, não precifica --- calagem e correção da acidez do solo, mecanização, acesso a crédito;
 \citet{Spera2017} reporta ainda que cerca de 40\% dos produtores brasileiros não têm título de posse da
 terra, o que restringe o acesso a crédito e, por essa via, a capacidade de intensificar mesmo onde
 o solo permite. Em escala de bioma, a conversão de pastagem para soja e outras culturas responde
@@ -81,7 +81,7 @@ controle de versão, sem custo de infraestrutura dedicada; isso o torna reexecut
 estados do Cerrado. Os sete segmentos são avaliados por um mecanismo comum de pertinência
 fuzzy/AHP e comparados em base normalizada (escore~z), com a regra de agregação ajustada a cada
 caso: média geométrica (fator limitante) para os segmentos de produção, e média aritmética
-ponderada para a conservação, tratada como índice de valor e não de estado --- construída a
+ponderada para a conservação, tratada como índice de valor e não de estado, construída a
 partir de critérios de conectividade, heterogeneidade de habitat e serviço de carbono/água, em
 vez de simplesmente repetir a cobertura nativa atual.
 
@@ -104,15 +104,15 @@ para trabalho futuro.
 
 \begin{itemize}
   \item \textbf{Escopo biofísico, não econômico.} O modelo capta potencial agroclimático mais
-    um \emph{proxy} de acessibilidade por tempo de viagem --- não preços, posse da terra,
+    um \emph{proxy} de acessibilidade por tempo de viagem, não preços, posse da terra,
     crédito ou logística. Parte da lacuna potencial \emph{versus} realizado é exatamente essa
     geografia econômica ausente.
   \item \textbf{Solo e terreno de produtos globais únicos.} A decomposição por fator mostra que,
     com o clima quase uniforme, solo e terreno carregam a maior parte da discriminação espacial
     (\S\ref{sec:interpretation}); o atlas herda, portanto, a acurácia de dois produtos globais que
     o desenho sem \emph{upload} impede de validar contra um levantamento local. O solo vem do
-    OpenLandMap a 250~m. O terreno vem do SRTM GL1 bruto a 30~m \citep{Farr2007} --- não uma
-    versão com preenchimento de vazio, como o NASADEM ou o CGIAR-CSI v4.1 ---, com acurácia
+    OpenLandMap a 250~m. O terreno vem do SRTM GL1 bruto a 30~m \citep{Farr2007}, não uma
+    versão com preenchimento de vazio como o NASADEM ou o CGIAR-CSI v4.1, com acurácia
     vertical absoluta especificada em~16~m (\emph{linear error} a 90\% de confiança) e vazios de
     sombra de radar/água que o \emph{pipeline} não trata antes de reamostrar para 250~m por média
     (elevação, declive, orientação) ou interpolação bilinear (índice topográfico de umidade).
@@ -123,46 +123,42 @@ para trabalho futuro.
     PET/VPD/umidade do solo; CHIRPS/CHIRTS cobrem só uma variável cada e, a 0,05\textdegree{}
     ($\approx$5,6~km), são \emph{mais} grosseiros que o TerraClimate; ERA5-Land/AgERA5 têm o
     conjunto completo de variáveis e o período correto mas ficam a 0,1\textdegree{}
-    ($\approx$9--11~km, mais de 2$\times$ pior), e o AgERA5 sequer está no catálogo oficial. Que
-    o clima atue como comporta e não como fonte de estrutura fina não é apenas uma leitura
-    qualitativa: a variabilidade espacial local (desvio-padrão em janela móvel, bandas
-    padronizadas) de terreno+solo é 42$\times$ maior que a do clima mesmo na janela de 4,75~km
-    --- a própria escala nativa do TerraClimate, a mais favorável possível a ele --- e o padrão é
-    quase uniforme em todo o território (Figura~\ref{fig:scale-mismatch},
-    Tabela~\ref{tab:scale-mismatch} do Anexo). A resolução nominal do clima é, portanto,
-    enganosa apenas em aparência: o impacto prático é pequeno porque a estrutura fina do atlas
-    nunca dependeu dela. Essa leitura --- clima \emph{versus} terreno+solo como dois blocos ---
-    simplifica, porém, a estrutura real do modelo se aplicada ingenuamente por \emph{prefixo de
+    ($\approx$9--11~km, mais de 2$\times$ pior), e o AgERA5 sequer está no catálogo oficial. Que o
+    clima atue como comporta, e não como fonte de estrutura fina, já foi demonstrado
+    quantitativamente (\S\ref{sec:atlas-present}, mapa de magnitude na
+    Figura~\ref{fig:scale-mismatch}): a resolução nominal do clima é enganosa apenas em
+    aparência, pois a estrutura fina do atlas nunca dependeu dela. Essa leitura, porém, simplifica
+    a estrutura real do modelo se aplicada ingenuamente por \emph{prefixo de
     origem do dado} em vez de por \emph{papel temático}: agregando a decomposição por fator
     (Figura~\ref{fig:factor-variance}) por tema, e não só por segmento isolado, o clima explica
     0,13 da variância territorial média, mas essa média esconde dois extremos. Para a geração
-    solar, a irradiância (\texttt{clim\_srad}, 0,36) é um sinal climático genuíno --- a única
+    solar, a irradiância (\texttt{clim\_srad}, 0,36) é um sinal climático genuíno: a única
     variável verdadeiramente espacial de origem climática que domina um segmento. Já para a
     pecuária, o fator dominante nominalmente rotulado ``clima'' é a umidade do solo do TerraClimate
     (\texttt{clim\_soil\_moist}, 0,58): tematicamente, essa variável descreve armazenamento de
     água no solo, não um gradiente climático espacial, e vem rotulada ``clima'' apenas porque o
     produto de origem é um balanço hídrico climático. Reclassificando-a pelo papel temático em vez
     do prefixo da banda, a parcela de terreno+solo da pecuária sobe de 0,42 para 1,00 e sua parcela
-    climática cai a zero --- coerente com o restante das culturas. A nomenclatura de origem do
+    climática cai a zero, coerente com o restante das culturas. A nomenclatura de origem do
     dado, portanto, não deve ser confundida com o papel temático da variável no modelo: é a
     padronização (\S\ref{sec:fuzzy-standard}) e a estrutura de agregação por fator que definem o
     que conta como ``clima'', não o catálogo de onde a banda foi extraída.
   \item \textbf{Sobrepermissividade residual das culturas.} As superfícies de culturas
-    permanecem mais permissivas que o nicho realizado ($\kappa=+0{,}269$ para a soja, área
-    viável 52,8\% contra 21,6\% do classificador orientado por dados). Separar regra especialista
-    larga de lacuna potencial \emph{versus} realizado exigiria, ainda assim, um alvo de
-    calibração ancorado em rendimento, que este desenho não usa.
+    permanecem mais permissivas que o nicho realizado (\S\ref{sec:interpretation},
+    $\kappa=+0{,}269$ para a soja). Separar regra especialista larga de lacuna potencial
+    \emph{versus} realizado exigiria, ainda assim, um alvo de calibração ancorado em rendimento,
+    que este desenho não usa.
   \item \textbf{Validador de produtividade é um substituto.} O NPP/GPP do MODIS mede produção
     primária da vegetação, não rendimento agronômico \citep{Turner2006,He2018}, e a confusão
     entre coberturas limita seu uso a contexto descritivo; AUC e Boyce seguem como validadores
     primários de presença de cultura.
   \item \textbf{Piscicultura tem uso realizado quase inexistente no MapBiomas.} A revisão de
     2026-09 dos limiares e pesos (\S\ref{sec:ahp}) encontrou apenas um único pixel de aquicultura
-    mapeado pelo MapBiomas em todo o território GO~e~DF --- amostra insuficiente para ancorar
+    mapeado pelo MapBiomas em todo o território GO~e~DF, amostra insuficiente para ancorar
     limiares ou validar presença contra esse uso realizado. A calibração da piscicultura
     permanece ancorada na terra genericamente \emph{disponível}, não no nicho realizado
     (\texttt{tools/anchor\_breakpoints.py}), e nenhum validador de presença (Boyce/AUC) é
-    reportado para esse segmento pela mesma razão --- uma lacuna genuína, não um problema de
+    reportado para esse segmento pela mesma razão, uma lacuna genuína, não um problema de
     metodologia corrigível dentro do desenho GEE-nativo atual.
   \item \textbf{Fronteiras municipais e projeção futura.} O limite administrativo usado é mais
     grosseiro que uma malha municipal de precisão nacional. E a projeção CMIP6, como qualquer
@@ -184,14 +180,12 @@ Uma terceira direção é acrescentar uma camada econômica (preços, posse da t
 que converteria parte da lacuna potencial \emph{versus} realizado de resíduo em quantidade modelada.
 Uma quarta é explorar modelos espacialmente explícitos (por exemplo, regressão com defasagem
 espacial ou um termo autorregressivo condicional) para capturar efeitos de vizinhança entre
-células --- o mecanismo fuzzy/AHP atual trata cada pixel de forma independente, e já produz uma
+células: o mecanismo fuzzy/AHP atual trata cada pixel de forma independente, e já produz uma
 interpretação espacial coerente (\S\ref{sec:interpretation}), mas não modela explicitamente a
 dependência espacial entre células vizinhas, que poderia refinar tanto o zoneamento quanto a
 leitura de incerteza da projeção futura.
 
-Também fica pendente publicar os entregáveis (como o código fonte, um atlas interativo, um \emph{ranking}
-municipal de oportunidade/vulnerabilidade), para que estes sejam exploráveis
-e reexecutáveis para outros estados do Cerrado. Por fim, cabe revisar os critérios de
+Por fim, cabe revisar os critérios de
 valor de conservação e a direção de sua resposta climática (perda de viabilidade \emph{versus}
 prioridade crescente de proteção), no espírito do planejamento de compromissos entre conservação e
 restauração já aplicado ao Cerrado \citep{Schuler2022}.

@@ -69,13 +69,12 @@ The split is *biophysical potential* (A) vs *realized-use & validation* (B) — 
 
 **Phase A + Phase B modelling are complete — Parts 1–14 BUILT & footprint-verified.** All three
 RQs are answered and written into the thesis (chapters 01–05). **Part 15 (the interactive atlas)
-has a first working build and is live** — a static Vue 3 + TypeScript + Vite dashboard
-(`docs/dashboard/`) superseding the old `gee_js/atlas_app.js` EE-App plan (see
-`docs/dashboard_ux_plan.md`) — all 11 routes are in place, deployed via `deploy-dashboard.yml` to
-GitHub Pages at <https://ahxsahxs.github.io/goias_suitability> (the repo-settings flip is done).
-One thing is still open before it's finished: an i18n pass and trimming some images (noted by the
-author in the commit that shipped it) before it's linked from the thesis
-(`05_discussion_conclusion.tex` still lists it as future work, deliberately).
+is finished and live** — a static Vue 3 + TypeScript + Vite dashboard (`docs/dashboard/`)
+superseding the old `gee_js/atlas_app.js` EE-App plan (see `docs/dashboard_ux_plan.md`) — all 11
+routes are in place, deployed via `deploy-dashboard.yml` to GitHub Pages at
+<https://ahxsahxs.github.io/goias_suitability> (the repo-settings flip is done). The i18n pass and
+image trim are done, and it is now linked from the thesis (`02_materials.tex`); the thesis text no
+longer lists it as future work.
 
 | Part | State | Notes |
 |---|---|---|
@@ -84,7 +83,7 @@ author in the commit that shipped it) before it's linked from the thesis
 | 10 — zoning | **BUILT — K=10**, offline `k=2..20` sweep, silhouette peaks at k=10 (0.187) | `zones_present`, offline sklearn KMeans on a decorrelated PCA input (`src/zoning.py`), classified server-side by nearest-centroid band math. Zones labelled by `comparative_segment` (argmax of each segment's z-normalized suitability), not raw dominance. `zone_profiles.csv` + `zoning_kselect.csv`. |
 | 11 — CMIP6 shift | **BUILT** | `suit_future_*`, `delta_*`, `agreement_*` assets across SSP2-4.5/SSP5-8.5 × 2031–2050/2051–2070 × 5-GCM ensemble. Delta-change engine validated against an identity change-factor (Δ=0.000). No structurally climate-invariant segment remains — every segment (including conservation and solar) moves under at least one climate lever. |
 | 12–14 — Phase B | **BUILT** | `realized_vs_potential`, `municipal_godf` (IBGE malha municipal aggregation, 247 municipalities), MOD17 productivity validation (municipal Spearman + within-crop GPP gradient), RF presence cross-check (Cohen's κ = +0.269, AUC = 0.871 for soybean), AHP consistency ratios. See `config/ahp_matrices.yaml` and `thesis/Chapters/04_results.tex` / `05_discussion_conclusion.tex` for the full numbers. |
-| 15 — synthesis | **First working build shipped and live, needs polish** | `docs/dashboard/` (Vue 3 + TS + Vite SPA): 11 routes covering every Part, built via `tools/build_dashboard_assets.py` from the assets in this table + config YAML. CI (`.github/workflows/deploy-dashboard.yml`) builds/type-checks/deploys successfully to GitHub Pages at <https://ahxsahxs.github.io/goias_suitability>. See `docs/dashboard_ux_plan.md` for the architecture. |
+| 15 — synthesis | **BUILT & live** | `docs/dashboard/` (Vue 3 + TS + Vite SPA): 11 routes covering every Part, built via `tools/build_dashboard_assets.py` from the assets in this table + config YAML. CI (`.github/workflows/deploy-dashboard.yml`) builds/type-checks/deploys successfully to GitHub Pages at <https://ahxsahxs.github.io/goias_suitability>, i18n and image trim done, and it's linked from `02_materials.tex`. See `docs/dashboard_ux_plan.md` for the architecture. |
 
 - **Asset backups:** pre-recalibration and pre-reconceptualization snapshots were copied server-side
   under `projects/probformer/assets/goias_backup_*` before each major re-export cascade
@@ -96,8 +95,9 @@ author in the commit that shipped it) before it's linked from the thesis
   EE_PROJECT=probformer uv run python tools/verify_assets.py
   ```
 
-**Immediate next steps:** an i18n pass + image trim on the dashboard, then link it (and its live
-URL, <https://ahxsahxs.github.io/goias_suitability>) from `05_discussion_conclusion.tex`.
+**Immediate next steps:** the dashboard and its thesis link are done; what remains is the Week 3
+text work tracked in the revision artifact (§10) — rewriting "Trabalhos futuros" to drop delivered
+items, a final cross-chapter consistency pass, compiling the PDF, and the adviser checkpoint.
 Everything else needed for the thesis (all §4 tables, figures, the three RQs) is already built and
 written.
 
@@ -352,9 +352,10 @@ assuming what's done, since it's a live checklist, not a static plan:
 
 **https://claude.ai/artifact/HrMpse386bFykBeBsBeJN6** ("Cronograma de revisão — tese")
 
-All 7 examiner points and the author TODOs are resolved in the thesis text. Two follow-ups remain
-open (tracked in §4 above): the dashboard's i18n/image polish before it's linked from the thesis,
-and enabling GitHub Pages.
+All 7 examiner points and the author TODOs are resolved in the thesis text. The two dashboard
+follow-ups tracked here previously — i18n/image polish and enabling GitHub Pages — are both done
+(§4). What remains is the Week 3 text work in the artifact: rewriting "Trabalhos futuros," a final
+cross-chapter consistency pass, compiling the PDF, and the adviser checkpoint.
 
 One decision worth keeping visible here rather than only in the artifact: examiner point 5 (climate
 data at TerraClimate's ~4 km resolution vs. 250 m for everything else) was resolved by keeping

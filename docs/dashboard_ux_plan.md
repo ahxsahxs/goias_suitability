@@ -5,8 +5,7 @@ that is the project's **only** interactive deliverable (Part 15). It superseded 
 retired `gee_js/atlas_app.js` (Earth Engine App) plan. The dashboard was built against this spec —
 see `CLAUDE.md` §4 for current build/deploy status, and the commit history
 (`41a7dfe`, `798f45e`, `be25a40`) for how it was built. It is live at
-<https://ahxsahxs.github.io/goias_suitability>. One follow-up remains before it's linked from the
-thesis: an i18n pass + trimming some images.
+<https://ahxsahxs.github.io/goias_suitability> and linked from the thesis.
 
 ---
 

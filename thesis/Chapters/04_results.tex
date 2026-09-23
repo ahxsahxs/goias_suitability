@@ -38,7 +38,7 @@ A superfície de valor de conservação é genuinamente informativa (S2+ 27,8\%)
 Ela agrega, de forma compensatória, a conectividade a áreas protegidas, a
 heterogeneidade do terreno, o serviço de armazenamento de carbono, o serviço de água e a
 marginalidade da terra. É bem graduada e identifica
-uma zona cujo melhor uso absoluto é a própria conservação --- o planalto alto e íngreme onde a
+uma zona cujo melhor uso absoluto é a própria conservação: o planalto alto e íngreme onde a
 viabilidade de culturas colapsa (\S\ref{sec:zoning-results}, Zona~5). A geração fotovoltaica
 atinge 20,5\% em S2+, discriminando as planícies mais baixas, quentes e de alta irradiância dos
 planaltos mais frios. Essas planícies são favorecidas pela irradiância e por um fator de índice
@@ -52,8 +52,8 @@ Uma decomposição da variância por fator torna essa leitura quantitativa
 variância espacial da viabilidade de cada segmento em parcelas por fator, os fatores climáticos
 quase uniformes quase nada contribuem para a \emph{variação} entre terra boa e ruim. Para a
 soja, o declive responde por 0,78 da variância e a argila por 0,22, com o clima $\approx$ 0. Na
-cana-de-açúcar a ordem se inverte --- é a argila (0,69) que domina, com o declive respondendo por
-0,31 ---, um lembrete de que ``solo e terreno discriminam, clima não'' é o padrão robusto entre
+cana-de-açúcar a ordem se inverte: é a argila (0,69) que domina, com o declive respondendo por
+0,31, um lembrete de que ``solo e terreno discriminam, clima não'' é o padrão robusto entre
 segmentos, não a identidade do fator vencedor dentro de cada um. As outras culturas anuais são o
 caso mais extremo: o declive sozinho responde por 0,99 da variância, com todo o resto
 (inclusive solo) $\approx$ 0. A pecuária é governada pela umidade do solo (0,58), pelo carbono
@@ -65,7 +65,7 @@ fatores climáticos móveis em $\approx$ 0 no presente.
 
 Essa concentração em um ou dois fatores por segmento não decorre de peso AHP enviesado a favor
 deles. Pelo contrário: a revisão de pesos de 2026-09 (\S\ref{sec:ahp}) deslocou peso
-deliberadamente \emph{para} os fatores de maior poder discriminante em cada segmento --- exatamente
+deliberadamente \emph{para} os fatores de maior poder discriminante em cada segmento, exatamente
 o oposto de um viés que infla artificialmente sua concentração de variância. Mesmo assim, a
 concentração não diminuiu: as razões máx./mín. de peso dos sete segmentos ficaram todas na mesma
 ordem de grandeza pós-recalibração (2,2--4,3$\times$; Tabela~\ref{tab:spec-longtable} do Anexo,
@@ -73,26 +73,25 @@ com a piscicultura mais equilibrada em 2,7$\times$ e a cana-de-açúcar menos em
 o contraste que uma calibração enviesada precisaria mostrar entre um segmento ``artificialmente
 concentrado'' e outro ``genuinamente equilibrado''. Que dar mais peso justamente aos fatores mais
 discriminantes não tenha reduzido a concentração de variância é evidência \emph{mais forte}, não
-mais fraca, de que a saturação é geográfica --- o território realmente não varia nos demais
-fatores --- e não um artefato de como os pesos foram elicitados.
+mais fraca, de que a saturação é geográfica: o território realmente não varia nos demais
+fatores, e não um artefato de como os pesos foram elicitados.
 Ressalva: para soja e outras culturas anuais, apenas argila (e declive) de fato discriminam
-espaço --- pH e carbono orgânico do solo também saturam (parcela $\approx$ 0, apesar de não
+espaço; pH e carbono orgânico do solo também saturam (parcela $\approx$ 0, apesar de não
 serem climáticos), de modo que ``solo'' é, para essas duas culturas, um discriminador mais
 estreito do que ``solo e terreno'' em conjunto. Os fatores climáticos atuam, assim, como
 comportas de viabilidade: eles abrem ou fecham o intervalo possível, mas não desenham a
-estrutura espacial fina do atlas, que repousa sobre solo e terreno --- uma dependência retomada
+estrutura espacial fina do atlas, que repousa sobre solo e terreno, uma dependência retomada
 como limitação (\S\ref{sec:limitations}).
 
-A decomposição por fator é agregada por pixel amostrado --- ela mostra \emph{quanto} cada fator
+A decomposição por fator é agregada por pixel amostrado. Ela mostra \emph{quanto} cada fator
 contribui em média, mas não \emph{onde} nem em qual escala espacial essa contribuição se
 sustenta. Para responder a isso diretamente, o desvio-padrão local (janela móvel) de cada banda
-padronizada da pilha de atributos foi calculado e agregado por tema --- clima
-\emph{versus} terreno+solo --- em três raios de janela, incluindo 4,75~km, o tamanho da própria
-célula nativa do TerraClimate (Figura~\ref{fig:scale-mismatch} e Tabela~\ref{tab:scale-mismatch}
-do Anexo). Mesmo nessa escala --- a mais favorável possível ao clima, por ser a sua própria
-resolução nativa --- a variabilidade espacial local de terreno+solo é 42$\times$ maior que a do
-clima ($\log_2 = 5{,}40$); em janelas mais finas (750~m, 250~m) a razão sobe para 198$\times$ e
-320$\times$. O mapa confirma que esse padrão é quase uniforme em todo o território, não um
+padronizada da pilha de atributos foi calculado e agregado por tema, clima e terreno+solo, em
+três raios de janela. Um deles, 4,75~km, é o tamanho da própria célula nativa do TerraClimate
+(Figura~\ref{fig:scale-mismatch} e Tabela~\ref{tab:scale-mismatch} do Anexo), a escala mais
+favorável possível ao clima por ser a sua própria resolução nativa. Mesmo nela, a variabilidade
+espacial local de terreno+solo é 42$\times$ maior que a do clima ($\log_2 = 5{,}40$); em janelas
+mais finas (750~m, 250~m) a razão sobe para 198$\times$ e 320$\times$. O mapa confirma que esse padrão é quase uniforme em todo o território, não um
 artefato de algumas células: terreno e solo produzem estrutura espacial fina em praticamente
 toda a extensão de GO~e~DF, enquanto o clima permanece quase plano até mesmo na sua própria
 escala nativa.
@@ -101,18 +100,18 @@ escala nativa.
 Essa uniformidade é \emph{espacial} (entre lugares, num mesmo instante), não \emph{temporal}
 (num mesmo lugar, ao longo do tempo): uma superfície climática pode ser quase plana no espaço e
 ainda assim se deslocar substancialmente no tempo, em todo o território de uma vez. É
-precisamente esse deslocamento temporal --- não a estrutura espacial fina, que continua a cargo
-do terreno e do solo --- que a projeção CMIP6 explora (\S\ref{sec:shift}).
+precisamente esse deslocamento temporal, e não a estrutura espacial fina que continua a cargo
+do terreno e do solo, que a projeção CMIP6 explora (\S\ref{sec:shift}).
 
 A Figura~\ref{fig:climate-shift} torna esse deslocamento concreto para as duas entradas
 climáticas mais diretamente movidas pelo conjunto de GCMs: a precipitação anual cai (mediana
 territorial de 1.531~mm para 1.429~mm) e a temperatura média do trimestre mais quente sobe
 substancialmente (de 25,3~$^\circ$C para 29,1~$^\circ$C) sob SSP5-8.5 2051--2070. Note-se que o
-padrão espacial de cada mapa --- suave, sem a estrutura fina de bacias e microrregiões que
-aparece nos mapas de solo e terreno --- permanece igualmente suave no futuro: é a mesma
+padrão espacial de cada mapa, suave e sem a estrutura fina de bacias e microrregiões que
+aparece nos mapas de solo e terreno, permanece igualmente suave no futuro: é a mesma
 transformação por fatores de mudança (\S\ref{sec:cmip6}) aplicada ponto a ponto, deslocando o
 território inteiro de uma vez, sem introduzir estrutura espacial nova. O mecanismo de projeção
-em si --- fatores de mudança do conjunto de GCMs aplicados à climatologia mensal observada --- é
+em si, fatores de mudança do conjunto de GCMs aplicados à climatologia mensal observada, é
 detalhado em \S\ref{sec:cmip6}.
 
 \begin{figure}[H]
@@ -135,15 +134,9 @@ Anexo.}
 
 \section{Zoneamento agroambiental}\label{sec:zoning-results}
 
-O número de zonas foi selecionado em $k = 2,\dots,10$ pelas estatísticas de silhueta,
-Davies--Bouldin, \emph{gap} e estabilidade de subamostras (índice de Rand ajustado, ARI) em
-conjunto. Neste território fracamente agrupado, a silhueta é quase plana (0,17--0,19) e o
-Davies--Bouldin fica próximo em $k=7$, $8$ e $10$, de modo que nenhum dos dois decide sozinho.
-$k = 10$ é escolhido porque combina a silhueta mais alta de todo o intervalo (0,187) com a
-estabilidade de longe mais alta sob subamostragem (ARI $= 0{,}962$, contra $0{,}687$ em $k=7$) ---
-um \emph{sweep} estendido a $k = 2,\dots,20$ confirma que esse pico não é um artefato de faixa
-truncada (a silhueta cai para 0,177 em $k=11$ e nunca volta a superar 0,187 até $k=20$); o painel
-completo de validade e estabilidade é a Figura~\ref{fig:cluster-validity} do Anexo. As dez zonas
+O número de zonas, $k=10$, foi selecionado por critérios de validade e estabilidade sob
+subamostragem (\S\ref{sec:zoning}); o painel completo de validade e estabilidade é a
+Figura~\ref{fig:cluster-validity} do Anexo. As dez zonas
 repartem o território em parcelas de 21,2\%, 5,9\%, 10,5\%, 2,8\%, 11,2\%, 16,5\%, 6,6\%, 4,9\%,
 3,9\% e 16,6\% da área de interesse. As médias biofísicas discriminantes por zona estão na
 Tabela~\ref{tab:zone-means} do Anexo.
@@ -175,15 +168,15 @@ As dez zonas admitem uma interpretação fisiográfica clara, resolvendo seis vo
 comparativas distintas --- pecuária, piscicultura, outras culturas, conservação, geração
 fotovoltaica e cana-de-açúcar --- entre as quais a \textbf{conservação} sozinha responde por
 três das dez zonas (4, 5 e 8). A soja, apesar da maior viabilidade absoluta em várias zonas,
-nunca é o melhor uso \emph{comparativo} de nenhuma delas --- outro segmento sempre se destaca
+nunca é o melhor uso \emph{comparativo} de nenhuma delas: outro segmento sempre se destaca
 mais em relação à sua própria média territorial.
 
 \begin{itemize}
   \item \textbf{Zona 1 (21,2\%) --- planalto alto e argiloso.} A mais argilosa (39,7\%) e mais
     alta (860~m) de todas as dez zonas; a maior viabilidade de pecuária do território (0,65).
     Apesar do melhor uso comparativo ser a pecuária, o uso atual é dividido quase igualmente
-    entre soja (32,4\%), pastagem (32,3\%) e vegetação nativa (29,9\%) --- a maior parcela
-    realizada de soja de qualquer zona, um lembrete de que ``comparativo'' é um rótulo de
+    entre soja (32,4\%), pastagem (32,3\%) e vegetação nativa (29,9\%), a maior parcela
+    realizada de soja de qualquer zona. É um lembrete de que ``comparativo'' é um rótulo de
     escore~z, não de favorabilidade absoluta.
   \item \textbf{Zona 2 (5,9\%) --- baixada ripária.} Densidade de drenagem muito acima da
     maioria das zonas e a maior viabilidade de piscicultura de todo o território (0,55, mais do
@@ -200,7 +193,7 @@ mais em relação à sua própria média territorial.
     íngreme (14,2$^\circ$, cerca de três vezes qualquer outra zona) e a mais rica em carbono
     orgânico do solo (16,5~g/kg). A viabilidade de culturas colapsa aqui (soja 0,08), enquanto a
     viabilidade de conservação é a mais alta de todas (0,56) e a cobertura nativa realizada
-    chega a 73,9\% --- de longe a maior do território. Seu melhor uso comparativo é a
+    chega a 73,9\%, de longe a maior do território. Seu melhor uso comparativo é a
     \textbf{conservação}, que aqui é também o melhor uso \textbf{absoluto}.
   \item \textbf{Zona 6 (16,5\%) --- planície arenosa de baixa drenagem.} A maior densidade
     amostral de todas as zonas, solo arenoso (25\% de argila) e a menor densidade de drenagem do
@@ -251,7 +244,7 @@ Que apenas o clima avance não contradiz a quase-uniformidade espacial documenta
 \S\ref{sec:atlas-present} (Figura~\ref{fig:scale-mismatch}): hoje, a maioria das pertinências
 climáticas está \textbf{saturada} ($\approx$1,0, ex.: a precipitação anual da soja já está bem
 dentro da faixa ótima em quase todo o território), e é por isso que o clima quase não
-discrimina espaço no presente --- um fator no teto não distingue lugares. Sob os fatores de
+discrimina espaço no presente: um fator no teto não distingue lugares. Sob os fatores de
 mudança do CMIP6, porém, a mesma variável pode sair desse patamar e entrar no trecho inclinado
 da curva de pertinência (ou cruzar um limiar), e como a agregação é uma média geométrica
 ponderada (produto de pertinências), essa queda se propaga de forma multiplicativa. O
@@ -259,7 +252,7 @@ deslocamento climático em si é espacialmente suave (\S\ref{sec:atlas-present})
 resultante em $\Delta S$ \emph{não} é uniforme: um local já perto de uma fronteira de classe
 FAO por causa de terreno/solo marginais é empurrado para a classe inferior por um pequeno
 recuo climático, enquanto um local com terreno/solo excelentes absorve o mesmo recuo sem mudar
-de classe --- daí a realocação de melhor cultura concentrada em fronteiras específicas
+de classe; daí a realocação de melhor cultura concentrada em fronteiras específicas
 (Figura~\ref{fig:best-crop} do Anexo), e não um deslocamento uniforme do mapa inteiro. Em suma:
 terreno e solo determinam \emph{onde} o sistema está sensível; o clima fornece o empurrão
 \emph{temporal} que decide se essa sensibilidade se materializa.
@@ -268,7 +261,7 @@ O sinal projetado é \textbf{modesto em magnitude, mas altamente consistente em 
 mudanças médias territoriais vão de alguns milésimos, nas culturas comerciais resilientes, a
 cerca de oito centésimos, na conservação sob a trajetória mais severa (Tabela~\ref{tab:shift-mean}).
 Ainda assim, a fração dos GCMs que concordam quanto ao sinal da mudança é alta para todo
-segmento, cenário e janela sensíveis ao clima --- a concordância média territorial para outras
+segmento, cenário e janela sensíveis ao clima: a concordância média territorial para outras
 culturas anuais sob SSP5-8.5 2051--2070, o caso mais severo, está anotada na
 Figura~\ref{fig:ensemble-agreement} do Anexo. A projeção identifica \textbf{três segmentos
 expostos}: a conservação, outras culturas anuais e geração fotovoltaica; não deixando nenhum
@@ -363,7 +356,7 @@ Resolvida por zona (Tabela~\ref{tab:zone-shift} do Anexo), a mudança nas cultur
 \textbf{acentua o gradiente agroambiental existente, em vez de deslocá-lo.} As perdas nas
 culturas concentram-se na baixada quente, arenosa e remota (Zona~7). Na zona de menor elevação e
 mais quente do território, sob o cenário e janela mais severos, as outras culturas anuais caem
-$-0{,}156$, e mesmo a soja --- estável na escala territorial --- declina $-0{,}019$ nessa
+$-0{,}156$, e mesmo a soja, estável na escala territorial, declina $-0{,}019$ nessa
 baixada, uma das poucas zonas em que cai de forma material.
 
 Nos planaltos de cultivo (Zonas 1, 6 e 10) as mesmas
@@ -385,8 +378,8 @@ topo da escala: sob SSP5-8.5 2051--2070, a classe privilegiada S1 colapsa de 24,
 15,6\% da terra avaliada.
 
 A superfície de concordância entre os modelos confirma que essas conclusões direcionais são
-robustas ao modelo: para outras culturas anuais sob SSP5-8.5 2051--2070 --- o segmento e a
-combinação mais expostos ao clima, portanto o teste mais rigoroso --- a concordância média
+robustas ao modelo: para outras culturas anuais sob SSP5-8.5 2051--2070, o segmento e a
+combinação mais expostos ao clima e portanto o teste mais rigoroso, a concordância média
 territorial é 0,999 (Figura~\ref{fig:ensemble-agreement} do Anexo). A ordenação de
 cenário e janela comporta-se como o raciocínio físico exige. Para todo segmento sensível ao
 clima, a mudança é mais pronunciada sob a trajetória de maior emissão e a janela mais tardia:
@@ -454,8 +447,8 @@ Caracterizando a composição atual dentro de cada zona biofísica
 (Tabela~\ref{tab:zone-realized} do Anexo), o planalto de cultivo privilegiado (Zona~10) carrega
 a maior parcela de cana-de-açúcar de qualquer zona (10,0\%) contra a menor cobertura nativa de
 todas as dez zonas (20,5\%). Já a vegetação nativa sobe para \textbf{73,9\% do planalto alto e
-íngreme de conservação (Zona~5)}, justamente a zona cujo melhor uso modelado --- comparativo e
-absoluto --- é a conservação. A baixada quente, arenosa e remota (Zona~7), identificada como
+íngreme de conservação (Zona~5)}, justamente a zona cujo melhor uso modelado, comparativo e
+absoluto, é a conservação. A baixada quente, arenosa e remota (Zona~7), identificada como
 marginal para culturas, é dominada por pastagem (57,9\%), com soja residual (5,3\%). A validação
 cruzada mais forte disponível para a QP1 é justamente esta: uma partição não supervisionada de
 variáveis biofísicas reproduz a geografia observada de cultivo, pastejo e vegetação remanescente,
@@ -501,8 +494,8 @@ por autocorrelação espacial a que as métricas de presença estão sujeitas.
 superfícies ordenam bem a presença acima do fundo para as três culturas avaliadas
 (Tabela~\ref{tab:presence-auc}). A soja é a mais fortemente validada (AUC 0,871; Boyce 0,964).
 A amostra usada nessa e nas demais checagens de presença é estratificada espaço$\times$segmento
-(T8, \S\ref{sec:zoning}) --- distribuída por uma malha $8\times8$ sobre toda a extensão de
-GO~e~DF, em vez de concentrada onde cada cultura é mais densa ---, o que já mitiga, na própria
+(T8, \S\ref{sec:zoning}), distribuída por uma malha $8\times8$ sobre toda a extensão de
+GO~e~DF em vez de concentrada onde cada cultura é mais densa, o que já mitiga, na própria
 amostragem, parte do otimismo por autocorrelação espacial a que métricas de presença sobre
 amostras uniformes estão sujeitas.
 
@@ -510,7 +503,7 @@ A cana-de-açúcar apresenta AUC de 0,821 e Boyce de 0,769. Sua pegada atual per
 em poucos municípios (\S\ref{sec:realized-composition}), de modo que esse número deve ser lido
 com essa concentração espacial em mente, mesmo com a amostragem já estratificada. O grupo das
 outras culturas, por fim, é o mais fracamente validado por AUC (0,698) mas com Boyce comparável
-às demais (0,792) --- coerente com sua pegada atual pequena (0,6\%) e sua amostra de presença
+às demais (0,792), coerente com sua pegada atual pequena (0,6\%) e sua amostra de presença
 esparsa (26 pontos na amostra de avaliação).
 
 \begin{table}[H]
@@ -535,12 +528,12 @@ $\rho$ de Spearman entre a viabilidade média municipal e o \emph{proxy} de NPP 
 terra manejada (Tabela~\ref{tab:spearman-npp} do Anexo), como \emph{contexto} grosseiro de
 produtividade, não como um validador de rendimento como já foi explicitado em \S\ref{sec:phaseb}. A
 correlação é positiva e significativa ($p<0{,}001$) para cinco dos sete segmentos: pecuária
-($+0{,}52$), conservação ($+0{,}46$) --- para a qual a superfície reconceituada credita a terra
-de alta biomassa, acidentada e dominada por vegetação nativa que assimila mais carbono ---,
+($+0{,}52$), conservação ($+0{,}46$, para a qual a superfície reconceituada credita a terra
+de alta biomassa, acidentada e dominada por vegetação nativa que assimila mais carbono),
 cana-de-açúcar ($+0{,}45$), solar ($+0{,}40$) e, sob a superfície recalibrada, também a soja
 ($+0{,}31$). Apenas as outras culturas anuais ficam sem significância estatística ($+0{,}11$,
-n.s., $p=0{,}09$) --- coerente com sua pegada atual pequena e sua amostra de presença esparsa
---- e a piscicultura permanece a única correlação negativa ($-0{,}32$).
+n.s., $p=0{,}09$, coerente com sua pegada atual pequena e sua amostra de presença esparsa),
+e a piscicultura permanece a única correlação negativa ($-0{,}32$).
 
 Essa mistura de sinais tem uma explicação pré-registrada: o NPP anual mede a assimilação de
 carbono da vegetação, não o rendimento agronômico, de modo que os segmentos de biomassa em pé
@@ -549,21 +542,19 @@ de estimar a produtividade de forma sistematicamente enviesada por tipo de síti
 \citep{Turner2006}. É coerente também com a literatura sobre a conversão de GPP em rendimento,
 em que a correlação entre um \emph{proxy} derivado de GPP e o rendimento reportado varia de
 quase unitária na escala de município a marcadamente mais fraca na escala de talhão
-\citep{He2018}. É por isso que as métricas de discriminação por presença
-(Tabela~\ref{tab:presence-auc}), e não este \emph{proxy}, são os validadores primários das
-culturas.
+\citep{He2018}. Por isso ele é lido aqui apenas como contexto, não como validador.
 
 \textbf{Validador de produtividade intracultura.} Este teste avalia a GPP da estação de
 crescimento (janela de dossel de outubro a março) \textbf{apenas nos pixels efetivamente
 cultivados de cada cultura}, e a correlaciona com a viabilidade dessa cultura \emph{dentro} da
-própria cultura --- removendo, assim, as confusões advindas dos ciclos de fenologia e pousio
+própria cultura, removendo assim as confusões advindas dos ciclos de fenologia e pousio
 de coberturas distintas. Com a amostragem estratificada (T8) elevando o tamanho de amostra em
 mais de uma ordem de grandeza em relação à iteração anterior, o gradiente da soja é agora
 \textbf{+0,417} ($p<0{,}001$, $n = 14.646$) e o das outras culturas anuais \textbf{+0,370},
 monotônico ($n = 12.117$): uma viabilidade modelada mais alta está associada a produtividade
 \emph{mais alta} dentro da própria cultura, não apenas ``não mais baixa'' como na iteração
 anterior. A cana-de-açúcar, por sua vez, mostra um gradiente pequeno e negativo ($-0{,}085$,
-$n = 6.678$) --- estatisticamente distinguível de zero dado o tamanho de amostra, mas de
+$n = 6.678$), estatisticamente distinguível de zero dado o tamanho de amostra, mas de
 magnitude modesta.
 
 Os três testes acima --- correlação municipal com NPP, explicação da mistura de sinais e
@@ -575,8 +566,8 @@ gradiente intracultura, embora agora significativo para soja e outras culturas, 
 (assimilação de carbono), não rendimento colhido. A conclusão que os três sustentam, em conjunto,
 é mais favorável do que na iteração anterior: nenhum deles contradiz a viabilidade modelada, e
 dois dos três (soja e outras culturas) corroboram-na positivamente dentro da própria cultura.
-Ainda assim, as métricas de presença (Tabela~\ref{tab:presence-auc}) --- com alvo mais próximo do
-que se quer validar --- continuam sendo os validadores primários; os três testes de produtividade
+Ainda assim, as métricas de presença (Tabela~\ref{tab:presence-auc}), com alvo mais próximo do
+que se quer validar, continuam sendo os validadores primários; os três testes de produtividade
 seguem como evidência corroborativa, agora mais forte, não como substitutos.
 
 O \emph{proxy} de NPP anual também separa fortemente as zonas. Uma ANOVA de um fator entre as
@@ -597,17 +588,17 @@ território como viável ou superior, contra 21,6\% a que o classificador orient
 atribui alta probabilidade de presença.
 
 Esse $\kappa$ modesto não contradiz a AUC de 0,871 relatada na Tabela~\ref{tab:presence-auc}:
-são duas perguntas diferentes sobre o mesmo resultado. A AUC pergunta algo simples --- os pixels
+são duas perguntas diferentes sobre o mesmo resultado. A AUC pergunta algo simples: os pixels
 onde a soja é realmente plantada recebem, em geral, uma nota de viabilidade mais alta do que
 pixels escolhidos ao acaso? A resposta é sim, de forma consistente, por isso ela é alta. Já o
 $\kappa$ pergunta algo mais rígido: as duas superfícies concordam sobre \emph{qual} pedaço do
 território marcar como viável? Aqui a resposta é só parcial, porque o mapa de conhecimento marca
 uma área bem maior (52,8\%) do que a floresta aleatória (21,6\%). Quando duas áreas comparadas
 têm tamanhos diferentes, a fórmula do $\kappa$ desconta como ``acerto por sorte'' uma fatia maior
-da concordância, e o resultado cai abaixo do que a AUC por si só sugeriria --- mesmo que o
-modelo, no fundo, continue apontando majoritariamente para os lugares certos \citep{Cicchetti1990}.
+da concordância, e o resultado cai abaixo do que a AUC por si só sugeriria. Ainda assim, o
+modelo, no fundo, continua apontando majoritariamente para os lugares certos \citep{Cicchetti1990}.
 Ou seja, $\kappa = 0{,}269$ não quer dizer que o modelo erra \emph{onde} a soja tende a ocorrer
---- isso já foi respondido pela AUC --- mas sim que a área que o conhecimento especialista chama
+(isso já foi respondido pela AUC), mas sim que a área que o conhecimento especialista chama
 de ``viável'' e a área que os dados de fato ocupam ainda têm tamanhos apreciavelmente diferentes,
 embora bem menos díspares do que numa iteração anterior deste mesmo teste.
 
@@ -626,9 +617,8 @@ responde ``onde a soja é de fato plantada''. A divergência entre os dois
 \subsection{Unidades municipais de decisão}\label{sec:municipal}
 
 Agregando aos 247 municípios obtém-se a visão relevante para a decisão. Por área majoritária,
-eles se distribuem por todas as dez zonas, sem exceção --- ao contrário da iteração anterior,
-em que a zona de conservação nunca era majoritária em nenhum município por ser fragmentada e
-pequena. Sob o zoneamento em dez zonas, é justamente o planalto alto e íngreme de conservação
+eles se distribuem por todas as dez zonas, sem exceção. Na iteração anterior, ao contrário, a
+zona de conservação nunca era majoritária em nenhum município, por ser fragmentada e pequena. Sob o zoneamento em dez zonas, é justamente o planalto alto e íngreme de conservação
 (Zona~5) a zona mais comum, com 49 municípios; seguem a planície arenosa (Zona~6, 32), o
 planalto intermediário (Zona~3, 30), o planalto de cultivo privilegiado (Zona~10, 25), o vale
 úmido de transição (Zona~4, 24), a baixada quente e remota e o planalto periurbano (Zonas~7 e~8,
@@ -645,8 +635,8 @@ expressando um achado que responde à QP3, indicando que o nicho de milho--algod
 erode mais rápido no terreno mais baixo e já marginal.
 
 Dois \emph{rankings} municipais resumem a leitura relevante para a decisão
-(Tabela~\ref{tab:municipal-rank}). Um escore de \textbf{oportunidade} --- viabilidade média da
-soja $\times$ a parcela viável mas sem uso --- destaca municípios com alto potencial e ampla
+(Tabela~\ref{tab:municipal-rank}). Um escore de \textbf{oportunidade} (viabilidade média da
+soja $\times$ a parcela viável mas sem uso) destaca municípios com alto potencial e ampla
 folga em terra já convertida (49 pontuam acima de 0,4). Os líderes combinam viabilidade da
 soja perto de 0,71--0,86 com parcelas sem uso acima de 0,65. Um \emph{ranking} de
 \textbf{vulnerabilidade} pelo declínio projetado das outras culturas é dominado por municípios
