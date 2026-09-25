@@ -27,6 +27,9 @@ const props = withDefaults(
     highlightMunicipality?: string | null
     center?: LngLatLike
     zoom?: number
+    /** Esri satellite imagery (+ boundaries/place names) under the data layers,
+     *  instead of the plain background. Read once, at mount. */
+    satellite?: boolean
   }>(),
   {
     rasterPath: null,
@@ -37,6 +40,7 @@ const props = withDefaults(
     // AOI centroid + a zoom that fits ~340,000 km2 of Goias/DF in a ~4:3 panel.
     center: () => [-49.6, -15.95] as LngLatLike,
     zoom: 5.4,
+    satellite: false,
   },
 )
 
@@ -52,6 +56,24 @@ watch(() => props.rasterPath, (v) => (rasterPathRef.value = v))
 watch(() => props.rasterOpacity, (v) => (opacityRef.value = v))
 usePmtilesLayer(map, 'hero-raster', rasterPathRef, opacityRef)
 useMunicipalOverlay(map, computed(() => props.highlightMunicipality))
+
+// Esri World Imagery + its boundaries/places reference layer, so the satellite view
+// still shows where GO+DF sits among the Brazilian states. Both keyless.
+const SATELLITE_SOURCES: Record<string, maplibregl.RasterSourceSpecification> = {
+  'basemap-satellite': {
+    type: 'raster',
+    tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
+    tileSize: 256,
+    maxzoom: 19,
+    attribution: 'Imagens © Esri, Maxar, Earthstar Geographics',
+  },
+  'basemap-satellite-labels': {
+    type: 'raster',
+    tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}'],
+    tileSize: 256,
+    maxzoom: 19,
+  },
+}
 
 const CHOROPLETH_SOURCE = 'choropleth'
 const OUTLINE_SOURCE = 'aoi-outline'
@@ -87,24 +109,28 @@ function addChoropleth(): void {
 
 function addOutline(): void {
   const m = map.value
-  console.log('DEBUG addOutline', !!m, !!m?.getStyle(), props.outline)
   if (!m || !m.getStyle() || !props.outline) return
   if (m.getLayer(OUTLINE_SOURCE)) m.removeLayer(OUTLINE_SOURCE)
+  if (m.getLayer(`${OUTLINE_SOURCE}-fill`)) m.removeLayer(`${OUTLINE_SOURCE}-fill`)
   if (m.getSource(OUTLINE_SOURCE)) m.removeSource(OUTLINE_SOURCE)
-  try {
-    console.log('DEBUG addSource url', dataUrl('geojson/aoi.geojson'))
-    m.addSource(OUTLINE_SOURCE, { type: 'geojson', data: dataUrl('geojson/aoi.geojson') })
+  m.addSource(OUTLINE_SOURCE, { type: 'geojson', data: dataUrl('geojson/aoi.geojson') })
+  // Over satellite imagery the AOI needs an accent color + light fill to stand out.
+  const onSatellite = props.satellite
+  if (onSatellite) {
     m.addLayer({
-      id: OUTLINE_SOURCE,
-      type: 'line',
+      id: `${OUTLINE_SOURCE}-fill`,
+      type: 'fill',
       source: OUTLINE_SOURCE,
-      paint: { 'line-color': '#1b1f1a', 'line-width': 1.2 },
+      paint: { 'fill-color': '#d7301f', 'fill-opacity': 0.12 },
     })
-    console.log('DEBUG addOutline done', m.getSource(OUTLINE_SOURCE))
-    promoteMunicipalOverlay(m)
-  } catch (e) {
-    console.log('DEBUG addOutline threw', e)
   }
+  m.addLayer({
+    id: OUTLINE_SOURCE,
+    type: 'line',
+    source: OUTLINE_SOURCE,
+    paint: { 'line-color': onSatellite ? '#d7301f' : '#1b1f1a', 'line-width': onSatellite ? 2 : 1.2 },
+  })
+  promoteMunicipalOverlay(m)
 }
 
 onMounted(() => {
@@ -113,19 +139,19 @@ onMounted(() => {
     container: container.value,
     style: {
       version: 8,
-      sources: {},
-      layers: [{ id: 'bg', type: 'background', paint: { 'background-color': '#eef1ec' } }],
+      sources: props.satellite ? SATELLITE_SOURCES : {},
+      layers: [
+        { id: 'bg', type: 'background', paint: { 'background-color': '#eef1ec' } },
+        ...(props.satellite
+          ? Object.keys(SATELLITE_SOURCES).map((id) => ({ id, type: 'raster' as const, source: id }))
+          : []),
+      ],
     },
     center: props.center,
     zoom: props.zoom,
   })
   m.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right')
-  m.on('error', (e) => console.log('DEBUG map error', e.error?.message ?? e))
-  m.on('sourcedata', (e) => {
-    if (e.sourceId === OUTLINE_SOURCE) console.log('DEBUG sourcedata aoi-outline', e.isSourceLoaded, e.sourceDataType)
-  })
   m.on('load', () => {
-    console.log('DEBUG load fired', props.outline, props.choropleth)
     addOutline()
     addChoropleth()
   })

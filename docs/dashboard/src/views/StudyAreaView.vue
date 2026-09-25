@@ -24,9 +24,13 @@ const columns: DataTableColumn<DatasetCatalogEntry>[] = [
       dissolução da AOI quanto no relatório municipal (Parte 1 / Parte 12).
     </p>
 
-    <MapPanel :outline="true">
+    <!-- Framed on all of Brazil so the AOI's national context is visible first. -->
+    <MapPanel :outline="true" :satellite="true" :center="[-53, -15]" :zoom="3.2">
       <template #legend>
-        <div class="map-legend-text">Contorno da AOI (GO + DF). Passe o mouse sobre o mapa para ver os limites municipais.</div>
+        <div class="map-legend-text">
+          Área de estudo (GO + DF) destacada em vermelho. Aproxime e passe o mouse sobre o
+          mapa para ver os limites municipais.
+        </div>
       </template>
     </MapPanel>
 

@@ -623,10 +623,137 @@ def build_validation_scorecard() -> None:
     log(f"wrote {dest}")
 
 
+# =============================================================================
+# 6g. Feature Stack PCA comparison — naive 34-band z-stack vs the curated,
+# theme-weighted 15-band ZONING_BANDS space that Part 10 actually clusters on
+# (src/zoning.py). Same stratified sample + seed as tools/rezone.py, so the 15-band
+# PCA is the zoning's own decorrelated space (fit_pca's var_keep only truncates it).
+# =============================================================================
+PCA_N_POINTS = 3000         # scatter subsample shipped to the browser
+PCA_COLOR_BANDS = ["terr_elev", "clim_aridity", "soil_clay"]
+
+
+def _build_rgb_raster(image: "ee.Image", bands: list[str], domains: list[tuple[float, float]],
+                      region, out_name: str) -> None:
+    """RGB PMTiles from 3 continuous bands (R, G, B), each stretched to its own domain.
+
+    Bands are downloaded one at a time — a single 3-band uint8 GeoTIFF of GO+DF at 250 m
+    exceeds getDownloadURL's 48 MiB cap (see the NODATA_SENTINEL comment)."""
+    SCRATCH_DIR.mkdir(parents=True, exist_ok=True)
+    out_dir = DATA_DIR / "pmtiles"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    out_path = out_dir / f"{out_name}.pmtiles"
+
+    channels, mask, profile = [], None, None
+    for band, (vmin, vmax) in zip(bands, domains):
+        raw = SCRATCH_DIR / f"{out_name}_{band}_raw.tif"
+        log(f"  downloading {band} (domain {vmin:.3f}..{vmax:.3f}) ...")
+        _download_band(_prep_band(image, band, False, vmin, vmax), region, raw)
+        with rasterio.open(raw) as src:
+            arr = src.read(1)
+            profile = src.profile
+        band_mask = arr == NODATA_SENTINEL
+        mask = band_mask if mask is None else (mask | band_mask)
+        channels.append(np.clip(arr.astype("float64") / CONTINUOUS_STEPS * 255, 0, 255).astype("uint8"))
+
+    rgba = SCRATCH_DIR / f"{out_name}_rgba.tif"
+    merc = SCRATCH_DIR / f"{out_name}_merc.tif"
+    alpha = np.where(mask, 0, 255).astype("uint8")
+    profile.update(count=4, dtype="uint8", nodata=None, compress="deflate")
+    with rasterio.open(rgba, "w", **profile) as dst:
+        for i, ch in enumerate([*channels, alpha]):
+            dst.write(ch, i + 1)
+    _reproject_webmercator(rgba, merc)
+    if out_path.exists():
+        out_path.unlink()
+    _to_pmtiles(merc, out_path)
+    log(f"  wrote {out_path} ({out_path.stat().st_size / 1024:.0f} KB)")
+
+
+def build_pca_compare(only_band: str | None = None) -> None:
+    from types import SimpleNamespace
+
+    from sklearn.decomposition import PCA
+    from sklearn.metrics import silhouette_score
+
+    import zoning
+
+    project = utils.init()
+    aid = lambda n: utils.asset_id(project, n)  # noqa: E731
+    region = ee.FeatureCollection(aid("aoi")).geometry()
+    z = ee.Image(aid("feature_stack_250m_z"))
+    stack = ee.Image(aid("feature_stack_250m"))
+    suit = ee.Image(aid("suit_present"))
+    zones = ee.Image(aid("zones_present")).select([0]).rename("zone")
+    bands34 = z.bandNames().getInfo()
+    bands15 = list(zoning.ZONING_BANDS)
+    log(f"  sampling {len(bands34)}-band z-stack (stratified, seed=42) ...")
+
+    extra = zones.addBands(ee.Image.pixelLonLat())
+    sample = zoning.build_sample(z, stack, suit, region, bands34, segments=SEGMENTS,
+                                 seed=42, tile_scale=TS, extra=extra)
+    df = zoning.fc_to_df(sample).dropna().reset_index(drop=True)
+    log(f"  sample: {len(df)} points")
+
+    variants = {
+        "34": (bands34, [1.0] * len(bands34), zoning.cluster_matrix(df, bands34, theme_weighted=False)),
+        "15": (bands15, zoning.theme_weight_vector(bands15), zoning.cluster_matrix(df, bands15)),
+    }
+    payload: dict = {"variants": {}, "n_sample": int(len(df))}
+    scores: dict[str, np.ndarray] = {}
+    for key, (bands, weights, X) in variants.items():
+        pca = PCA(svd_solver="full", random_state=42).fit(X)
+        S = pca.transform(X)[:, :3]
+        scores[key] = S
+        evr = pca.explained_variance_ratio_
+        n90 = int(np.searchsorted(np.cumsum(evr), 0.90) + 1)
+        domain = [(float(np.percentile(S[:, j], 2)), float(np.percentile(S[:, j], 98))) for j in range(3)]
+        log(f"  PCA-{key}: PC1-3 = {evr[:3].round(3).tolist()}; {n90} PCs reach 90%")
+        payload["variants"][key] = {
+            "bands": bands,
+            "themes": [zoning._theme_of(b) for b in bands],
+            "weights": [round(float(w), 4) for w in weights],
+            "explained_variance_ratio": [round(float(v), 5) for v in evr],
+            "n_pc_90": n90,
+            "loadings": [[round(float(pca.components_[j, i]), 4) for j in range(3)] for i in range(len(bands))],
+            "pc_domain": [[round(lo, 4), round(hi, 4)] for lo, hi in domain],
+        }
+
+        out_name = f"pca_rgb_{key}"
+        if only_band and only_band != out_name:
+            continue
+        pca3 = SimpleNamespace(components_=pca.components_[:3], mean_=pca.mean_)
+        pc_img = zoning.pca_project_image(z, bands, weights, pca3)
+        _build_rgb_raster(pc_img, zoning.pc_names(pca3), domain, region, out_name)
+
+    rng = np.random.default_rng(42)
+    idx = np.sort(rng.choice(len(df), size=min(PCA_N_POINTS, len(df)), replace=False))
+    r3 = lambda a: [round(float(v), 3) for v in a]  # noqa: E731
+    payload["points"] = {
+        "pc34": [r3(scores["34"][i]) for i in idx],
+        "pc15": [r3(scores["15"][i]) for i in idx],
+        "zone": [int(df["zone"].iloc[i]) for i in idx],
+        "lon": r3(df["longitude"].iloc[idx]),
+        "lat": r3(df["latitude"].iloc[idx]),
+        **{b: r3(df[b].iloc[idx]) for b in PCA_COLOR_BANDS},
+    }
+    # How well the actual zones_present labels separate in each space's first 3 PCs
+    # (the dimensions the page plots), on the same shipped subsample.
+    for key in variants:
+        sil = silhouette_score(scores[key][idx], df["zone"].iloc[idx].to_numpy())
+        payload["variants"][key]["zone_silhouette_pc3"] = round(float(sil), 3)
+        log(f"  PCA-{key}: zone silhouette on PC1-3 = {sil:.3f}")
+
+    dest = DATA_DIR / "json" / "pca_compare.json"
+    dest.write_text(json.dumps(payload, separators=(",", ":")))
+    log(f"wrote {dest} ({dest.stat().st_size / 1024:.0f} KB)")
+    shutil.rmtree(SCRATCH_DIR, ignore_errors=True)
+
+
 STAGE_CHOICES = [
     "vectors", "config", "municipal", "diagnostics", "rasters", "future_rasters",
     "realized_rasters", "datasets_catalog", "stack_composition", "band_percentiles",
-    "theme_rasters", "validation_scorecard", "home_stats",
+    "theme_rasters", "validation_scorecard", "home_stats", "pca_compare",
 ]
 
 
@@ -639,7 +766,7 @@ def main() -> None:
     parser.add_argument(
         "--raster",
         help=(
-            "with --only rasters/future_rasters/realized_rasters/theme_rasters, "
+            "with --only rasters/future_rasters/realized_rasters/theme_rasters/pca_compare, "
             "build a single named layer (e.g. suit_soybean, delta_ssp585_2051_2070_soybean)"
         ),
     )
@@ -659,6 +786,7 @@ def main() -> None:
         "theme_rasters": lambda: build_theme_rasters(args.raster),
         "validation_scorecard": build_validation_scorecard,
         "home_stats": build_home_stats,
+        "pca_compare": lambda: build_pca_compare(args.raster),
     }
 
     if args.only:

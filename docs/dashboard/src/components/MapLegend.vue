@@ -95,7 +95,8 @@ const gradientTicks = computed(() => {
   display: flex;
   align-items: center;
   gap: var(--space-1);
-  white-space: nowrap;
+  /* Long labels (zone names, RGB channel breakdowns) must wrap on phone widths. */
+  min-width: 0;
 }
 
 .map-legend-swatch {

@@ -189,6 +189,40 @@ export interface StackComposition {
   note: string
 }
 
+// --- json/pca_compare.json (build_pca_compare: 34-band z-stack vs 15 ZONING_BANDS) --
+export interface PcaVariant {
+  bands: string[]
+  /** Band-name prefix per band: clim/terr/soil/water/phen/access. */
+  themes: string[]
+  /** 1/√(bands-in-theme) for the 15-band variant; all 1 for the 34-band one. */
+  weights: number[]
+  explained_variance_ratio: number[]
+  n_pc_90: number
+  /** Per band, [PC1, PC2, PC3] loadings (same order as `bands`). */
+  loadings: [number, number, number][]
+  /** p2/p98 of PC1..3 — the stretch baked into pca_rgb_<key>.pmtiles. */
+  pc_domain: [number, number][]
+  /** Silhouette of the zones_present labels in PC1–3, on the shipped points. */
+  zone_silhouette_pc3: number
+}
+
+export interface PcaPoints {
+  pc34: [number, number, number][]
+  pc15: [number, number, number][]
+  zone: number[]
+  lon: number[]
+  lat: number[]
+  terr_elev: number[]
+  clim_aridity: number[]
+  soil_clay: number[]
+}
+
+export interface PcaCompare {
+  variants: { '34': PcaVariant; '15': PcaVariant }
+  n_sample: number
+  points: PcaPoints
+}
+
 // --- json/band_percentiles.json (P5/P25/P50/P75/P95 per hero band) ---------------
 export interface BandPercentileSummary {
   p5: number
