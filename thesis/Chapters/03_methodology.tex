@@ -1,9 +1,8 @@
 \chapter{Metodologia}\label{ch:method}
 
-%% TODO cabe uma citação sobre a FAO aqui
-
 O método é uma avaliação de terras multicritério na tradição da avaliação de terras da
-FAO (\emph{Framework for Land Evaluation}; Food and Agriculture Organization). Ele é implementado
+FAO (\emph{Framework for Land Evaluation}; Food and Agriculture Organization)
+\citep{FAO1976,Sys1991}. Ele é implementado
 nativamente na plataforma de observação da Terra, estendido com um zoneamento não supervisionado e
 uma projeção CMIP6, e concebido para validação contra o uso atual da terra. O trabalho corre em duas
 fases. A \textbf{Fase~A} constrói o atlas de potencial biofísico e a projeção climática apenas a
@@ -334,12 +333,20 @@ cultivados de cada cultura e correlacionada com a viabilidade dessa mesma cultur
 dentro da própria cultura, essa comparação remove tanto a confusão entre coberturas distintas quanto
 o efeito do pousio seco.
 
-Por fim, uma verificação cruzada orientada por dados usa um classificador de floresta aleatória
-treinado em modo probabilístico sobre pontos de presença e de fundo, ao longo do conjunto
-padronizado de atributos \citep{Valavi2021}; a superfície resultante, construída inteiramente a
-partir dos dados, é comparada à superfície baseada em conhecimento pelo $\kappa$ de Cohen
-\citep{Cohen1960}. Concordância reforça a confiança no modelo; discordâncias são reportadas como
-achados de discussão.
+Por fim, uma verificação cruzada orientada por dados contrasta o modelo baseado em conhecimento
+com um classificador treinado diretamente sobre o uso realizado da terra. Os pontos de presença
+são extraídos do MapBiomas (pixels de soja) e contrastados com pontos de fundo amostrados do
+restante do território; as variáveis preditoras, porém, são exatamente o mesmo conjunto
+padronizado de 34 atributos ambientais usado no modelo fuzzy/AHP --- o MapBiomas entra apenas como
+rótulo de treino, nunca como atributo, preservando a distinção estabelecida no
+\S\ref{sec:feature-eng}. Um classificador de floresta aleatória é então treinado em modo
+probabilístico sobre esses pontos de presença e de fundo, ao longo do conjunto padronizado de
+atributos \citep{Valavi2021}; a superfície resultante, construída inteiramente a partir do uso
+realizado, é comparada à superfície baseada em conhecimento pelo $\kappa$ de Cohen
+\citep{Cohen1960}. O objetivo é, portanto, verificar se duas abordagens independentes para o
+mesmo fenômeno (uma orientada por conhecimento pericial (fuzzy/AHP) e outra orientada
+pelos dados de uso realizado) convergem espacialmente: concordância reforça a confiança no
+modelo; discordâncias são reportadas como achados de discussão.
 
 Duas ressalvas são registradas. Os \emph{proxies} MODIS medem a produtividade primária da vegetação,
 não o rendimento agronômico, e confundem cultivo duplo com manejo, configurando um substituto
