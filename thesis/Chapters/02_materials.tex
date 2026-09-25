@@ -13,21 +13,17 @@ de baixa fertilidade (predominantemente Latossolos, ou \emph{Ferralsols}/\emph{O
 entanto, podem se tornar altamente produtivos uma vez feita a calagem e a correção de micronutrientes
 \citep{Yamada2005}. Nas últimas décadas, o bioma tornou-se um dos principais territórios de grãos,
 fibra e pecuária do Brasil --- precisamente o que torna a questão do potencial \emph{versus} uso
-atual (QP2) consequente aqui.
+atual (QP2) relevante aqui.
 
 A geometria da área de interesse é derivada da Malha Municipal Digital oficial do IBGE (edição 2025,
 SIRGAS~2000/EPSG:4674, 246 municípios de Goiás mais o Distrito Federal), dissolvida em um polígono único
 que se estende aproximadamente da longitude $-53{,}25^\circ$ a $-45{,}90^\circ$ e da latitude
-$-19{,}50^\circ$ a $-12{,}39^\circ$. O artefato mesclado (\texttt{data/mart/malha\_municipal.gpkg}) é
-carregado em memória e convertido em \texttt{ee.FeatureCollection}/\texttt{ee.Geometry} no lado do
-cliente a cada execução --- nunca exportado como \emph{asset} persistente do Earth Engine, preservando a
-filosofia de zero \emph{upload} (\S\ref{sec:cost}) ---, com as geometrias simplificadas em memória antes
-de compor qualquer requisição ao Earth Engine. Para a fase de uso atual da terra, as próprias 247
+$-19{,}50^\circ$ a $-12{,}39^\circ$. Para a fase de uso atual da terra, as próprias 247
 unidades municipais dessa mesma malha alimentam a agregação e o relato municipal.
 
 \section{Os sete segmentos de uso da terra}
 
-O atlas avalia sete segmentos, escolhidos de forma a cobrir alimento, fibra, proteína animal, energia e
+O atlas avalia sete segmentos, escolhidos de forma a cobrir produção agrícola, fibra, proteína animal, energia e
 conservação, de modo que a análise possa expressar genuínas compensações (\emph{trade-offs}) entre segmentos.
 
 \begin{table}[H]
@@ -63,7 +59,7 @@ conservação, de modo que a análise possa expressar genuínas compensações (
 \section{Plataforma de computação e filosofia de custo}\label{sec:cost}
 
 A análise é executada inteiramente no lado do servidor em uma plataforma de observação da Terra na nuvem
-(Google Earth Engine), em seu nível gratuito não comercial para pesquisa \citep{Gorelick2017}.
+(Google Earth Engine), com uma licenla gratuita não comercial para pesquisa \citep{Gorelick2017}.
 O objetivo desta abordagem é a reprodutibilidade com custo marginal baixo: sem \emph{hardware}
 dedicado e sem armazenamento local de imagens de satélite. A máquina local é utilizada apenas para
 desenho de gráficos, junção de tabelas e operações simples. Os produtos intermediários são
@@ -74,13 +70,13 @@ amostras de agrupamento e classificação à ordem de $10^5$ pontos.
 \begin{table}[H]
 \centering
 \caption{Matriz de análise e períodos de referência.}\label{tab:grid-periods}
-\begin{tabular}{@{}p{3.4cm}p{3.6cm}p{6cm}@{}}
+\begin{tabular}{@{}p{3.2cm}p{3.8cm}p{6.3cm}@{}}
 \toprule
 Convenção & Valor & Justificativa \\
 \midrule
 Resolução de análise & 250~m & Corresponde à grade de vegetação do MODIS; situa-se entre a resolução fina de solo/terreno e a grossa do clima. \\
-Sistema de referência de coordenadas & EPSG:4326 (geográfico) & A área das células vem da função planimétrica de área de pixel, nunca de um campo armazenado. \\
-Normal climatológica & 1991--2020 (padrão da OMM) & Referência única para os deltas de mudança climática. \\
+Sistema de referência de coordenadas & EPSG:4326 & A área das células vem da função planimétrica de área de pixel, nunca de um campo armazenado. \\
+Normal climatológica & 1991--2020 & Referência única para os deltas de mudança climática. \\
 Registro da vegetação & 2001--2020 & Fenologia e indicador de produtividade. \\
 Janelas futuras & 2031--2050; 2051--2070 & Duas janelas de projeção. \\
 Cenários futuros & SSP2-4.5; SSP5-8.5 & Cenários de emissão moderada e alta. \\
@@ -90,16 +86,19 @@ Cenários futuros & SSP2-4.5; SSP5-8.5 & Cenários de emissão moderada e alta. 
 
 \section{Fontes de dados}
 
+
+%% TODO faltam citações para alguns conjuntos de dados, e.g. Accesibility to Cities, HydroSHEDs, WDPA, carbono de biomassa etc
 Todos os conjuntos de dados vêm do catálogo público da própria plataforma, acessados na resolução nativa e
 convertidos para unidades físicas quando as bandas vêm empacotadas como inteiros. As variáveis
-\textbf{biofísicas e agroclimáticas} (Tabela~\ref{tab:src-biophys} do Anexo) cobrem clima e regime de água
-(TerraClimate, \citealp{Abatzoglou2018}, com CHIRPS, \citealp{Funk2026}, e WorldClim como suplementos),
-terreno (SRTM) e hidrografia (HydroSHEDS). Cobrem também solos (OpenLandMap, 0--30~cm, \citealp{Hengl2026}),
-água superficial (JRC Global Surface Water, \citealp{Pekel2016}), fenologia (MODIS NDVI) e acessibilidade
-ao mercado (Global Accessibility to Cities). Completam o conjunto a cobertura genérica da terra
-(MapBiomas, coleção~10 --- substitui o ESA WorldCover global de 10~m usado numa iteração anterior;
-\S\ref{sec:phaseb} justifica o porquê), as áreas protegidas (WDPA), o carbono de biomassa acima do
+\textbf{biofísicas e agroclimáticas} (Tabela~\ref{tab:src-biophys} do Anexo) cobrem temas sobre o
+terreno (SRTM); a hidrografia (HydroSHEDS); o clima e o regime de água
+através do conjunto de dados TerraClimate \citealp{Abatzoglou2018}, utilizando ainda CHIRPS \citealp{Funk2026} 
+e WorldClim como suplementos. Cobrem também solos com OpenLandMap, 0--30~cm, \citealp{Hengl2026},
+água superficial (JRC Global Surface Water) \citealp{Pekel2016}, fenologia através do produto MODIS NDVI e
+acessibilidade ao mercado (Global Accessibility to Cities). Completam o conjunto a cobertura genérica da terra
+do MapBiomas (coleção~10), as áreas protegidas (WDPA), o carbono de biomassa acima do
 solo (Spawn \emph{et al.}) e o clima futuro (NASA NEX-GDDP-CMIP6, \citealp{Thrasher2022}).
+
 As entradas de \textbf{uso atual e validação} (Tabela~\ref{tab:src-realized} do Anexo) são as 247
 unidades municipais da Malha Municipal Digital do IBGE (edição 2025), as classificações anuais de uso da
 terra do MapBiomas \citep{Souza2020} e os produtos de
@@ -128,9 +127,9 @@ conversão de unidades --- é declarado como valor versionado, em vez de embutid
 análise possa ser auditada e reexecutada apenas a partir da especificação declarada. O software é
 deliberadamente simples: além da integração com o Google Earth Engine e da orquestração das etapas de
 análise, o código Python usa bibliotecas científicas comuns para as pequenas tarefas executadas
-localmente. Nenhum arcabouço de aprendizado profundo é utilizado.
+localmente. Nenhuma técnica de aprendizagem profunda é utilizada.
 
-O código-fonte completo --- configurações, módulos de análise, cadernos e ferramentas de exportação
+O código-fonte completo --- configurações, módulos de análise e ferramentas de exportação
 --- está disponibilizado publicamente no repositório \texttt{goias\_suitability}
 \citep{daSilva2026}. O atlas interativo construído a partir destes resultados está publicado em
 \url{https://ahxsahxs.github.io/goias_suitability}.

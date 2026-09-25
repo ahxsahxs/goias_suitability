@@ -155,11 +155,8 @@ TR = {
         "fig_4_12.suptitle": "Local spatial variability: climate vs. terrain+soil\n"
                               "(z-scored bands, 4.75 km window ≈ TerraClimate's native cell)",
         "fig_4_12.panel": ["Climate (local σ, 14 bands)",
-                            "Terrain + soil (local σ, 12 bands)",
-                            "log₂(terrain+soil / climate)"],
+                            "Terrain + soil (local σ, 12 bands)"],
         "fig_4_12.cbar_std": "mean local stdDev (z-score units)",
-        "fig_4_12.cbar_ratio": "log₂ ratio (terrain+soil / climate)",
-        "fig_4_12.mean": "territory-mean log₂ ratio = {val:.2f}",
         "fig_4_14.suptitle": "Climate inputs, present vs. future (SSP5-8.5, 2051–2070 ensemble mean)",
         "fig_4_14.col": ["Present (1991–2020 baseline)", "Future (SSP5-8.5, 2051–2070)"],
         "fig_4_14.row": ["Annual precipitation (mm)", "Warmest-quarter mean temperature (°C)"],
@@ -252,11 +249,8 @@ TR = {
         "fig_4_12.suptitle": "Variabilidade espacial local: clima × terreno+solo\n"
                               "(bandas padronizadas, janela de 4,75 km ≈ célula nativa do TerraClimate)",
         "fig_4_12.panel": ["Clima (σ local, 14 bandas)",
-                            "Terreno + solo (σ local, 12 bandas)",
-                            "log₂(terreno+solo / clima)"],
+                            "Terreno + solo (σ local, 12 bandas)"],
         "fig_4_12.cbar_std": "desvio-padrão local médio (unidades de z-score)",
-        "fig_4_12.cbar_ratio": "razão log₂ (terreno+solo / clima)",
-        "fig_4_12.mean": "razão log₂ média territorial = {val:.2f}",
         "fig_4_14.suptitle": "Entradas climáticas, presente versus futuro (SSP5-8.5, média do conjunto 2051–2070)",
         "fig_4_14.col": ["Presente (linha de base 1991–2020)", "Futuro (SSP5-8.5, 2051–2070)"],
         "fig_4_14.row": ["Precipitação anual (mm)", "Temperatura média do trimestre mais quente (°C)"],
@@ -493,16 +487,18 @@ class Renderer:
         self._save(fig, "fig_4_1", tight=False)
 
     def fig_4_2(self):
-        """FAO class maps: soybean + conservation."""
+        """FAO class maps: soybean + conservation, stacked (GO~e~DF is taller
+        than wide, same rationale as fig_4_3/fig_4_9's vertical layouts), with
+        a vertical legend column at the side instead of a horizontal row below."""
         suit = self.A("suit_present")
-        fig, axes = plt.subplots(1, 2, figsize=(12, 6.5))
+        fig, axes = plt.subplots(2, 1, figsize=(7.5, 13))
         for i, (ax, s) in enumerate(zip(axes, ["soybean", "conservation"])):
             arr = self.thumb(suit.select(f"class_{s}").visualize(min=0, max=3, palette=PAL_FAO))
-            self._imshow_map(ax, arr, left=(i == 0), bottom=True, labels=True)
+            self._imshow_map(ax, arr, left=True, bottom=(i == 1), labels=True)
             ax.set_title(t("fig_4_2.panel", seg=seg_title(s)), fontsize=11)
-        self._discrete_legend(fig, PAL_FAO, fao_labels(), ncol=4, anchor=(0.5, 0.03),
-                              title=t("legend.fao"))
-        fig.subplots_adjust(bottom=0.16, wspace=0.12)
+        self._discrete_legend(fig, PAL_FAO, fao_labels(), ncol=1, loc="center left",
+                              anchor=(0.83, 0.5), title=t("legend.fao"))
+        fig.subplots_adjust(right=0.80, hspace=0.15)
         self._save(fig, "fig_4_2", tight=False)
 
     def fig_4_3(self):
@@ -627,8 +623,22 @@ class Renderer:
         present = self.A("feat_climate").select(["clim_pr_annual", "clim_twarm_q"])
         baseline = cmip6.baseline_monthly(aoi)
         factors = cmip6.ensemble_factors(cfg["models"], "ssp585", cfg["windows"]["2051_2070"], aoi)
+        # future_climate_image() ends in utils.to_grid_bilinear(...), which pins the
+        # image to utils.grid_projection() (ee.Projection(crs()).atScale(scale_m())).
+        # That projection's affine transform is vertically inverted relative to the
+        # crs()+scale_m() transform Export.image.toAsset() builds (verified: a
+        # pixelLonLat() render through to_grid_bilinear() comes out south-up, while
+        # the same render through .reproject(crs(), None, scale_m()) is correctly
+        # north-up). Every other Part is immune because its output goes through an
+        # Export step, which always rebuilds a fresh, correctly-oriented grid from
+        # crs+scale regardless of the source's pinned projection — fig_4_14 is the
+        # only place a to_grid_bilinear-pinned image is thumbnailed directly without
+        # that corrective export, so re-pinning it here to crs()+scale_m() (not a
+        # bare crs with no scale -- that just falls back to ~111 km/pixel) undoes the
+        # flip without touching grid_projection() itself (heavily reused elsewhere,
+        # and harmless there since export always overrides it).
         future = cmip6.future_climate_image(baseline, factors, aoi).select(
-            ["clim_pr_annual", "clim_twarm_q"])
+            ["clim_pr_annual", "clim_twarm_q"]).reproject(crs=utils.crs(), scale=utils.scale_m())
         pr_rng, temp_rng = (1150, 1700), (23, 32)
         fig, axes = plt.subplots(2, 2, figsize=(12, 11))
         cols = [present, future]
@@ -756,13 +766,19 @@ class Renderer:
         return pd.read_csv(path)
 
     def fig_4_10(self):
-        """k-selection: validity indices + cluster stability vs k (marks k=10)."""
+        """k-selection: validity indices + cluster stability vs k (marks k=10),
+        swept over k=2..20 (CLAUDE.md §11: the extended sweep past k=10 that
+        confirms the silhouette peak isn't a truncated-range artifact). 2x2
+        grid instead of 1x4: four panels in one row left each too narrow to
+        read once the sweep doubled in length."""
         df = self._read_diag("zoning_kselect.csv").sort_values("k")
         K = 10
-        fig, axes = plt.subplots(1, 4, figsize=(16, 4))
+        ks_all = sorted(df["k"].unique())
+        xticks = ks_all if len(ks_all) <= 10 else ks_all[::2]
+        fig, axes = plt.subplots(2, 2, figsize=(11, 9))
         titles = t("fig_4_10.panel")
         cols = ["silhouette", "davies_bouldin", "gap", "ari"]
-        for j, (ax, col) in enumerate(zip(axes, cols)):
+        for j, (ax, col) in enumerate(zip(axes.ravel(), cols)):
             ax.plot(df["k"], df[col], "-o", color="#2166ac", ms=4)
             if col == "ari" and "ari_std" in df:
                 ax.fill_between(df["k"], df[col] - df["ari_std"], df[col] + df["ari_std"],
@@ -775,8 +791,10 @@ class Renderer:
                 kline.set_label(t("fig_4_10.kline"))
                 ax.legend(fontsize=8, frameon=False, loc="lower right")
             ax.set_title(titles[j], fontsize=10)
-            ax.set_xlabel(t("fig_4_10.xlabel"))
-            ax.set_xticks(df["k"])
+            if j >= 2:
+                ax.set_xlabel(t("fig_4_10.xlabel"))
+            ax.set_xticks(xticks)
+        fig.subplots_adjust(hspace=0.28, wspace=0.22)
         fig.suptitle(t("fig_4_10.suptitle"), fontsize=12)
         self._save(fig, "fig_4_10")
 
@@ -879,55 +897,37 @@ class Renderer:
         window computation at native 250 m resolution (required for the kernel
         radius to be physically correct) exceeds getThumbURL's interactive
         compute/size limits, and pre-coarsening the input first would smooth
-        away exactly the fine-scale variance this figure exists to show."""
+        away exactly the fine-scale variance this figure exists to show.
+
+        Two panels only (climate, terrain+soil): the log2-ratio panel duplicated
+        what tab:scale-mismatch already reports as a number, without adding a
+        third spatial pattern to read."""
         R = 4750
         pts = self._read_diag("theme_roughness_points.csv")
         clim = pts[f"rough_climate_r{R}"].to_numpy()
         ts = pts[f"rough_terrain_soil_r{R}"].to_numpy()
         lon = pts["longitude"].to_numpy()
         lat = pts["latitude"].to_numpy()
-        ratio = np.log2(ts / np.maximum(clim, 1e-6))
 
         vmax = float(np.percentile(np.concatenate([clim, ts]), 98))
 
-        # Annotate with the pooled ratio from theme_roughness.csv (not a fresh
-        # stat off this same sample) so the map's headline number matches the
-        # annex table exactly.
-        mean_ratio = None
-        try:
-            rdf = self._read_diag("theme_roughness.csv")
-            rdf = rdf[rdf.radius_m == R]
-            c_std = float(rdf[rdf.group == "climate"]["mean_std"].iloc[0])
-            t_std = float(rdf[rdf.group == "terrain_soil"]["mean_std"].iloc[0])
-            mean_ratio = math.log2(t_std / c_std)
-        except Exception as e:
-            print(f"  fig_4_12: theme_roughness.csv ratio unavailable ({e})")
-
         pal_seq = ["#fff7bc", "#fec44f", "#d95f0e", "#993404"]
-        cmap_seq, cmap_div = _cmap(pal_seq), _cmap(PAL_DIV)
-        panels = [(clim, cmap_seq, 0, vmax), (ts, cmap_seq, 0, vmax), (ratio, cmap_div, -3, 3)]
+        cmap_seq = _cmap(pal_seq)
+        panels = [clim, ts]
         titles = t("fig_4_12.panel")
         extent = (self.extent[0], self.extent[1], self.extent[2], self.extent[3])
-        fig, axes = plt.subplots(1, 3, figsize=(17, 6.5))
-        for i, (ax, (vals, cmap, vmin_, vmax_), title) in enumerate(zip(axes, panels, titles)):
-            ax.hexbin(lon, lat, C=vals, gridsize=55, cmap=cmap, vmin=vmin_, vmax=vmax_,
+        fig, axes = plt.subplots(1, 2, figsize=(12, 6.5))
+        for i, (ax, vals, title) in enumerate(zip(axes, panels, titles)):
+            ax.hexbin(lon, lat, C=vals, gridsize=55, cmap=cmap_seq, vmin=0, vmax=vmax,
                       extent=extent, linewidths=0.1, mincnt=1)
             ax.set_aspect("equal")
             self._map_axes(ax, left=(i == 0), bottom=True, labels=(i == 0))
             ax.set_title(title, fontsize=11)
-        fig.subplots_adjust(left=0.05, right=0.98, top=0.86, bottom=0.18, wspace=0.10)
-        cax1 = fig.add_axes([0.06, 0.07, 0.36, 0.02])
+        fig.subplots_adjust(left=0.07, right=0.97, top=0.86, bottom=0.18, wspace=0.12)
+        cax1 = fig.add_axes([0.25, 0.07, 0.50, 0.02])
         cb1 = fig.colorbar(ScalarMappable(Normalize(0, vmax), cmap_seq),
                            cax=cax1, orientation="horizontal")
         cb1.set_label(t("fig_4_12.cbar_std"), fontsize=9)
-        cax2 = fig.add_axes([0.64, 0.07, 0.30, 0.02])
-        cb2 = fig.colorbar(ScalarMappable(Normalize(-3, 3), cmap_div),
-                           cax=cax2, orientation="horizontal")
-        cb2.set_label(t("fig_4_12.cbar_ratio"), fontsize=9)
-        if mean_ratio is not None:
-            axes[2].text(0.02, 0.03, t("fig_4_12.mean", val=mean_ratio),
-                        transform=axes[2].transAxes, fontsize=9, va="bottom",
-                        bbox=dict(fc="white", ec="0.5", alpha=0.85, pad=2))
         fig.suptitle(t("fig_4_12.suptitle"), fontsize=12)
         self._save(fig, "fig_4_12", tight=False)
 

@@ -34,12 +34,10 @@ anuais (milho, algodão, sorgo) recuam de 58,3\% para 51,0\%, e a geração foto
 para 14,4\% por perda de desempenho térmico do painel. Soja e cana-de-açúcar permanecem
 praticamente intactas.
 
-A fase de uso atual da terra responde à QP2 e, de quebra, valida a QP1 sem que o uso da terra
-jamais tenha informado o modelo: a soja atual alcança 32\% do planalto de argila alta (Zona~1)
+A fase de uso atual da terra responde à QP2 e, de quebra, valida a QP1: a soja atual alcança 32\% do planalto de argila alta (Zona~1)
 contra parcelas bem menores nas zonas marginais, e as culturas ocupam terra sistematicamente
 mais viável que a média disponível (soja: 0,935 nos pixels plantados contra 0,773 na terra
-apta). A discriminação por presença é forte para a soja sobre uma amostra estratificada
-espaço$\times$segmento (AUC~0,871, Boyce~0,964).
+apta). A discriminação por presença é forte para a soja sobre uma amostra estratificada (AUC~0,871, Boyce~0,964).
 
 Duas tensões merecem registro. Primeira, uma lacuna substancial separa potencial e uso atual:
 41,8\% do território é viável para soja e ainda não cultivado, majoritariamente sobre pastagem.
@@ -94,13 +92,12 @@ dão $\Delta S=0$), com os demais fatores mantidos estáticos para isolar essa c
 comparação com floresta aleatória sob validação cruzada espacial (\S\ref{sec:interpretation})
 serve de checagem independente do mapa baseado em conhecimento, não de substituto: as
 divergências encontradas são tratadas como achado sobre potencial \emph{versus} realizado, não
-como defeito a esconder.
+como defeito oculto.
 
 \section{Limitações}\label{sec:limitations}
 
-Parte das limitações abaixo decorre da escolha deliberada por um desenho leve, sem
-\emph{upload} de dados e reexecutável a partir do catálogo público; outras são lacunas genuínas
-para trabalho futuro.
+Parte das limitações abaixo decorre da escolha deliberada pelo desenho descrito na seção anterior; 
+outras são lacunas genuínas para trabalho futuro.
 
 \begin{itemize}
   \item \textbf{Escopo biofísico, não econômico.} O modelo capta potencial agroclimático mais
@@ -109,40 +106,36 @@ para trabalho futuro.
     geografia econômica ausente.
   \item \textbf{Solo e terreno de produtos globais únicos.} A decomposição por fator mostra que,
     com o clima quase uniforme, solo e terreno carregam a maior parte da discriminação espacial
-    (\S\ref{sec:interpretation}); o atlas herda, portanto, a acurácia de dois produtos globais que
-    o desenho sem \emph{upload} impede de validar contra um levantamento local. O solo vem do
+    (\S\ref{sec:interpretation}); o atlas herda, portanto, a acurácia de dois produtos globais que não
+    possuem um ajuste fino a realidade local. O solo vem do
     OpenLandMap a 250~m. O terreno vem do SRTM GL1 bruto a 30~m \citep{Farr2007}, não uma
     versão com preenchimento de vazio como o NASADEM ou o CGIAR-CSI v4.1, com acurácia
     vertical absoluta especificada em~16~m (\emph{linear error} a 90\% de confiança) e vazios de
     sombra de radar/água que o \emph{pipeline} não trata antes de reamostrar para 250~m por média
     (elevação, declive, orientação) ou interpolação bilinear (índice topográfico de umidade).
+ 
   \item \textbf{Descompasso de escala clima--solo.} As entradas climáticas ($\approx$4,6~km,
     TerraClimate) são bem mais grosseiras que solo e terreno (250~m). Um levantamento do
     catálogo do GEE não encontrou alternativa viável: WorldClim é mais fino ($\approx$927~m) mas
-    sua climatologia (1960--1990) não cobre a normal 1991--2020 usada neste trabalho e falta-lhe
-    PET/VPD/umidade do solo; CHIRPS/CHIRTS cobrem só uma variável cada e, a 0,05\textdegree{}
-    ($\approx$5,6~km), são \emph{mais} grosseiros que o TerraClimate; ERA5-Land/AgERA5 têm o
-    conjunto completo de variáveis e o período correto mas ficam a 0,1\textdegree{}
-    ($\approx$9--11~km, mais de 2$\times$ pior), e o AgERA5 sequer está no catálogo oficial. Que o
-    clima atue como comporta, e não como fonte de estrutura fina, já foi demonstrado
-    quantitativamente (\S\ref{sec:atlas-present}, mapa de magnitude na
-    Figura~\ref{fig:scale-mismatch}): a resolução nominal do clima é enganosa apenas em
-    aparência, pois a estrutura fina do atlas nunca dependeu dela. Essa leitura, porém, simplifica
-    a estrutura real do modelo se aplicada ingenuamente por \emph{prefixo de
-    origem do dado} em vez de por \emph{papel temático}: agregando a decomposição por fator
-    (Figura~\ref{fig:factor-variance}) por tema, e não só por segmento isolado, o clima explica
-    0,13 da variância territorial média, mas essa média esconde dois extremos. Para a geração
-    solar, a irradiância (\texttt{clim\_srad}, 0,36) é um sinal climático genuíno: a única
-    variável verdadeiramente espacial de origem climática que domina um segmento. Já para a
-    pecuária, o fator dominante nominalmente rotulado ``clima'' é a umidade do solo do TerraClimate
-    (\texttt{clim\_soil\_moist}, 0,58): tematicamente, essa variável descreve armazenamento de
-    água no solo, não um gradiente climático espacial, e vem rotulada ``clima'' apenas porque o
-    produto de origem é um balanço hídrico climático. Reclassificando-a pelo papel temático em vez
-    do prefixo da banda, a parcela de terreno+solo da pecuária sobe de 0,42 para 1,00 e sua parcela
-    climática cai a zero, coerente com o restante das culturas. A nomenclatura de origem do
-    dado, portanto, não deve ser confundida com o papel temático da variável no modelo: é a
-    padronização (\S\ref{sec:fuzzy-standard}) e a estrutura de agregação por fator que definem o
-    que conta como ``clima'', não o catálogo de onde a banda foi extraída.
+    sua climatologia (1960--1990) não cobre a normal 1991--2020 usada aqui e não oferece
+    evapotranspiração potencial (PET), déficit de pressão de vapor (VPD) ou umidade do solo;
+    CHIRPS/CHIRTS cobrem uma única variável cada e, a 0,05\textdegree{} ($\approx$5,6~km), são
+    mais grosseiros que o TerraClimate; ERA5-Land/AgERA5 têm o conjunto completo de variáveis e
+    o período correto, mas ficam a 0,1\textdegree{} ($\approx$9--11~km, mais de 2$\times$ pior),
+    e o AgERA5 sequer está no catálogo oficial. Esse descompasso nominal de resolução é
+    enganoso: o clima atua como comporta, não como fonte de estrutura fina, já demonstrado
+    quantitativamente pelo mapa de magnitude da Figura~\ref{fig:scale-mismatch}
+    (\S\ref{sec:atlas-present}). Essa leitura, porém, simplifica demais se aplicada por
+    \emph{prefixo de origem do dado} em vez de por \emph{papel temático}: na decomposição por
+    fator agregada por tema (Figura~\ref{fig:factor-variance}), o clima explica em média 0,13 da
+    variância territorial, mas essa média esconde dois extremos --- a irradiância solar
+    (\texttt{clim\_srad}, 0,36) é um sinal climático espacial genuíno, enquanto o fator
+    nominalmente ``climático'' que domina a pecuária (\texttt{clim\_soil\_moist}, 0,58) descreve
+    armazenamento de água no solo, não um gradiente climático; reclassificado pelo papel
+    temático, a parcela de terreno+solo da pecuária sobe de 0,42 para 1,00. A nomenclatura de
+    origem do dado não deve, portanto, ser confundida com o papel temático da variável: é a
+    padronização (\S\ref{sec:fuzzy-standard}) e a agregação por fator que definem o que conta
+    como ``clima'', não o catálogo de onde a banda vem.
   \item \textbf{Sobrepermissividade residual das culturas.} As superfícies de culturas
     permanecem mais permissivas que o nicho realizado (\S\ref{sec:interpretation},
     $\kappa=+0{,}269$ para a soja). Separar regra especialista larga de lacuna potencial
@@ -152,16 +145,14 @@ para trabalho futuro.
     primária da vegetação, não rendimento agronômico \citep{Turner2006,He2018}, e a confusão
     entre coberturas limita seu uso a contexto descritivo; AUC e Boyce seguem como validadores
     primários de presença de cultura.
-  \item \textbf{Piscicultura tem uso realizado quase inexistente no MapBiomas.} A revisão de
-    2026-09 dos limiares e pesos (\S\ref{sec:ahp}) encontrou apenas um único pixel de aquicultura
-    mapeado pelo MapBiomas em todo o território GO~e~DF, amostra insuficiente para ancorar
-    limiares ou validar presença contra esse uso realizado. A calibração da piscicultura
-    permanece ancorada na terra genericamente \emph{disponível}, não no nicho realizado
-    (\texttt{tools/anchor\_breakpoints.py}), e nenhum validador de presença (Boyce/AUC) é
-    reportado para esse segmento pela mesma razão, uma lacuna genuína, não um problema de
-    metodologia corrigível dentro do desenho GEE-nativo atual.
-  \item \textbf{Fronteiras municipais e projeção futura.} O limite administrativo usado é mais
-    grosseiro que uma malha municipal de precisão nacional. E a projeção CMIP6, como qualquer
+  \item \textbf{Piscicultura tem uso realizado quase inexistente no MapBiomas.} Apenas um 
+    único pixel de aquicultura é mapeado pelo MapBiomas em todo o território GO~e~DF, 
+    amostra insuficiente para ancorar limiares ou validar presença contra esse uso realizado. 
+    A calibração da piscicultura permanece ancorada na terra genericamente \emph{disponível}, 
+    não no nicho realizado, e nenhum validador de presença (Boyce/AUC) é
+    reportado para esse segmento pela mesma razão. Resolver esta lacuna envolveria obter uma
+    nova classificação da área utilizada para psicultura na área de interesse.
+  \item \textbf{Projeção futura.} A projeção CMIP6, como qualquer
     projeção por fatores de mudança \citep{RamirezVillegas2010,Hay2000}, só pode ser sustentada
     indiretamente (linha de base validada, concordância entre GCMs); radiação solar e umidade do
     solo foram mantidas no valor histórico por falta de um campo projetado e de um balanço
@@ -170,6 +161,7 @@ para trabalho futuro.
 
 \section{Trabalhos futuros}\label{sec:futurework}
 
+%% TODO citar IBGE PAM e PPM como fontes para validadores economicos reais, possivel estimação de perda economica
 Uma primeira frente é substituir as duas variáveis climáticas mantidas estáticas, introduzindo
 radiação solar projetada e um tratamento de umidade do solo por balanço hídrico, para que
 geração fotovoltaica e pecuária passem a carregar sinal climático completo. Outra é reforçar a

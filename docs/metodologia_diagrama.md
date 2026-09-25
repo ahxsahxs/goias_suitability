@@ -27,7 +27,7 @@ flowchart TD
     D --> H["Validação (Fase B)<br/>MapBiomas · MOD17 · municípios (Malha IBGE)"]
     E --> H
 
-    G --> I["Atlas de viabilidade multissegmento<br/>+ zoneamento agroambiental<br/>+ ranking municipal (oportunidade/vulnerabilidade)"]
+    G --> I["Atlas de viabilidade multissegmento<br/>+ zoneamento<br/>+ ranking municipal"]
     H --> I
 
     classDef stage fill:#eef6ee,stroke:#4a7a4a,color:#1a1a1a;

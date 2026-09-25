@@ -3,7 +3,7 @@
 Este capítulo apresenta as análises computadas e verificadas: as superfícies de viabilidade
 do presente (\S\ref{sec:atlas-present}), o zoneamento agroambiental
 (\S\ref{sec:zoning-results}), a mudança projetada pelo CMIP6 (\S\ref{sec:shift}) e a fase de
-uso atual da terra e validação (\S\ref{sec:realized}). Todos os valores quantitativos provêm
+validação contra o uso atual da terra (\S\ref{sec:realized}). Todos os valores quantitativos provêm
 das saídas verificadas do modelo. As tabelas de referência e suplementares e as figuras de
 diagnóstico estão nos Anexos.
 
@@ -53,8 +53,7 @@ variância espacial da viabilidade de cada segmento em parcelas por fator, os fa
 quase uniformes quase nada contribuem para a \emph{variação} entre terra boa e ruim. Para a
 soja, o declive responde por 0,78 da variância e a argila por 0,22, com o clima $\approx$ 0. Na
 cana-de-açúcar a ordem se inverte: é a argila (0,69) que domina, com o declive respondendo por
-0,31, um lembrete de que ``solo e terreno discriminam, clima não'' é o padrão robusto entre
-segmentos, não a identidade do fator vencedor dentro de cada um. As outras culturas anuais são o
+0,31. As outras culturas anuais são o
 caso mais extremo: o declive sozinho responde por 0,99 da variância, com todo o resto
 (inclusive solo) $\approx$ 0. A pecuária é governada pela umidade do solo (0,58), pelo carbono
 orgânico (0,26) e, num grau menor, pelo declive (0,16). A piscicultura reparte-se entre distância
@@ -64,21 +63,15 @@ reservas (0,31), rugosidade do terreno (0,23) e fração de vegetação nativa (
 fatores climáticos móveis em $\approx$ 0 no presente.
 
 Essa concentração em um ou dois fatores por segmento não decorre de peso AHP enviesado a favor
-deles. Pelo contrário: a revisão de pesos de 2026-09 (\S\ref{sec:ahp}) deslocou peso
+deles. Pelo contrário: uma revisão de pesos (\S\ref{sec:ahp}) deslocou peso
 deliberadamente \emph{para} os fatores de maior poder discriminante em cada segmento, exatamente
 o oposto de um viés que infla artificialmente sua concentração de variância. Mesmo assim, a
 concentração não diminuiu: as razões máx./mín. de peso dos sete segmentos ficaram todas na mesma
 ordem de grandeza pós-recalibração (2,2--4,3$\times$; Tabela~\ref{tab:spec-longtable} do Anexo,
 com a piscicultura mais equilibrada em 2,7$\times$ e a cana-de-açúcar menos em 4,3$\times$), sem
 o contraste que uma calibração enviesada precisaria mostrar entre um segmento ``artificialmente
-concentrado'' e outro ``genuinamente equilibrado''. Que dar mais peso justamente aos fatores mais
-discriminantes não tenha reduzido a concentração de variância é evidência \emph{mais forte}, não
-mais fraca, de que a saturação é geográfica: o território realmente não varia nos demais
-fatores, e não um artefato de como os pesos foram elicitados.
-Ressalva: para soja e outras culturas anuais, apenas argila (e declive) de fato discriminam
-espaço; pH e carbono orgânico do solo também saturam (parcela $\approx$ 0, apesar de não
-serem climáticos), de modo que ``solo'' é, para essas duas culturas, um discriminador mais
-estreito do que ``solo e terreno'' em conjunto. Os fatores climáticos atuam, assim, como
+concentrado'' e outro ``genuinamente equilibrado''. 
+Os fatores climáticos atuam, assim, como
 comportas de viabilidade: eles abrem ou fecham o intervalo possível, mas não desenham a
 estrutura espacial fina do atlas, que repousa sobre solo e terreno, uma dependência retomada
 como limitação (\S\ref{sec:limitations}).
@@ -100,8 +93,7 @@ escala nativa.
 Essa uniformidade é \emph{espacial} (entre lugares, num mesmo instante), não \emph{temporal}
 (num mesmo lugar, ao longo do tempo): uma superfície climática pode ser quase plana no espaço e
 ainda assim se deslocar substancialmente no tempo, em todo o território de uma vez. É
-precisamente esse deslocamento temporal, e não a estrutura espacial fina que continua a cargo
-do terreno e do solo, que a projeção CMIP6 explora (\S\ref{sec:shift}).
+precisamente esse deslocamento temporal que a projeção CMIP6 explora (\S\ref{sec:shift}).
 
 A Figura~\ref{fig:climate-shift} torna esse deslocamento concreto para as duas entradas
 climáticas mais diretamente movidas pelo conjunto de GCMs: a precipitação anual cai (mediana
@@ -171,56 +163,59 @@ três das dez zonas (4, 5 e 8). A soja, apesar da maior viabilidade absoluta em 
 nunca é o melhor uso \emph{comparativo} de nenhuma delas: outro segmento sempre se destaca
 mais em relação à sua própria média territorial.
 
-\begin{itemize}
-  \item \textbf{Zona 1 (21,2\%) --- planalto alto e argiloso.} A mais argilosa (39,7\%) e mais
-    alta (860~m) de todas as dez zonas; a maior viabilidade de pecuária do território (0,65).
-    Apesar do melhor uso comparativo ser a pecuária, o uso atual é dividido quase igualmente
-    entre soja (32,4\%), pastagem (32,3\%) e vegetação nativa (29,9\%), a maior parcela
-    realizada de soja de qualquer zona. É um lembrete de que ``comparativo'' é um rótulo de
-    escore~z, não de favorabilidade absoluta.
-  \item \textbf{Zona 2 (5,9\%) --- baixada ripária.} Densidade de drenagem muito acima da
-    maioria das zonas e a maior viabilidade de piscicultura de todo o território (0,55, mais do
-    que o triplo da segunda colocada); melhor uso comparativo piscicultura. O uso atual é
-    dominado por pastagem (70,1\%, a maior parcela de pastagem de qualquer zona).
-  \item \textbf{Zona 3 (10,5\%) --- planalto intermediário e mais úmido.} A zona menos árida
-    do território (índice de aridez 1,19, o mais alto, portanto o mais úmido) e com o menor
-    déficit hídrico climático anual; melhor uso comparativo outras culturas anuais (0,52).
-  \item \textbf{Zona 4 (2,8\%) --- vale úmido de transição.} A menor das dez zonas. Maior
-    índice de umidade topográfica (14,6) e maior água disponível no solo (31,6~mm) de qualquer
-    zona, com densidade de drenagem também a mais alta; uso atual dividido quase ao meio entre
-    pastagem (39,0\%) e vegetação nativa (39,2\%); melhor uso comparativo conservação.
-  \item \textbf{Zona 5 (11,2\%) --- planalto alto e íngreme de conservação.} De longe a mais
-    íngreme (14,2$^\circ$, cerca de três vezes qualquer outra zona) e a mais rica em carbono
-    orgânico do solo (16,5~g/kg). A viabilidade de culturas colapsa aqui (soja 0,08), enquanto a
-    viabilidade de conservação é a mais alta de todas (0,56) e a cobertura nativa realizada
-    chega a 73,9\%, de longe a maior do território. Seu melhor uso comparativo é a
-    \textbf{conservação}, que aqui é também o melhor uso \textbf{absoluto}.
-  \item \textbf{Zona 6 (16,5\%) --- planície arenosa de baixa drenagem.} A maior densidade
-    amostral de todas as zonas, solo arenoso (25\% de argila) e a menor densidade de drenagem do
-    território; melhor uso comparativo geração fotovoltaica (0,38). O uso atual é majoritariamente
-    pastagem (64,1\%).
-  \item \textbf{Zona 7 (6,6\%) --- baixada quente, arenosa e remota.} A zona de menor
-    elevação (259~m), mais quente (27,6~$^\circ$C), mais arenosa (23\% de argila) e mais distante
-    das cidades (log tempo de viagem 5,42, o mais alto) de todo o território; melhor uso
-    comparativo piscicultura, embora a pecuária domine em termos absolutos (0,51).
-  \item \textbf{Zona 8 (4,9\%) --- planalto alto periurbano.} A zona mais próxima das cidades
-    (log tempo de viagem 2,02, muito abaixo de qualquer outra) e a segunda mais alta (833~m);
-    melhor uso comparativo conservação (0,47), com a pecuária como uso absoluto dominante (0,54).
-  \item \textbf{Zona 9 (3,9\%) --- planalto seco.} A zona mais árida do território (índice de
-    aridez 0,91, o mais baixo) e com o maior déficit hídrico climático anual (532~mm); melhor
-    uso comparativo geração fotovoltaica (0,41), com viabilidade de soja também alta (0,60).
-  \item \textbf{Zona 10 (16,6\%) --- planalto de cultivo privilegiado.} A maior viabilidade
-    combinada de soja e cana-de-açúcar de qualquer zona (0,64 e 0,63) e a maior parcela realizada
-    de cana-de-açúcar do território (10,0\%, muito acima de qualquer outra zona); melhor uso
-    comparativo cana-de-açúcar. Este é o núcleo agrícola do território.
-\end{itemize}
+As zonas são rotuladas pelo melhor segmento comparativo (\S\ref{sec:zoning}); a lista abaixo as
+agrupa por essa vocação, em vez de zona a zona, explicitando onde zonas de mesmo rótulo
+compartilham ou divergem em perfil biofísico.\footnote{As zonas são numeradas de 1 a 10 no texto
+e nas tabelas desta tese; o dashboard interativo e os CSVs exportados usam a mesma partição, mas
+rotulada de 0 a 9 (a Zona~$n$ do texto corresponde a Z$(n-1)$ no dashboard/CSV).}
 
-As zonas são rotuladas pelo melhor segmento comparativo (\S\ref{sec:zoning}). A conservação
-domina três zonas de perfis distintos --- um vale úmido de transição (Zona~4), um planalto alto
-e íngreme (Zona~5, também o melhor uso absoluto) e um planalto periurbano (Zona~8) ---, a
-piscicultura duas (a baixada ripária, Zona~2, e a baixada quente e remota, Zona~7), a geração
-fotovoltaica duas (a planície arenosa, Zona~6, e o planalto seco, Zona~9), e a pecuária e as
-outras culturas anuais e a cana-de-açúcar uma cada (Zonas~1, 3 e 10, respectivamente).
+\begin{itemize}
+  \item \textbf{Pecuária --- Zona 1 (21,2\%), planalto alto e argiloso.} A mais argilosa
+    (39,7\%) e mais alta (860~m) de todas as dez zonas; a maior viabilidade de pecuária do
+    território (0,65). Apesar do melhor uso comparativo ser a pecuária, o uso atual é dividido
+    quase igualmente entre soja (32,4\%), pastagem (32,3\%) e vegetação nativa (29,9\%), a maior
+    parcela realizada de soja de qualquer zona. É um lembrete de que ``comparativo'' é um rótulo
+    de escore~z, não de favorabilidade absoluta.
+  \item \textbf{Outras culturas anuais --- Zona 3 (10,5\%), planalto intermediário e mais
+    úmido.} A zona menos árida do território (índice de aridez 1,19, o mais alto, portanto o
+    mais úmido) e com o menor déficit hídrico climático anual; melhor uso comparativo outras
+    culturas anuais (0,52).
+  \item \textbf{Cana-de-açúcar --- Zona 10 (16,6\%), planalto de cultivo privilegiado.} A maior
+    viabilidade combinada de soja e cana-de-açúcar de qualquer zona (0,64 e 0,63) e a maior
+    parcela realizada de cana-de-açúcar do território (10,0\%, muito acima de qualquer outra
+    zona); melhor uso comparativo cana-de-açúcar. Este é o núcleo agrícola do território.
+  \item \textbf{Piscicultura --- Zonas 2 (5,9\%) e 7 (6,6\%).} A Zona~2, baixada ripária, tem
+    densidade de drenagem muito acima da maioria das zonas e a maior viabilidade de
+    piscicultura de todo o território (0,55, mais do que o triplo da segunda colocada); o uso
+    atual é dominado por pastagem (70,1\%, a maior parcela de pastagem de qualquer zona). A
+    Zona~7, baixada quente, arenosa e remota, tem a menor elevação (259~m), é a mais quente
+    (27,6~$^\circ$C), mais arenosa (23\% de argila) e mais distante das cidades (log tempo de
+    viagem 5,42, o mais alto) de todo o território, com a pecuária dominando em termos
+    absolutos (0,51). As duas chegam ao mesmo rótulo comparativo por caminhos opostos: a Zona~2
+    por hidrografia abundante, a Zona~7 porque o calor e o isolamento deprimem as demais
+    culturas mais do que a piscicultura, não por fartura de água.
+  \item \textbf{Geração fotovoltaica --- Zonas 6 (16,5\%) e 9 (3,9\%).} A Zona~6, planície
+    arenosa de baixa drenagem, tem a maior densidade amostral de todas as zonas, solo arenoso
+    (25\% de argila) e a menor densidade de drenagem do território, com uso atual
+    majoritariamente pastagem (64,1\%). A Zona~9, planalto seco, é a mais árida do território
+    (índice de aridez 0,91, o mais baixo) e tem o maior déficit hídrico climático anual
+    (532~mm), mas mantém viabilidade de soja também alta (0,60). A Zona~6 chega à vocação solar
+    por solo/drenagem pobres que penalizam cultivo e pecuária; a Zona~9 chega lá pela aridez
+    extrema, sem excluir tão fortemente a soja quanto a Zona~6 exclui as demais culturas.
+  \item \textbf{Conservação --- Zonas 4 (2,8\%), 5 (11,2\%) e 8 (4,9\%).} Três perfis físicos
+    opostos convergem no mesmo rótulo comparativo. A Zona~4, vale úmido de transição e a menor
+    das dez zonas, tem o maior índice de umidade topográfica (14,6) e a maior água disponível no
+    solo (31,6~mm), com uso atual dividido quase ao meio entre pastagem (39,0\%) e vegetação
+    nativa (39,2\%). A Zona~5, planalto alto e íngreme, é de longe a mais íngreme
+    (14,2$^\circ$, cerca de três vezes qualquer outra zona) e a mais rica em carbono orgânico do
+    solo (16,5~g/kg); a viabilidade de culturas colapsa aqui (soja 0,08) enquanto a viabilidade
+    de conservação é a mais alta de todas (0,56) e a cobertura nativa realizada chega a 73,9\%,
+    de longe a maior do território — é a única das três em que a conservação é também o melhor
+    uso \textbf{absoluto}, não só comparativo. A Zona~8, planalto alto periurbano, é a zona mais
+    próxima das cidades (log tempo de viagem 2,02, muito abaixo de qualquer outra) e a segunda
+    mais alta (833~m), com a pecuária como uso absoluto dominante (0,54) apesar do rótulo
+    comparativo de conservação.
+\end{itemize}
 
 \begin{figure}[H]
 \centering
@@ -262,8 +257,8 @@ mudanças médias territoriais vão de alguns milésimos, nas culturas comerciai
 cerca de oito centésimos, na conservação sob a trajetória mais severa (Tabela~\ref{tab:shift-mean}).
 Ainda assim, a fração dos GCMs que concordam quanto ao sinal da mudança é alta para todo
 segmento, cenário e janela sensíveis ao clima: a concordância média territorial para outras
-culturas anuais sob SSP5-8.5 2051--2070, o caso mais severo, está anotada na
-Figura~\ref{fig:ensemble-agreement} do Anexo. A projeção identifica \textbf{três segmentos
+culturas anuais sob SSP5-8.5 2051--2070, o caso mais severo, é $0{,}999$. A projeção identifica
+\textbf{três segmentos
 expostos}: a conservação, outras culturas anuais e geração fotovoltaica; não deixando nenhum
 segmento estruturalmente invariante. A superfície de conservação carrega dois fatores climáticos
 móveis: um termo de viabilidade por aridez e um termo de calor do trimestre mais quente. Por isso
@@ -280,7 +275,9 @@ segmentos estão ordenados por exposição.}
 \small
 \begin{tabular}{@{}lrrrr@{}}
 \toprule
-Segmento & SSP2-4.5 2031--50 & SSP2-4.5 2051--70 & SSP5-8.5 2031--50 & SSP5-8.5 2051--70 \\
+ & \multicolumn{2}{c}{SSP2-4.5} & \multicolumn{2}{c}{SSP5-8.5} \\
+\cmidrule(lr){2-3} \cmidrule(lr){4-5}
+Segmento & 2031--50 & 2051--70 & 2031--50 & 2051--70 \\
 \midrule
 Conservação           & $-0{,}0454$ & $-0{,}0515$ & $-0{,}0543$ & $-0{,}0800$ \\
 Outras culturas anuais & $-0{,}0121$ & $-0{,}0228$ & $-0{,}0172$ & $-0{,}0478$ \\
@@ -309,7 +306,9 @@ linha de base do mecanismo.
 \small
 \begin{tabular}{@{}lrrrrr@{}}
 \toprule
-Segmento & Presente & SSP2-4.5 2031--50 & SSP2-4.5 2051--70 & SSP5-8.5 2031--50 & SSP5-8.5 2051--70 \\
+ & & \multicolumn{2}{c}{SSP2-4.5} & \multicolumn{2}{c}{SSP5-8.5} \\
+\cmidrule(lr){3-4} \cmidrule(lr){5-6}
+Segmento & Presente & 2031--50 & 2051--70 & 2031--50 & 2051--70 \\
 \midrule
 Conservação           & 27,8\% & 18,0\% & 16,9\% & 16,4\% & 12,8\% \\
 Outras culturas anuais & 58,3\% & 58,1\% & 56,7\% & 57,7\% & 51,0\% \\
@@ -340,17 +339,18 @@ crescimento acumulados. Estes resultados coincidem com a modelagem da pressão e
 aquecimento e ressecamento sobre a fronteira agrícola do Cerrado, já documentada em escala
 regional \citep{Marengo2022}.
 
-A geração fotovoltaica cai de $-0{,}010$ a $-0{,}035$ por sua redução de desempenho por
-temperatura de painel, com a área viável ou superior contraindo-se de 20,5\% para 14,4\%: sua
-superfície engajada perde área viável com facilidade à medida que as planícies quentes cruzam
-o limiar de calor.
+A geração fotovoltaica tem $\Delta S$ (Tabela~\ref{tab:shift-mean}) caindo de $-0{,}010$ a
+$-0{,}035$, na mesma escala de viabilidade 0--1 usada em todo o atlas, por sua redução de
+desempenho por temperatura de painel, com a área viável ou superior contraindo-se de 20,5\%
+para 14,4\%: sua superfície engajada perde área viável com facilidade à medida que as
+planícies quentes cruzam o limiar de calor.
 
-Soja e cana-de-açúcar, por sua vez, são resilientes: sua mudança é essencialmente nula, exceto
-sob a combinação mais quente, onde se torna levemente negativa ($-0{,}0025$, $-0{,}0006$); sua
-área viável ou superior permanece estável até o décimo de ponto percentual em todo o período.
-A piscicultura melhora marginalmente (cerca de $+0{,}0045$, com a área viável ou superior
-passando de 9,5\% para 9,6\%), e a pecuária permanece efetivamente inalterada, dentro de
-$\pm 0{,}001$ de zero.
+Soja e cana-de-açúcar, por sua vez, são resilientes: seu $\Delta S$ é essencialmente nulo,
+exceto sob a combinação mais quente, onde se torna levemente negativo ($-0{,}0025$,
+$-0{,}0006$); sua área viável ou superior permanece estável até o décimo de ponto percentual em
+todo o período. A piscicultura melhora marginalmente ($\Delta S$ de cerca de $+0{,}0045$, com a
+área viável ou superior passando de 9,5\% para 9,6\%), e a pecuária permanece efetivamente
+inalterada, dentro de $\pm 0{,}001$ de zero de $\Delta S$.
 
 Resolvida por zona (Tabela~\ref{tab:zone-shift} do Anexo), a mudança nas culturas
 \textbf{acentua o gradiente agroambiental existente, em vez de deslocá-lo.} As perdas nas
@@ -380,7 +380,7 @@ topo da escala: sob SSP5-8.5 2051--2070, a classe privilegiada S1 colapsa de 24,
 A superfície de concordância entre os modelos confirma que essas conclusões direcionais são
 robustas ao modelo: para outras culturas anuais sob SSP5-8.5 2051--2070, o segmento e a
 combinação mais expostos ao clima e portanto o teste mais rigoroso, a concordância média
-territorial é 0,999 (Figura~\ref{fig:ensemble-agreement} do Anexo). A ordenação de
+territorial é 0,999. A ordenação de
 cenário e janela comporta-se como o raciocínio físico exige. Para todo segmento sensível ao
 clima, a mudança é mais pronunciada sob a trajetória de maior emissão e a janela mais tardia:
 SSP5-8.5 2051--2070 é uniformemente o caso mais severo, enquanto as duas janelas de curto
@@ -393,8 +393,8 @@ direção e magnitude esperadas.
 \includegraphics[width=\textwidth]{fig_4_4.png}
 \caption{Mudança projetada na viabilidade $\Delta S$ sob SSP5-8.5, 2051--2070, para os três
 segmentos expostos (conservação, outras culturas anuais, geração fotovoltaica) e uma cultura
-comercial resiliente (soja). A concordância entre os modelos e a realocação de melhor
-cultura estão nas Figuras~\ref{fig:ensemble-agreement} e~\ref{fig:best-crop} do Anexo.}
+comercial resiliente (soja). A realocação de melhor cultura está na
+Figura~\ref{fig:best-crop} do Anexo.}
 \label{fig:shift}
 \end{figure}
 
@@ -426,13 +426,13 @@ aquicultura é desprezível em termos de área.
 \label{tab:realized-composition}
 \begin{tabular}{@{}lr@{}}
 \toprule
-Uso atual & Parcela do território \\
+Uso atual                                                         & Parcela do território \\
 \midrule
-Pastagem (cultivada + mosaico agricultura/pastagem)               & 45,5\% \\
-Vegetação nativa (floresta, savana, campo, área úmida, afloramento rochoso) & 35,0\% \\
+Pastagem (cultivada + mosaico)                                    & 45,5\% \\
+Vegetação nativa (floresta, savana, outros)                       & 35,0\% \\
 Soja                                                              & 13,8\% \\
 Cana-de-açúcar                                                    & 2,4\% \\
-Outras culturas anuais (milho, algodão, arroz, mosaico de lavoura) & 0,6\% \\
+Outras culturas anuais (milho, algodão, arroz, outros)            & 0,6\% \\
 Não elegível (urbano, mineração, água, não vegetado)              & 2,2\% \\
 Outros (silvicultura, culturas perenes)                           & 0,5\% \\
 Piscicultura (aquicultura)                                        & $<$0,01\% \\
@@ -454,23 +454,24 @@ cruzada mais forte disponível para a QP1 é justamente esta: uma partição nã
 variáveis biofísicas reproduz a geografia observada de cultivo, pastejo e vegetação remanescente,
 e a zona de conservação é precisamente onde o Cerrado nativo de fato persiste.
 
-\textbf{As culturas atuais ocupam terra de viabilidade substancialmente mais alta que a
-média oferecida pelo território.} Onde uma cultura é plantada, a viabilidade média modelada
+As culturas atuais ocupam terra de viabilidade substancialmente mais alta que a
+média oferecida pelo território. Onde uma cultura é plantada, a viabilidade média modelada
 dessa cultura excede sua média sobre toda a terra convertível: soja 0,935 nos pixels de soja
 atual contra 0,773 sobre a terra disponível, cana-de-açúcar 0,952 contra 0,795 e outras
-culturas anuais 0,733 contra 0,686. A escolha de sítio revelada concentra-se no extremo alto
-da superfície modelada, exatamente como prevê um mapa de potencial válido.
+culturas anuais 0,733 contra 0,686.
 
-\textbf{Uma folga biofísica ainda separa o potencial do uso atual.} Cruzando as classes da
-FAO com o uso atual, obtém-se, por segmento, a parcela do território viável ou superior mas
-não atualmente sob esse uso (Tabela~\ref{tab:pot-real-gap}). Para a soja essa parcela
-subutilizada é de 41,8\% do território e para a cana-de-açúcar 51,6\%. Como a pastagem é de
-longe o maior uso atual, o grosso dessa folga é pastagem existente, e não vegetação nativa.
+Cruzando as classes da
+FAO com o uso atual, obtém-se, por segmento, a parcela de \textbf{todo o território de GO~e~DF}
+--- não apenas da terra já convertida ou da terra viável daquele segmento --- que é viável ou
+superior para esse segmento mas não está atualmente sob esse uso (Tabela~\ref{tab:pot-real-gap}).
+Para a soja essa parcela subutilizada é de 41,8\% do território e para a cana-de-açúcar 51,6\%.
+Como a pastagem é de longe o maior uso atual, o grosso dessa folga é pastagem existente, e não
+vegetação nativa.
 
 \begin{table}[H]
 \centering
-\caption{Lacuna potencial \emph{versus} realizado: parcela do território viável ou superior
-(S1+S2 da FAO) para um segmento mas não atualmente sob esse uso.}
+\caption{Lacuna potencial \emph{versus} realizado: parcela de todo o território de GO~e~DF que
+é viável ou superior (S1+S2 da FAO) para um segmento mas não está atualmente sob esse uso.}
 \label{tab:pot-real-gap}
 \begin{tabular}{@{}lr@{}}
 \toprule
@@ -490,11 +491,11 @@ As superfícies baseadas em conhecimento foram submetidas a três verificações
 Cada uma delas é reforçada com uma validação cruzada espacial, que protege contra a inflação
 por autocorrelação espacial a que as métricas de presença estão sujeitas.
 
-\textbf{Discriminação por presença.} Medidas contra a presença atual de culturas, as
+Medidas contra a presença atual de culturas, as
 superfícies ordenam bem a presença acima do fundo para as três culturas avaliadas
 (Tabela~\ref{tab:presence-auc}). A soja é a mais fortemente validada (AUC 0,871; Boyce 0,964).
-A amostra usada nessa e nas demais checagens de presença é estratificada espaço$\times$segmento
-(T8, \S\ref{sec:zoning}), distribuída por uma malha $8\times8$ sobre toda a extensão de
+A amostra usada nessa e nas demais checagens de presença é estratificada por segmento e espacialmente
+(\S\ref{sec:zoning}), distribuída por uma malha $8\times8$ sobre toda a extensão de
 GO~e~DF em vez de concentrada onde cada cultura é mais densa, o que já mitiga, na própria
 amostragem, parte do otimismo por autocorrelação espacial a que métricas de presença sobre
 amostras uniformes estão sujeitas.
@@ -522,8 +523,8 @@ Outras culturas anuais & 0,698 & 0,792 \\
 \end{tabular}
 \end{table}
 
-\textbf{\emph{Proxy} de produtividade} se refere ao contexto, não ao rendimento. 
-Este teste usa a correlação
+O teste de correlação com o \emph{Proxy} de produtividade se refere ao contexto de uso, e não ao seu rendimento.
+É usada a correlação
 $\rho$ de Spearman entre a viabilidade média municipal e o \emph{proxy} de NPP anual sobre
 terra manejada (Tabela~\ref{tab:spearman-npp} do Anexo), como \emph{contexto} grosseiro de
 produtividade, não como um validador de rendimento como já foi explicitado em \S\ref{sec:phaseb}. A
@@ -548,27 +549,24 @@ quase unitária na escala de município a marcadamente mais fraca na escala de t
 crescimento (janela de dossel de outubro a março) \textbf{apenas nos pixels efetivamente
 cultivados de cada cultura}, e a correlaciona com a viabilidade dessa cultura \emph{dentro} da
 própria cultura, removendo assim as confusões advindas dos ciclos de fenologia e pousio
-de coberturas distintas. Com a amostragem estratificada (T8) elevando o tamanho de amostra em
-mais de uma ordem de grandeza em relação à iteração anterior, o gradiente da soja é agora
+de coberturas distintas. Com a amostragem estratificada o gradiente da soja é
 \textbf{+0,417} ($p<0{,}001$, $n = 14.646$) e o das outras culturas anuais \textbf{+0,370},
 monotônico ($n = 12.117$): uma viabilidade modelada mais alta está associada a produtividade
-\emph{mais alta} dentro da própria cultura, não apenas ``não mais baixa'' como na iteração
-anterior. A cana-de-açúcar, por sua vez, mostra um gradiente pequeno e negativo ($-0{,}085$,
+\emph{mais alta} dentro da própria cultura, não apenas ``não mais baixa''. A cana-de-açúcar, por sua vez, mostra um gradiente pequeno e negativo ($-0{,}085$,
 $n = 6.678$), estatisticamente distinguível de zero dado o tamanho de amostra, mas de
 magnitude modesta.
 
 Os três testes acima --- correlação municipal com NPP, explicação da mistura de sinais e
 gradiente intracultura de GPP --- continuam sendo lidos como verificações \emph{secundárias},
-não como tentativas independentes de validar rendimento, ainda que a amostragem maior os torne
-individualmente mais informativos do que antes. A correlação municipal mistura sinal de biomassa
+não como tentativas independentes de validar rendimento. A correlação municipal mistura sinal de biomassa
 em pé com sinal de rendimento agrícola, por isso é lida como contexto, não como prova; o
-gradiente intracultura, embora agora significativo para soja e outras culturas, ainda mede GPP
+gradiente intracultura, embora significativo para soja e outras culturas, ainda mede GPP
 (assimilação de carbono), não rendimento colhido. A conclusão que os três sustentam, em conjunto,
-é mais favorável do que na iteração anterior: nenhum deles contradiz a viabilidade modelada, e
+é favorável ao modelo: nenhum deles contradiz a viabilidade modelada, e
 dois dos três (soja e outras culturas) corroboram-na positivamente dentro da própria cultura.
 Ainda assim, as métricas de presença (Tabela~\ref{tab:presence-auc}), com alvo mais próximo do
 que se quer validar, continuam sendo os validadores primários; os três testes de produtividade
-seguem como evidência corroborativa, agora mais forte, não como substitutos.
+seguem como evidência corroborativa, não como substitutos.
 
 O \emph{proxy} de NPP anual também separa fortemente as zonas. Uma ANOVA de um fator entre as
 dez zonas é altamente significativa ($F = 2191{,}0$, $p \approx 0$): a baixada quente, arenosa
@@ -579,34 +577,44 @@ ficam em posição intermediária (Zona~6, planície arenosa, 0,63; Zona~10, cul
 0,71). O zoneamento, assim, capta um gradiente real de produtividade realizada, e não apenas
 um gradiente presente nas variáveis de entrada.
 
+%% TODO citaçao para escala de Landis & Koch
+
 \textbf{Verificação cruzada orientada por dados.} Uma floresta aleatória foi treinada na
 presença atual de soja, sobre o mesmo conjunto padronizado de atributos e sobre uma amostra
-estratificada espaço$\times$segmento (T8, $n = 16.160$), e comparada célula a célula com a
+estratificada espacialmente e por segmento ($n = 16.160$), e comparada célula a célula com a
 classificação baseada em conhecimento. A concordância é razoável, não forte, na escala de
 Landis \& Koch ($\kappa$ de Cohen $= +0{,}269$): o mapa de conhecimento declara 52,8\% do
 território como viável ou superior, contra 21,6\% a que o classificador orientado por dados
 atribui alta probabilidade de presença.
 
+O $\kappa$ de Cohen é definido como
+\begin{equation*}
+  \kappa = \frac{p_o - p_e}{1 - p_e},
+\end{equation*}
+em que $p_o$ é a proporção observada de concordância célula a célula entre as duas
+classificações (conhecimento \emph{versus} floresta aleatória) e $p_e$ é a proporção de
+concordância esperada apenas ao acaso, dada a prevalência marginal de cada classe em cada mapa.
+Quando as duas classificações marcam áreas de tamanhos muito diferentes --- aqui, 52,8\% \emph{
+versus} 21,6\% do território como viável --- $p_e$ cresce e o $\kappa$ desconta uma fatia maior
+da concordância bruta como ``acerto por sorte'', o que por si só já explica por que ele cai
+abaixo do que a AUC sugeriria.
+
 Esse $\kappa$ modesto não contradiz a AUC de 0,871 relatada na Tabela~\ref{tab:presence-auc}:
-são duas perguntas diferentes sobre o mesmo resultado. A AUC pergunta algo simples: os pixels
-onde a soja é realmente plantada recebem, em geral, uma nota de viabilidade mais alta do que
-pixels escolhidos ao acaso? A resposta é sim, de forma consistente, por isso ela é alta. Já o
-$\kappa$ pergunta algo mais rígido: as duas superfícies concordam sobre \emph{qual} pedaço do
-território marcar como viável? Aqui a resposta é só parcial, porque o mapa de conhecimento marca
-uma área bem maior (52,8\%) do que a floresta aleatória (21,6\%). Quando duas áreas comparadas
-têm tamanhos diferentes, a fórmula do $\kappa$ desconta como ``acerto por sorte'' uma fatia maior
-da concordância, e o resultado cai abaixo do que a AUC por si só sugeriria. Ainda assim, o
+são duas perguntas diferentes sobre o mesmo resultado. A AUC pergunta se os pixels onde a soja
+é realmente plantada recebem, em geral, uma nota de viabilidade mais alta do que pixels
+escolhidos ao acaso --- a resposta é sim, de forma consistente. Já o $\kappa$ pergunta algo mais
+rígido: as duas superfícies concordam sobre \emph{qual} pedaço do território marcar como
+viável? Aqui a resposta é só parcial, pela diferença de área discutida acima. Ainda assim, o
 modelo, no fundo, continua apontando majoritariamente para os lugares certos \citep{Cicchetti1990}.
 Ou seja, $\kappa = 0{,}269$ não quer dizer que o modelo erra \emph{onde} a soja tende a ocorrer
 (isso já foi respondido pela AUC), mas sim que a área que o conhecimento especialista chama
-de ``viável'' e a área que os dados de fato ocupam ainda têm tamanhos apreciavelmente diferentes,
-embora bem menos díspares do que numa iteração anterior deste mesmo teste.
+de ``viável'' e a área que os dados de fato ocupam ainda têm tamanhos apreciavelmente diferentes.
 
 Essa divergência de área, mesmo moderada, ainda é informativa. O nicho orientado por dados
 permanece mais estreito que o envelope biofísico: boa parte da terra ``viável'' está sem uso.
 Esse é, precisamente, o sinal potencial \emph{versus} realizado da QP2, uma vez que terra
-biofisicamente capaz é deixada ociosa por razões de economia, posse da terra ou logística. Como
-o território é climaticamente quase uniforme, o solo e o terreno são as únicas alavancas de
+biofisicamente capaz é deixada ociosa por razões de economia, posse da terra, logística ou inércia.
+Como o território é climaticamente quase uniforme, o solo e o terreno são as únicas alavancas de
 estreitamento disponíveis, de modo que essa permissividade residual não pode ser atribuída ao
 clima.
 
@@ -617,8 +625,8 @@ responde ``onde a soja é de fato plantada''. A divergência entre os dois
 \subsection{Unidades municipais de decisão}\label{sec:municipal}
 
 Agregando aos 247 municípios obtém-se a visão relevante para a decisão. Por área majoritária,
-eles se distribuem por todas as dez zonas, sem exceção. Na iteração anterior, ao contrário, a
-zona de conservação nunca era majoritária em nenhum município, por ser fragmentada e pequena. Sob o zoneamento em dez zonas, é justamente o planalto alto e íngreme de conservação
+eles se distribuem por todas as dez zonas, sem exceção. Sob o zoneamento em dez zonas, 
+é justamente o planalto alto e íngreme de conservação
 (Zona~5) a zona mais comum, com 49 municípios; seguem a planície arenosa (Zona~6, 32), o
 planalto intermediário (Zona~3, 30), o planalto de cultivo privilegiado (Zona~10, 25), o vale
 úmido de transição (Zona~4, 24), a baixada quente e remota e o planalto periurbano (Zonas~7 e~8,
@@ -679,7 +687,7 @@ equivalente para os demais cinco segmentos está na Figura~\ref{fig:all-segment-
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.62\textwidth]{fig_4_9.png}
+\includegraphics[width=0.85\textwidth]{fig_4_9.png}
 \caption{Viabilidade média municipal da soja (acima) e municípios sinalizados como vulneráveis
 pelo declínio projetado das outras culturas (abaixo). O mapa de subutilização potencial
 \emph{versus} realizado da soja está na Figura~\ref{fig:underused-soy} do Anexo.}

@@ -247,12 +247,11 @@ uma integral anual (NDVI médio $\times$ 365).
 \textbf{Acessibilidade ao mercado (1 variável).} A superfície de tempo de viagem às cidades é
 transformada em logaritmo como $\ln(t+1)$ e reamostrada para a grade.
 
-\textbf{Máscara de cobertura da terra (apenas contexto).} O produto genérico de cobertura da
-terra a 10~m é agregado a 250~m como uma classe majoritária mais frações por classe,
-produzindo uma máscara de áreas \emph{excluídas} (urbano, água permanente, área úmida
-herbácea), uma máscara de áreas \emph{disponíveis} (lavoura, campo, vegetação arbustiva, solo
-exposto) e frações de árvore/lavoura/campo para contexto. É substituída pelo produto de uso
-atual específico para o Brasil na Fase~B.
+\textbf{Máscara de cobertura da terra (apenas contexto).} O MapBiomas (coleção~10), a 30~m, é
+agregado a 250~m como uma classe majoritária mais frações por classe, produzindo uma máscara de
+áreas \emph{excluídas} (urbano, água permanente, área úmida herbácea), uma máscara de áreas
+\emph{disponíveis} (lavoura, campo, vegetação arbustiva, solo exposto) e frações de
+árvore/lavoura/campo para contexto.
 
 \chapter{Tabelas de resultados suplementares}\label{anx:tables}
 
@@ -280,6 +279,8 @@ Distância à água (m)                 & 15.048 & 9.269 & 22.248 & 9.990 & 21.3
 \bottomrule
 \end{tabular}
 \end{table}
+
+%% TODO esta tabela deve ficar com o topo para a esquerda, nao pra direita
 
 \begin{sidewaystable}[p]
 \centering
@@ -389,23 +390,13 @@ culturas.
 
 \chapter{Figuras de diagnóstico}\label{anx:figures}
 
+
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.85\textwidth]{fig_4_2.png}
 \caption{Classes de viabilidade da FAO (N / S3 / S2 / S1) para segmentos representativos
 (soja e conservação).}
 \label{fig:fao-classes}
-\end{figure}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.7\textwidth]{fig_4_5.png}
-\caption{Concordância entre os modelos (fração de modelos que concordam quanto ao sinal da
-mudança) para as outras culturas anuais sob SSP5-8.5, 2051--2070. A concordância é
-$\approx 1{,}0$ em quase todo o território; a escala de cor inicia no 2\textsuperscript{o}
-percentil territorial para revelar o contraste residual, e a concordância média territorial
-está anotada no mapa.}
-\label{fig:ensemble-agreement}
 \end{figure}
 
 \begin{figure}[H]
@@ -427,42 +418,53 @@ superiores mas não atualmente sob soja.}
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{fig_4_13.png}
-\caption{Viabilidade média municipal para os sete segmentos --- o equivalente municipal, agregado
-por redução zonal sobre \texttt{municipal\_godf}, da Figura~\ref{fig:atlas-present} (pixel a
-pixel); companheiro da Figura~\ref{fig:municipal}, que só detalha soja e outras culturas.}
+\caption{Viabilidade média municipal para os sete segmentos --- o equivalente municipal da Figura~\ref{fig:atlas-present},
+agregado por redução zonal sobre os municípios; complemento da Figura~\ref{fig:municipal}, que só detalha soja e outras culturas.}
 \label{fig:all-segment-suit}
 \end{figure}
 
+\section{Seleção do número de zonas (k)}\label{sec:k-selection-annex}
+
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.85\textwidth]{fig_4_10.png}
+\includegraphics[width=0.9\textwidth]{fig_4_10.png}
 \caption{Índices de validade de agrupamento (silhueta, Davies--Bouldin, estatística de
 \emph{gap}) e estabilidade em subamostras (índice de Rand ajustado) ao longo de
-$k = 2\dots10$ no espaço de componentes principais descorrelacionado. A silhueta é quase
-plana (0,17--0,19) e o Davies--Bouldin fica próximo em $k=7$, $8$ e $10$, de modo que nenhum
-dos dois decide sozinho; $k = 10$ (linha tracejada) combina a silhueta mais alta do intervalo
-(0,187) com a estabilidade de longe mais alta sob subamostragem (ARI $=0{,}962$, contra
-$0{,}687$ em $k=7$). Um \emph{sweep} estendido a $k=2\dots20$ (não plotado) confirma que esse
-pico de silhueta não é um artefato de faixa truncada.}
+$k = 2\dots20$ no espaço de componentes principais descorrelacionado.}
 \label{fig:cluster-validity}
 \end{figure}
 
-\begin{sidewaysfigure}[p]
+A silhueta é quase plana (0,16--0,19) ao longo de todo o intervalo e o Davies--Bouldin fica
+próximo em $k=7$, $8$ e $10$, de modo que nenhum índice isolado decide sozinho; $k = 10$ (linha
+tracejada) combina a silhueta mais alta de todo o \emph{sweep} estendido a $k=2\dots20$ (0,187,
+contra um segundo pico de 0,182 em $k=13$) com uma das estabilidades mais altas sob
+subamostragem (ARI $=0{,}962$, superado apenas por $k=9$ com $0{,}970$, e muito acima de
+$0{,}687$ em $k=7$). Nenhum $k$ entre 11 e 20 supera o pico de silhueta de $k=10$, confirmando
+que a escolha não é um artefato de faixa truncada.
+
+\section{Decomposição por fator}\label{sec:factor-variance-annex}
+
+\begin{sidewaysfigure}[htp]
 \centering
 \includegraphics[width=0.95\textheight]{fig_4_11.png}
-\caption{Parcela de cada fator na variância espacial da viabilidade de cada segmento
-(decomposição exata de covariância entre cada fator ponderado e o agregado --- sobre
-log-pertinências para os seis segmentos de média geométrica, sobre pertinências brutas para a
-conservação, de média aritmética; as parcelas somam exatamente~1 por construção). Eixo
-horizontal em escala simétrica-log (limiar
-linear~$=0{,}005$) para manter visíveis as parcelas próximas de zero sem exagerar sua
-magnitude real; a cor indica o grupo temático do fator (clima, laranja; terreno+solo, verde;
-outros --- água, sítio, acesso, extras ---, azul); contorno preto grosso marca o fator
-dominante de cada segmento; hachura indica contribuição negativa, um efeito residual esperado
-de uma decomposição linear de covariância entre fatores correlacionados, não um erro. Terreno
-e solo dominam as culturas, mas o fator vencedor não é sempre o mesmo: declive responde por
-0,78 da variância da soja (argila, 0,22) e por $\approx$1,0 de outras culturas anuais, ao passo
-que para a cana-de-açúcar é a argila que domina (0,69, contra 0,31 do declive). Para soja e
+\caption{Parcela de cada fator na variância espacial da viabilidade de cada segmento, por
+decomposição exata de covariância entre cada fator ponderado e o agregado (as parcelas somam
+exatamente~1 por construção). Eixo horizontal em escala simétrica-log; a cor indica o grupo
+temático do fator (clima, laranja; terreno+solo, verde; outros --- água, sítio, acesso,
+extras ---, azul); contorno preto grosso marca o fator dominante de cada segmento; hachura
+indica contribuição negativa.}
+\label{fig:factor-variance}
+\end{sidewaysfigure}
+
+A decomposição é feita sobre log-pertinências para os seis segmentos de média geométrica e sobre
+pertinências brutas para a conservação, de média aritmética; o eixo horizontal usa uma escala
+simétrica-log (limiar linear~$=0{,}005$) para manter visíveis as parcelas próximas de zero sem
+exagerar sua magnitude real, e a contribuição negativa indicada por hachura é um efeito residual
+esperado de uma decomposição linear de covariância entre fatores correlacionados, não um erro.
+
+Terreno e solo dominam as culturas, mas o fator vencedor não é sempre o mesmo: declive responde
+por 0,78 da variância da soja (argila, 0,22) e por $\approx$1,0 de outras culturas anuais, ao
+passo que para a cana-de-açúcar é a argila que domina (0,69, contra 0,31 do declive). Para soja e
 outras culturas anuais, apenas argila (e declive) de fato discriminam --- pH e carbono orgânico
 do solo também saturam (parcela $\approx$0), de modo que \emph{solo} isoladamente é um
 discriminador espacial mais estreito do que \emph{terreno e solo} em conjunto. A pecuária é
@@ -474,34 +476,23 @@ de vegetação nativa (0,22); a geração fotovoltaica, pelo índice de claridad
 radiação solar (0,36). Essa concentração não decorre de viés de ponderação AHP, mas de
 saturação geográfica genuína das pertinências climáticas, confirmada de forma independente pelo
 mapa de magnitude espacial da Figura~\ref{fig:scale-mismatch} (argumento completo em
-\S\ref{sec:atlas-present}).}
-\label{fig:factor-variance}
-\end{sidewaysfigure}
+\S\ref{sec:atlas-present}).
+
+\section{Descompasso de escala clima--terreno}\label{sec:scale-mismatch-annex}
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.95\textwidth]{fig_4_12.png}
 \caption{Variabilidade espacial local (desvio-padrão em janela móvel, bandas padronizadas)
 do clima \emph{versus} terreno+solo, numa janela de 4,75~km --- aproximadamente o tamanho da
-célula nativa do TerraClimate ($\tfrac{1}{24}^\circ \approx 4{,}64$~km). O painel do clima é quase
-uniformemente plano (variação local desprezível em toda a extensão do território); o painel de
-terreno+solo mostra estrutura espacial genuína, mais acentuada no norte/nordeste (transição de
-relevo do planalto); o painel da razão log$_2$ é quase uniformemente positivo, confirmando que
-terreno+solo domina a estrutura espacial fina mesmo na própria escala nativa do clima. Mapa
-construído a partir da mesma amostra limitada por orçamento computacional (4.475 pontos) que
-alimenta a Tabela~\ref{tab:scale-mismatch}, e não de uma composição rasterizada completa do
-território --- ver \texttt{tools/gen\_diag\_csvs.py}.}
+célula nativa do TerraClimate ($\tfrac{1}{24}^\circ \approx 4{,}64$~km).}
 \label{fig:scale-mismatch}
 \end{figure}
 
 \begin{table}[H]
 \centering
 \caption{Desvio-padrão local médio (bandas padronizadas) do clima \emph{versus}
-terreno+solo, por raio de janela móvel, e razão terreno+solo/clima correspondente. O raio de
-4.750~m ancora na célula nativa do TerraClimate ($\approx$4,64~km); 250~m é a célula nativa da
-pilha de atributos; 750~m reutiliza o raio já usado para a rugosidade do terreno na
-conservação (\S\ref{anx:derivations}). Amostra de 4.475 pontos por raio, limitada por
-orçamento computacional (\S\ref{anx:data}).}
+terreno+solo, por raio de janela móvel, e razão terreno+solo/clima correspondente.}
 \label{tab:scale-mismatch}
 \begin{tabular}{@{}rrrrr@{}}
 \toprule
@@ -513,3 +504,14 @@ Raio (m) & $\sigma$ clima & $\sigma$ terreno+solo & Razão & $\log_2$(razão) \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+O painel do clima (Figura~\ref{fig:scale-mismatch}) é quase uniformemente plano (variação local
+desprezível em toda a extensão do território); o painel de terreno+solo mostra estrutura
+espacial genuína, mais acentuada no norte/nordeste (transição de relevo do planalto); o painel
+da razão log$_2$ é quase uniformemente positivo, confirmando que terreno+solo domina a estrutura
+espacial fina mesmo na própria escala nativa do clima. O mapa é construído a partir da mesma
+amostra limitada por orçamento computacional (4.475 pontos por raio, \S\ref{anx:data}) que
+alimenta a Tabela~\ref{tab:scale-mismatch}, e não de uma composição rasterizada completa do
+território. Nessa tabela, o raio de 4.750~m ancora na célula nativa do TerraClimate
+($\approx$4,64~km); 250~m é a célula nativa da pilha de atributos; e 750~m reutiliza o raio já
+usado para a rugosidade do terreno na conservação (\S\ref{anx:derivations}).

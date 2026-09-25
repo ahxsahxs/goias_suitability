@@ -76,9 +76,9 @@ def gen_zoning_kselect():
     X = zoning.cluster_matrix(df, bands)
     pca = zoning.fit_pca(X, var_keep=0.90)
     S = pca.transform(X)
-    sweep = zoning.kmeans_sweep(S, ks=range(2, 11), seed=42)
-    gap = zoning.gap_statistic(S, ks=range(2, 11), B=10, seed=42)
-    stab = zoning.stability_sweep(S, ks=range(2, 11), B=20, seed=42)
+    sweep = zoning.kmeans_sweep(S, ks=range(2, 21), seed=42)
+    gap = zoning.gap_statistic(S, ks=range(2, 21), B=10, seed=42)
+    stab = zoning.stability_sweep(S, ks=range(2, 21), B=20, seed=42)
     swp = sweep.merge(gap, on="k").merge(stab, on="k")
     out = OUT / "zoning_kselect.csv"
     swp.to_csv(out, index=False)
