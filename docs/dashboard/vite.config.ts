@@ -14,9 +14,15 @@ export default defineConfig({
   // the template-literal form defeats both Vite's dev pre-bundler and its static asset analysis
   // at build time, so in `npm run dev` the worker 404s (empty MIME type) unless it's excluded
   // from pre-bundling here, and in `vite build` it's silently omitted from dist/assets/ unless
-  // main.ts explicitly imports it with `?url` and wires it in via `maplibregl.setWorkerUrl()`
-  // (see src/main.ts). Don't drop either half of this fix.
+  // main.ts explicitly imports it with `?worker&url` and wires it in via `maplibregl.setWorkerUrl()`
+  // (see src/main.ts). It must be `?worker&url`, not `?url`: the worker file imports
+  // `./maplibre-gl-shared.mjs`, which only a bundled worker entry carries along. Don't drop
+  // either half of this fix.
   optimizeDeps: {
     exclude: ['maplibre-gl'],
+  },
+  // maplibre starts the worker as a module worker (`new Worker(url, { type: 'module' })`).
+  worker: {
+    format: 'es',
   },
 })
