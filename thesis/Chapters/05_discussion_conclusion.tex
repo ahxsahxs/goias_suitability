@@ -17,8 +17,9 @@ atributos biofísicos, nunca a cobertura da terra, e ainda assim reproduz a geog
 observada do uso do território, o que sustenta sua plausibilidade. O padrão subjacente é que
 GO~e~DF é climaticamente quase uniforme: quem separa terra boa de terra ruim é o solo e o
 terreno, não o clima. Essa leitura carrega, portanto, o peso de dois produtos globais herdados
-sem validação local: o solo vem do OpenLandMap a 250~m, e o terreno do SRTM GL1 bruto a 30~m
-\citep{Farr2007}, reamostrado para a mesma grade; é a acurácia desse par de camadas, não a do
+sem validação local: o solo vem do OpenLandMap a 250~m, e o terreno do SRTM de 1 segundo de arco
+($\approx$30~m; NASA SRTM v3, \texttt{USGS/SRTMGL1\_003}) \citep[p.~3]{farr_shuttle_2007},
+reamostrado para a mesma grade; é a acurácia desse par de camadas, não a do
 clima, que se propaga diretamente para as fronteiras finas entre zonas (detalhado
 em~\S\ref{sec:limitations}).
 
@@ -42,7 +43,7 @@ apta). A discriminação por presença é forte para a soja sobre uma amostra es
 Duas tensões merecem registro. Primeira, uma lacuna substancial separa potencial e uso atual:
 41,8\% do território é viável para soja e ainda não cultivado, majoritariamente sobre pastagem.
 Isso aponta para intensificação, não para abertura de novas áreas, o que é coerente com a
-trajetória já documentada para a fronteira agrícola do Cerrado \citep{Spera2017,Caballero2023}.
+trajetória já documentada para a fronteira agrícola do Cerrado \citep{spera_agricultural_2017,caballero_transformation_2023}.
 Segunda, a verificação cruzada orientada por dados encontra o mapa baseado em conhecimento mais
 permissivo que o nicho realizado ($\kappa=+0{,}269$, concordância razoável mas não forte na
 escala de Landis \& Koch; o mapa de conhecimento marca 52,8\% do território como viável,
@@ -56,17 +57,21 @@ explicado em \S\ref{sec:validation-present}: são, no fundo, duas perguntas dife
 mesmo resultado.
 
 Essa leitura econômica tem respaldo na literatura sobre a fronteira agrícola do Cerrado. Em
-Goiás, a intensificação registrada entre 2000 e 2016, e não a abertura de novas áreas,
-respondeu por boa parte do ganho de produção: a lotação do rebanho bovino subiu de 1,17 para 1,24
-cabeças/hectare e a área de dupla safra soja-milho quase quadruplicou no período, ainda que entre
-50\% e 60\% das pastagens do Cerrado sigam degradadas \citep{Spera2017}. Recuperar essa pastagem
-para lavoura ou pecuária mais intensiva tem um custo de entrada que a viabilidade biofísica, por
-si só, não precifica --- calagem e correção da acidez do solo, mecanização, acesso a crédito;
-\citet{Spera2017} reporta ainda que cerca de 40\% dos produtores brasileiros não têm título de posse da
-terra, o que restringe o acesso a crédito e, por essa via, a capacidade de intensificar mesmo onde
-o solo permite. Em escala de bioma, a conversão de pastagem para soja e outras culturas responde
-também a condições de mercado --- preços de commodities, câmbio, demanda por alimentos e
-biocombustíveis --- mais do que à mera disponibilidade de terra apta \citep{Caballero2023}. Preço,
+Goiás, entre 2003 e 2016, o aumento da produção veio sobretudo da intensificação, e não da abertura
+de novas áreas: a lotação do rebanho bovino subiu de 1,17 para 1,24 cabeças/hectare e a área de dupla
+safra soja-milho passou de cerca de 373~mil para 1,4~milhão de hectares \citep[p.~2]{spera_agricultural_2017},
+ainda que entre 50\% e 60\% das pastagens do Cerrado sigam degradadas \citep[p.~4]{spera_agricultural_2017}.
+Recuperar essa pastagem para lavoura ou pecuária mais intensiva tem um custo de entrada que a
+viabilidade biofísica, por si só, não precifica --- calagem e correção da acidez do solo
+\citep[p.~5]{spera_agricultural_2017}, mecanização, acesso a crédito.
+\citet[p.~4]{spera_agricultural_2017} reporta ainda, com base em Lapola \emph{et al.} (2014), que cerca de
+40\% dos \emph{pequenos} produtores brasileiros não têm título de posse da terra, o que dificulta o
+acesso a crédito e, por essa via, a capacidade de intensificar mesmo onde o solo permite; em Goiás,
+porém, mais de 80\% da área agrícola estava, em 2006, em propriedades acima de 100~ha
+\citep[p.~2]{spera_agricultural_2017}. Em escala de bioma, a conversão de pastagem para soja e
+outras culturas é associada a fatores econômicos --- preços de exportação e demanda por alimentos e
+biocombustíveis --- e não apenas à disponibilidade de terra apta
+\citep[pp.~10, 12]{caballero_transformation_2023}. Preço,
 custo de recuperação do solo, posse da terra e logística de escoamento são, portanto, candidatos
 plausíveis para explicar a lacuna de 41,8\% aqui observada, mas nenhum deles é modelado neste
 trabalho; testá-los é o objeto da camada econômica proposta em \S\ref{sec:futurework}.
@@ -85,7 +90,7 @@ vez de simplesmente repetir a cobertura nativa atual.
 
 O agrupamento k-means sobre o conjunto bruto de 34 bandas colapsava em poucas zonas pouco
 informativas, dominado pelas bandas climáticas colineares; reduzir, ponderar por tema e aplicar
-PCA antes do agrupamento \citep{Ding2004} resolveu as dez zonas relatadas. E reutilizar a mesma
+PCA antes do agrupamento \citep{ding_k-means_2004} resolveu as dez zonas relatadas. E reutilizar a mesma
 transformação de derivação climática tanto para a linha de base quanto para o futuro do CMIP6
 garante que a mudança projetada seja um sinal puramente climático (fatores de mudança identidade
 dão $\Delta S=0$), com os demais fatores mantidos estáticos para isolar essa componente. A
@@ -108,11 +113,13 @@ outras são lacunas genuínas para trabalho futuro.
     com o clima quase uniforme, solo e terreno carregam a maior parte da discriminação espacial
     (\S\ref{sec:interpretation}); o atlas herda, portanto, a acurácia de dois produtos globais que não
     possuem um ajuste fino a realidade local. O solo vem do
-    OpenLandMap a 250~m. O terreno vem do SRTM GL1 bruto a 30~m \citep{Farr2007}, não uma
-    versão com preenchimento de vazio como o NASADEM ou o CGIAR-CSI v4.1, com acurácia
-    vertical absoluta especificada em~16~m (\emph{linear error} a 90\% de confiança) e vazios de
-    sombra de radar/água que o \emph{pipeline} não trata antes de reamostrar para 250~m por média
-    (elevação, declive, orientação) ou interpolação bilinear (índice topográfico de umidade).
+    OpenLandMap a 250~m. O terreno vem do SRTM de 1 segundo de arco ($\approx$30~m; NASA SRTM v3,
+    com os vazios já preenchidos por fontes auxiliares) \citep{farr_shuttle_2007}, cuja especificação
+    de projeto era de 16~m de erro vertical absoluto a 90\% de confiança \citep[p.~3]{farr_shuttle_2007};
+    o erro realizado estimado para a América do Sul foi de 6,2~m \citep[tab.~1, p.~21]{farr_shuttle_2007}.
+    Ruído de \emph{speckle} tende a inflar declives em escalas curtas \citep[p.~19]{farr_shuttle_2007};
+    essas incertezas se propagam para a elevação, o declive e a orientação agregados a 250~m por média
+    e para o índice topográfico de umidade (interpolação bilinear).
  
   \item \textbf{Descompasso de escala clima--solo.} As entradas climáticas ($\approx$4,6~km,
     TerraClimate) são bem mais grosseiras que solo e terreno (250~m). Um levantamento do
@@ -142,7 +149,7 @@ outras são lacunas genuínas para trabalho futuro.
     \emph{versus} realizado exigiria, ainda assim, um alvo de calibração ancorado em rendimento,
     que este desenho não usa.
   \item \textbf{Validador de produtividade é um substituto.} O NPP/GPP do MODIS mede produção
-    primária da vegetação, não rendimento agronômico \citep{Turner2006,He2018}, e a confusão
+    primária da vegetação, não rendimento agronômico \citep{turner_evaluation_2006,he_regional_2018}, e a confusão
     entre coberturas limita seu uso a contexto descritivo; AUC e Boyce seguem como validadores
     primários de presença de cultura.
   \item \textbf{Piscicultura tem uso realizado quase inexistente no MapBiomas.} Apenas um 
@@ -153,7 +160,7 @@ outras são lacunas genuínas para trabalho futuro.
     reportado para esse segmento pela mesma razão. Resolver esta lacuna envolveria obter uma
     nova classificação da área utilizada para psicultura na área de interesse.
   \item \textbf{Projeção futura.} A projeção CMIP6, como qualquer
-    projeção por fatores de mudança \citep{RamirezVillegas2010,Hay2000}, só pode ser sustentada
+    projeção por fatores de mudança \citep{ramirez-villegas_downscaling_2010,hay_comparison_2000}, só pode ser sustentada
     indiretamente (linha de base validada, concordância entre GCMs); radiação solar e umidade do
     solo foram mantidas no valor histórico por falta de um campo projetado e de um balanço
     hídrico completo, o que atenua o sinal climático da geração fotovoltaica e da pecuária.
@@ -179,8 +186,9 @@ leitura de incerteza da projeção futura.
 
 Por fim, cabe revisar os critérios de
 valor de conservação e a direção de sua resposta climática (perda de viabilidade \emph{versus}
-prioridade crescente de proteção), no espírito do planejamento de compromissos entre conservação e
-restauração já aplicado ao Cerrado \citep{Schuler2022}.
+prioridade crescente de proteção), no espírito do planejamento multicritério de compromissos entre
+restauração, serviços ecossistêmicos e aptidão agrícola já aplicado ao Cerrado
+\citep{schuler_spatial_2022}, estendendo-o à dimensão climática, que aquele estudo não considera.
 
 \section{Conclusão}\label{sec:conclusion}
 

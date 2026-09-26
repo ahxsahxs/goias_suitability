@@ -16,8 +16,6 @@ Tema & Conjunto de dados (provedor) & Resolução nativa & Variáveis utilizadas
 Clima e balanço hídrico & TerraClimate, mensal & $\approx$4~km & Precipitação,
   evapotranspiração potencial e real, déficit hídrico climático, umidade do solo, déficit de
   pressão de vapor, radiação solar, temperatura máxima/mínima \\
-Precipitação (suplementar) & CHIRPS, pêntada & $\approx$5~km & Chuva sazonal e sazonalidade \\
-Bioclima (suplementar) & Variáveis bioclimáticas WorldClim & $\approx$1~km & BIO1--BIO19 \\
 Terreno & Modelo digital de elevação SRTM & 30~m & Elevação, declive, orientação, posição
   topográfica \\
 Hidrografia & Acumulação de fluxo HydroSHEDS & 15 segundos de arco & Índice de umidade
@@ -141,7 +139,7 @@ Segmento (máscara) & Fator & Peso & Forma & Limiares \\
 \textbf{Conservação} (nenhuma; compensatória) & Distância a área protegida (m) & 0,17 & decrescente &
   5000, 40000 \\
  & Rugosidade do terreno (m) & 0,15 & crescente & 5, 30 \\
- & Índice de umidade topográfica & 0,13 & crescente & 8,5, 11,2 \\
+ & Índice de umidade topográfica & 0,13 & crescente & 9,12, 11,82 \\
  & Carbono em biomassa acima do solo (Mg~C/ha) & 0,12 & crescente & 10, 20 \\
  & Fração de vegetação nativa & 0,10 & crescente & 0,25, 0,85 \\
  & Índice de aridez (P/ETP) $\dagger$ & 0,10 & crescente & 0,95, 1,25 \\
@@ -207,7 +205,9 @@ temperatura base $T_{\text{base}} = 10\,^\circ\mathrm{C}$,
 \begin{equation*}
   \mathrm{GDD} = \sum_{m=1}^{12} \max\!\left(\bar{T}_m - T_{\text{base}},\, 0\right)\, N_m,
 \end{equation*}
-onde $\bar{T}_m$ é a temperatura média do mês $m$ e $N_m$ o seu número de dias. Toda a
+onde $\bar{T}_m$ é a temperatura média do mês $m$ e $N_m = 30{,}4$ dias, a duração média do mês. É o
+Método~1 de \citet[p.~292]{mcmaster_growing_1997} aplicado a médias mensais, o que tende a
+subestimar o GDD em meses próximos da temperatura base. Toda a
 derivação climática é encapsulada em uma única transformação determinística reutilizada sem
 alteração para o clima futuro do CMIP6 (\S\ref{sec:cmip6}), o que é o que torna a mudança
 projetada um sinal puramente climático.
@@ -217,8 +217,11 @@ decomposta em uma componente norte ($\cos$) e leste ($\sin$), para que a variáv
 seja utilizável em aritmética de pixels. O índice de posição topográfica é a diferença entre
 a elevação $z_0$ de uma célula e a elevação média de sua vizinhança circular,
 $\mathrm{TPI} = z_0 - \overline{z}_{\text{focal}}$ (positivo em cristas, negativo em vales). O
-índice de umidade topográfica é $\mathrm{TWI} = \ln(\alpha / \tan\beta)$, com $\alpha$ a área
-de contribuição específica (a partir da acumulação de fluxo) e $\beta$ o declive local.
+índice de umidade topográfica é $\mathrm{TWI} = \ln(\alpha / \tan\beta)$
+\citep[p.~48, eq.~8]{beven_physically_1979}, com $\beta$ o declive local e $\alpha$ a área de
+contribuição específica, aproximada por $(n+1)\,\Delta x$, em que $n$ é a acumulação de fluxo do
+HydroSHEDS em número de células e $\Delta x \approx 464$~m a largura da sua célula de 15 segundos de
+arco.
 
 \textbf{Solo (6 variáveis).} A média de 0--30~cm dos horizontes de 0, 10 e 30~cm para argila,
 areia, carbono orgânico, pH (H$_2$O), densidade aparente e teor de água disponível para as
@@ -268,7 +271,7 @@ Tamanho da amostra (pontos)          & 3.661 & 2.972 & 2.779 & 1.035 & 2.086 & 4
 Parcela da área de interesse         & 21,2\% & 5,9\% & 10,5\% & 2,8\% & 11,2\% & 16,5\% & 6,6\% & 4,9\% & 3,9\% & 16,6\% \\
 Elevação (m)                         & 860 & 413 & 653 & 449 & 739 & 440 & 260 & 833 & 632 & 588 \\
 Declive ($^\circ$)                   & 4,7 & 3,0 & 4,1 & 3,2 & 14,2 & 3,5 & 2,3 & 4,8 & 4,1 & 3,7 \\
-Índice de umidade topográfica        & 9,6 & 9,9 & 9,6 & 14,6 & 8,3 & 9,9 & 10,4 & 9,7 & 9,8 & 9,9 \\
+Índice de umidade topográfica        & 10,2 & 10,5 & 10,2 & 15,2 & 8,9 & 10,5 & 11,0 & 10,3 & 10,4 & 10,5 \\
 Temp. do trimestre mais quente ($^\circ$C) & 24,0 & 26,0 & 24,6 & 25,8 & 25,5 & 26,4 & 27,6 & 24,3 & 25,9 & 25,4 \\
 Índice de aridez (P/ETP)             & 1,13 & 1,10 & 1,19 & 1,12 & 1,10 & 1,08 & 1,11 & 1,15 & 0,91 & 1,15 \\
 Umidade do solo (mm)                 & 98 & 107 & 66 & 97 & 111 & 113 & 105 & 97 & 108 & 79 \\
@@ -434,13 +437,15 @@ $k = 2\dots20$ no espaço de componentes principais descorrelacionado.}
 \label{fig:cluster-validity}
 \end{figure}
 
-A silhueta é quase plana (0,16--0,19) ao longo de todo o intervalo e o Davies--Bouldin fica
-próximo em $k=7$, $8$ e $10$, de modo que nenhum índice isolado decide sozinho; $k = 10$ (linha
-tracejada) combina a silhueta mais alta de todo o \emph{sweep} estendido a $k=2\dots20$ (0,187,
-contra um segundo pico de 0,182 em $k=13$) com uma das estabilidades mais altas sob
-subamostragem (ARI $=0{,}962$, superado apenas por $k=9$ com $0{,}970$, e muito acima de
-$0{,}687$ em $k=7$). Nenhum $k$ entre 11 e 20 supera o pico de silhueta de $k=10$, confirmando
-que a escolha não é um artefato de faixa truncada.
+A silhueta é quase plana (0,161--0,187) ao longo de todo o intervalo; o Davies--Bouldin cai até
+$k=7$ e fica praticamente plano de $k=7$ a $20$ (1,50--1,57, mínimo em $k=19$); e o \emph{gap}
+cresce quase monotonicamente, estabilizando-se só em $k=14$. Nenhum índice isolado decide.
+$k = 10$ (linha tracejada) combina a silhueta mais alta de todo o \emph{sweep} (0,187, contra um
+segundo pico de 0,182 em $k=13$) com uma das estabilidades mais altas sob subamostragem
+(ARI $=0{,}962$). Acima dele só estão $k=9$ ($0{,}970$), dentro do desvio-padrão entre réplicas,
+e as partições grossas $k=2$, $3$ e $5$ (0,96--0,98), que têm Davies--Bouldin bem pior; em
+$k=7$ o ARI é de apenas $0{,}687$. Nenhum $k$ entre 11 e 20 supera o pico de silhueta de $k=10$,
+confirmando que a escolha não é um artefato de faixa truncada.
 
 \section{Decomposição por fator}\label{sec:factor-variance-annex}
 

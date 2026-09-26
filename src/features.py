@@ -210,11 +210,16 @@ def terrain_features(aoi) -> "ee.Image":
         .rename("terr_tpi")
     )
 
-    # TWI = ln( specific-catchment-area / tan(slope) ) using HydroSHEDS flow accum
-    acc = ee.Image(t["hydrosheds_acc"]).select(0)
+    # TWI = ln( specific-catchment-area / tan(slope) ) using HydroSHEDS flow accum.
+    # Specific catchment area a = (n+1)·Δx with Δx the HydroSHEDS cell (15″ ≈ 464 m),
+    # not the 250 m analysis step: the cell count n is in HydroSHEDS cells. (Until
+    # 2026-09-26 this used scale_m(), a constant −ln(464/250) ≈ −0.62 offset.)
+    acc_img = ee.Image(t["hydrosheds_acc"])
+    acc = acc_img.select(0)
+    cell_m = acc_img.projection().nominalScale()
     tan_slope = base250.select("terr_slope").multiply(_DEG2RAD).tan().max(0.001)
     twi = (
-        acc.add(1).multiply(scale_m()).divide(tan_slope).log().rename("terr_twi")
+        acc.add(1).multiply(cell_m).divide(tan_slope).log().rename("terr_twi")
     )
     twi250 = to_grid_bilinear(twi)
 

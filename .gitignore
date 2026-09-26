@@ -40,6 +40,9 @@ thesis/*.sls
 thesis/*.pdf
 thesis/*.run.xml
 
+# Zotero bibliography export
+thesis/Bibliography/zotero*
+
 # Node / Vite dashboard (docs/dashboard — see docs/dashboard_ux_plan.md §2.5)
 docs/dashboard/node_modules/
 docs/dashboard/dist/

@@ -1,8 +1,8 @@
 \chapter{Metodologia}\label{ch:method}
 
 O método é uma avaliação de terras multicritério na tradição da avaliação de terras da
-FAO (\emph{Framework for Land Evaluation}; Food and Agriculture Organization)
-\citep{FAO1976,Sys1991}. Ele é implementado
+FAO (Food and Agriculture Organization), hoje operacionalizada no \emph{Global Agro-Ecological
+Zones} (GAEZ~v4) \citep{noauthor_global_2021,sys_land_1991}. Ele é implementado
 nativamente na plataforma de observação da Terra, estendido com um zoneamento não supervisionado e
 uma projeção CMIP6, e concebido para validação contra o uso atual da terra. O trabalho corre em duas
 fases. A \textbf{Fase~A} constrói o atlas de potencial biofísico e a projeção climática apenas a
@@ -32,8 +32,10 @@ comparável para a distância euclidiana.
 
 Um sétimo tema --- a cobertura genérica da terra --- é construído como camada de máscara e de
 contexto e é deliberadamente excluído do conjunto. As fórmulas de derivação por variável
-(agregação climática e graus-dia de crescimento \citep{McMaster1997}, índice de umidade topográfica
-\citep{Beven1979}, regressão harmônica da fenologia \citep{LeVine2019}) estão no Anexo~\ref{anx:derivations}; os temas
+(agregação climática; graus-dia de crescimento pelo Método~1 de \citet[p.~292]{mcmaster_growing_1997},
+aqui aplicado a médias mensais; índice de umidade topográfica \citep[p.~48, eq.~8]{beven_physically_1979};
+regressão harmônica da fenologia, na linha de aplicações a savanas \citep[p.~96]{levine_time_2019},
+estendida com um termo semianual) estão no Anexo~\ref{anx:derivations}; os temas
 são resumidos abaixo.
 
 \begin{table}[H]
@@ -65,10 +67,13 @@ determinística reutilizada sem alteração para o clima futuro do CMIP6 (\S\ref
 identidade dos caminhos de derivação que torna a mudança projetada um sinal puramente climático.
 
 O terreno vem de um modelo digital de elevação (MDE) de 30~m (com a orientação decomposta em
-componentes norte e leste). O solo é a média do horizonte de 0--30~cm de seis propriedades do
-OpenLandMap \citep{Hengl2026}. A água combina a distância à água permanente \citep{Pekel2016}, a
-sazonalidade e a densidade de drenagem da água de superfície (uma fração de células de canal, com
-faixa empírica $\approx$~0--0,15, que governa seus limiares de pertinência). A fenologia é composta
+componentes norte e leste). O solo é a média das profundidades de 0, 10 e 30~cm de seis
+propriedades das camadas OpenLandMap v0.2 a 250~m. % TODO(Zotero): citar Hengl (2018), OpenLandMap SOL v02
+A água combina a distância à água permanente, definida como ocorrência superior a 80\% no JRC Global
+Surface Water \citep{pekel_high-resolution_2016}, a sazonalidade da água de superfície (número de meses
+com água no ano) do mesmo produto e a densidade de drenagem derivada da acumulação de fluxo do
+HydroSHEDS (uma fração de células de canal, com faixa empírica $\approx$~0--0,15, que governa seus
+limiares de pertinência). A fenologia é composta
 por quatro parâmetros harmônicos do ciclo sazonal de NDVI. A acessibilidade é o logaritmo do tempo
 de viagem até a cidade mais próxima.
 
@@ -83,7 +88,7 @@ cobertura), o sinal de uso atual da terra.
 
 Para cada segmento, a viabilidade é um agregado ponderado de pertinências fuzzy dos fatores. Ela é
 mascarada pela cobertura da terra e classificada nas classes da FAO, seguindo a extensão fuzzy/AHP
-do arcabouço de avaliação de terras da FAO \citep{NisarAhamed2000,YaghmaeianMahabadi2012}. A
+do arcabouço de avaliação de terras da FAO \citep{nisar_ahamed_gis-based_2000,yaghmaeian_mahabadi_land_2012}. A
 especificação completa por segmento --- fator, peso, forma e limiares --- está na Tabela~\ref{tab:spec-longtable} do Anexo.
 
 Os limiares móveis (não fixados por um padrão técnico, como um limite legal de declive) foram
@@ -96,7 +101,9 @@ em GO~e~DF, sem abandonar a forma funcional nem a ordenação relativa.
 \subsection{Padronização da pertinência fuzzy}\label{sec:fuzzy-standard}
 
 O valor $x$ de cada fator é mapeado para uma pertinência $\mu(x) \in [0,1]$ por uma função linear por
-partes, de uma entre três formas \citep{NisarAhamed2000}. A forma \textbf{crescente} (limiar inferior
+partes --- simplificação linear das funções de pertinência contínuas usadas em avaliação fuzzy de
+terras, como o modelo sigmoidal \emph{Semantic Import} \citep[pp.~80--83]{yaghmaeian_mahabadi_land_2012}
+---, de uma entre três formas. A forma \textbf{crescente} (limiar inferior
 $a$, superior $b$) é
 \begin{equation*}
   \mu(x) = \mathrm{clamp}\!\left(\frac{x-a}{b-a},\, 0,\, 1\right);
@@ -143,16 +150,17 @@ respectivamente, \emph{marginalmente}, \emph{moderadamente} e \emph{altamente vi
 
 \subsection{Ponderação AHP e sensibilidade dos pesos}\label{sec:ahp}
 
-Os pesos dos fatores são prioridades do Processo Analítico Hierárquico (AHP; \citealp{Saaty1980}).
+Os pesos dos fatores são prioridades do Processo Analítico Hierárquico (AHP) \citep{saaty_analytic_1987}.
 Para um segmento com $n$ fatores, elicita-se uma matriz Saaty de comparação par a par
-$A = [a_{ij}]$ (escala 1--9, $a_{ji} = 1/a_{ij}$). O vetor de prioridades $w$ é o seu autovetor
-principal normalizado. A coerência interna da elicitação é quantificada pela razão de consistência
-\citep{Saaty1980,Frish2025}:
+$A = [a_{ij}]$ (escala 1--9, $a_{ji} = 1/a_{ij}$). O vetor de prioridades $w$ aproxima o seu autovetor
+principal normalizado pela média das linhas da matriz de colunas normalizadas, e $\lambda_{\max}$ é
+estimado pela média de $(Aw)_i / w_i$ \citep[pp.~4--5, eq.~1]{frish_enhancing_2025}. A coerência interna da
+elicitação é quantificada pela razão de consistência \citep[p.~171]{saaty_analytic_1987}:
 \begin{equation*}
   \mathrm{RC} = \frac{\mathrm{IC}}{\mathrm{RI}}, \qquad
    \mathrm{IC} = \frac{\lambda_{\max} - n}{n - 1},
 \end{equation*}
-onde $\lambda_{\max}$ é o autovalor principal e $\mathrm{RI}$ é o valor esperado do índice aleatório
+onde $\lambda_{\max}$ é o autovalor principal (estimado como acima) e $\mathrm{RI}$ é o valor esperado do índice aleatório
 para a ordem $n$. Uma ponderação é aceita quando $\mathrm{RC} \le 0{,}10$. Cada matriz de comparação
 par a par é registrada por completo. Todos os segmentos são folgadamente consistentes: $0{,}0015$ é a
 maior razão de consistência entre os sete (Tabela~\ref{tab:ahp-cr} do Anexo). Os pesos se apoiam,
@@ -200,22 +208,32 @@ divide cada banda pela raiz quadrada do número de bandas no seu tema, para que 
 com o número de bandas. E a \textbf{PCA} rotaciona o subconjunto ponderado para seus eixos principais,
 retendo o menor número de componentes que expliquem $\geq$~90\% da variância.
 
-O subespaço ajustado e a partição k-means de uma representação descorrelacionada coincidem; essa é a
-base teórica para agrupar no espaço de componentes principais em vez de sobre o conjunto bruto
-\citep{Ding2004}. O k-means, ajustado nesse espaço, busca a partição que minimiza a soma intragrupo
+Os componentes principais são a solução contínua (relaxada) dos indicadores de pertença do k-means,
+de modo que agrupar no subespaço dos primeiros componentes aproxima a partição k-means do espaço
+original; essa é a base teórica para agrupar no espaço de componentes principais em vez de sobre o
+conjunto bruto \citep[Teor.~3.1]{ding_k-means_2004}. O k-means, ajustado nesse espaço, busca a partição que minimiza a soma intragrupo
 dos quadrados das distâncias aos centroides $c_k$:
 \begin{equation*}
   \min_{\{C_k\}} \sum_{k=1}^{K} \sum_{x \in C_k} \lVert x - c_k \rVert^2.
 \end{equation*}
 
-O número de zonas é selecionado em $k = 2,\dots,20$ pela silhueta média \citep{Rousseeuw1987}, pelo
-índice de Davies--Bouldin \citep{Davies1979}, pela estatística de \emph{gap} \citep{Ikotun2025} e
-pela estabilidade de subamostras (índice de Rand ajustado, \emph{bootstrap}), que em conjunto
-indicam $k = 10$. Neste território fracamente agrupado a silhueta é quase plana ao longo de todo
-o intervalo (0,17--0,19) e o Davies--Bouldin não decide sozinho, por ficar próximo em $k=7$, $8$
-e $10$; o argumento decisivo é a estabilidade: $k = 10$ tem a silhueta mais alta do intervalo
-($0{,}187$) \textbf{e} é o k mais estável sob subamostragem (ARI $= 0{,}962$), contra uma
-estabilidade bem mais fraca em $k=7$ (ARI $= 0{,}687$). 
+O número de zonas é examinado em $k = 2,\dots,20$ pela silhueta média
+\citep[p.~59]{rousseeuw_silhouettes_1987}, pelo índice de Davies--Bouldin \citep{davies_cluster_1979},
+pela estatística de \emph{gap} % TODO(Zotero): citar Tibshirani, Walther & Hastie (2001) quando o PDF estiver no Zotero
+e pela estabilidade de subamostras (índice de Rand ajustado, ARI, em \emph{bootstrap}); uma revisão
+desses índices está em \citet{ikotun_cluster_2025}. Neste território fracamente agrupado nenhum
+índice decide sozinho. A silhueta é quase plana (0,161--0,187), com máximo em $k=10$ ($0{,}187$).
+O Davies--Bouldin é alto para $k \le 6$ (1,65--1,87) e praticamente plano de $k=7$ a $20$
+(1,50--1,57, mínimo de 1,504 em $k=19$), sem discriminar nessa faixa. O \emph{gap} cresce quase
+monotonicamente e, pelo critério do primeiro $k$ com $\mathrm{gap}(k) \geq \mathrm{gap}(k+1) - s_{k+1}$,
+só se estabiliza em $k=14$: indica que o território comporta mais de dez agrupamentos, mas não
+aponta um $k$ abaixo disso. O argumento decisivo é a estabilidade. Na faixa $k \geq 7$, em que o
+Davies--Bouldin deixa de penalizar a partição, só $k=9$ (ARI $=0{,}970$) e $k=10$ (ARI $=0{,}962$)
+são estáveis sob subamostragem; os demais ficam entre $0{,}676$ e $0{,}887$. As partições grossas
+$k=2$, $3$ e $5$ também são estáveis (ARI $0{,}96$--$0{,}98$), mas têm Davies--Bouldin bem pior e
+zonas agregadas demais para distinguir sete segmentos. Adota-se $k = 10$, que combina a silhueta
+mais alta do intervalo com uma estabilidade equivalente à de $k=9$ (a diferença de ARI é menor que
+o seu desvio-padrão entre réplicas, 0,011--0,016).
 
 \textbf{Estimação.} O agrupamento é estimado fora da plataforma sobre uma amostra estratificada por
 grade espacial (uma malha $8\times8$ sobre a extensão de GO~e~DF) cruzada com o segmento
@@ -233,11 +251,14 @@ diferentes sejam comparados em base comum.
 
 \section{Projeção CMIP6 por fatores de mudança}\label{sec:cmip6}
 
-A projeção utiliza o método dos fatores de mudança (\emph{delta-change}) \citep{RamirezVillegas2010},
-robusto a viés sistemático porque as mudanças de um modelo relativas à sua própria linha de base ---
-e não os valores absolutos do modelo --- são aplicadas a uma normal climática observada. Essa
-robustez ao viés, e sua deficiência quanto à redução estatística de escala, é documentada
-empiricamente para bacias montanhosas por \citet{Hay2000}.
+A projeção utiliza o método dos fatores de mudança (\emph{delta-change})
+\citep[p.~3]{ramirez-villegas_downscaling_2010}, que aplica a uma normal climática observada as
+mudanças de cada modelo relativas à sua própria linha de base, e não os valores absolutos do modelo.
+A premissa é que os GCMs simulam mudanças relativas com mais confiabilidade do que valores absolutos,
+que na escala da célula podem ser muito imprecisos \citep[pp.~387, 396]{hay_comparison_2000}. Numa
+comparação em bacias montanhosas, esses autores obtêm estimativas mais conservadoras com o
+\emph{delta-change} do que com a redução estatística de escala, mas concluem que ambas as abordagens
+são questionáveis para avaliar o clima futuro.
 
 A projeção é estruturada em quatro etapas. Primeiro, parte-se dos dados de projeções climáticas em
 escala reduzida do conjunto NASA NEX-GDDP-CMIP6, baseados nos modelos climáticos globais do CMIP6 e
@@ -255,7 +276,7 @@ individual também é utilizado para compor uma superfície de concordância ent
 conjunto.
 
 \textbf{Fatores de mudança.} Para cada um dos $G = 5$ GCMs do conjunto NEX-GDDP-CMIP6
-\citep{Thrasher2022}, computa-se para o mês $m$ o fator de mudança (multiplicativo no caso de
+\citep{thrasher_nasa_2022}, computa-se para o mês $m$ o fator de mudança (multiplicativo no caso de
 precipitação, aditivo no caso de temperatura) relativo à base histórica do próprio modelo, ponderado
 então entre os modelos:
 
@@ -269,10 +290,14 @@ então entre os modelos:
 
 Os fatores são aplicados à normal climatológica mensal de 1991 a 2020,
 $P^{\text{fut}}_m = P^{\text{obs}}_m \cdot f^{P}_m$ e
-$T^{\text{fut}}_m = T^{\text{obs}}_m + \Delta T_m$. A ETP é escalada por uma razão de Hargreaves: 
-como $\mathrm{ETP} \propto R_a\,(T_{\text{méd}} + 17{,}8)\sqrt{T_{\max} - T_{\min}}$, na razão entre ETP
-futura e histórica a radiação extraterrestre $R_a$ e os termos constantes se anulam, dependendo
-apenas da temperatura média \citep{Hargreaves1985,Hargreaves2003}. A aridez resulta, então, da precipitação e da ETP futuras.
+$T^{\text{fut}}_m = T^{\text{obs}}_m + \Delta T_m$, com o fator aditivo calculado e aplicado em separado
+às temperaturas máxima e mínima. A ETP é escalada por uma razão de Hargreaves: como
+$\mathrm{ETP} \propto R_a\,(T_{\text{méd}} + 17{,}8)\sqrt{T_{\max} - T_{\min}}$, na razão entre ETP
+futura e histórica a radiação extraterrestre $R_a$ e o coeficiente constante se anulam, e a razão
+passa a depender apenas da temperatura média e da amplitude térmica,
+$\frac{T^{\text{fut}}_{\text{méd}}+17{,}8}{T^{\text{obs}}_{\text{méd}}+17{,}8}
+ \sqrt{\frac{(T_{\max}-T_{\min})^{\text{fut}}}{(T_{\max}-T_{\min})^{\text{obs}}}}$
+\parencites{hargreaves_reference_1985}[p.~55, eq.~8]{hargreaves_history_2003}. A aridez resulta, então, da precipitação e da ETP futuras.
 
 Duas variáveis são mantidas no valor histórico: radiação solar (fora do conjunto
 precipitação/temperatura) e umidade do solo (exigiria um balanço hídrico completo). Essas ressalvas
@@ -319,9 +344,9 @@ o núcleo empírico da resposta a QP2. Em paralelo, a composição do uso atual 
 relação às zonas produtivas, de forma estritamente descritiva.
 
 A validação reúne frentes complementares. Uma média plurianual do \emph{proxy} de NPP (produtividade
-primária líquida) anual do MODIS \citep{Zhao2005}, restrita a lavoura e pastagem, é comparada à
+primária líquida) anual do MODIS \citep{zhao_improvements_2005}, restrita a lavoura e pastagem, é comparada à
 viabilidade média municipal pelo coeficiente $\rho$ de Spearman. A presença de lavouras é avaliada
-frente à superfície de viabilidade pelo índice contínuo de Boyce \citep{Hirzel2006} e pela área sob
+frente à superfície de viabilidade pelo índice contínuo de Boyce \citep{hirzel_evaluating_2006} e pela área sob
 a curva ROC (AUC). E uma ANOVA de um fator do \emph{proxy} entre zonas testa se as zonas capturam a
 estrutura de produtividade do território.
 
@@ -339,11 +364,14 @@ são extraídos do MapBiomas (pixels de soja) e contrastados com pontos de fundo
 restante do território; as variáveis preditoras, porém, são exatamente o mesmo conjunto
 padronizado de 34 atributos ambientais usado no modelo fuzzy/AHP --- o MapBiomas entra apenas como
 rótulo de treino, nunca como atributo, preservando a distinção estabelecida no
-\S\ref{sec:feature-eng}. Um classificador de floresta aleatória é então treinado em modo
-probabilístico sobre esses pontos de presença e de fundo, ao longo do conjunto padronizado de
-atributos \citep{Valavi2021}; a superfície resultante, construída inteiramente a partir do uso
-realizado, é comparada à superfície baseada em conhecimento pelo $\kappa$ de Cohen
-\citep{Cohen1960}. O objetivo é, portanto, verificar se duas abordagens independentes para o
+\S\ref{sec:feature-eng}. Um classificador de floresta aleatória (100 árvores) é então treinado em
+modo probabilístico sobre uma amostra balanceada, com igual número de pontos de presença e de fundo,
+ao longo do conjunto padronizado de atributos. O balanceamento segue a recomendação de tratar o
+desequilíbrio entre presença e fundo, que degrada a floresta aleatória com parâmetros padrão nesse
+tipo de dado \citep{valavi_modelling_2021}. A superfície resultante, construída inteiramente a
+partir do uso realizado, é binarizada (probabilidade $\geq 0{,}5$) e comparada à superfície baseada
+em conhecimento, também binarizada (classe S2 ou melhor), pelo $\kappa$ de Cohen
+\citep[p.~40, eq.~1]{cohen_coefficient_1960}. O objetivo é, portanto, verificar se duas abordagens independentes para o
 mesmo fenômeno (uma orientada por conhecimento pericial (fuzzy/AHP) e outra orientada
 pelos dados de uso realizado) convergem espacialmente: concordância reforça a confiança no
 modelo; discordâncias são reportadas como achados de discussão.

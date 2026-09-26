@@ -204,7 +204,7 @@ rotulada de 0 a 9 (a Zona~$n$ do texto corresponde a Z$(n-1)$ no dashboard/CSV).
     extrema, sem excluir tão fortemente a soja quanto a Zona~6 exclui as demais culturas.
   \item \textbf{Conservação --- Zonas 4 (2,8\%), 5 (11,2\%) e 8 (4,9\%).} Três perfis físicos
     opostos convergem no mesmo rótulo comparativo. A Zona~4, vale úmido de transição e a menor
-    das dez zonas, tem o maior índice de umidade topográfica (14,6) e a maior água disponível no
+    das dez zonas, tem o maior índice de umidade topográfica (15,2) e a maior água disponível no
     solo (31,6~mm), com uso atual dividido quase ao meio entre pastagem (39,0\%) e vegetação
     nativa (39,2\%). A Zona~5, planalto alto e íngreme, é de longe a mais íngreme
     (14,2$^\circ$, cerca de três vezes qualquer outra zona) e a mais rica em carbono orgânico do
@@ -335,9 +335,10 @@ As outras culturas anuais (milho, algodão, sorgo) são a cultura mais exposta. 
 agrava monotonicamente de $-0{,}0121$ para $-0{,}0478$, com a área viável ou superior
 contraindo-se de 58,3\% para 51,0\%. Suas pertinências premiam a confiabilidade da chuva e uma
 janela térmica limitada, ambas erodidas pela temperatura crescente e pelos graus-dia de
-crescimento acumulados. Estes resultados coincidem com a modelagem da pressão exercida pelo
-aquecimento e ressecamento sobre a fronteira agrícola do Cerrado, já documentada em escala
-regional \citep{Marengo2022}.
+crescimento acumulados. Estes resultados são coerentes com as tendências observadas de aquecimento
+e ressecamento na fronteira agrícola da transição entre a Amazônia oriental e o Cerrado entre 1981 e
+2020 \citep[p.~4]{marengo_increased_2022}, embora aquele estudo seja observacional e não uma
+projeção.
 
 A geração fotovoltaica tem $\Delta S$ (Tabela~\ref{tab:shift-mean}) caindo de $-0{,}010$ a
 $-0{,}035$, na mesma escala de viabilidade 0--1 usada em todo o atlas, por sua redução de
@@ -538,12 +539,14 @@ e a piscicultura permanece a única correlação negativa ($-0{,}32$).
 
 Essa mistura de sinais tem uma explicação pré-registrada: o NPP anual mede a assimilação de
 carbono da vegetação, não o rendimento agronômico, de modo que os segmentos de biomassa em pé
-pontuam mais alto. Isso é coerente com a tendência documentada do algoritmo NPP/GPP do MODIS
-de estimar a produtividade de forma sistematicamente enviesada por tipo de sítio
-\citep{Turner2006}. É coerente também com a literatura sobre a conversão de GPP em rendimento,
-em que a correlação entre um \emph{proxy} derivado de GPP e o rendimento reportado varia de
-quase unitária na escala de município a marcadamente mais fraca na escala de talhão
-\citep{He2018}. Por isso ele é lido aqui apenas como contexto, não como validador.
+pontuam mais alto. Isso é coerente com o comportamento documentado dos produtos NPP/GPP do
+MODIS, que, sem viés global, superestimam a produtividade em sítios pouco produtivos e a subestimam
+nos muito produtivos --- inclusive em lavouras fertilizadas, cuja eficiência de uso da luz o
+algoritmo subestima \citep[pp.~286, 288--289]{turner_evaluation_2006}. É coerente também com a
+literatura sobre a conversão de GPP em rendimento: num modelo de eficiência de uso da luz a 30~m em
+Montana (EUA), a produção estimada a partir da GPP correlaciona-se quase perfeitamente com a produção
+reportada por condado ($r = 0{,}96$), mas o rendimento estimado correlaciona-se bem mais fracamente
+com o rendimento medido no talhão ($r \approx 0{,}44$) \citep[p.~16]{he_regional_2018}. Por isso ele é lido aqui apenas como contexto, não como validador.
 
 \textbf{Validador de produtividade intracultura.} Este teste avalia a GPP da estação de
 crescimento (janela de dossel de outubro a março) \textbf{apenas nos pixels efetivamente
@@ -595,8 +598,10 @@ em que $p_o$ é a proporção observada de concordância célula a célula entre
 classificações (conhecimento \emph{versus} floresta aleatória) e $p_e$ é a proporção de
 concordância esperada apenas ao acaso, dada a prevalência marginal de cada classe em cada mapa.
 Quando as duas classificações marcam áreas de tamanhos muito diferentes --- aqui, 52,8\% \emph{
-versus} 21,6\% do território como viável --- $p_e$ cresce e o $\kappa$ desconta uma fatia maior
-da concordância bruta como ``acerto por sorte'', o que por si só já explica por que ele cai
+versus} 21,6\% do território como viável ---, a própria diferença entre as marginais impõe um teto
+ao $\kappa$: mesmo com a maior concordância compatível com essas áreas, ele não passaria de
+$\kappa_M \approx 0{,}40$, de modo que o valor observado corresponde a cerca de 68\% do máximo
+permitido \citep[pp.~42--43]{cohen_coefficient_1960}. Isso por si só já explica por que ele fica
 abaixo do que a AUC sugeriria.
 
 Esse $\kappa$ modesto não contradiz a AUC de 0,871 relatada na Tabela~\ref{tab:presence-auc}:
@@ -604,8 +609,11 @@ são duas perguntas diferentes sobre o mesmo resultado. A AUC pergunta se os pix
 é realmente plantada recebem, em geral, uma nota de viabilidade mais alta do que pixels
 escolhidos ao acaso --- a resposta é sim, de forma consistente. Já o $\kappa$ pergunta algo mais
 rígido: as duas superfícies concordam sobre \emph{qual} pedaço do território marcar como
-viável? Aqui a resposta é só parcial, pela diferença de área discutida acima. Ainda assim, o
-modelo, no fundo, continua apontando majoritariamente para os lugares certos \citep{Cicchetti1990}.
+viável? Aqui a resposta é só parcial, pela diferença de área discutida acima. Por isso o $\kappa$
+deve ser lido junto com as concordâncias específicas positiva e negativa
+\citep[pp.~551, 557]{cicchetti_high_1990}: com as marginais acima, $p_{\text{pos}} \approx 0{,}49$ e
+$p_{\text{neg}} \approx 0{,}70$, isto é, as duas superfícies concordam mais sobre onde a soja
+\emph{não} é viável do que sobre onde é.
 Ou seja, $\kappa = 0{,}269$ não quer dizer que o modelo erra \emph{onde} a soja tende a ocorrer
 (isso já foi respondido pela AUC), mas sim que a área que o conhecimento especialista chama
 de ``viável'' e a área que os dados de fato ocupam ainda têm tamanhos apreciavelmente diferentes.
