@@ -45,12 +45,12 @@ import ee
 # collide with the same-named raw bands carried for profiling.
 Z_PREFIX = "z_"
 
-# --- curated, decorrelated zoning subset (2026-07-14) -----------------------
-# ~15 bands with real spatial structure; near-duplicates and near-uniform climate
-# dropped (aridity kept over pr/pet; one thermal index; clay kept over sand/bdod;
-# phen_amplitude kept over the NDVI-integral duplicate). Land cover excluded as
-# always. The theme of each band is its name prefix (clim/terr/soil/water/phen/
-# access), used for the √(bands-in-theme) block weighting.
+# --- curated, decorrelated zoning subset (s2-2026) ---------------------------
+# 13 biophysical bands (pure land-surface/climate signal; s2-2026).
+# Near-duplicates dropped (aridity over pr/pet; one thermal index; clay over sand/bdod).
+# phen_amplitude and access_logtt removed: encode current land use / infrastructure,
+# not biophysical potential. Land cover excluded as always. Theme prefix
+# (clim/terr/soil/water) drives the √(bands-in-theme) block weighting.
 ZONING_BANDS = [
     # climate (4) — the axes that still carry gradient in an otherwise-uniform territory
     "clim_aridity", "clim_soil_moist", "clim_twarm_q", "clim_def_annual",
@@ -60,10 +60,6 @@ ZONING_BANDS = [
     "soil_clay", "soil_soc", "soil_ph", "soil_awc",
     # water (2)
     "water_dist", "water_drain_density",
-    # phenology (1) — separates cropland (high amplitude) from native (low)
-    "phen_amplitude",
-    # access (1)
-    "access_logtt",
 ]
 
 
@@ -73,7 +69,7 @@ def zbands(band_names):
 
 
 def _theme_of(band):
-    """Theme key = the band-name prefix (clim/terr/soil/water/phen/access)."""
+    """Theme key = the band-name prefix (clim/terr/soil/water)."""
     return band.split("_", 1)[0]
 
 

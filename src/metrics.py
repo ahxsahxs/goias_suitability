@@ -180,3 +180,70 @@ def continuous_boyce(presence_scores, background_scores, n_bins: int = 10,
     boyce, _ = spearmanr(centers[ok], pe[ok])
     return {"boyce": float(boyce), "pe_curve": pe[ok].tolist(),
             "centers": centers[ok].tolist(), "n_presence": int(p.size)}
+
+
+def empirical_variogram(df, value_col: str, lon_col: str, lat_col: str,
+                         n_sub: int = 2000, max_lag_km: float = 120.0,
+                         n_bins: int = 12, seed: int = 42):
+    """Empirical semivariogram via haversine pairwise distances.
+
+    γ(h) = (1/2N_h) Σ [Z(xᵢ) − Z(xⱼ)]²  for pairs in each lag bin.
+    Memory: n_sub=2000 → 2000×2000×8 B = 32 MB (safe on any workstation).
+
+    Parameters
+    ----------
+    df : DataFrame with columns value_col, lon_col, lat_col.
+    value_col : variable to compute semivariance for (e.g. "suit_soybean").
+    lon_col, lat_col : decimal-degree coordinate columns.
+    n_sub : subsample size (df is randomly drawn down when larger).
+    max_lag_km : pairs beyond this distance are excluded.
+    n_bins : number of equal-width lag bins in [0, max_lag_km].
+    seed : RNG seed for subsample draw.
+
+    Returns
+    -------
+    (vario_df, range_km)
+        vario_df — DataFrame: lag_km_center, gamma, n_pairs (nan gamma for empty bins).
+        range_km — lag of first bin reaching 95 % of sill (nan if sill never reached).
+    """
+    import pandas as pd
+
+    rng = np.random.default_rng(seed)
+    sub = df[[value_col, lon_col, lat_col]].dropna().reset_index(drop=True)
+    if len(sub) > n_sub:
+        idx = rng.choice(len(sub), n_sub, replace=False)
+        sub = sub.iloc[idx].reset_index(drop=True)
+
+    lons = np.radians(sub[lon_col].to_numpy())
+    lats = np.radians(sub[lat_col].to_numpy())
+    z = sub[value_col].to_numpy()
+    R = 6371.0
+
+    dlat = lats[:, None] - lats[None, :]
+    dlon = lons[:, None] - lons[None, :]
+    a = (np.sin(dlat / 2) ** 2
+         + np.cos(lats[:, None]) * np.cos(lats[None, :]) * np.sin(dlon / 2) ** 2)
+    dist = 2.0 * R * np.arcsin(np.sqrt(np.clip(a, 0.0, 1.0)))
+    dz2 = (z[:, None] - z[None, :]) ** 2
+
+    ui, uj = np.triu_indices(len(z), k=1)
+    d, v = dist[ui, uj], dz2[ui, uj]
+    mask = d <= max_lag_km
+    d, v = d[mask], v[mask]
+
+    edges = np.linspace(0.0, max_lag_km, n_bins + 1)
+    centers = (edges[:-1] + edges[1:]) / 2.0
+    rows = []
+    for i in range(n_bins):
+        bm = (d > edges[i]) & (d <= edges[i + 1])
+        n_p = int(bm.sum())
+        gamma = float(0.5 * v[bm].mean()) if n_p > 0 else float("nan")
+        rows.append({"lag_km_center": float(centers[i]),
+                     "gamma": gamma, "n_pairs": n_p})
+
+    vdf = pd.DataFrame(rows)
+    sill = vdf["gamma"].max()
+    reached = vdf[vdf["gamma"] >= 0.95 * sill]
+    range_km = (float(reached["lag_km_center"].iloc[0])
+                if not reached.empty else float("nan"))
+    return vdf, range_km

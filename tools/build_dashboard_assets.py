@@ -625,8 +625,8 @@ def build_validation_scorecard() -> None:
 
 # =============================================================================
 # 6g. Feature Stack PCA comparison — naive 34-band z-stack vs the curated,
-# theme-weighted 15-band ZONING_BANDS space that Part 10 actually clusters on
-# (src/zoning.py). Same stratified sample + seed as tools/rezone.py, so the 15-band
+# theme-weighted 13-band ZONING_BANDS space that Part 10 actually clusters on
+# (src/zoning.py). Same stratified sample + seed as tools/rezone.py, so the 13-band
 # PCA is the zoning's own decorrelated space (fit_pca's var_keep only truncates it).
 # =============================================================================
 PCA_N_POINTS = 3000         # scatter subsample shipped to the browser
@@ -686,7 +686,7 @@ def build_pca_compare(only_band: str | None = None) -> None:
     suit = ee.Image(aid("suit_present"))
     zones = ee.Image(aid("zones_present")).select([0]).rename("zone")
     bands34 = z.bandNames().getInfo()
-    bands15 = list(zoning.ZONING_BANDS)
+    bands13 = list(zoning.ZONING_BANDS)
     log(f"  sampling {len(bands34)}-band z-stack (stratified, seed=42) ...")
 
     extra = zones.addBands(ee.Image.pixelLonLat())
@@ -697,7 +697,7 @@ def build_pca_compare(only_band: str | None = None) -> None:
 
     variants = {
         "34": (bands34, [1.0] * len(bands34), zoning.cluster_matrix(df, bands34, theme_weighted=False)),
-        "15": (bands15, zoning.theme_weight_vector(bands15), zoning.cluster_matrix(df, bands15)),
+        "13": (bands13, zoning.theme_weight_vector(bands13), zoning.cluster_matrix(df, bands13)),
     }
     payload: dict = {"variants": {}, "n_sample": int(len(df))}
     scores: dict[str, np.ndarray] = {}
@@ -731,7 +731,7 @@ def build_pca_compare(only_band: str | None = None) -> None:
     r3 = lambda a: [round(float(v), 3) for v in a]  # noqa: E731
     payload["points"] = {
         "pc34": [r3(scores["34"][i]) for i in idx],
-        "pc15": [r3(scores["15"][i]) for i in idx],
+        "pc13": [r3(scores["13"][i]) for i in idx],
         "zone": [int(df["zone"].iloc[i]) for i in idx],
         "lon": r3(df["longitude"].iloc[idx]),
         "lat": r3(df["latitude"].iloc[idx]),

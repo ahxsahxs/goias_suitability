@@ -134,7 +134,9 @@ Cada ponto tem um `% TODO(Zotero)` no `.tex`; até a inclusão, a frase fica sem
 - **Hengl (2018)**, camadas OpenLandMap SOL v02 a 250 m (argila, areia, SOC, pH, densidade
   aparente; teor de água a 33 kPa de Hengl & Gupta, 2019). Entra em `02_materials.tex` e
   `03_methodology.tex`.
-- **Tibshirani, Walther & Hastie (2001)**, estatística de gap. Entra em `03_methodology.tex`.
+- ~~**Tibshirani, Walther & Hastie (2001)**, estatística de gap.~~ **✅ Adicionado em 27/09:**
+  `tibshirani_estimating_2001` está no Zotero e no `bibliography.bib`. Falta colocar o `\cite`
+  no ponto marcado com `% TODO(Zotero)` em `03_methodology.tex:222`.
 - Opcional: uma referência metodológica clássica de regressão harmônica da fenologia (por exemplo
   Jakubauskas et al., 2001), já que LeVine & Crews é um estudo de caso com um único harmônico.
 
@@ -143,39 +145,90 @@ Cada ponto tem um `% TODO(Zotero)` no `.tex`; até a inclusão, a frase fica sem
 Depois de corrigir, reexportar e rodar `uv run python tools/sync_zotero_bib.py`. Se alguma chave
 mudar, usar `--rewrite-keys`.
 
-- **GAEZ v4** (`noauthor_global_2021`):
-  - autores Fischer, Nachtergaele, van Velthuizen, Chiozza, Franceschini, Henry, Muchoney &
-    Tramberend (2021);
-  - título "Global Agro-Ecological Zones v4 – Model documentation";
-  - local Roma.
-
-  A chave vai mudar.
+- ~~**GAEZ v4** (`noauthor_global_2021`)~~ **✅ Corrigido em 27/09:** entrada renomeada para
+  `fischer_global_2021` com autores Fischer et al. (2021), título e local Roma. Chave reescrita
+  nos `.tex`; citada em `03_methodology.tex:5` como `\citep{fischer_global_2021,sys_land_1991}`.
 - **Hargreaves & Samani (1985):** o PDF anexado é o ASAE Paper 85-2517 (conferência, sem revisão
   por pares), e não o artigo da *Applied Engineering in Agriculture* 1(2):96–99 descrito na
   entrada. Trocar o anexo ou a entrada.
 - **Aparecido et al. (2021):** o 5º autor é "Cicero Teixeira Silva e Costa".
 - **Números de fascículo/artigo:** Farr (2007) é `RG2004`, Turner (2006) é `3--4`, Saaty (1987) é
   `3--5`.
-- **Malczewski (2006):** triplicado (`malczewski_gisbased_2006`, `-1`, `noauthor_full_nodate`);
-  mesclar num só.
+- ~~**Malczewski (2006):** triplicado (`malczewski_gisbased_2006`, `-1`, `noauthor_full_nodate`);
+  mesclar num só.~~ **✅ Corrigido em 27/09:** duplicatas removidas; só `malczewski_gisbased_2006`
+  permanece no Zotero (ainda sem `\cite` no texto — a ser usado no estado da arte, passo P4).
 - **Maiúsculas e nomes:** título do ZEE-GO (`queiroz_o_2022`) todo em maiúsculas; nomes de
   autores de Souza (2020) mal formatados.
 - **Saaty (1987):** o PDF confirma o autor R. W. Saaty; o artigo credita a T. L. Saaty o
   desenvolvimento do AHP (p. 161).
 
-### 5.3 Etapas seguintes do cronograma
+### 5.3 `\cite` pendentes no texto
 
-- **Landis & Koch (1977)** já está no Zotero, mas não é citado: há um `%% TODO` em
-  `04_results.tex` e a escala é mencionada em `05_discussion`. É o passo q3.
-- **Spawn et al. (2020)** está no Zotero, mas o carbono de biomassa aparece sem `\cite` em
-  `02_materials.tex` e no anexo, assim como Accessibility to Cities, HydroSHEDS e WDPA (há um
-  `%% TODO` no início da seção de dados).
+Entradas já no Zotero e no `bibliography.bib`, mas que ainda precisam de `\cite` nos pontos
+marcados com `%% TODO` ou `% TODO(Zotero)`:
+
+| Chave | Arquivo | Linha / contexto | Passo |
+|---|---|---|---|
+| `tibshirani_estimating_2001` | `03_methodology.tex` | :222 — estatística de gap | q3 |
+| `landis_measurement_1977` | `04_results.tex` | :583 — escala de κ | q3 |
+| `landis_measurement_1977` | `05_discussion_conclusion.tex` | menção a "escala de Landis & Koch" sem `\cite` | q3 |
+| `spawn_harmonized_2020` | `02_materials.tex` | :110 — "Spawn et al." sem `\cite` | q3 |
+| `spawn_harmonized_2020` | `06_annex.tex` | tabela de fontes (carbono de biomassa) | q3 |
+
+Faltam ainda `\cite` para Accessibility to Cities, HydroSHEDS e WDPA (há um `%% TODO` em
+`02_materials.tex:99`), mas essas fontes não estão no Zotero.
+
 - **Localizadores nas citações já OK:** a maioria ainda não tem página/eq./tab. (regra §12). As
   páginas sugeridas estão nos registros locais.
 
 ---
 
-## 6. Comentários finais
+## 6. Atualização de 27/09/2026
+
+### 6.1 Estado do bibliography.bib
+
+| Métrica | Valor |
+|---|---:|
+| Entradas no Zotero / `bibliography.bib` | **60** |
+| Entradas efetivamente citadas nos capítulos | **46** |
+| Entradas no bib ainda sem `\cite` no texto | **14** |
+| `\cite` pendentes (§5.3) | **5** |
+| Entradas sem PDF local | **1** (`da_silva_goias_suitability_2026`) |
+
+As 14 entradas presentes no bib mas não citadas nos capítulos incluem: as 8 "a buscar" adicionadas
+em 26/09 (`roberts_crossvalidation_2017`, `ploton_spatial_2020`, `landis_measurement_1977`,
+`spawn_harmonized_2020`, `amaral_metodologia_2023`, `queiroz_o_2022`, `malczewski_gisbased_2006`,
+`fischer_global_2021` — esta já citada, ver abaixo) mais entradas pré-existentes no Zotero que
+passaram a constar no bib após a regeneração: `funk_climate_2026`, `rising_crop_2020`,
+`saaty_scaling_1977`, `tamiminia_google_2020`, `tibshirani_estimating_2001`,
+`valavi_blockcv_2019`. A maioria será usada no estado da arte (P4) e na validação espacial (P1).
+
+Verificação: `uv run python tools/sync_zotero_bib.py --check` sai com 0.
+
+### 6.2 Correções aplicadas desde 26/09
+
+| Item | Estado |
+|---|---|
+| `noauthor_global_2021` → `fischer_global_2021` (GAEZ v4 com autores completos) | ✅ Chave corrigida, citada |
+| Malczewski triplicado (`-1`, `noauthor_full_nodate`) removido | ✅ Entrada única |
+| `tibshirani_estimating_2001` adicionado ao Zotero | ✅ No bib; `\cite` pendente |
+| `landis_measurement_1977` adicionado ao Zotero | ✅ No bib; `\cite` pendente |
+| `spawn_harmonized_2020` adicionado ao Zotero | ✅ No bib; `\cite` pendente |
+
+### 6.3 Pendências remanescentes de §5.2
+
+As correções de metadados abaixo ainda não foram feitas no Zotero:
+
+- Hargreaves & Samani (1985): trocar o PDF do ASAE Paper 85-2517 pelo artigo da revista.
+- Aparecido et al. (2021): 5º autor "Cicero Teixeira Silva e Costa".
+- Números de fascículo: Farr (2007) → `RG2004`; Turner (2006) → `3--4`; Saaty (1987) → `3--5`.
+- Maiúsculas no título do ZEE-GO (`queiroz_o_2022`); nomes de Souza (2020).
+- Hengl (2018) SOL v0.2 ainda ausente do Zotero (cf. `% TODO(Zotero)` em
+  `02_materials.tex:106` e `03_methodology.tex:71`).
+
+---
+
+## 7. Comentários finais
 
 **Problema de integridade no AHP. Precisa de decisão do autor antes do checkpoint com o
 orientador.** O cabeçalho de `tools/build_ahp.py` diz que as matrizes de comparação par a par

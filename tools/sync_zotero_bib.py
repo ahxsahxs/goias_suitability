@@ -38,7 +38,7 @@ TEX_GLOBS = [os.path.join(ROOT, "Chapters", "*.tex"), os.path.join(ROOT, "Config
 DROP_FIELDS = {"file", "abstract", "keywords", "urldate", "shorttitle"}
 IGNORE_KEYS = {"*", "Artho04"}  # \nocite{*}; template test entry in glossary.tex (list not printed)
 # Legacy keys whose Zotero replacement is a deliberate change, not a DOI/title match.
-KEY_OVERRIDES = {"Saaty1980": "saaty_analytic_1987", "FAO1976": "noauthor_global_2021"}
+KEY_OVERRIDES = {"Saaty1980": "saaty_analytic_1987"}
 
 HEADER = """\
 % bibliography.bib -- GERADO por tools/sync_zotero_bib.py a partir do export do
