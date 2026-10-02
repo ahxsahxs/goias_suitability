@@ -1,5 +1,5 @@
 """Re-export the conservation-affected goias assets under the 2026-07-25
-conservation-reconceptualization config (docs/weaknesses_mitigation.md WS-A).
+conservation-reconceptualization config (see the conservation block of config/segments.yaml).
 
 Adapted from tools/run_recal.py. Only the conservation segment changed, but it is
 bundled into the 7-segment suit_present / CMIP6 images, so those are re-exported in

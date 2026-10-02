@@ -8,7 +8,12 @@ import { zoneLegend } from '../legends'
 import type { HomeStats } from '../types/data'
 
 const { data: stats, error, loading } = useJson<HomeStats>('json/home_stats.json')
-const legend = computed(() => zoneLegend(stats.value?.n_zones ?? 10))
+// No literal fallback: the zone count is whatever home_stats.json reports. A
+// hardcoded default renders a legend for zones that may not exist (it said 10
+// long after the zoning moved to 4), so render nothing until the JSON loads.
+const legend = computed(() =>
+  stats.value?.n_zones ? zoneLegend(stats.value.n_zones) : null,
+)
 </script>
 
 <template>
@@ -37,7 +42,7 @@ const legend = computed(() => zoneLegend(stats.value?.n_zones ?? 10))
     </nav>
 
     <MapPanel raster-path="zones_present.pmtiles">
-      <template #legend><MapLegend :spec="legend" /></template>
+      <template #legend><MapLegend v-if="legend" :spec="legend" /></template>
     </MapPanel>
 
     <p v-if="loading">carregando estatísticas…</p>

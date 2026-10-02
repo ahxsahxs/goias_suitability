@@ -67,8 +67,11 @@ The split is *biophysical potential* (A) vs *realized-use & validation* (B) — 
 
 ## 4. Execution status — project `probformer`
 
-**Phase A + Phase B modelling are complete — Parts 1–14 BUILT & footprint-verified.** All three
-RQs are answered and written into the thesis (chapters 01–05). **Part 15 (the interactive atlas)
+**Phase A + Phase B modelling are structurally complete — Parts 1–15 built & footprint-verified.** The Part-9 weighting layer was re-derived (`tools/derive_weights.py`, §11) and the full Part 9→15 cascade re-run against it on 2026-09-29/30; the zoning moved from K=10 to **K=4**. Parts 1–8 were *not* rebuilt: `tools/diff_vs_backup.py` against `goias_backup_ahp_20260928` found 8 of 9 feature assets bit-identical across all 39 bands, with `feat_terrain` moving only in `terr_tpi`/`terr_twi` at the documented ~0.1% tile-edge level (`terr_slope`, computed without resampling, is bit-identical — confirming the mechanism is export-time resampling, not catalog drift).
+
+All three RQs are answered and written into the thesis (chapters 01–05), but the numbers there —
+class shares, zone profiles, Δ tables, the annex weight table — were produced under the previous
+weights and will move once the cascade is re-run. **Part 15 (the interactive atlas)
 is finished and live** — a static Vue 3 + TypeScript + Vite dashboard (`docs/dashboard/`)
 superseding the old `gee_js/atlas_app.js` EE-App plan (see `docs/dashboard_ux_plan.md`) — all 11
 routes are in place, deployed via `deploy-dashboard.yml` to GitHub Pages at
@@ -79,8 +82,8 @@ longer lists it as future work.
 | Part | State | Notes |
 |---|---|---|
 | 1–8 | **BUILT & footprint-verified** | Ten feature assets incl. `feature_stack_250m(_z)` (34-band stack) + `feat_siting` (solar clearness / seasonal water distance) + `feat_conservation` (WDPA distance / ruggedness / carbon) — the latter two are side-images kept **out** of the stack (routed into suitability via the `sit_`/`cv_` extras prefix). |
-| 9 — suitability | **BUILT** | `suit_present` / `suit_present_comp` / `suit_present_sens`: 7 `suit_*` (0–1) + 7 `class_*` (FAO S1/S2/S3/N) + 7 `sens_*` (±20% AHP). Conservation is a value/priority index (arithmetic-mean aggregation — compensatory); the other six segments use the weighted geometric mean. |
-| 10 — zoning | **BUILT — K=10**, offline `k=2..20` sweep, silhouette peaks at k=10 (0.187) | `zones_present`, offline sklearn KMeans on a decorrelated PCA input (`src/zoning.py`), classified server-side by nearest-centroid band math. Zones labelled by `comparative_segment` (argmax of each segment's z-normalized suitability), not raw dominance. `zone_profiles.csv` + `zoning_kselect.csv`. |
+| 9 — suitability | **BUILT (re-derived weights)** | `suit_present` / `suit_present_comp` / `suit_present_sens`: 7 `suit_*` (0–1) + 7 `class_*` (FAO S1/S2/S3/N) + 7 `sens_*` (±20% AHP). Conservation is a value/priority index (arithmetic-mean aggregation — compensatory); the other six segments use the weighted geometric mean. Weights are derived by `tools/derive_weights.py` (see §11); seven constant climate factors were promoted to `role: gate`, so soybean/sugarcane carry 3 weighted factors (not 6), other_crops 5, cattle 3. Worst consistency ratio 0.0462 (soybean), 6 author judgements, 0 overrides. |
+| 10 — zoning | **BUILT — K=4**, offline `k=2..20` sweep | `zones_present`, offline sklearn KMeans on a decorrelated PCA input (`src/zoning.py`), classified server-side by nearest-centroid band math. Zones labelled by `comparative_segment` (argmax of each segment's z-normalized suitability), not raw dominance. `zone_profiles.csv` + `zoning_kselect.csv`. |
 | 11 — CMIP6 shift | **BUILT** | `suit_future_*`, `delta_*`, `agreement_*` assets across SSP2-4.5/SSP5-8.5 × 2031–2050/2051–2070 × 5-GCM ensemble. Delta-change engine validated against an identity change-factor (Δ=0.000). No structurally climate-invariant segment remains — every segment (including conservation and solar) moves under at least one climate lever. |
 | 12–14 — Phase B | **BUILT** | `realized_vs_potential`, `municipal_godf` (IBGE malha municipal aggregation, 247 municipalities), MOD17 productivity validation (municipal Spearman + within-crop GPP gradient), RF presence cross-check (Cohen's κ = +0.269, AUC = 0.871 for soybean), AHP consistency ratios. See `config/ahp_matrices.yaml` and `thesis/Chapters/04_results.tex` / `05_discussion_conclusion.tex` for the full numbers. |
 | 15 — synthesis | **BUILT & live** | `docs/dashboard/` (Vue 3 + TS + Vite SPA): 11 routes covering every Part, built via `tools/build_dashboard_assets.py` from the assets in this table + config YAML. CI (`.github/workflows/deploy-dashboard.yml`) builds/type-checks/deploys successfully to GitHub Pages at <https://ahxsahxs.github.io/goias_suitability>, i18n and image trim done, and it's linked from `02_materials.tex`. See `docs/dashboard_ux_plan.md` for the architecture. |
@@ -108,7 +111,9 @@ written.
 ```
 config/datasets.yaml          # pinned EE dataset IDs, bands, scale factors (single source of truth)
 config/segments.yaml          # Part 9: per-segment fuzzy-membership params + AHP weights + masks
-config/ahp_matrices.yaml      # Part 9: AHP pairwise-comparison matrices + consistency ratios
+config/ahp_matrices.yaml      # Part 9: AHP INPUT -- hand-written anchors (one ordinal band per
+                                # factor + the published priority where one exists); the matrix,
+                                # eigenvector, CI/RI/CR are written back by tools/derive_weights.py
 config/mapbiomas_classes.yaml # MapBiomas code -> segment-role remap (Phase B, Part 13)
 src/utils.py                  # EE init, config loader, 250 m grid, asset/export helpers
 src/features.py               # ALL Part 1-8 feature builders (one source of truth; lazy ee, import-safe)
@@ -129,13 +134,20 @@ tools/make_figures.py         # renders thesis figures (PNG) straight into thesi
                                 # (fig_4_12 is CSV/hexbin-only, no GEE thumbnail — see §10 note)
 tools/extract_present.py      # Part 9/10 summary tables; also writes municipal_ranking.csv (see §11 gotcha)
 tools/extract_cmip6.py        # Part 11 summary tables
+tools/derive_weights.py       # Part 9: anchors -> Saaty matrix -> principal eigenvector (w_lit)
+                                # -> w = normalize(w_lit * sigma(mu)^lambda) -> config/segments.yaml.
+                                # `--check` fails if segments.yaml drifts. Replaces build_ahp.py
+                                # (removed), which built the matrix FROM the weights.
+tools/anchor_breakpoints.py   # `percentiles` = band distributions; `discrimination` = sigma(mu),
+                                # saturated/vetoed fractions -> thesis/Chapters/factor_discrimination.csv
 tools/gen_diag_csvs.py        # regenerates zoning_kselect.csv / factor_variance.csv /
                                 # theme_roughness(_points).csv diagnostics
 tools/sync_zotero_bib.py      # Zotero export -> thesis/Bibliography/bibliography.bib (strips file/abstract/…,
                                 # checks every \cite key exists, reports entries without a local PDF) — see §12
 notebooks/01..15               # thin: import src/, build, range-report, view, export — one per Part
 docs/                          # supporting notes: _search_terms.md (lit-search scaffolding, not part of
-                                # the thesis), metodologia_diagrama.md (PT methodology diagrams),
+                                # the thesis), ahp_literatura.md (literature -> AHP crossing + the
+                                # anti-circularity protocol), metodologia_diagrama.md (PT methodology diagrams),
                                 # dashboard_ux_plan.md (Part 15 architecture reference),
                                 # dashboard/ (the Vue 3 + TS + Vite dashboard project itself)
 thesis/                        # the LaTeX dissertation itself (NOVAthesis/NOVA IMS template) — see §9
@@ -291,6 +303,10 @@ uv run python tools/gen_notebooks.py
 # metadata-only asset check (runs under restricted quota)
 EE_PROJECT=probformer uv run python tools/verify_assets.py
 
+# Part 9 weights: recompute sigma(mu), then re-derive and verify the weights
+EE_PROJECT=probformer uv run python tools/anchor_breakpoints.py discrimination
+uv run python tools/derive_weights.py --check   # exit 1 if segments.yaml drifted
+
 # regenerate thesis figures (writes into thesis/Chapters/Figures/)
 EE_PROJECT=probformer uv run python tools/make_figures.py all
 ```
@@ -335,6 +351,17 @@ Build artifacts (`*.aux`, `*.bbl`, `*.log`, `*.pdf`, …) are gitignored (`thesi
 `Config/3_cover.tex`; language and degree/specialization in `Config/1_novathesis.tex`. See
 `thesis/README.md` for the template's own documentation (provenance, license — LPPL 1.3c,
 institution-specific customization) if you need mechanics beyond what's above.
+
+**Tables are GENERATED, not hand-typed.** `tools/gen_thesis_tables.py` writes `\input`-able
+fragments into `thesis/Chapters/Tables/*.tex` from the CSVs (`zone_profiles.csv`, `zone_area.csv`,
+`cmip6_zone_shift.csv`, `ahp_weights.csv` + `breakpoint_anchoring.csv` + `factor_discrimination.csv`,
+the `derived:` block of `ahp_matrices.yaml`, `validation_zone_anova.csv`). The chapters keep the
+float, caption and label and `\input` the body; the zone-indexed tables' **column count follows K
+automatically**. Editing a fragment by hand is silently undone on the next run. `\input` paths are
+relative to `thesis/` (latexmk's CWD) — `\input{Chapters/Tables/x.tex}`, since `\graphicspath`
+does not apply to `\input`. Zone area shares come from `zone_area.csv` (a `pixelArea()` group
+reduce), **never** from `zone_profiles.csv`'s `n`, which is a sample count and differs by ~6 points
+on the largest zone.
 
 **Figures:** `tools/make_figures.py` renders figures straight from the built EE assets
 (`ee.Image.getThumbURL` thumbnails + matplotlib composition) into `thesis/Chapters/Figures/` — run
@@ -383,11 +410,25 @@ fine-scale variance the figure exists to show. Don't "fix" this back to a thumbn
 
 ## 11. Verify-at-build gotchas
 
+- **Weights are DERIVED, never hand-set.** `config/segments.yaml`'s `weight:` fields are written by
+  `tools/derive_weights.py` from the anchors in `config/ahp_matrices.yaml`. Editing one by hand is
+  silently undone on the next run and caught by `--check`. The direction is
+  `anchors -> matrix -> w_lit -> x sigma(mu)^lambda -> weight`; never the reverse. `tools/build_ahp.py`,
+  which built the matrix *from* the weights (and so produced CRs of ~0.001 that were a construction
+  artifact), is deleted — do not reintroduce that pattern. Protocol: `docs/ahp_literatura.md`.
 - **Match breakpoints to the band's actual scale, not just literature.** Every moving fuzzy-
-  membership breakpoint in `config/segments.yaml` was reconciled to its variable's realized
-  percentile range (`tools/anchor_breakpoints.py`) rather than trusted from nominal literature
-  ranges — always check a band's real range (`range_report` / percentile `reduceRegion`) before
-  trusting a breakpoint. `terr_slope` is in **degrees**.
+  membership breakpoint in `config/segments.yaml` is reconciled to its variable's realized
+  percentile range (`tools/anchor_breakpoints.py percentiles`). `tools/anchor_breakpoints.py
+  discrimination` is the check that matters: a factor whose `frac_saturated` is near 1 or whose
+  `sigma_mu_available` is near 0 is inert, however large its nominal weight — that is how
+  `sugarcane.soil_awc` was found sitting entirely below its own distribution (99.3% saturated at
+  weight 0.22). `terr_slope` is in **degrees**.
+- **A spatially constant factor is a `gate`, not a low weight.** Seven factors — all climatic — have
+  sigma(mu) = 0 over GO/DF because the observed range sits inside their optimal plateau. They carry
+  `role: gate`: out of the AHP matrix, no weight, applied multiplicatively with breakpoints anchored
+  so the present value gives mu = 1. That removes the hidden global deflator a constant mu < 1
+  applies (the FAO cuts are absolute, so it moves the reported class shares) **and** keeps the factor
+  as a CMIP6 lever. Giving such a factor weight 0 instead would kill the climate signal in Part 11.
 - **Conservation is a value/priority index, not a native-cover detector.** It combines WDPA
   distance, ruggedness, and carbon (`feat_conservation`, routed via the `cv_` extras prefix, kept
   out of the stack/zoning like `feat_siting`'s `sit_` prefix) with demoted native-cover and moving
@@ -395,6 +436,29 @@ fine-scale variance the figure exists to show. Don't "fix" this back to a thumbn
   `segments.yaml` → `membership.weighted_arithmetic`), not the geometric mean used by the other six
   segments. Don't revert to a native-cover-dominant, geomean-aggregated surface — that version was
   circular (native cover predicting "where native cover is") and CMIP6-invariant.
+- **Zoning is NOT independent of the AHP weights.** `zoning.build_sample` stratifies on
+  `dominant_segment_band(suit, segments)` — the argmax over `suit_present`. New weights therefore
+  give new strata, a new zoning sample, and a different k-selection panel even at identical seed.
+  This is why `zoning_kselect.csv` peaked at k=6 under the old weights and at k=4 under the new
+  ones, and why the panel MUST be regenerated (`tools/gen_diag_csvs.py zoning`) after any
+  re-derivation, before any k claim is written. Suitability is still never a *clustering input* —
+  only a stratum and a profiling column — so the §7 guardrail holds.
+- **K-selection lives in one place: the full `k=2..20` panel in `zoning_kselect.csv`.** Current
+  panel (2026-09-30): silhouette max k=4 (0.2097), ARI max k=4 (0.9882 ± 0.0036 — the tightest
+  replicate spread in the sweep), Davies–Bouldin min k=5 (1.4629), gap's Tibshirani rule fires
+  only at k=15 and is an artifact of a single dip. Silhouette spans just 0.158–0.210 across the
+  whole sweep: **the territory has no strong natural cluster structure at any k**, so the
+  clustering is a partitioning device, not a discovery of natural groups. Never quote a k claim
+  from memory or from the prose — read the CSV.
+- **Zone ids: the `zones_present` raster is 0-based (0..K-1); everything else is 1-based (1..K).**
+  The +1 is applied once, in `zoning.profile_zones`, so `zone_profiles.csv`, the thesis tables and
+  prose, the figures and the dashboard all number zones from 1. The extract/validation tools shift
+  their own raw-raster reads the same way. Don't add a second +1 downstream, and don't "fix" the
+  raster to match — palette slot `i` paints raster value `i`, i.e. zone `i+1`.
+- **`terr_twi` shares `terr_tpi`'s ~0.1% tile-edge export noise.** A full re-export moves both in
+  ~0.1% of pixels (`focalMean`/`reproject` at tile boundaries, plus `to_grid_bilinear` for TWI).
+  `terr_slope`, computed without resampling, is bit-identical across re-exports — which is how
+  `tools/diff_vs_backup.py` distinguishes resampling noise from real catalog drift.
 - **Part 10 clustering uses offline sklearn, NOT EE weka.** `ee.Clusterer.wekaKMeans` /
   `wekaCascadeKMeans` collapse to a single cluster on the collinear z-stack, every `init` mode.
   `src/zoning.py` fits sklearn KMeans on a sample, then classifies server-side by **nearest-centroid
@@ -435,6 +499,11 @@ fine-scale variance the figure exists to show. Don't "fix" this back to a thumbn
   `.sample().getInfo()` hits the interactive memory limit AND the 5000-element getInfo cap. Use the
   cached `feat_realized` asset (has `rl_role` + fracs), `tileScale=8`, and cap samples ≤4500. See
   `tools/run_validation.py` / `tools/extract_*.py`.
+- **TWI breakpoints are data-anchored, so no manual offset is needed any more.**
+  `conservation.terr_twi` is set from the observed P10–P90 (`anchor_breakpoints.py discrimination`),
+  not from a literature value plus a hand-written `+ln(dx/250)` correction. If the HydroSHEDS
+  nominal scale changes again, re-run that tool and then `derive_weights.py`; there is no constant
+  left to keep in step. The paragraph below records why the shift once existed.
 - **TWI's catchment area uses the HydroSHEDS cell (≈464 m), not the 250 m grid step.**
   `terrain_features` computes a = (n+1)·Δx with Δx = the 15ACC image's `nominalScale()`, because n
   counts HydroSHEDS cells. Until 2026-09-26 it used `scale_m()`, a constant −0.618 offset. The fix

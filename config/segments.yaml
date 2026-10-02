@@ -1,37 +1,60 @@
 # =============================================================================
-# Part 9 — Knowledge-based suitability config (7 agro-market segments)
+# Part 9 - Knowledge-based suitability config (7 agro-market segments)
 # -----------------------------------------------------------------------------
-# Per segment: the relevant factors (bands of `feature_stack_250m`, plus side-image
-# bands routed by name prefix in src/membership: `lc_`=feat_landcover, `sit_`=feat_siting
-# [solar clearness / pisci seasonal-water distance], `rl_`=realized MapBiomas [conservation
-# native-veg fraction], `cv_`=feat_conservation [conservation-value: WDPA distance /
-# terrain ruggedness / biomass carbon]), a fuzzy MEMBERSHIP shape
-# standardizing each factor to [0,1], and an AHP weight. Suitability is the
-# WEIGHTED GEOMETRIC MEAN of the memberships (limiting-factor behavior), then
-# masked and classified to FAO S1/S2/S3/N. Breakpoints are anchored in Embrapa
-# ZARC / FAO crop requirements / aquaculture- & PV-siting literature; refine in
-# milestone M2 (data-driven RF cross-check + weight-sensitivity).
+# Per segment: the relevant factors, a fuzzy MEMBERSHIP shape standardizing each
+# to [0,1], and an AHP weight. Suitability is the weighted GEOMETRIC mean of the
+# memberships (limiting-factor behaviour), or the weighted ARITHMETIC mean for a
+# compensatory value index (conservation), then masked and classified into FAO
+# S1/S2/S3/N.
+#
+# WEIGHTS ARE MACHINE-WRITTEN. Every `weight:` below is derived by
+# tools/derive_weights.py from the literature-anchored pairwise judgements in
+# config/ahp_matrices.yaml:
+#
+#     anchors -> Saaty matrix -> principal eigenvector (w_lit)
+#             -> w = normalize(w_lit * sigma(mu) ** lambda_regional)
+#
+# Do not edit a weight by hand; `derive_weights.py --check` fails if one drifts.
+# The derivation and its crossing to the literature are documented in
+# docs/ahp_literatura.md.
 #
 # Membership `type`:
 #   increasing  points:[a,b]        0 below a, ramp to 1 at b, 1 above
 #   decreasing  points:[a,b]        1 below a, ramp to 0 at b, 0 above
 #   range       points:[a,b,c,d]    ramp up a->b, plateau b..c, ramp down c->d
-# slope is in DEGREES (stack band terr_slope); % equivalents noted inline.
+# Slope is in DEGREES (stack band terr_slope).
 #
-# `mask` policy (uses feat_landcover masks; Part 7b WorldCover, superseded by
-# MapBiomas in Part 13):
+# Per-factor fields:
+#   weight   machine-written (above)
+#   role     `limiting` -> enters the weighted aggregation.
+#            `gate`     -> effectively constant in GO/DF, by the measured criterion
+#                        sigma(mu) < 0.05 AND mean(mu) > 0.95 over available land
+#                        (BOTH required; see config/ahp_matrices.yaml header), so
+#                        it can discriminate nothing and carries no weight. It is
+#                        kept OUT of the AHP matrix and applied as a
+#                        multiplicative gate, with breakpoints anchored so the
+#                        present value gives mu = 1. That removes the hidden
+#                        deflator a constant mu < 1 would otherwise apply to
+#                        every pixel -- the FAO cuts are absolute, so such a
+#                        deflator shifts the reported class shares -- while
+#                        preserving the factor as a CMIP6 lever: if the
+#                        variable moves under warming, the gate bites.
+#   basis    `literatura` or `empirico`: how the BREAKPOINTS were set.
+#            `empirico` means anchored to the percentile distribution actually
+#            observed in GO/DF; see thesis/Chapters/breakpoint_anchoring.csv.
+#   source   bib key backing the breakpoints, when basis is `literatura`
+#   locator  table/page inside that source
+#   note     atemporal justification of the shape and its thresholds
+#
+# `mask` policy (uses the feat_landcover masks):
 #   available    -> keep only generic-convertible land (mask_available)
 #   exclude_only -> drop only built-up/water/wetland (mask_excluded)
-#   none         -> unmasked (conservation; a conservation-VALUE index over all land)
+#   none         -> unmasked (conservation: a conservation-VALUE index over all land)
 #
-# GUARDRAIL EXCEPTION: land cover is otherwise mask/context-only and never a
-# suitability input. The single sanctioned exception is conservation's supportive
-# native-vegetation factor, authorized by Part 9 ("leave conservation unmasked; use
-# a native-cover fraction as a supportive factor"): `rl_native_frac` (MapBiomas native
-# roles, crediting open Cerrado). As of 2026-07-25 this factor is DEMOTED (w0.35->0.08)
-# to remove circularity — see the conservation block. No other segment consumes a
-# land-cover band; the `sit_` (solar/pisci irradiance/hydrology) and `cv_` (conservation
-# WDPA-distance/ruggedness/carbon) factors are biophysical/governance, NOT land use.
+# GUARDRAIL: land cover is mask/context/validation only, never a suitability or
+# clustering input. The single sanctioned exception is conservation's demoted,
+# supportive `rl_native_frac`. The `sit_` (siting) and `cv_` (conservation-value)
+# factors are biophysical/governance layers, NOT land use.
 # =============================================================================
 
 fao_classes:
@@ -41,138 +64,462 @@ fao_classes:
 aggregation:
   epsilon: 0.001                  # membership floor -> finite log; strong (not fatal) limiting penalty
   sensitivity_delta: 0.20         # +/-20% one-at-a-time AHP weight perturbation (robustness band)
+  lambda_regional: 0.5            # w = normalize(w_lit * sigma(mu)^lambda); fixed a priori, NOT tuned
+
+# Band-name prefixes routed to a side image instead of feature_stack_250m
+# (src/membership._source_image). Declared here as config rather than asserted
+# in prose; membership.suit_present validates that each prefix has an image.
+extras_prefixes:
+  lc_: feat_landcover             # masks + descriptive fractions
+  sit_: feat_siting               # solar clearness / pisciculture seasonal-water distance
+  cv_: feat_conservation          # WDPA distance / ruggedness / biomass carbon
+  rl_: feat_realized              # conservation's sanctioned native-vegetation fraction
 
 segments:
 
   soybean:
     label: Soja
     mask: available
-    # 2026-09 weight recalibration (T8/T10 Fase-4 revision): weight now guided by each
-    # factor's discriminating power = sample IQR (P75-P25 over available land,
-    # tools/anchor_breakpoints.py) / the factor's own breakpoint span. A factor near-
-    # constant relative to its span cannot separate one cell from another regardless of
-    # literature importance. Breakpoints (shapes/spans) unchanged from 2026-07-14; only
-    # weights redistributed low-ratio -> high-ratio. Weights sum to 1.0.
     factors:
-      terr_slope:     {weight: 0.32, type: decreasing,  points: [4, 8],                 ref: "2026-07-14: tightened from [4.57,8.53] to realized soybean flatness (p90 4.7deg). 2026-09: ratio=iqr/span=2.246/4=0.562, highest of the segment -> weight raised 0.22->0.32"}
-      soil_clay:      {weight: 0.24, type: range,       points: [20, 32, 48, 62],        ref: "2026-07-14: tightened from [10,20,45,60] to penalize sandy soils the realized niche avoids (soybean clay p10 30, p50 40). 2026-09: ratio=12.503/42=0.298 -> weight raised 0.13->0.24"}
-      clim_twarm_q:   {weight: 0.14, type: range,       points: [18, 22, 30, 34],        ref: "20-30C optimal. 2026-09: ratio=1.812/16=0.113 (uniform in GO) -> weight trimmed 0.15->0.14"}
-      soil_ph:        {weight: 0.11, type: range,       points: [4.5, 5.5, 6.8, 7.5],    ref: "acidic-correctable to neutral. 2026-09: ratio=0.265/3=0.088 -> weight trimmed 0.15->0.11"}
-      clim_pr_annual: {weight: 0.10, type: range,      points: [800, 1100, 1800, 2200], ref: "ZARC season ~450-800mm; annual proxy, waterlogging at top. 2026-09: ratio=106.0/1400=0.076 (near-uniform 1373-1635mm in GO) -> weight cut 0.22->0.10, the segment's largest demotion"}
-      clim_aridity:   {weight: 0.09, type: range,       points: [0.4, 0.7, 1.2, 1.6],    ref: "P/PET water sufficiency. 2026-09: ratio=0.082/1.2=0.068, lowest of the segment (uniform in GO) -> weight cut 0.13->0.09"}
+      terr_slope:
+        weight: 0.374          # machine-written by tools/derive_weights.py
+        role: limiting
+        type: decreasing
+        points: [4, 8]
+        basis: empirico
+        note: >-
+          Declividade em graus; limita a mecanizacao e favorece a erosao. Os limiares cobrem a cauda
+          declivosa da terra DISPONIVEL (p5-p95 1,8-8,8 graus; p50 3,4): mu comeca a cair em 4 graus e
+          zera em 8. Sao mais largos que o nicho realizado da soja (p95 5,3 graus) -- nao foram
+          ajustados a ele, e nenhuma informacao de uso realizado entra no valor.
+      soil_clay:
+        weight: 0.2424         # machine-written by tools/derive_weights.py
+        role: limiting
+        type: range
+        points: [20, 32, 45, 62]
+        basis: empirico
+        note: >-
+          Teor de argila (%); solos arenosos retem menos agua e nutrientes. Ancorado na distribuicao da
+          terra DISPONIVEL: a = 20 (p5 21,1), b = 32 (p50 31,9), c = 45 (p95 45,1), com a cauda superior
+          estendida ate 62 porque os Latossolos argilosos do Cerrado nao sao limitantes para a soja. O
+          ombro c valia 48 -- o p95 do nicho REALIZADO da soja (48,4) --, unico ponto dos sete limiares
+          desta revisao que seguia o uso realizado em vez da terra disponivel; foi realinhado ao p95
+          disponivel.
+      clim_twarm_q:
+        weight: 0.0            # machine-written by tools/derive_weights.py
+        role: gate
+        type: range
+        points: [18, 22, 30, 34]
+        basis: empirico
+        note: >-
+          Temperatura media do trimestre mais quente (C); o otimo termico da soja situa-se em torno de 20-30 C. Em GO/DF a distribuicao observada (23,6-27,6 C) cai INTEIRAMENTE dentro do plato otimo, de modo que mu = 1 em toda a area e o fator nao distingue celula alguma: sigma(mu) = 0. Entra, por isso, como PORTA multiplicativa, fora da matriz AHP. Nao e uma limitacao do dado, e um achado: o clima de GO/DF esta dentro da faixa otima quase em todo lugar, e por isso habilita em vez de graduar. A porta preserva a alavanca CMIP6 -- se a variavel sair do plato sob aquecimento, ela morde.
+      soil_ph:
+        weight: 0.3836         # machine-written by tools/derive_weights.py
+        role: limiting
+        type: range
+        points: [4.5, 5.5, 6.8, 7.5]
+        basis: empirico
+        note: "pH em agua; solos acidos corrigiveis por calagem ate a faixa neutra."
+      clim_pr_annual:
+        weight: 0.0           # machine-written by tools/derive_weights.py
+        role: gate
+        type: range
+        points: [800, 1100, 1800, 2200]
+        basis: empirico
+        note: >-
+          Precipitacao anual (mm) como proxy da lamina sazonal. Em GO/DF a distribuicao observada (1375-1637 mm) cai INTEIRAMENTE dentro do plato otimo, de modo que mu = 1 em toda a area e o fator nao distingue celula alguma: sigma(mu) = 0. Entra, por isso, como PORTA multiplicativa, fora da matriz AHP. Nao e uma limitacao do dado, e um achado: o clima de GO/DF esta dentro da faixa otima quase em todo lugar, e por isso habilita em vez de graduar. A porta preserva a alavanca CMIP6 -- se a variavel sair do plato sob aquecimento, ela morde.
+      clim_aridity:
+        weight: 0.0            # role: gate -- carries no weight (see header)
+        role: gate
+        type: range
+        points: [0.4, 0.7, 1.3, 1.6]
+        basis: empirico
+        note: >-
+          Indice de aridez P/PET; suficiencia hidrica. Em GO/DF o observado sobre a terra disponivel vai
+          de 0,83 a 1,26 e cai quase todo dentro do plato otimo: sigma(mu) = 0,026 e mu medio = 0,992,
+          dentro do criterio de PORTA (sigma(mu) < 0,05 E mu medio > 0,95). O ombro superior foi movido
+          de 1,2 para 1,3 -- acima do maximo observado (1,26) -- para que o valor presente de mu = 1 em
+          toda a area, removendo o deflator residual que um mu quase constante < 1 aplicaria contra os
+          cortes ABSOLUTOS da FAO. Sai da matriz AHP e entra como porta multiplicativa. A alavanca CMIP6
+          fica no ombro INFERIOR (b = 0,7, contra um minimo observado de 0,83): se o Cerrado secar, a
+          porta morde.
 
   sugarcane:
     label: Cana-de-açúcar
     mask: available
-    # 2026-09 weight recalibration (same method as soybean, see its header comment).
     factors:
-      terr_slope:     {weight: 0.26, type: decreasing,  points: [5, 10],                 ref: "2026-07-14: tightened from [6.84,11.31] to realized sugarcane flatness (p90 4.2deg). 2026-09: ratio=2.246/5=0.449 -> weight raised 0.18->0.26"}
-      soil_awc:       {weight: 0.22, type: increasing,  points: [5, 20],                 ref: "deep water-holding. 2026-09: ratio=4.497/15=0.300 -> weight raised 0.14->0.22"}
-      soil_clay:      {weight: 0.22, type: range,       points: [22, 32, 52, 66],        ref: "2026-07-14: tightened from [15,25,50,65] to penalize sandy soils (sugarcane clay p10 27, p50 36). 2026-09: ratio=12.503/44=0.284 -> weight raised 0.14->0.22"}
-      clim_twarm_q:   {weight: 0.14, type: range,       points: [20, 24, 32, 36],        ref: "warm-loving C4. 2026-09: ratio=1.812/16=0.113 -> weight trimmed 0.18->0.14"}
-      clim_pr_annual: {weight: 0.10, type: range,      points: [900, 1300, 2000, 2600], ref: "higher water demand than soy. 2026-09: ratio=106.0/1700=0.062 (near-uniform in GO) -> weight cut 0.20->0.10"}
-      clim_dry_months: {weight: 0.06, type: range,      points: [1, 2, 5, 7],            ref: "dry ripening window. clim_dry_months is a spatial CONSTANT (=5) in GO -> ratio=0.000 (F1), the lowest possible discriminating power -> weight cut 0.16->0.06, the segment's floor"}
+      terr_slope:
+        weight: 0.3022         # machine-written by tools/derive_weights.py
+        role: limiting
+        type: decreasing
+        points: [5, 10]
+        basis: empirico
+        note: >-
+          Declividade em graus; a colheita mecanizada da cana exige terreno plano. Limiares (5, 10) mais
+          largos que a terra disponivel (p5-p95 1,8-8,8 graus) e bem mais largos que o nicho realizado
+          da cana (p95 4,8 graus): a forma vem da exigencia de mecanizacao, nao do uso observado.
+      soil_awc:
+        weight: 0.318          # machine-written by tools/derive_weights.py
+        role: limiting
+        type: increasing
+        points:
+        - 22.1
+        - 33.6
+        basis: empirico
+        note: >-
+          Agua disponivel no solo (% vol a 33 kPa, 0-30 cm); a cana e exigente em armazenamento hidrico. Limiares no intervalo p5-p95 observado em GO/DF (22,1-33,6): a faixa anterior (5-20) ficava inteiramente ABAIXO da distribuicao real, saturando o fator em mu = 1 em 99,3% da terra disponivel.
+      soil_clay:
+        weight: 0.3798         # machine-written by tools/derive_weights.py
+        role: limiting
+        type: range
+        points: [22, 32, 52, 66]
+        basis: empirico
+        note: >-
+          Teor de argila (%); penaliza solos arenosos. Ancorado na terra DISPONIVEL: a = 22 (p5 21,1),
+          b = 32 (p50 31,9); o plato segue ate 52 e a queda ate 66, acima do p95 disponivel (45,1) e do
+          realizado (45,6), porque solo argiloso nao limita a cana. Nenhum limiar segue o nicho realizado.
+      clim_twarm_q:
+        weight: 0.0            # role: gate -- carries no weight (see header)
+        role: gate
+        type: range
+        points: [20, 23, 32, 36]
+        basis: empirico
+        source: aparecido_climate_2021
+        locator: "p. 778"
+        note: >-
+          Temperatura media do trimestre mais quente (C); a cana e uma C4 termofila, com desenvolvimento
+          favorecido em regime tropical quente -- a FORMA intervalar e os limiares 20/32/36 vem de
+          Aparecido et al. Em GO/DF o observado sobre a terra disponivel vai de 23,0 a 28,2 C e cai quase
+          todo dentro do plato: sigma(mu) = 0,039 e mu medio = 0,988, dentro do criterio de PORTA
+          (sigma(mu) < 0,05 E mu medio > 0,95). O ombro inferior foi movido de 24 para 23 -- abaixo do
+          minimo observado -- para que o valor presente de mu = 1; por isso `basis` passa a `empirico`,
+          embora a fonte permaneca registrada. Antes desta revisao o fator carregava o MAIOR peso do
+          segmento (0,3024) enquanto contribuia ~0,996 para a media geometrica: peso sem poder
+          discriminante, diluindo declive, CAD e argila. Como porta, a alavanca CMIP6 e o ombro superior
+          (c = 32), que morde se o trimestre mais quente aquecer cerca de 4 C.
+      clim_pr_annual:
+        weight: 0.0           # machine-written by tools/derive_weights.py
+        role: gate
+        type: range
+        points: [900, 1300, 2000, 2600]
+        basis: literatura
+        source: aparecido_climate_2021
+        locator: "p. 778"
+        note: >-
+          Precipitacao anual (mm). Aparecido et al. situam 1100-1500 mm bem distribuidos como adequados ao ciclo. Em GO/DF a distribuicao observada (1375-1637 mm) cai INTEIRAMENTE dentro do plato otimo, de modo que mu = 1 em toda a area e o fator nao distingue celula alguma: sigma(mu) = 0. Entra, por isso, como PORTA multiplicativa, fora da matriz AHP. Nao e uma limitacao do dado, e um achado: o clima de GO/DF esta dentro da faixa otima quase em todo lugar, e por isso habilita em vez de graduar. A porta preserva a alavanca CMIP6 -- se a variavel sair do plato sob aquecimento, ela morde.
+      clim_dry_months:
+        weight: 0.0            # role: gate -- carries no weight (see header)
+        role: gate
+        type: range
+        points: [3, 5, 5, 9]
+        basis: empirico
+        note: >-
+          Meses secos por ano. Espacialmente CONSTANTE (=5) em GO/DF: nao discrimina celula alguma,
+          e por isso entra como PORTA multiplicativa, fora da matriz AHP. Os limiares estao
+          ancorados de modo que o valor presente de mu = 1, removendo o deflator oculto; a porta so
+          morde se o numero de meses secos se afastar do presente sob o CMIP6, em qualquer direcao
+          (poucos demais suprimem a janela de maturacao, muitos demais impoem estresse hidrico).
 
   other_crops:
     label: Outras culturas anuais (milho/algodão/sorgo)
     mask: available
-    # 2026-09 weight recalibration (same method as soybean, see its header comment).
     factors:
-      terr_slope:     {weight: 0.34, type: decreasing,  points: [4, 8],                  ref: "2026-07-14: tightened from [4.57,8.53] to realized flatness (p90 4.7deg). 2026-09: ratio=2.246/4=0.562, highest of the segment -> weight raised 0.18->0.34"}
-      soil_soc:       {weight: 0.23, type: increasing,  points: [6, 20],                 ref: "2026-07-14: raised floor from [5,20]; organic-carbon fertility proxy (g/kg). 2026-09: ratio=4.029/14=0.288 -> weight raised 0.14->0.23"}
-      clim_gdd:       {weight: 0.15, type: range,       points: [2500, 3500, 5500, 7000],ref: "heat units, base 10C. 2026-09: ratio=615.9/4500=0.137 -> weight unchanged"}
-      soil_ph:        {weight: 0.11, type: range,       points: [4.5, 5.5, 6.8, 7.5],    ref: "fertility window. 2026-09: ratio=0.265/3=0.088 -> weight trimmed 0.15->0.11"}
-      clim_pr_annual: {weight: 0.09, type: range,      points: [700, 1000, 1700, 2200], ref: "rainfed second-season risk at low end. 2026-09: ratio=106.0/1500=0.071 (near-uniform in GO) -> weight cut 0.20->0.09"}
-      clim_pr_cv:     {weight: 0.08, type: decreasing,  points: [0.6, 1.3],              ref: "rainfall reliability. 2026-09: ratio=0.043/0.7=0.061, lowest of the segment (uniform ~0.82 in GO) -> weight cut 0.18->0.08"}
+      terr_slope:
+        weight: 0.1223         # machine-written by tools/derive_weights.py
+        role: limiting
+        type: decreasing
+        points: [4, 8]
+        basis: empirico
+        note: >-
+          Declividade em graus; limita a mecanizacao. Limiares (4, 8) cobrem a cauda declivosa da terra
+          DISPONIVEL (p5-p95 1,8-8,8 graus), mais largos que o nicho realizado (p95 5,4 graus).
+      soil_soc:
+        weight: 0.5378         # machine-written by tools/derive_weights.py
+        role: limiting
+        type: increasing
+        points: [6, 20]
+        basis: empirico
+        note: "Carbono organico do solo (g/kg) como proxy de fertilidade."
+      clim_gdd:
+        weight: 0.1374         # machine-written by tools/derive_weights.py
+        role: limiting
+        type: range
+        points: [2500, 3500, 5500, 7000]
+        basis: literatura
+        source: mcmaster_growing_1997
+        note: "Graus-dia acumulados, base 10 C; soma termica do ciclo."
+      soil_ph:
+        weight: 0.1649         # machine-written by tools/derive_weights.py
+        role: limiting
+        type: range
+        points: [4.5, 5.5, 6.8, 7.5]
+        basis: empirico
+        note: "pH em agua; janela de disponibilidade de nutrientes."
+      clim_pr_annual:
+        weight: 0.0            # machine-written by tools/derive_weights.py
+        role: gate
+        type: range
+        points: [700, 1000, 1700, 2200]
+        basis: literatura
+        source: amaral_metodologia_2023
+        locator: "p. 258"
+        note: >-
+          Precipitacao anual (mm) como proxy da lamina sazonal; o ZARC-milho situa o consumo do ciclo em 400-700 mm. Em GO/DF a distribuicao observada (1375-1637 mm) cai INTEIRAMENTE dentro do plato otimo, de modo que mu = 1 em toda a area e o fator nao distingue celula alguma: sigma(mu) = 0. Entra, por isso, como PORTA multiplicativa, fora da matriz AHP. Nao e uma limitacao do dado, e um achado: o clima de GO/DF esta dentro da faixa otima quase em todo lugar, e por isso habilita em vez de graduar. A porta preserva a alavanca CMIP6 -- se a variavel sair do plato sob aquecimento, ela morde.
+      clim_pr_cv:
+        weight: 0.0376         # machine-written by tools/derive_weights.py
+        role: limiting
+        type: decreasing
+        points: [0.6, 1.3]
+        basis: empirico
+        note: >-
+          Coeficiente de variacao da precipitacao; confiabilidade da chuva. Praticamente uniforme em
+          GO/DF (~0,82).
 
   pisciculture:
     label: Piscicultura (tanques/reservatórios)
     mask: available
-    # 2026-09 weight recalibration (same method as soybean; ratios computed over the
-    # `available` population, NOT the realized-pixel mask, because MapBiomas maps a
-    # single aquaculture pixel in GO+DF — too thin a sample to anchor against; T7's
-    # original design of using `available` land as the primary reference population
-    # already anticipated this).
     factors:
-      terr_slope:          {weight: 0.27, type: decreasing, points: [2.86, 5.71],      ref: "ponds need flat <5% (deg). 2026-09: ratio=2.246/2.85=0.788, highest of the segment -> weight raised 0.20->0.27"}
-      soil_clay:           {weight: 0.25, type: increasing, points: [15, 35],          ref: "clay holds pond water. 2026-09: ratio=12.503/20=0.625 -> weight raised 0.24->0.25"}
-      sit_water_dist_seas: {weight: 0.24, type: decreasing, points: [750, 6000],       ref: "2026-07-14: REPLACES water_dist [500,5000]. Permanent water is 13.6km away (median) -> old factor floored (F2). Distance to SEMI-PERMANENT water (GSW occ>50; median 2.3km) from feat_siting via sit_ routing. 2026-09: ratio=2477.8/5250=0.472 -> weight raised 0.22->0.24"}
-      water_drain_density: {weight: 0.14, type: increasing, points: [0.01, 0.08],      ref: "local water availability; band is stream-cell fraction (max~0.15, p90~0.093, zero-inflated below p50). 2026-09: ratio=0.0127/0.07=0.181 -> weight trimmed 0.16->0.14"}
-      clim_twarm_q:        {weight: 0.10, type: range,      points: [22, 26, 32, 36],  ref: "warm-water tilapia. 2026-09: ratio=1.812/14=0.129, lowest of the segment -> weight cut 0.18->0.10"}
+      terr_slope:
+        weight: 0.1101         # machine-written by tools/derive_weights.py
+        role: limiting
+        type: decreasing
+        points: [2.86, 5.71]
+        basis: literatura
+        source: francisco_classification_2019
+        locator: "tab. 5, p. 9"
+        note: >-
+          Declividade em graus; viveiros escavados exigem terreno plano. A fonte da 0,4113 para
+          <=2%, 0,3800 para 2-5%, 0,1475 para 5-10% e 0,0611 acima de 10%: a aptidao cai entre 5% e
+          10%, que e o intervalo adotado (2,86 e 5,71 graus). Assefa (>8% ja inadequado) e o valor
+          rejeitado, por avaliar outro sistema produtivo.
+      soil_clay:
+        weight: 0.1395         # machine-written by tools/derive_weights.py
+        role: limiting
+        type: increasing
+        points: [15, 35]
+        basis: empirico
+        note: "Teor de argila (%); solos argilosos retem a agua do viveiro."
+      sit_water_dist_seas:
+        weight: 0.4815         # machine-written by tools/derive_weights.py
+        role: limiting
+        type: decreasing
+        points: [750, 6000]
+        basis: empirico
+        note: >-
+          Distancia (m) a agua semipermanente (ocorrencia GSW > 50%), roteada de feat_siting pelo
+          prefixo sit_. A agua permanente esta a 13,6 km da mediana em GO/DF, longe demais para
+          discriminar; a semipermanente esta a 2,3 km.
+      water_drain_density:
+        weight: 0.0525         # machine-written by tools/derive_weights.py
+        role: limiting
+        type: increasing
+        points:
+        - 0.0
+        - 0.093
+        basis: empirico
+        note: >-
+          Densidade de drenagem (fracao de celulas de curso d'agua); disponibilidade hidrica local. Banda fortemente zero-inflada a 250 m (p50 = 0, p75 = 0,013, p90 = 0,093): limiares ancorados em p5-p90. VER RESSALVA no relatorio de revisao -- sob a media geometrica um zero estrutural ainda atua como veto, e o zero aqui significa 'sem celula de curso d'agua mapeada nesta resolucao', nao 'sem agua'.
+      clim_twarm_q:
+        weight: 0.2164        # machine-written by tools/derive_weights.py
+        role: limiting
+        type: range
+        points: [22, 26, 32, 36]
+        basis: empirico
+        note: "Temperatura media do trimestre mais quente (C); a tilapia e de agua morna."
 
   cattle:
     label: Pecuária / pastagem cultivada
     mask: exclude_only
     factors:
-      # 2026-07-14 forage-productivity re-anchor: grade by forage/stocking-rate potential, not mere
-      # feasibility. GO climate is uniform (pr) or spatially CONSTANT (dry_months=5) so those factors
-      # cannot discriminate -> demoted to low-weight feasibility gates; discrimination shifts to the
-      # soil-moisture + SOC graders (steepened, weights raised). Weights re-normalized to sum 1.0.
-      # 2026-09 systematic recheck (T8/T10 revision, same discriminating-power method applied to all
-      # 7 segments): ratios over `available` land are dry_months=0.000 < pr_annual=0.056 <
-      # terr_slope=0.250 < soil_moist=0.338 < soil_soc=0.403 -- already monotonic with the existing
-      # weights (0.08<0.10<0.20<0.28<0.34). The 2026-07-14 ad hoc recalibration anticipated exactly
-      # what the systematic check now confirms; NO weight or breakpoint change needed here.
-      clim_pr_annual:  {weight: 0.10, type: range,      points: [700, 1000, 2000, 2600], ref: "was w=0.22; UNIFORM in GO -> feasibility gate only"}
-      clim_dry_months: {weight: 0.08, type: decreasing,  points: [4, 8],                  ref: "was w=0.22; spatially CONSTANT (=5) in GO -> non-discriminating, feasibility gate only (F1)"}
-      clim_soil_moist: {weight: 0.28, type: increasing,  points: [55, 120],               ref: "was w=0.22 [20,120]; steepened to realized dry-tail (pasture p10 61, p25 91) -> primary moisture grader; poor-forage land now S3"}
-      terr_slope:      {weight: 0.20, type: decreasing,  points: [6, 15],                 ref: "was [8.53,17.7]; moderate slopes now start dropping forage score"}
-      soil_soc:        {weight: 0.34, type: increasing,  points: [8, 18],                 ref: "was w=0.16 [4,18]; steepened (pasture p10 8.75, p25 9.8, p90 16.2) -> PRIMARY fertility/forage grader; poor-forage land now S3"}
+      clim_pr_annual:
+        weight: 0.0           # machine-written by tools/derive_weights.py
+        role: gate
+        type: range
+        points: [700, 1000, 2000, 2600]
+        basis: empirico
+        note: >-
+          Precipitacao anual (mm). Em GO/DF a distribuicao observada (1375-1637 mm) cai INTEIRAMENTE dentro do plato otimo, de modo que mu = 1 em toda a area e o fator nao distingue celula alguma: sigma(mu) = 0. Entra, por isso, como PORTA multiplicativa, fora da matriz AHP. Nao e uma limitacao do dado, e um achado: o clima de GO/DF esta dentro da faixa otima quase em todo lugar, e por isso habilita em vez de graduar. A porta preserva a alavanca CMIP6 -- se a variavel sair do plato sob aquecimento, ela morde.
+      clim_dry_months:
+        weight: 0.0            # role: gate -- carries no weight (see header)
+        role: gate
+        type: decreasing
+        points: [5, 9]
+        basis: empirico
+        note: >-
+          Meses secos por ano. Espacialmente CONSTANTE (=5) em GO/DF: entra como PORTA
+          multiplicativa, fora da matriz AHP, com limiares ancorados de modo que o valor presente de
+          mu = 1. Diferentemente da cana, aqui a direcao e monotona: mais meses secos reduzem a
+          oferta de forragem.
+      clim_soil_moist:
+        weight: 0.6969         # machine-written by tools/derive_weights.py
+        role: limiting
+        type: increasing
+        points: [55, 120]
+        basis: empirico
+        note: >-
+          Umidade do solo (mm); graduador primario de forragem. Limiares (55, 120) praticamente
+          coincidentes com o intervalo p5-p95 da terra DISPONIVEL (50,7-121,3), e nao com a cauda seca do
+          pasto realizado: o uso observado nao entra no valor.
+      terr_slope:
+        weight: 0.1719        # machine-written by tools/derive_weights.py
+        role: limiting
+        type: decreasing
+        points: [6, 15]
+        basis: empirico
+        note: "Declividade em graus; encostas moderadas ja reduzem a capacidade de suporte."
+      soil_soc:
+        weight: 0.1312         # machine-written by tools/derive_weights.py
+        role: limiting
+        type: increasing
+        points: [8, 18]
+        basis: empirico
+        note: >-
+          Carbono organico do solo (g/kg); graduador primario de fertilidade e forragem. Limiares (8, 18)
+          praticamente coincidentes com o intervalo p5-p95 da terra DISPONIVEL (8,7-18,7); o nicho do
+          pasto realizado (8,6-17,6) e quase identico porque o pasto cobre a maior parte do estado, de
+          modo que a coincidencia nao e ancoragem no uso realizado.
 
   conservation:
     label: Conservação de floresta & Cerrado
     mask: none
-    aggregate: arithmetic   # COMPENSATORY weighted-linear-combination (MCDA / conservation-planning
-                            # standard): conservation VALUE if strong on ANY criterion. The other 6
-                            # segments use the default limiting-factor geometric mean (growth-suitability).
-    # 2026-07-25 RECONCEPTUALIZATION (examiner-proofing iteration; docs/weaknesses_mitigation.md WS-A).
-    # The old surface was CIRCULAR and CMIP6-INVARIANT: rl_native_frac (w0.35) + phen_amplitude (w0.17)
-    # both measured "where native veg CURRENTLY is" (0.52 of the weight), then were "validated" by
-    # native-cover composition per zone (tautological); and no factor moved under CMIP6 (sole invariant
-    # segment). Redefine conservation "suitability" as a conservation-VALUE / priority index grounded in
-    # systematic-conservation-planning criteria — connectivity (cv_pa_dist), habitat heterogeneity
-    # (cv_ruggedness), carbon-storage service (cv_carbon), water service (terr_twi + water_drain_density),
-    # marginality (terr_slope) — and add TWO MOVING climate factors so it responds to warming:
-    #   clim_aridity (inc, P/PET wetter=viable) + clim_twarm_q (dec, heat/fire stress).
-    # NB (cmip6.future_monthly holds def/aet/soil/vpd/srad static): clim_def_annual / clim_soil_moist /
-    # clim_srad do NOT move, so the moving lever is ARIDITY (P & PET both move), not CWD.
-    # rl_native_frac DEMOTED 0.35->0.08 (still the one sanctioned land-cover factor); phen_amplitude DROPPED.
-    # cv_* routed from feat_conservation via `cv_` prefix (see src/membership._source_image); WDPA is a
-    # governance layer, not land cover. Weights sum 1.0; finalized by the WS-C AHP elicitation.
-    # 2026-09 (T8/T10 revision): breakpoints re-checked against the MapBiomas-based `available` mask
-    # (T10 swapped the mask source from ESA WorldCover; percentiles drift slightly from the 2026-07-25
-    # ESA-based numbers cited below, most visibly cv_pa_dist's lower tail). terr_twi's breakpoint (the
-    # one factor in this segment T7 never anchored) is tightened here; weights redistributed by the
-    # same discriminating-power method as the other 6 segments (see soybean's header comment) --
-    # cv_carbon's promotion is deliberately capped below its raw ratio rank because of the mild
-    # circularity caveat already on record.
+    aggregate: arithmetic   # compensatory weighted linear combination
     factors:
-      cv_pa_dist:          {weight: 0.17, type: decreasing, points: [5000, 40000], ref: "distance (m) to WDPA reserve; connectivity/consolidation. cv_ routing -> feat_conservation. 2026-09: ratio=24569/35000=0.702, highest of the segment (available p10 5.4km/p50 24.3km/p90 50.9km) -> weight trimmed slightly 0.20->0.17 only to make room for terr_twi/cv_ruggedness, still the top factor"}
-      cv_carbon:           {weight: 0.12, type: increasing, points: [10, 20],       ref: "carbon-storage service. cv_ routing. CAVEAT: biomass~forest (mild circularity) -- ratio=4.874/10=0.487 (2nd highest) would justify a bigger raise, but weight is deliberately held to 0.10->0.12 (not the full data-implied jump) because of that caveat"}
-      cv_ruggedness:       {weight: 0.15, type: increasing, points: [5, 30],       ref: "neighborhood elevation-std (m); habitat heterogeneity + low arability. cv_ routing. 2026-09: ratio=9.500/25=0.380 -> weight raised 0.13->0.15"}
-      terr_twi:            {weight: 0.13, type: increasing, points: [9.118, 11.818], ref: "wetness index -> riparian/recharge water service. 2026-09 T7 gap closed: never anchored before (available p10 8.84/p90 10.97) -> tightened from placeholder [6,14] to [8.5,11.2]; ratio rises 0.936/8=0.117 -> 0.936/2.7=0.347 -> weight raised 0.11->0.13. 2026-09-26: TWI now uses the HydroSHEDS cell (464 m) for the catchment area instead of 250 m, a constant +ln(463.83/250)=+0.618 shift -> breakpoints shifted by the same constant (8.5->9.118, 11.2->11.818; p10/p90 now 9.46/11.59), so membership is unchanged"}
-      rl_native_frac:      {weight: 0.10, type: increasing, points: [0.25, 0.85],  ref: "DEMOTED 0.35->0.08 in 2026-07-25 (de-circularization). The one sanctioned land-cover factor; native-veg fraction credits open Cerrado. rl_ routing. 2026-09: ratio=0.175/0.6=0.292 -> weight raised 0.08->0.10"}
-      clim_aridity:        {weight: 0.10, type: increasing, points: [0.95, 1.25],  ref: "MOVING water-balance viability P/PET; falls under warming -> conservation CMIP6 loser. 2026-09: ratio=0.082/0.3=0.273 -> weight trimmed 0.15->0.10"}
-      terr_slope:          {weight: 0.09, type: increasing, points: [2.86, 11.31], ref: "steep/marginal land = low opportunity cost of conservation (deg). 2026-09: ratio=2.246/8.45=0.266 -> weight raised 0.05->0.09"}
-      clim_twarm_q:        {weight: 0.08, type: decreasing, points: [23, 31],       ref: "MOVING heat/fire stress (warmest-quarter degC); rises under warming -> conservation CMIP6 loser. 2026-09: ratio=1.812/8=0.227 -> weight trimmed 0.09->0.08"}
-      water_drain_density: {weight: 0.06, type: increasing, points: [0.01, 0.08],  ref: "riparian/recharge water-service; stream-cell fraction (max~0.15, p90~0.093, zero-inflated below p50). 2026-09: ratio=0.0127/0.07=0.181, lowest of the segment -> weight cut 0.09->0.06"}
+      cv_pa_dist:
+        weight: 0.3522         # machine-written by tools/derive_weights.py
+        role: limiting
+        type: decreasing
+        points: [5000, 40000]
+        basis: empirico
+        note: >-
+          Distancia (m) a unidade de conservacao da WDPA, roteada de feat_conservation pelo prefixo
+          cv_; conectividade e consolidacao. A WDPA e camada de governanca, nao de cobertura da
+          terra.
+      cv_carbon:
+        weight: 0.1734         # machine-written by tools/derive_weights.py
+        role: limiting
+        type: increasing
+        points: [10, 20]
+        basis: empirico
+        note: >-
+          Estoque de carbono da biomassa; servico de armazenamento. Ressalva registrada: biomassa
+          correlaciona-se com floresta, uma circularidade branda que mantem o peso deste fator
+          abaixo do que sua variancia sugeriria.
+      cv_ruggedness:
+        weight: 0.1695         # machine-written by tools/derive_weights.py
+        role: limiting
+        type: increasing
+        points: [5, 30]
+        basis: empirico
+        note: >-
+          Desvio-padrao da elevacao na vizinhanca (m); heterogeneidade de habitat e baixa aptidao
+          agricola.
+      terr_twi:
+        weight: 0.0708         # machine-written by tools/derive_weights.py
+        role: limiting
+        type: increasing
+        points:
+        - 9.44
+        - 11.56
+        basis: empirico
+        note: >-
+          Indice topografico de umidade; servico hidrico ripario e de recarga. Limiares no intervalo p10-p90 observado (9,44-11,56). Ancorar na distribuicao observada torna desnecessario o deslocamento manual que a mudanca da celula de captacao do HydroSHEDS exigia: se a escala nominal mudar, basta reexecutar tools/anchor_breakpoints.py.
+      rl_native_frac:
+        weight: 0.0692        # machine-written by tools/derive_weights.py
+        role: limiting
+        type: increasing
+        points: [0.25, 0.85]
+        basis: empirico
+        note: >-
+          Fracao de vegetacao nativa (papeis nativos do MapBiomas, creditando o Cerrado aberto),
+          roteada pelo prefixo rl_. E a unica entrada de cobertura da terra sancionada em todo o
+          modelo, e entra rebaixada justamente para nao tornar o indice circular.
+      clim_aridity:
+        weight: 0.0591        # machine-written by tools/derive_weights.py
+        role: limiting
+        type: increasing
+        points: [0.95, 1.25]
+        basis: empirico
+        note: >-
+          Indice de aridez P/PET; viabilidade de balanco hidrico. E a alavanca climatica do
+          segmento: cai sob aquecimento, tornando a conservacao perdedora no CMIP6.
+      terr_slope:
+        weight: 0.0242         # machine-written by tools/derive_weights.py
+        role: limiting
+        type: increasing
+        points: [2.86, 11.31]
+        basis: empirico
+        note: "Declividade em graus; terreno marginal tem baixo custo de oportunidade para a conservacao."
+      clim_twarm_q:
+        weight: 0.0492         # machine-written by tools/derive_weights.py
+        role: limiting
+        type: decreasing
+        points: [23, 31]
+        basis: empirico
+        note: >-
+          Temperatura media do trimestre mais quente (C); estresse termico e de fogo. Segunda
+          alavanca climatica do segmento.
+      water_drain_density:
+        weight: 0.0324         # machine-written by tools/derive_weights.py
+        role: limiting
+        type: increasing
+        points: [0.01, 0.08]
+        basis: empirico
+        note: "Densidade de drenagem; servico hidrico ripario e de recarga."
 
   solar:
     label: Geração fotovoltaica
     mask: available
-    # 2026-07-14 rescale + new siting factors. srad in GO is homogeneous (186-204 W/m2, ~10% spread)
-    # and clearness even more so (0.466-0.501); expect the variance test (membership.segment_spatial_std)
-    # to flag solar as a SITING SCREEN rather than a graded surface -- an honest finding, reported not
-    # hidden (robustness_plan.md 4). Dropped water_dist (minor); weights re-normalized to sum 1.0.
-    # 2026-09 (T8/T10 revision): access_logtt (the one factor T7 never anchored here) tightened to the
-    # realized range; weights redistributed by discriminating power (see soybean's header comment).
-    # Ratios are all fairly close for this segment (0.26-0.50) -- consistent with it being a near-
-    # uniform siting screen rather than a strongly graded surface -- so adjustments are milder than
-    # the crop segments.
     factors:
-      clim_srad:     {weight: 0.22, type: increasing, points: [186, 204],   ref: "2026-07-14: rescaled from [180,240] to realized p10-p90 (F3); irradiance W/m2 (primary). 2026-09: ratio=7.875/18=0.437 -> weight trimmed 0.26->0.22, no longer the top discriminator once access_logtt is properly anchored"}
-      sit_clearness: {weight: 0.22, type: increasing, points: [0.466, 0.501], ref: "2026-07-14 NEW: clearness index Kt=Rs/Ra (cloudiness proxy) from feat_siting via sit_ routing; p10-p90. 2026-09: ratio=0.0154/0.035=0.439 -> weight raised 0.20->0.22"}
-      terr_northing: {weight: 0.15, type: increasing, points: [-0.3, 0.5],  ref: "N-facing slopes favored (S. hemisphere); cos(aspect). 2026-09: ratio=0.398/0.8=0.498, highest of the segment -> weight nearly doubled 0.08->0.15"}
-      terr_slope:    {weight: 0.17, type: decreasing, points: [2.86, 8.53], ref: "panel siting <5% optimal (deg). 2026-09: ratio=2.246/5.67=0.396 -> weight unchanged-ish 0.18->0.17"}
-      access_logtt:  {weight: 0.14, type: decreasing, points: [3.5, 5.4],   ref: "near grid/cities; log(min+1). 2026-09 T7 gap closed: never anchored before (available p10 3.52/p90 5.23) -> tightened from placeholder [3,6] to [3.5,5.4]; ratio rises 0.906/3=0.302 -> 0.906/1.9=0.477 -> weight unchanged 0.14->0.14"}
-      clim_twarm_q:  {weight: 0.10, type: decreasing, points: [24, 31],     ref: "2026-07-14 NEW: PV panel efficiency de-rating with heat (warmest-quarter degC). 2026-09: ratio=1.812/7=0.259, lowest of the segment -> weight cut 0.14->0.10"}
+      clim_srad:
+        weight: 0.4002         # machine-written by tools/derive_weights.py
+        role: limiting
+        type: increasing
+        points: [186, 204]
+        basis: empirico
+        note: >-
+          Irradiancia (W/m2); fator primario. Homogenea em GO/DF, com limiares no intervalo p10-p90
+          realmente observado.
+      sit_clearness:
+        weight: 0.143          # machine-written by tools/derive_weights.py
+        role: limiting
+        type: increasing
+        points: [0.466, 0.501]
+        basis: empirico
+        note: >-
+          Indice de claridade Kt = Rs/Ra, proxy de nebulosidade, roteado de feat_siting pelo prefixo
+          sit_. Limiares no intervalo p10-p90 observado.
+      terr_northing:
+        weight: 0.0559         # machine-written by tools/derive_weights.py
+        role: limiting
+        type: increasing
+        points: [-0.3, 0.5]
+        basis: empirico
+        note: >-
+          Componente norte da orientacao da encosta, cos(azimute). No hemisferio sul as encostas
+          voltadas ao norte recebem mais radiacao.
+      terr_slope:
+        weight: 0.0822         # machine-written by tools/derive_weights.py
+        role: limiting
+        type: decreasing
+        points: [2.86, 8.53]
+        basis: empirico
+        note: "Declividade em graus; a instalacao de paineis favorece terreno plano."
+      access_logtt:
+        weight: 0.1434         # machine-written by tools/derive_weights.py
+        role: limiting
+        type: decreasing
+        points: [3.5, 5.4]
+        basis: empirico
+        note: >-
+          Logaritmo do tempo de viagem a cidades, log(min+1); proxy de acesso a rede e a centros de
+          carga. Limiares no intervalo p10-p90 observado. Nao existe camada de linhas de transmissao
+          para GO/DF no catalogo, limitacao registrada no Capitulo 5.
+      clim_twarm_q:
+        weight: 0.1753        # machine-written by tools/derive_weights.py
+        role: limiting
+        type: decreasing
+        points: [24, 31]
+        basis: empirico
+        note: >-
+          Temperatura media do trimestre mais quente (C); a eficiencia do painel fotovoltaico cai
+          com o calor.

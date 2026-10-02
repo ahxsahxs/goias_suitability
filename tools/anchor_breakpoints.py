@@ -1,31 +1,41 @@
-"""Empirical breakpoint + weight anchoring (T7/T8/T10 recalibration, 2026-09).
+"""Empirical breakpoint + discriminating-power anchoring for Part 9.
 
-Read-only. Pulls percentile distributions of the fuzzy-membership factors, over
-the AOI-available land AND over each segment's realized MapBiomas pixels, plus
-present suitability quantiles at those realized pixels. This is the "verify
-against a percentile reduceRegion before trusting a breakpoint or a weight" step
-(CLAUDE.md §11 / §10 revision cycle). It NEVER writes an asset and never feeds
-land use into the model — the realized masks only *inform* the expert
-calibration (breakpoints AND, as of this revision, AHP weights).
+Read-only. Two jobs, selected by the CLI argument:
 
-**2026-09 extension** — the original TARGET_BANDS covered only the crop/cattle/
-solar-srad/water_dist factors touched by the 2026-07-14 recalibration; it left
-every conservation factor (`cv_*`, `terr_twi`, `rl_native_frac`) and part of
-solar (`sit_clearness`, `terr_northing`, `access_logtt`) and `water_drain_density`
-uncovered — some of those are marked "ANCHORED 2026-07-25" in `segments.yaml`
-despite this script never having computed them (an earlier/manual pass). This
-run now covers **every** segment/factor, and each row also carries `iqr`
-(P75-P25) so a factor's *discriminating power* can be read off directly: an IQR
-that is small relative to the segment's own breakpoint span in `segments.yaml`
-means that factor is close to spatially constant in GO/DF and should carry a
-lower AHP weight, regardless of its literature importance — the same reasoning
-already applied ad hoc to cattle/solar's climate factors in 2026-07-14, now
-applied systematically to all 7 segments as part of resolving T8/T10 together
-(see the plan's Fase 4). CROP_MASKS also now covers pisciculture (role 4) and
-native/conservation (role 6), previously missing.
+``percentiles`` (default)
+    Percentile distributions of every fuzzy-membership factor, over the
+    AOI-available land AND over each segment's realized MapBiomas pixels. This
+    is the "check the band's real range before trusting a breakpoint" step.
 
-Run:  EE_PROJECT=probformer uv run python tools/anchor_breakpoints.py
-Out:  <scratchpad or CWD>/anchor_breakpoints.csv  + a printed summary.
+``discrimination``
+    The evidence the weight derivation runs on. Per segment x factor it reduces
+    the fuzzy MEMBERSHIP (not the raw band) to:
+
+      * ``sigma_mu_available`` -- the spatial standard deviation of mu over the
+        reference population. This is ``d`` in the regional adaptation
+        ``w = normalize(w_lit * d**lambda)`` of tools/derive_weights.py.
+      * ``frac_saturated`` / ``frac_vetoed`` -- the share of the population at
+        mu = 1 and at mu = 0, which exposes silent global deflators and
+        zero-inflated vetoes directly rather than by inference.
+
+``sigma(mu)`` replaces the ad hoc ``iqr/span`` ratio used previously, which was
+computed by hand outside the repository, depended on the arbitrary width of the
+breakpoint span in its own denominator, and ignored the plateau of an interval
+shape. sigma(mu) is dimensionless, lies in [0, 0.5], and goes to zero on its own
+for a saturated or spatially constant factor -- which is exactly the property the
+adaptation rule needs.
+
+It NEVER writes an Earth Engine asset. The realized masks only *report*; ``d`` is
+taken from the `available` population alone, so land use never enters the
+calibration (CLAUDE.md section 7).
+
+Run::
+
+    EE_PROJECT=probformer uv run python tools/anchor_breakpoints.py percentiles
+    EE_PROJECT=probformer uv run python tools/anchor_breakpoints.py discrimination
+
+Percentiles go to ``$SCRATCHPAD`` (or CWD); the discrimination tables are
+committed artifacts under ``thesis/Chapters/``.
 """
 from __future__ import annotations
 
@@ -40,6 +50,7 @@ import pandas as pd  # noqa: E402
 import utils  # noqa: E402
 import external  # noqa: E402
 import features  # noqa: E402
+import membership  # noqa: E402
 
 # Percentiles reported per field.
 PCTLS = [5, 10, 25, 50, 75, 90, 95]
@@ -194,5 +205,89 @@ def main():
     )
 
 
+# --- discriminating power: sigma(mu) per segment x factor --------------------
+# Realized MapBiomas role code per segment (external.ROLE_CODES); solar has no
+# realized class of its own, so it is reported over available land only.
+REALIZED_ROLE = {
+    "soybean": 1, "sugarcane": 2, "other_crops": 3,
+    "pisciculture": 4, "cattle": 5, "conservation": 6, "solar": None,
+}
+
+
+def _mem_stats(M, geom, mask, scale):
+    """sigma(mu), mean(mu), saturated and vetoed fractions, per band of ``M``."""
+    src = M.updateMask(mask) if mask is not None else M
+    rr = dict(geometry=geom, scale=scale, maxPixels=int(1e13),
+              bestEffort=True, tileScale=16)
+    sd = src.reduceRegion(reducer=ee.Reducer.stdDev(), **rr).getInfo()
+    flags = src.addBands(
+        src.gte(0.999).rename([f"sat__{b}" for b in M.bandNames().getInfo()])
+    ).addBands(
+        src.lte(0.001).rename([f"vet__{b}" for b in M.bandNames().getInfo()])
+    )
+    mn = flags.reduceRegion(reducer=ee.Reducer.mean(), **rr).getInfo()
+    return sd, mn
+
+
+def discrimination():
+    """Write thesis/Chapters/factor_discrimination.csv + breakpoint_anchoring.csv."""
+    project = utils.init()
+    aoi = utils.load_aoi(project)
+    scale = int(os.environ.get("ANCHOR_SCALE", "1000"))
+    seg_cfg = utils.cfg("segments")
+    print(f"# discrimination over AOI @ {scale} m (project={project})")
+
+    stack = ee.Image(utils.asset_id(project, "feature_stack_250m"))
+    lc = features.landcover_features_mapbiomas(aoi)
+    realized = ee.Image(utils.asset_id(project, "feat_realized"))
+    extras = {
+        "sit_": ee.Image(utils.asset_id(project, "feat_siting")),
+        "cv_": ee.Image(utils.asset_id(project, "feat_conservation")),
+        "rl_": realized,
+    }
+    avail = lc.select("mask_available")
+    role = realized.select("rl_role")
+
+    rows, anchor_rows = [], []
+    for name, seg in seg_cfg["segments"].items():
+        print(f"  -> {name} ...", flush=True)
+        M = membership.segment_membership_image(stack, lc, seg, seg_cfg, extras)
+        sd_a, mn_a = _mem_stats(M, aoi, avail, scale)
+        code = REALIZED_ROLE.get(name)
+        sd_r = _mem_stats(M, aoi, role.eq(code), scale)[0] if code else {}
+        for f, spec in seg["factors"].items():
+            b = f"mem_{f}"
+            rows.append({
+                "segment": name, "factor": f, "role": spec.get("role", "limiting"),
+                "type": spec["type"], "points": str(spec["points"]),
+                "sigma_mu_available": sd_a.get(b),
+                "sigma_mu_realized": sd_r.get(b),
+                "mean_mu_available": mn_a.get(b),
+                "frac_saturated": mn_a.get(f"sat__{b}"),
+                "frac_vetoed": mn_a.get(f"vet__{b}"),
+            })
+            anchor_rows.append({
+                "segment": name, "factor": f, "basis": spec.get("basis"),
+                "source": spec.get("source"), "locator": spec.get("locator"),
+                "type": spec["type"], "points_adotados": str(spec["points"]),
+            })
+
+    out = os.path.join(os.path.dirname(__file__), "..", "thesis", "Chapters")
+    out = os.environ.get("SCRATCHPAD", os.path.normpath(out))
+    df = pd.DataFrame(rows)
+    df.to_csv(os.path.join(out, "factor_discrimination.csv"), index=False)
+    pd.DataFrame(anchor_rows).to_csv(
+        os.path.join(out, "breakpoint_anchoring.csv"), index=False)
+    pd.set_option("display.width", 200, "display.max_columns", 20)
+    print("\n", df.to_string(index=False))
+    print(f"\n# wrote factor_discrimination.csv + breakpoint_anchoring.csv -> {out}")
+
+
 if __name__ == "__main__":
-    main()
+    mode = sys.argv[1] if len(sys.argv) > 1 else "percentiles"
+    if mode == "discrimination":
+        discrimination()
+    elif mode == "percentiles":
+        main()
+    else:
+        raise SystemExit(f"unknown mode {mode!r}; use percentiles | discrimination")

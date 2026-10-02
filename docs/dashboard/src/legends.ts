@@ -30,16 +30,21 @@ export function faoClassLegend(): CategoricalLegend {
   }
 }
 
-/** `zoneLabels[i]` (optional) is the comparative-segment label for zone i, shown
- * alongside "Zona i" when the caller already has that mapping (e.g. from
- * zone_profiles.csv) — falls back to a bare zone number otherwise. */
+/** `zoneLabels[i]` (optional) is the comparative-segment label for the zone drawn
+ * with palette slot `i`, shown alongside its name when the caller already has that
+ * mapping (e.g. from zone_profiles.csv) — falls back to a bare zone number.
+ *
+ * Zones are named 1..n. The `zones_present` raster stores 0..n-1, and palette slot
+ * `i` paints raster value `i`, so slot `i` is zone `i + 1`; `zoneLabels` stays keyed
+ * by the 0-based slot to match the raster. Every user-facing surface — this legend,
+ * the thesis and zone_profiles.csv — numbers zones from 1. */
 export function zoneLegend(n: number, zoneLabels?: Record<number, string>): CategoricalLegend {
   const colors = zonePalette(n)
   return {
     kind: 'categorical',
     title: 'Zona agroambiental',
     items: Array.from({ length: n }, (_, i) => ({
-      label: zoneLabels?.[i] ? `Zona ${i} — ${zoneLabels[i]}` : `Zona ${i}`,
+      label: zoneLabels?.[i] ? `Zona ${i + 1} — ${zoneLabels[i]}` : `Zona ${i + 1}`,
       color: colors[i]!,
     })),
   }

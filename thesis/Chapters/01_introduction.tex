@@ -77,40 +77,46 @@ a terceira uma extensão voltada ao futuro.
 
 \section{Prévia dos resultados}
 
+%% TODO: as alterações sobre quais variaveis fazem parte da amostra descorrelacionada
+%% TODO: e a mudança na ancoragem dos limiares e pesos AHP reduziu o numero de zonas de 10
+%% TODO: para 4. Embora agora a distinção seja mais poderosa, temos um resultado menos
+%% TODO: interpretável já que ele não cobre todos os 7 segmentos.
+%% TODO: Ideia: listar nao somente a vocação primária mas também a secundária.
+
 A análise cobre as três questões. \textbf{QP1:} um agrupamento não supervisionado separa
-GO~e~DF em dez zonas agroambientais que abrangem seis vocações comparativas --- três planaltos
-de cultivo (pecuária, outras culturas, e soja/cana), duas planícies arenosas com vocação
-fotovoltaica, duas zonas com vocação para aquicultura e três zonas de conservação de perfis
-distintos, incluindo um planalto alto e íngreme, com alta concentração de carbono, cujo melhor
-uso é a conservação também em termos absolutos.
+GO~e~DF em quatro zonas agroambientais com quatro vocações comparativas distintas, uma por
+zona --- um planalto de cultivo alto e argiloso (cana-de-açúcar), uma baixada drenada
+(piscicultura), uma baixada quente e arenosa (pecuária) e uma escarpa íngreme, com alta
+concentração de carbono, cujo melhor uso é a conservação também em termos absolutos.
 
 \textbf{QP2:} as zonas, construídas apenas com variáveis biofísicas, reproduzem a geografia observada
-do território sem nunca usar a cobertura da terra como entrada. A vegetação nativa alcança 74\% do
-planalto de conservação. As lavouras, por sua vez, ocupam terras sistematicamente mais viáveis do que a
-média territorial (a viabilidade média da soja é 0,935 nos pixels efetivamente cultivados, contra 0,773 em
-toda a área apta ao cultivo). Persiste um hiato relevante entre potencial e uso atual: cerca de 41,8\% do
+do território sem nunca usar a cobertura da terra como entrada. A vegetação nativa alcança 68\% da
+escarpa de conservação. As lavouras, por sua vez, ocupam terras sistematicamente mais viáveis do que a
+média territorial (a viabilidade média da soja é 0,881 nos pixels efetivamente cultivados, contra 0,731 em
+toda a área apta ao cultivo). Persiste um hiato relevante entre potencial e uso atual: cerca de 40,6\% do
 território é viável para soja mas ainda não cultivado com ela, majoritariamente sobre pastagem. Isso
 aponta para intensificação, e não para abertura de novas áreas --- um achado consistente com o padrão de
 conversão de pastagem em lavoura já documentado nacionalmente \citep{caballero_transformation_2023}. \textbf{QP3:} a
 mudança em direção a meados do século é modesta em magnitude, mas direcionalmente robusta em todo o
-conjunto de modelos (concordância entre modelos $\approx$ 1,0 no teste mais rigoroso). Três segmentos estão expostos: a
-conservação mais do que os demais, com sua área viável (classes S1--S2) caindo para menos da metade no
-cenário mais quente; seguida do grupo milho--algodão--sorgo e da geração fotovoltaica. As áreas com
-vocação primária para soja e cana-de-açúcar permanecem essencialmente inalteradas.
+conjunto de modelos. Três segmentos estão expostos: a
+geração fotovoltaica mais do que os demais, com sua área viável (classes S1--S2) caindo quase à
+metade no cenário mais quente por perda de desempenho térmico do painel; seguida da conservação e
+do grupo milho--algodão--sorgo. As áreas com vocação primária para soja e cana-de-açúcar
+permanecem essencialmente inalteradas, e a piscicultura é o único segmento que \emph{ganha} área
+viável.
 
 \section{Escopo e delimitação}
 
 O estudo é delimitado da seguinte forma, e estes limites são restrições declaradas, em vez de pressupostos ocultos.
 
+%% TODO: ja que a acessibilidade nao entra na amostra descorrelacionada, devemos remove-la por completo da analise?
 \begin{itemize}
   \item \textbf{Espacial.} Goiás e Distrito Federal apenas; a análise é feita em uma grade de 250~m no sistema EPSG:4326.
   \item \textbf{Temática.} Sete segmentos produtivos, com o potencial expresso por indicadores biofísicos, 
     agroclimáticos e de acessibilidade ao mercado; não é uma análise econômica do uso da terra.
   \item \textbf{Temporal.} Normal climatológica atual cobrindo 1991--2020; janelas futuras do CMIP6 para 2031--2050
     e 2051--2070 sob os cenários SSP2-4.5 e SSP5-8.5.
-  \item \textbf{Dados.} Exclusivamente produtos públicos de satélite, reanálise e projeção climática.
-    O uso atual da terra e o indicador de produtividade nunca entram como parâmetro do modelo, para
-    evitar circularidade.
+  \item \textbf{Dados.} Exclusivamente produtos públicos de satélite, reanálise, projeção climática e mapas administrativos.
 \end{itemize}
 
 \section{Estrutura da dissertação}

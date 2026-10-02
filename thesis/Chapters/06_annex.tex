@@ -108,82 +108,34 @@ Segmento (máscara) & Fator & Peso & Forma & Limiares \\
 Segmento (máscara) & Fator & Peso & Forma & Limiares \\
 \midrule
 \endhead
-\textbf{Soja} (disponível) & Declive ($^\circ$) & 0,32 & decrescente & 4, 8 \\
- & Teor de argila (\%) & 0,24 & intervalar & 20, 32, 48, 62 \\
- & Temp. do trimestre mais quente ($^\circ$C) & 0,14 & intervalar & 18, 22, 30, 34 \\
- & pH do solo & 0,11 & intervalar & 4,5, 5,5, 6,8, 7,5 \\
- & Precipitação anual (mm) & 0,10 & intervalar & 800, 1100, 1800, 2200 \\
- & Índice de aridez & 0,09 & intervalar & 0,4, 0,7, 1,2, 1,6 \\
-\textbf{Cana-de-açúcar} (disponível) & Declive ($^\circ$) & 0,26 & decrescente & 5, 10 \\
- & Teor de água disponível para as plantas & 0,22 & crescente & 5, 20 \\
- & Teor de argila (\%) & 0,22 & intervalar & 22, 32, 52, 66 \\
- & Temp. do trimestre mais quente ($^\circ$C) & 0,14 & intervalar & 20, 24, 32, 36 \\
- & Precipitação anual (mm) & 0,10 & intervalar & 900, 1300, 2000, 2600 \\
- & Duração da estação seca (meses) & 0,06 & intervalar & 1, 2, 5, 7 \\
-\textbf{Outras culturas} (disponível) & Declive ($^\circ$) & 0,34 & decrescente & 4, 8 \\
- & Carbono orgânico do solo (g/kg) & 0,23 & crescente & 6, 20 \\
- & Graus-dia de crescimento & 0,15 & intervalar & 2500, 3500, 5500, 7000 \\
- & pH do solo & 0,11 & intervalar & 4,5, 5,5, 6,8, 7,5 \\
- & Precipitação anual (mm) & 0,09 & intervalar & 700, 1000, 1700, 2200 \\
- & Sazonalidade da precipitação (CV) & 0,08 & decrescente & 0,6, 1,3 \\
-\textbf{Piscicultura} (disponível) & Declive ($^\circ$) & 0,27 & decrescente & 2,86, 5,71 \\
- & Teor de argila (\%) & 0,25 & crescente & 15, 35 \\
- & Distância à água semipermanente (m) & 0,24 & decrescente & 750, 6000 \\
- & Densidade de drenagem & 0,14 & crescente & 0,01, 0,08 \\
- & Temp. do trimestre mais quente ($^\circ$C) & 0,10 & intervalar & 22, 26, 32, 36 \\
-\textbf{Pecuária} (apenas exclusão) & Carbono orgânico do solo (g/kg) & 0,34 & crescente & 8, 18 \\
- & Umidade do solo (mm) & 0,28 & crescente & 55, 120 \\
- & Declive ($^\circ$) & 0,20 & decrescente & 6, 15 \\
- & Precipitação anual (mm) & 0,10 & intervalar & 700, 1000, 2000, 2600 \\
- & Duração da estação seca (meses) & 0,08 & decrescente & 4, 8 \\
-\textbf{Conservação} (nenhuma; compensatória) & Distância a área protegida (m) & 0,17 & decrescente &
-  5000, 40000 \\
- & Rugosidade do terreno (m) & 0,15 & crescente & 5, 30 \\
- & Índice de umidade topográfica & 0,13 & crescente & 9,12, 11,82 \\
- & Carbono em biomassa acima do solo (Mg~C/ha) & 0,12 & crescente & 10, 20 \\
- & Fração de vegetação nativa & 0,10 & crescente & 0,25, 0,85 \\
- & Índice de aridez (P/ETP) $\dagger$ & 0,10 & crescente & 0,95, 1,25 \\
- & Declive ($^\circ$) & 0,09 & crescente & 2,86, 11,31 \\
- & Temp. do trimestre mais quente ($^\circ$C) $\dagger$ & 0,08 & decrescente & 23, 31 \\
- & Densidade de drenagem & 0,06 & crescente & 0,01, 0,08 \\
-\textbf{Geração fotovoltaica} (disponível) & Radiação solar (W/m$^2$) & 0,22 & crescente & 186, 204 \\
- & Índice de claridade (cobertura de nuvens) & 0,22 & crescente & 0,466, 0,501 \\
- & Declive ($^\circ$) & 0,17 & decrescente & 2,86, 8,53 \\
- & Componente norte da orientação & 0,15 & crescente & $-0{,}3$, 0,5 \\
- & Log do tempo de viagem à cidade & 0,14 & decrescente & 3,5, 5,4 \\
- & Temp. do trimestre mais quente ($^\circ$C) & 0,10 & decrescente & 24, 31 \\
-\bottomrule
+\input{Chapters/Tables/ahp_weights.tex}   % the fragment ends with \bottomrule
 \end{longtable}
 
 A conservação ($\dagger$) carrega dois fatores climáticos \textbf{móveis} (aridez e
 temperatura do trimestre mais quente), que a tornam responsiva ao CMIP6; é agregada pela
 média aritmética ponderada \textbf{compensatória} (\S\ref{sec:aggregation}), e sua fração de
-vegetação nativa (peso 0,08) é a única entrada de cobertura da terra, rebaixada, sancionada
+vegetação nativa (peso 0,07) é a única entrada de cobertura da terra, rebaixada, sancionada
 pela salvaguarda contra circularidade. Os outros seis segmentos usam a média geométrica de
 fator limitante.
 
+%% TODO: é mais facil remover estas variaveis do que aumentar a complexidade da analise
+Os fatores marcados como \emph{porta} não entram na matriz AHP e não recebem peso: são os
+fatores cuja pertinência é constante em GO~e~DF (a faixa observada cai inteiramente dentro do
+seu platô ótimo), aplicados multiplicativamente com limiares ancorados de modo que o valor
+presente dê $\mu = 1$ (\S\ref{sec:ahp}). Por isso a soja e a cana-de-açúcar têm três fatores
+ponderados, e não seis, e a pecuária três, e não cinco: os demais foram promovidos a porta,
+não removidos.
+
 Os pesos de cada segmento são as prioridades de uma matriz Saaty de comparação par a par
-documentada; toda matriz é folgadamente consistente, sendo 0,0015 a maior razão de
-consistência entre os sete segmentos (Tabela~\ref{tab:ahp-cr}), uma ordem de grandeza abaixo
-do limiar de aceitação de 0,10.
+documentada; toda matriz é folgadamente consistente, sendo 0,0462 a maior razão de
+consistência entre os sete segmentos (Tabela~\ref{tab:ahp-cr}), menos da metade do limiar de
+aceitação de 0,10.
 
 \begin{table}[H]
 \centering
 \caption{Razão de consistência AHP por segmento.}
 \label{tab:ahp-cr}
-\begin{tabular}{@{}lrr@{}}
-\toprule
-Segmento & Fatores ($n$) & Razão de consistência \\
-\midrule
-Soja                 & 6 & 0,0013 \\
-Cana-de-açúcar       & 6 & 0,0004 \\
-Outras culturas anuais & 6 & 0,0008 \\
-Piscicultura         & 5 & 0,0015 \\
-Pecuária             & 5 & 0,0004 \\
-Conservação          & 9 & 0,0009 \\
-Geração fotovoltaica & 6 & 0,0004 \\
-\bottomrule
-\end{tabular}
+\input{Chapters/Tables/ahp_cr.tex}
 \end{table}
 
 \chapter{Derivação dos atributos}\label{anx:derivations}
@@ -250,7 +202,7 @@ uma integral anual (NDVI médio $\times$ 365).
 \textbf{Acessibilidade ao mercado (1 variável).} A superfície de tempo de viagem às cidades é
 transformada em logaritmo como $\ln(t+1)$ e reamostrada para a grade.
 
-\textbf{Máscara de cobertura da terra (apenas contexto).} O MapBiomas (coleção~10), a 30~m, é
+\textbf{Máscara de cobertura da terra (apenas contexto).} O MapBiomas, a 30~m, é
 agregado a 250~m como uma classe majoritária mais frações por classe, produzindo uma máscara de
 áreas \emph{excluídas} (urbano, água permanente, área úmida herbácea), uma máscara de áreas
 \emph{disponíveis} (lavoura, campo, vegetação arbustiva, solo exposto) e frações de
@@ -262,48 +214,19 @@ agregado a 250~m como uma classe majoritária mais frações por classe, produzi
 \centering
 \caption{Médias biofísicas discriminantes por zona.}
 \label{tab:zone-means}
-\scriptsize
-\begin{tabular}{@{}lrrrrrrrrrr@{}}
-\toprule
-Variável & Z1 & Z2 & Z3 & Z4 & Z5 & Z6 & Z7 & Z8 & Z9 & Z10 \\
-\midrule
-Tamanho da amostra (pontos)          & 3.661 & 2.972 & 2.779 & 1.035 & 2.086 & 4.453 & 2.633 & 769 & 1.594 & 3.367 \\
-Parcela da área de interesse         & 21,2\% & 5,9\% & 10,5\% & 2,8\% & 11,2\% & 16,5\% & 6,6\% & 4,9\% & 3,9\% & 16,6\% \\
-Elevação (m)                         & 860 & 413 & 653 & 449 & 739 & 440 & 260 & 833 & 632 & 588 \\
-Declive ($^\circ$)                   & 4,7 & 3,0 & 4,1 & 3,2 & 14,2 & 3,5 & 2,3 & 4,8 & 4,1 & 3,7 \\
-Índice de umidade topográfica        & 10,2 & 10,5 & 10,2 & 15,2 & 8,9 & 10,5 & 11,0 & 10,3 & 10,4 & 10,5 \\
-Temp. do trimestre mais quente ($^\circ$C) & 24,0 & 26,0 & 24,6 & 25,8 & 25,5 & 26,4 & 27,6 & 24,3 & 25,9 & 25,4 \\
-Índice de aridez (P/ETP)             & 1,13 & 1,10 & 1,19 & 1,12 & 1,10 & 1,08 & 1,11 & 1,15 & 0,91 & 1,15 \\
-Umidade do solo (mm)                 & 98 & 107 & 66 & 97 & 111 & 113 & 105 & 97 & 108 & 79 \\
-Teor de argila (\%)                  & 39,7 & 25,1 & 27,7 & 29,7 & 34,1 & 25,0 & 22,9 & 37,5 & 29,7 & 32,6 \\
-Carbono orgânico do solo (g/kg)      & 14,5 & 10,9 & 12,1 & 16,5 & 15,7 & 10,1 & 11,0 & 14,1 & 11,5 & 13,0 \\
-Densidade de drenagem (fração)       & 0,010 & 0,110 & 0,021 & 0,115 & 0,010 & 0,005 & 0,032 & 0,015 & 0,018 & 0,034 \\
-Distância à água (m)                 & 15.048 & 9.269 & 22.248 & 9.990 & 21.307 & 16.824 & 6.065 & 7.710 & 22.782 & 12.588 \\
-\bottomrule
-\end{tabular}
+\input{Chapters/Tables/zone_means.tex}
 \end{table}
 
-%% TODO esta tabela deve ficar com o topo para a esquerda, nao pra direita
-
-\begin{sidewaystable}[p]
+\begin{table}[H]
 \centering
-\caption{Mudança média territorial projetada $\Delta S$ por zona para as culturas sensíveis
-ao clima (cenário--janela mais brando e mais severo por segmento).}
+\caption{Mudança média projetada $\Delta S$ por zona para as três culturas sensíveis ao clima,
+nos quatro cenário--janela.}
 \label{tab:zone-shift}
-\small
-\begin{tabular}{@{}llrrrrrrrrrr@{}}
-\toprule
-Segmento & Cenário--janela & Z1 & Z2 & Z3 & Z4 & Z5 & Z6 & Z7 & Z8 & Z9 & Z10 \\
-\midrule
-Soja & SSP2-4.5 2031--50 & $+$0,001 & $+$0,000 & $+$0,002 & $+$0,000 & $+$0,000 & $+$0,000 & $-$0,000 & $+$0,000 & $+$0,000 & $+$0,000 \\
-Soja & SSP5-8.5 2051--70 & $+$0,001 & $-$0,005 & $+$0,002 & $-$0,002 & $-$0,000 & $-$0,008 & $-$0,019 & $+$0,000 & $+$0,000 & $+$0,000 \\
-Cana-de-açúcar & SSP2-4.5 2031--50 & $+$0,004 & $+$0,000 & $+$0,000 & $+$0,000 & $-$0,000 & $-$0,000 & $+$0,000 & $+$0,003 & $-$0,007 & $+$0,000 \\
-Cana-de-açúcar & SSP5-8.5 2051--70 & $+$0,004 & $-$0,001 & $+$0,000 & $-$0,001 & $-$0,000 & $-$0,002 & $+$0,000 & $+$0,003 & $-$0,034 & $+$0,000 \\
-Outras culturas anuais & SSP2-4.5 2031--50 & $-$0,004 & $-$0,018 & $-$0,004 & $-$0,009 & $-$0,002 & $-$0,026 & $-$0,039 & $-$0,003 & $-$0,014 & $-$0,011 \\
-Outras culturas anuais & SSP5-8.5 2051--70 & $-$0,018 & $-$0,061 & $-$0,028 & $-$0,035 & $-$0,007 & $-$0,081 & $-$0,156 & $-$0,019 & $-$0,049 & $-$0,057 \\
-\bottomrule
-\end{tabular}
-\end{sidewaystable}
+\input{Chapters/Tables/zone_shift.tex}
+\end{table}
+
+%% TODO: melhorar cabeçalho dessa tabela. Colocar cenario SSP em celulas mescladas na primeira linha e
+%% TODO: janela temporal na segunda linha, de forma a economizar espaço horizontal
 
 \begin{table}[H]
 \centering
@@ -311,19 +234,7 @@ Outras culturas anuais & SSP5-8.5 2051--70 & $-$0,018 & $-$0,061 & $-$0,028 & $-
 FAO, presente $\rightarrow$ futuro (promoções desprezíveis e omitidas).}
 \label{tab:downgrade-share}
 \small
-\begin{tabular}{@{}lrrrr@{}}
-\toprule
-Segmento & SSP2-4.5 2031--50 & SSP2-4.5 2051--70 & SSP5-8.5 2031--50 & SSP5-8.5 2051--70 \\
-\midrule
-Conservação           & 18,7\% & 21,2\% & 22,4\% & 33,3\% \\
-Outras culturas anuais & 2,6\%  & 6,0\%  & 3,9\%  & 16,0\% \\
-Geração fotovoltaica   & 4,2\%  & 6,3\%  & 5,4\%  & 13,2\% \\
-Soja                   & 0,0\%  & 0,1\%  & 0,0\%  & 1,2\% \\
-Cana-de-açúcar         & 0,0\%  & 0,0\%  & 0,0\%  & 0,1\% \\
-Piscicultura           & 0,0\%  & 0,0\%  & 0,0\%  & 0,0\% \\
-Pecuária               & 0,0\%  & 0,0\%  & 0,0\%  & 0,5\% \\
-\bottomrule
-\end{tabular}
+\input{Chapters/Tables/downgrade_share.tex}
 \end{table}
 
 \begin{table}[H]
@@ -332,18 +243,7 @@ Pecuária               & 0,0\%  & 0,0\%  & 0,0\%  & 0,5\% \\
 outras culturas anuais sob SSP5-8.5, 2051--2070 (área como percentual da terra avaliada do
 segmento).}
 \label{tab:transition-othercrops}
-\begin{tabular}{@{}lrrrrr@{}}
-\toprule
-Presente $\downarrow$ / Futuro $\rightarrow$ & N & S3 & S2 & S1 & Total presente \\
-\midrule
-N   & 39,8 & 0,0 & 0,0  & 0,0  & 39,8 \\
-S3  & 0,1  & 1,8 & 0,0  & 0,0  & 1,8 \\
-S2  & 0,5  & 6,6 & 26,8 & 0,0  & 34,0 \\
-S1  & 0,0  & 0,1 & 8,6  & 15,6 & 24,4 \\
-\midrule
-\textbf{Total futuro} & \textbf{40,4} & \textbf{8,5} & \textbf{35,4} & \textbf{15,6} & 100,0 \\
-\bottomrule
-\end{tabular}
+\input{Chapters/Tables/transition_othercrops.tex}
 \end{table}
 
 \begin{table}[H]
@@ -351,18 +251,7 @@ S1  & 0,0  & 0,1 & 8,6  & 15,6 & 24,4 \\
 \caption{Composição do uso atual da terra dentro de cada zona biofísica (parcela da área da
 zona).}
 \label{tab:zone-realized}
-\scriptsize
-\begin{tabular}{@{}lrrrrrrrrrr@{}}
-\toprule
-Uso atual & Z1 & Z2 & Z3 & Z4 & Z5 & Z6 & Z7 & Z8 & Z9 & Z10 \\
-\midrule
-Soja                 & 32,4\% & 4,1\% & 8,4\% & 1,5\% & 0,3\% & 5,5\% & 5,3\% & 11,2\% & 7,2\% & 16,9\% \\
-Cana-de-açúcar       & 0,8\%  & 1,3\% & 3,1\% & 0,9\% & 0,0\% & 0,7\% & 0,0\% & 1,1\%  & 0,0\% & 10,0\% \\
-Outras culturas anuais & 1,0\%  & 1,3\% & 0,5\% & 0,4\% & 0,0\% & 0,9\% & 2,0\% & 0,6\%  & 1,0\% & 1,0\% \\
-Pastagem             & 32,3\% & 70,1\% & 57,9\% & 39,0\% & 25,0\% & 64,1\% & 57,9\% & 39,4\% & 56,6\% & 48,2\% \\
-Vegetação nativa     & 29,9\% & 21,4\% & 29,0\% & 39,2\% & 73,9\% & 27,8\% & 32,2\% & 29,9\% & 34,2\% & 20,5\% \\
-\bottomrule
-\end{tabular}
+\input{Chapters/Tables/zone_realized.tex}
 \end{table}
 
 \begin{table}[H]
@@ -440,12 +329,15 @@ $k = 2\dots20$ no espaço de componentes principais descorrelacionado.}
 A silhueta é quase plana (0,161--0,187) ao longo de todo o intervalo; o Davies--Bouldin cai até
 $k=7$ e fica praticamente plano de $k=7$ a $20$ (1,50--1,57, mínimo em $k=19$); e o \emph{gap}
 cresce quase monotonicamente, estabilizando-se só em $k=14$. Nenhum índice isolado decide.
-$k = 10$ (linha tracejada) combina a silhueta mais alta de todo o \emph{sweep} (0,187, contra um
-segundo pico de 0,182 em $k=13$) com uma das estabilidades mais altas sob subamostragem
-(ARI $=0{,}962$). Acima dele só estão $k=9$ ($0{,}970$), dentro do desvio-padrão entre réplicas,
-e as partições grossas $k=2$, $3$ e $5$ (0,96--0,98), que têm Davies--Bouldin bem pior; em
-$k=7$ o ARI é de apenas $0{,}687$. Nenhum $k$ entre 11 e 20 supera o pico de silhueta de $k=10$,
-confirmando que a escolha não é um artefato de faixa truncada.
+$k = 4$ (linha tracejada) é o máximo de silhueta de todo o \emph{sweep} (0,210, contra 0,206
+em $k=5$) \emph{e} o máximo de estabilidade sob subamostragem (ARI $=0{,}988$), com o menor
+desvio-padrão entre réplicas de todo o intervalo ($\pm$0,004; a título de comparação, $\pm$0,096
+em $k=5$ e $\pm$0,124 em $k=6$). O Davies--Bouldin prefere $k=5$ (1,463 contra 1,574), a única
+discordância entre os índices. O painel inteiro varia pouco: a silhueta fica entre 0,158 e 0,210
+em $k = 2,\dots,20$, o que indica ausência de estrutura de agrupamento forte em qualquer $k$ e
+é a razão de a escolha se apoiar na reprodutibilidade da partição, e não num ótimo de validade
+(\S\ref{sec:zoning}). O painel cobre $k$ até 20, confirmando que a escolha não é um artefato de
+faixa truncada.
 
 \section{Decomposição por fator}\label{sec:factor-variance-annex}
 

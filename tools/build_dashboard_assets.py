@@ -175,6 +175,10 @@ DIAG_CSVS = {
     "factor_variance.csv": REPO_ROOT / "thesis" / "Chapters" / "factor_variance.csv",
     "theme_roughness.csv": REPO_ROOT / "thesis" / "Chapters" / "theme_roughness.csv",
     "theme_roughness_points.csv": REPO_ROOT / "thesis" / "Chapters" / "theme_roughness_points.csv",
+    # Part 9 weight derivation (tools/derive_weights.py): w_lit | d | w_final
+    "ahp_weights.csv": REPO_ROOT / "thesis" / "Chapters" / "ahp_weights.csv",
+    "lambda_sweep.csv": REPO_ROOT / "thesis" / "Chapters" / "lambda_sweep.csv",
+    "factor_discrimination.csv": REPO_ROOT / "thesis" / "Chapters" / "factor_discrimination.csv",
 }
 
 
@@ -528,7 +532,7 @@ def build_datasets_catalog() -> None:
         {"theme": "Projeção climática CMIP6", "source": "NASA NEX-GDDP-CMIP6",
          "id": ds["cmip6"]["id"], "native_res": "~25 km",
          "period": "2031-2070 (2 SSP x 2 janelas)"},
-        {"theme": "Uso realizado da terra", "source": "MapBiomas Coleção 10",
+        {"theme": "Uso realizado da terra", "source": "MapBiomas",
          "id": ds["mapbiomas"]["asset"], "native_res": "30 m", "period": "1985-2024"},
         {"theme": "Validação de produtividade", "source": "MODIS MOD17 NPP/GPP",
          "id": ds["productivity"]["npp"]["id"], "native_res": "500 m", "period": "2001-2020"},

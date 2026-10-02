@@ -13,12 +13,15 @@ Run:  EE_PROJECT=probformer ../.venv/bin/python tools/extract_cmip6.py
 """
 from __future__ import annotations
 
+import os
 import sys
 import time
+from pathlib import Path
 
 sys.path.insert(0, "src")
 
 import ee  # noqa: E402
+import pandas as pd  # noqa: E402
 import utils  # noqa: E402
 
 P = utils.init()
@@ -29,6 +32,12 @@ COMBOS = [("ssp245", "2031_2050"), ("ssp245", "2051_2070"),
           ("ssp585", "2031_2050"), ("ssp585", "2051_2070")]
 TS = 8
 RR = dict(geometry=AOI, scale=250, maxPixels=1e10, tileScale=TS)
+
+# House pattern: CSVs land in thesis/Chapters/; $SCRATCHPAD overrides.
+REPO = Path(__file__).resolve().parent.parent
+CHAPTERS = REPO / "thesis" / "Chapters"
+OUT = Path(os.environ.get("SCRATCHPAD", str(CHAPTERS)))
+OUT.mkdir(parents=True, exist_ok=True)
 
 
 def log(m):
@@ -72,6 +81,11 @@ def t43():
     print(f"  {'segment':14s} " + "  ".join(f"{ssp}_{win}" for ssp, win in COMBOS))
     for s in SEGS:
         print(f"  {s:14s} " + "  ".join(f"{rows[s][f'{ssp}_{win}']:+.4f}" for ssp, win in COMBOS))
+    path = OUT / "cmip6_shift_mean.csv"
+    pd.DataFrame([{"segment": s, "ssp": ssp, "window": win,
+                   "delta_s": rows[s][f"{ssp}_{win}"]}
+                  for s in SEGS for ssp, win in COMBOS]).to_csv(path, index=False)
+    print(f"  wrote {path}")
 
 
 # 4.4 — S1+S2 share present→future -----------------------------------------------
@@ -90,6 +104,11 @@ def t44():
     for s in SEGS:
         cells = "  ".join(f"{100*futdata[c][s]:5.1f}%" for c in COMBOS)
         print(f"  {s:14s} {100*pres[s]:5.1f}%   {cells}")
+    path = OUT / "cmip6_shift_share.csv"
+    pd.DataFrame([{"segment": s, "ssp": ssp, "window": win,
+                   "present_share": pres[s], "future_share": futdata[(ssp, win)][s]}
+                  for s in SEGS for ssp, win in COMBOS]).to_csv(path, index=False)
+    print(f"  wrote {path}")
 
 
 # 4.6 — share downgraded ≥1 FAO class --------------------------------------------
@@ -108,20 +127,39 @@ def t46():
             data[s][(ssp, win)] = m[s]
     for s in SEGS:
         print(f"  {s:14s} " + "  ".join(f"{100*data[s][c]:5.1f}%" for c in COMBOS))
+    path = OUT / "cmip6_downgrade.csv"
+    pd.DataFrame([{"segment": s, "ssp": ssp, "window": win,
+                   "downgrade_share": data[s][(ssp, win)]}
+                  for s in SEGS for ssp, win in COMBOS]).to_csv(path, index=False)
+    print(f"  wrote {path}")
 
 
-# 4.5 — per-zone ΔS for crops (mildest + harshest) -------------------------------
+# 4.5 — per-zone ΔS for crops (all four combos) ----------------------------------
 def t45():
-    for ssp, win in [("ssp245", "2031_2050"), ("ssp585", "2051_2070")]:
+    """Per-zone mean ΔS per crop, written to cmip6_zone_shift.csv.
+
+    All four SSP x window combos (it used to print only the mildest and the
+    harshest); tab:zone-shift in the annex is generated from this CSV, so the
+    full grid has to be on disk rather than only in stdout.
+    """
+    rows = []
+    for ssp, win in COMBOS:
         d = dlt(ssp, win)
         print(f"  [{ssp} {win}]")
         for c in CROPS:
             fc = (d.select(f"delta_{c}").addBands(zones).reduceRegion(
                 reducer=ee.Reducer.mean().group(groupField=1, groupName="zone"),
                 **RR).get("groups").getInfo())
-            byz = {int(g["zone"]): g["mean"] for g in fc}
+            # raster is 0-based, reporting is 1-based
+            byz = {int(g["zone"]) + 1: g["mean"] for g in fc}
             cells = "  ".join(f"z{z}:{byz.get(z, float('nan')):+.4f}" for z in sorted(byz))
             print(f"    {c:12s} {cells}")
+            for z, v in sorted(byz.items()):
+                rows.append({"ssp": ssp, "window": win, "segment": c,
+                             "zone": z, "delta_s": v})
+    path = OUT / "cmip6_zone_shift.csv"
+    pd.DataFrame(rows).to_csv(path, index=False)
+    print(f"  wrote {path}")
 
 
 # 4.7 — other_crops present→future FAO transition matrix (harshest) --------------
@@ -136,13 +174,18 @@ def t47():
     print(f"  other_crops transition ({ssp} {win}), % of evaluated land:")
     print("       fut:  N     S3    S2    S1   | present total")
     names = ["N", "S3", "S2", "S1"]
+    rows = []
     for pi in range(4):
         cells, rowtot = [], 0.0
         for fi in range(4):
             v = 100 * hist.get(str(pi * 4 + fi), 0) / tot
             cells.append(f"{v:5.1f}")
             rowtot += v
+            rows.append({"present": names[pi], "future": names[fi], "share_pct": v})
         print(f"  {names[pi]:>4s} {'  '.join(cells)} | {rowtot:5.1f}")
+    path = OUT / "cmip6_transition_othercrops.csv"
+    pd.DataFrame(rows).to_csv(path, index=False)
+    print(f"  wrote {path}")
 
 
 def main():

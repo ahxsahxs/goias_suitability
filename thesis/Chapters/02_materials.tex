@@ -6,10 +6,10 @@ e o inventário de dados. As tabelas completas de fontes de dados estão no Anex
 \section{Área de estudo}
 
 A área de interesse é o estado de Goiás em conjunto com o Distrito Federal (GO~e~DF)
-na região Centro-Oeste do Brasil, cerca de 340.000~km\textsuperscript{2} situados
-inteiramente no bioma Cerrado. O Cerrado é uma savana tropical com clima fortemente sazonal
+na região Centro-Oeste do Brasil e situados inteiramente no bioma Cerrado. 
+O Cerrado é uma savana tropical com clima fortemente sazonal
 (verão úmido e inverno seco), além de solos profundos, intemperizados, naturalmente ácidos e
-de baixa fertilidade (predominantemente Latossolos, ou \emph{Ferralsols}/\emph{Oxisols}) que, no
+de baixa fertilidade (predominantemente latossolos) que, no
 entanto, podem se tornar altamente produtivos uma vez feitas a calagem e a correção de fósforo,
 potássio, enxofre e micronutrientes \citep[p.~617]{yamada_cerrado_2005}. Nas últimas décadas, o bioma tornou-se um dos principais territórios de grãos,
 fibra e pecuária do Brasil --- precisamente o que torna a questão do potencial \emph{versus} uso
@@ -43,6 +43,7 @@ conservação, de modo que a análise possa expressar genuínas compensações (
   seca; as faixas de temperatura e precipitação partem do zoneamento de aptidão climática da cultura no
   Brasil \citep[p.~782]{aparecido_climate_2021} e foram recalibradas às distribuições observadas em
   GO/DF (Anexo~\ref{anx:spec}). \\
+%% TODO: preciso de citação para outras culturas anuais. como estamos ancorando os pesos deste segmento?
 3 & \textbf{Outras culturas anuais} & Milho, algodão e sorgo, incluindo a safrinha (segunda-safra). \\
 4 & \textbf{Piscicultura} & Aquicultura em tanques (açudes) e reservatórios (espécies de água quente,
   como a tilápia), seguindo critérios de viabilidade local (temperatura --- aqui a do ar, como
@@ -56,9 +57,9 @@ conservação, de modo que a análise possa expressar genuínas compensações (
   mapeadas para o bioma \citep{schuler_spatial_2022}. \\
 7 & \textbf{Geração fotovoltaica} & Geração fotovoltaica em escala de concessionária, com escolha de
   sítio por irradiância, orientação da vertente, temperatura, declive, cobertura da terra e
-  acessibilidade, em linha com os fatores de análises multicritério em SIG para usinas fotovoltaicas
-  (irradiância, orientação, temperatura de superfície, uso da terra e distância a estradas;
-  \citealp[tab.~2]{rane_gis-based_2024}). \\
+  acessibilidade, em linha com os fatores de análises multicritério em SIG para usinas fotovoltaicas: 
+  irradiância, orientação, temperatura de superfície, uso da terra e distância a estradas;
+  \citealp[tab.~2]{rane_gis-based_2024}. \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -95,8 +96,11 @@ Cenários futuros & SSP2-4.5; SSP5-8.5 & Cenários de emissão moderada e alta. 
 
 \section{Fontes de dados}
 
+%% TODO: preciso rever essa questao de SEM UPLOAD DE DADOS EXTERNOS
+%% TODO: agora usamos os dados do IBGE para malha municipal
 
-%% TODO faltam citações para alguns conjuntos de dados, e.g. Accesibility to Cities, HydroSHEDs, WDPA, carbono de biomassa etc
+%% TODO: faltam citações para alguns conjuntos de dados, e.g. Accesibility to Cities, HydroSHEDs, WDPA, carbono de biomassa etc
+%% TODO: corrigir citaçã do Spawn
 Todos os conjuntos de dados vêm do catálogo público da própria plataforma, acessados na resolução nativa e
 convertidos para unidades físicas quando as bandas vêm empacotadas como inteiros. As variáveis
 \textbf{biofísicas e agroclimáticas} (Tabela~\ref{tab:src-biophys} do Anexo) cobrem temas sobre o
@@ -136,7 +140,7 @@ limiares de pertinência fuzzy, pesos dos fatores, identificadores de conjuntos 
 conversão de unidades --- é declarado como valor versionado, em vez de embutido no código, de modo que a
 análise possa ser auditada e reexecutada apenas a partir da especificação declarada. O software é
 deliberadamente simples: além da integração com o Google Earth Engine e da orquestração das etapas de
-análise, o código Python usa bibliotecas científicas comuns para as pequenas tarefas executadas
+análise, o código Python usa bibliotecas científicas comuns para as tarefas executadas
 localmente. Nenhuma técnica de aprendizagem profunda é utilizada.
 
 O código-fonte completo --- configurações, módulos de análise e ferramentas de exportação

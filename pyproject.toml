@@ -21,6 +21,8 @@ dependencies = [
     "geopandas>=1.1.4",       # geospatial files manipulation
     "GDAL<=3.8.4",           # GDAL binding
     "rio-pmtiles>=1.2.2",
+    "ruamel.yaml>=0.18",      # tools/derive_weights.py — comment-preserving
+                              # round-trip write-back of config/segments.yaml
 ]
 
 [project.optional-dependencies]

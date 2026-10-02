@@ -53,18 +53,40 @@ def _ramp_down(x, a, b):
     return ee.Image(b).subtract(x).divide(b - a).clamp(0, 1)
 
 
+def validate_points(band, spec):
+    """Check a membership spec's point count and ordering before it reaches EE.
+
+    Without this, a two-point ``range`` dies with ``IndexError`` and a degenerate
+    ramp (``b == a``) with ``ZeroDivisionError``, both far from the config typo
+    that caused them.
+    """
+    t, p = spec["type"], spec["points"]
+    if t in ("increasing", "decreasing"):
+        if len(p) != 2:
+            raise ValueError(f"{band}: {t!r} needs 2 points, got {len(p)}: {p}")
+        if not p[0] < p[1]:
+            raise ValueError(f"{band}: {t!r} needs a < b, got {p}")
+    elif t == "range":
+        if len(p) != 4:
+            raise ValueError(f"{band}: 'range' needs 4 points, got {len(p)}: {p}")
+        a, b, c, d = p
+        if not (a < b <= c < d):
+            raise ValueError(f"{band}: 'range' needs a < b <= c < d, got {p}")
+    else:
+        raise ValueError(f"unknown membership type {t!r} for band {band}")
+    return t, p
+
+
 def membership(img, band, spec):
     """One factor -> [0,1] suitability image per its membership ``spec``."""
     x = img.select(band)
-    t, p = spec["type"], spec["points"]
+    t, p = validate_points(band, spec)
     if t == "increasing":
         m = _ramp_up(x, p[0], p[1])
     elif t == "decreasing":
         m = _ramp_down(x, p[0], p[1])
-    elif t == "range":
-        m = _ramp_up(x, p[0], p[1]).min(_ramp_down(x, p[2], p[3]))
     else:
-        raise ValueError(f"unknown membership type {t!r} for band {band}")
+        m = _ramp_up(x, p[0], p[1]).min(_ramp_down(x, p[2], p[3]))
     return m.clamp(0, 1).rename("m")
 
 
@@ -124,18 +146,46 @@ def classify_fao(suit, breaks):
 
 # --- per-segment & full suitability -----------------------------------------
 def _factor_images(stack, lc, factors, extras=None):
-    """Build the membership image + weight for each factor of a segment.
+    """Membership image + weight for each *weighted* factor of a segment.
 
     ``extras`` optionally maps a band-name prefix (e.g. ``"sit_"``, ``"rl_"``) to
     a side image so siting / realized-use factors can be sourced without entering
     the feature stack (see ``_source_image``).
+
+    Factors declared ``role: gate`` are excluded here and returned by
+    ``_gate_images`` instead: they are spatially constant in GO/DF, so they carry
+    no weight and are applied multiplicatively (see ``segment_suitability``).
     """
     images, weights = [], []
     for band, spec in factors.items():
+        if spec.get("role") == "gate":
+            continue
         src = _source_image(band, stack, lc, extras)
         images.append(membership(src, band, spec))
         weights.append(spec["weight"])
+    if not images:
+        raise ValueError("segment has no weighted factor (all are gates?)")
     return images, weights
+
+
+def _gate_images(stack, lc, factors, extras=None):
+    """Membership images of the ``role: gate`` factors of a segment.
+
+    A gate is a factor whose value is spatially constant over GO/DF: it cannot
+    discriminate one cell from another, so it gets no AHP weight and is left out
+    of the pairwise matrix. Its breakpoints are anchored so the *present* value
+    gives mu = 1, which is what stops a constant mu < 1 from silently deflating
+    the whole surface (the FAO cuts are absolute, so a global deflator moves the
+    reported class shares). It still multiplies the aggregate, so if the variable
+    moves under CMIP6 the gate bites.
+    """
+    out = []
+    for band, spec in factors.items():
+        if spec.get("role") != "gate":
+            continue
+        src = _source_image(band, stack, lc, extras)
+        out.append(membership(src, band, spec))
+    return out
 
 
 def _aggregate(images, weights, seg_spec, cfg):
@@ -145,16 +195,53 @@ def _aggregate(images, weights, seg_spec, cfg):
     correct for biophysical growth-suitability. ``aggregate: arithmetic`` is the
     compensatory weighted linear combination — used by conservation, a value/priority
     index where strength on one criterion offsets weakness on another (§3.2.2)."""
-    if seg_spec.get("aggregate", "geomean") == "arithmetic":
-        return weighted_arithmetic(images, weights)
-    return weighted_geomean(images, weights, cfg["aggregation"]["epsilon"])
+    key = seg_spec.get("aggregate", "geomean")
+    try:
+        fn = _AGGREGATORS[key]
+    except KeyError:
+        raise ValueError(
+            f"unknown aggregate {key!r}; expected one of {sorted(_AGGREGATORS)}. "
+            "A misspelling used to fall through to the geometric mean in silence."
+        ) from None
+    if fn is weighted_geomean:
+        return fn(images, weights, cfg["aggregation"]["epsilon"])
+    return fn(images, weights)
 
 
 def segment_suitability(stack, lc, seg_spec, cfg, extras=None):
-    """Masked [0,1] suitability for one segment."""
+    """Masked [0,1] suitability for one segment: aggregate(weighted) x gates."""
     images, weights = _factor_images(stack, lc, seg_spec["factors"], extras)
     suit = _aggregate(images, weights, seg_spec, cfg)
+    for g in _gate_images(stack, lc, seg_spec["factors"], extras):
+        suit = suit.multiply(g)
     return apply_mask(suit, lc, seg_spec["mask"])
+
+
+def validate_extras(cfg, extras=None):
+    """Every prefixed factor band must have a side image to read it from.
+
+    ``_source_image`` falls back to the feature stack when no prefix matches, so a
+    missing ``extras`` entry does not fail here -- it fails much later, inside
+    Earth Engine, as an opaque "band not found". Checking up front turns that into
+    a named configuration error.
+    """
+    declared = {k for k in cfg.get("extras_prefixes", {}) if k != _LC_PREFIX}
+    have = set(extras or {})
+    for seg, spec in cfg["segments"].items():
+        for band in spec["factors"]:
+            for pref in declared:
+                if band.startswith(pref) and pref not in have:
+                    raise ValueError(
+                        f"{seg}.{band} needs the {pref!r} side image, but extras "
+                        f"only supplies {sorted(have) or 'nothing'}. Declared "
+                        f"prefixes: {sorted(declared)}."
+                    )
+    unknown = have - declared - {_LC_PREFIX}
+    if unknown:
+        raise ValueError(
+            f"extras supplies undeclared prefix(es) {sorted(unknown)}; add them to "
+            "extras_prefixes in config/segments.yaml or drop them."
+        )
 
 
 def suit_present(stack, lc, cfg, extras=None):
@@ -165,6 +252,7 @@ def suit_present(stack, lc, cfg, extras=None):
     siting factors and conservation's native-veg factor. ``None`` reproduces the
     original stack+lc behavior exactly.
     """
+    validate_extras(cfg, extras)
     breaks = cfg["fao_classes"]["breaks"]
     bands = []
     for name, seg in cfg["segments"].items():
@@ -205,10 +293,13 @@ def comparative_present(suit, region, segments, scale=1000):
 def segment_membership_image(stack, lc, seg_spec, cfg, extras=None):
     """Per-factor membership image (``mem_<factor>`` bands), the memberships *before*
     the weighted geomean — sample it, then feed ``variance_shares`` to see which
-    factors drive a segment's spatial variance (WS-D; defends the 'saturated climate
-    factor as feasibility gate' design and the soil-dependence, W6)."""
-    images, _ = _factor_images(stack, lc, seg_spec["factors"], extras)
-    bands = [im.rename(f"mem_{b}") for im, b in zip(images, seg_spec["factors"].keys())]
+    factors drive a segment's spatial variance. Includes ``role: gate`` factors, so
+    the diagnostic can show directly that their sigma(mu) is zero -- which is the
+    evidence for treating them as gates rather than weighted factors."""
+    bands = []
+    for band, spec in seg_spec["factors"].items():
+        src = _source_image(band, stack, lc, extras)
+        bands.append(membership(src, band, spec).rename(f"mem_{band}"))
     return ee.Image.cat(bands)
 
 
@@ -260,18 +351,33 @@ def feasibility_screen(suit_band, cut=0.5):
 
     The honest rendering for an irradiance-homogeneous (solar) or point/reservoir-
     sited (pisciculture) use whose graded surface has near-zero spatial variance —
-    low variance is then reported as a finding, not hidden (robustness_plan §4)."""
+    low variance is then reported as a finding, not hidden."""
     return suit_band.gte(cut)
 
 
 # --- weight-sensitivity (robustness) ----------------------------------------
 def _perturbed_weights(weights, delta):
-    """One-at-a-time +/-delta perturbations of each weight (renormalized later)."""
+    """One-at-a-time +/-delta perturbations, applied on the EFFECTIVE scale.
+
+    Scaling a raw weight by 1+delta and letting the aggregator renormalize does
+    not move the effective (normalized) weight by delta: the larger the weight,
+    the more of the increase is eaten by renormalization -- a 20% bump on a 0.34
+    weight lands at +14% effective, so the reported robustness band is not the
+    +/-20% the method claims. Here the perturbed factor's *share* moves by exactly
+    delta and the others absorb the remainder in proportion.
+    """
+    tot = float(sum(weights))
+    base = [w / tot for w in weights]
     scenarios = []
-    for i in range(len(weights)):
+    for i in range(len(base)):
         for s in (1.0 + delta, 1.0 - delta):
-            w = list(weights)
-            w[i] = weights[i] * s
+            target = min(max(base[i] * s, 0.0), 1.0)
+            rest = 1.0 - base[i]
+            w = [
+                target if j == i else
+                (base[j] * (1.0 - target) / rest if rest > 0 else 0.0)
+                for j in range(len(base))
+            ]
             scenarios.append(w)
     return scenarios
 
@@ -285,8 +391,13 @@ def segment_sensitivity(stack, lc, seg_spec, cfg, extras=None):
     images, weights = _factor_images(stack, lc, seg_spec["factors"], extras)
     delta = cfg["aggregation"]["sensitivity_delta"]
 
+    gates = _gate_images(stack, lc, seg_spec["factors"], extras)
+
     def masked(w):
-        return apply_mask(_aggregate(images, w, seg_spec, cfg), lc, seg_spec["mask"])
+        s = _aggregate(images, w, seg_spec, cfg)
+        for g in gates:
+            s = s.multiply(g)
+        return apply_mask(s, lc, seg_spec["mask"])
 
     base = masked(weights)
     mn, mx = base, base
@@ -305,22 +416,74 @@ def sensitivity_present(stack, lc, cfg, extras=None):
     return ee.Image.cat(bands)
 
 
-# --- AHP utilities (offline; for thesis-grade weight elicitation) ------------
-def consistency_ratio(matrix):
-    """AHP consistency ratio + priority vector from a Saaty pairwise matrix.
+# --- AHP utilities (offline; drives tools/derive_weights.py) -----------------
+#: Saaty random index RI(n). n <= 10 from Saaty (1987, p. 171), reprinted by
+#: Francisco et al. (2019, tab. 3) and Elboshy et al. (2022, tab. 1); n = 11..15
+#: from Haile & Gelalcha (2026, tab. 2, p. 316), the only consulted source that
+#: publishes the table beyond n = 10. Above n = 15 there is no sourced value, so
+#: ``random_index`` raises rather than silently reusing the last one.
+RANDOM_INDEX = {
+    1: 0.00, 2: 0.00, 3: 0.58, 4: 0.90, 5: 1.12, 6: 1.24, 7: 1.32, 8: 1.41,
+    9: 1.45, 10: 1.49, 11: 1.51, 12: 1.48, 13: 1.56, 14: 1.57, 15: 1.59,
+}
 
-    Returns ``(cr, weights)``. ``cr <= 0.10`` is the acceptability threshold.
-    Weights in segments.yaml are elicited priorities used directly; this helper
-    is available to back them with a pairwise matrix when one is provided.
+
+def random_index(n):
+    """Saaty random index for a matrix of order ``n`` (see ``RANDOM_INDEX``)."""
+    try:
+        return RANDOM_INDEX[n]
+    except KeyError:
+        raise ValueError(
+            f"no sourced random index for n={n}; RANDOM_INDEX covers n=1..15 "
+            "(Saaty 1987 p. 171; Haile & Gelalcha 2026 tab. 2 p. 316). Extending it "
+            "requires a citable table, not an extrapolation."
+        ) from None
+
+
+def principal_eigenvector(matrix):
+    """True principal eigenvector of a Saaty matrix, normalized to sum 1.
+
+    Returns ``(w, lambda_max)`` from ``numpy.linalg.eig`` — the eigenvector of the
+    largest real eigenvalue. This is the priority vector the AHP is defined on;
+    the column-normalized row mean (``approx_eigenvector``) is only an
+    approximation of it, and the two disagree enough to matter when a matrix is
+    inconsistent.
+    """
+    import numpy as np
+
+    A = np.asarray(matrix, dtype=float)
+    vals, vecs = np.linalg.eig(A)
+    k = int(np.argmax(vals.real))
+    lam = float(vals[k].real)
+    w = np.abs(vecs[:, k].real)
+    return (w / w.sum()).tolist(), lam
+
+
+def approx_eigenvector(matrix):
+    """Column-normalized row-mean approximation of the priority vector.
+
+    Kept only to quantify its disagreement with ``principal_eigenvector``; it is
+    not what the reported weights are built from.
+    """
+    import numpy as np
+
+    A = np.asarray(matrix, dtype=float)
+    return (A / A.sum(axis=0)).mean(axis=1).tolist()
+
+
+def consistency_ratio(matrix):
+    """AHP consistency ratio + true priority vector from a Saaty pairwise matrix.
+
+    Returns ``(cr, weights)``; ``cr <= 0.10`` is the acceptability threshold.
+    ``lambda_max`` comes from the same eigendecomposition as the weights, so CI
+    and the priority vector are consistent with one another.
     """
     import numpy as np
 
     A = np.asarray(matrix, dtype=float)
     n = A.shape[0]
-    w = (A / A.sum(axis=0)).mean(axis=1)        # column-normalized priority vector
-    lam = float((A @ w / w).mean())             # principal eigenvalue (approx)
+    w, lam = principal_eigenvector(A)
     ci = (lam - n) / (n - 1) if n > 1 else 0.0
-    ri = {1: 0.0, 2: 0.0, 3: 0.58, 4: 0.90, 5: 1.12,
-          6: 1.24, 7: 1.32, 8: 1.41, 9: 1.45, 10: 1.49}.get(n, 1.49)
+    ri = random_index(n)
     cr = ci / ri if ri else 0.0
-    return cr, w.tolist()
+    return cr, w

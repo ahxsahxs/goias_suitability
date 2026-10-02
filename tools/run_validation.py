@@ -5,15 +5,22 @@ failure doesn't lose the others) and prints a clean, thesis-ready summary:
   1. Spearman rho  — municipal mean suitability vs MOD17 NPP (cropland-restricted)
   2. within-crop suitability->season-GPP gradient (the repaired validator)
   3. soybean Boyce index / AUC (presence vs suitability)
-  4. ANOVA of MOD17 proxy across the (new k=7) zones
+  4. ANOVA of MOD17 proxy across the k=4 zones
   5. RF-vs-knowledge Cohen's kappa (soybean)
+
+Results are written to thesis/Chapters/validation_metrics.csv and
+validation_zone_anova.csv as well as printed, so the thesis tables and the
+dashboard scorecard read the numbers instead of re-typing them. Zone ids are
+reported 1-based (the zones_present raster is 0-based).
 
 Run:  EE_PROJECT=probformer ../.venv/bin/python tools/run_validation.py
 """
 from __future__ import annotations
 
+import os
 import sys
 import time
+from pathlib import Path
 
 sys.path.insert(0, "src")
 
@@ -27,6 +34,21 @@ import zoning  # noqa: E402
 P = utils.init()
 AOI = utils.load_aoi(P)
 SEGS = list(utils.cfg("segments")["segments"])
+
+# House pattern: CSVs land in thesis/Chapters/; $SCRATCHPAD overrides.
+REPO = Path(__file__).resolve().parent.parent
+CHAPTERS = REPO / "thesis" / "Chapters"
+OUT = Path(os.environ.get("SCRATCHPAD", str(CHAPTERS)))
+OUT.mkdir(parents=True, exist_ok=True)
+
+# Flat accumulator: every block appends {metric, segment, value, ...} rows here and
+# main() writes them once, so a block that fails loses only its own rows.
+METRICS: list[dict] = []
+
+
+def record(metric, value, *, segment="", n=None, p=None, extra=""):
+    METRICS.append({"metric": metric, "segment": segment, "value": value,
+                    "n": n, "p": p, "extra": extra})
 
 
 def log(m):
@@ -76,6 +98,7 @@ def spearman_mod17():
     for s in SEGS:
         r = metrics.spearman(df[f"suit_{s}"], df["mod17_npp"])
         print(f"  {s:14s} rho={r['rho']:+.3f}  p={r['p']:.1e}  n={r['n']}")
+        record("spearman_mod17", r["rho"], segment=s, n=r["n"], p=r["p"])
 
 
 # 2. within-crop season-GPP gradient (repaired validator) -------------------------
@@ -91,6 +114,8 @@ def within_crop():
         r = metrics.within_crop_gradient(g[f"suit_{crop}"], g["season_gpp"])
         print(f"  {crop:12s} rho={r['rho']:+.3f} p={r['p']:.1e} n={r['n']} "
               f"monotonic={r['monotonic']}  bin_gpp={[round(v,4) for v in r['bin_gpp']]}")
+        record("within_crop_gpp_rho", r["rho"], segment=crop, n=r["n"], p=r["p"],
+               extra=f"monotonic={r['monotonic']}")
 
 
 # 3. soybean Boyce / AUC ----------------------------------------------------------
@@ -102,10 +127,14 @@ def boyce_auc():
     sdf = zoning.fc_to_df(smp)
     pres = sdf[sdf.rl_role == external.ROLE_CODES["soybean"]]["suit_soybean"]
     print(f"  soybean presence pixels in sample: {len(pres)} / {len(sdf)}")
-    print("  soybean Boyce index:",
-          round(metrics.continuous_boyce(pres, sdf["suit_soybean"])["boyce"], 3))
+    boyce = metrics.continuous_boyce(pres, sdf["suit_soybean"])["boyce"]
+    print("  soybean Boyce index:", round(boyce, 3))
+    record("boyce", boyce, segment="soybean", n=len(sdf))
     sdf["is_soy"] = (sdf.rl_role == external.ROLE_CODES["soybean"]).astype(int)
-    print("  soybean AUC:", round(metrics.auc(sdf["is_soy"], sdf["suit_soybean"])["auc"], 3))
+    auc = metrics.auc(sdf["is_soy"], sdf["suit_soybean"])["auc"]
+    print("  soybean AUC:", round(auc, 3))
+    record("auc", auc, segment="soybean", n=len(sdf),
+           extra=f"presences={len(pres)}")
 
 
 # 4. ANOVA of MOD17 across the new zones ------------------------------------------
@@ -117,12 +146,20 @@ def anova_zones():
           .stratifiedSample(numPoints=max(1, CAP // n_strata), classBand="strat_grid",
                             region=AOI, scale=1000, seed=2, dropNulls=True, tileScale=TS))
     zdf = zoning.fc_to_df(zs)
-    groups = {int(z): g["mod17_npp"].values for z, g in zdf.groupby("zone")}
+    # raster is 0-based, reporting is 1-based
+    groups = {int(z) + 1: g["mod17_npp"].values for z, g in zdf.groupby("zone")}
     a = metrics.anova(groups)
     print(f"  zones present in sample: {sorted(groups)}")
     print(f"  F={a['F']:.1f} p={a['p']:.1e}")
+    rows = []
     for z, mu, n in zip(sorted(groups), a["group_means"], a["group_n"]):
         print(f"    zone {z}: mean NPP={mu:.4f}  n={n}")
+        rows.append({"zone": z, "mean_npp": mu, "n": n,
+                     "F": a["F"], "p": a["p"]})
+    path = OUT / "validation_zone_anova.csv"
+    pd.DataFrame(rows).to_csv(path, index=False)
+    print(f"  wrote {path}")
+    record("anova_F", a["F"], extra=f"k={len(groups)}", p=a["p"])
 
 
 # 5. RF-vs-knowledge Cohen kappa (soybean) ----------------------------------------
@@ -146,6 +183,9 @@ def rf_kappa():
     rf_share = cdf["rf_cls"].mean()
     print(f"  soybean RF-vs-knowledge Cohen kappa = {k['kappa']:+.3f}  n={k['n']}")
     print(f"  knowledge S2+ share={kb_share:.3f}   RF high-prob share={rf_share:.3f}")
+    record("cohen_kappa_rf", k["kappa"], segment="soybean", n=k["n"])
+    record("kb_s2plus_share", kb_share, segment="soybean", n=k["n"])
+    record("rf_highprob_share", rf_share, segment="soybean", n=k["n"])
 
 
 def main():
@@ -155,6 +195,12 @@ def main():
     block("3. soybean Boyce / AUC", boyce_auc)
     block("4. ANOVA MOD17 across zones", anova_zones)
     block("5. RF-vs-knowledge Cohen kappa (soybean)", rf_kappa)
+    if METRICS:
+        path = OUT / "validation_metrics.csv"
+        pd.DataFrame(METRICS).to_csv(path, index=False)
+        log(f"wrote {path} ({len(METRICS)} rows)")
+    else:
+        log("!! no metrics recorded -- every block failed")
     log("=== validation complete ===")
 
 

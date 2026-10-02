@@ -81,16 +81,10 @@ TR = {
             "cattle": "Cattle", "conservation": "Conservation", "solar": "Solar PV",
         },
         "zone": [
-            "Zone 1 — high clayey plateau (cattle)",
-            "Zone 2 — riparian lowland (pisciculture)",
-            "Zone 3 — intermediate plateau (other crops)",
-            "Zone 4 — wet transitional valley (conservation)",
-            "Zone 5 — steep conservation highland",
-            "Zone 6 — sandy low-drainage plain (solar PV)",
-            "Zone 7 — hot, sandy, remote lowland (cattle/pisciculture)",
-            "Zone 8 — peri-urban high plateau (cattle)",
-            "Zone 9 — dry plateau (soybean/solar)",
-            "Zone 10 — prime cropping plateau (soybean & sugarcane)",
+            "Zone 1 — high clayey cropping plateau (sugarcane)",
+            "Zone 2 — drained lowland (pisciculture)",
+            "Zone 3 — hot sandy pasture lowland (cattle)",
+            "Zone 4 — steep conservation escarpment (conservation)",
         ],
         "role": ["Other", "Soybean", "Sugarcane", "Other crops",
                  "Pisciculture", "Pasture", "Native"],
@@ -127,7 +121,7 @@ TR = {
         "cbar.deltaS": "ΔS (future − present), SSP5-8.5 2051–2070",
         "cbar.agreement": "fraction of GCMs agreeing on the sign of change",
         "fig_4_2.panel": "{seg} — FAO class",
-        "fig_4_3.title": "Agro-environmental zones (k = 10)",
+        "fig_4_3.title": "Agro-environmental zones (k = {k})",
         "fig_4_4.panel": "Δ {seg}",
         "fig_4_5.title": "Ensemble agreement — other annual crops\n(SSP5-8.5, 2051–2070)",
         "fig_4_5.mean": "territory-mean agreement = {val:.3f}",
@@ -137,9 +131,9 @@ TR = {
         "fig_4_8.annot": "{pct:.1f}% of assessed land",
         "fig_4_9.left": "Municipal mean soybean suitability",
         "fig_4_9.right": "Vulnerable municipalities\n(projected other-crops ΔS < −0.05)",
-        "fig_4_10.suptitle": "Cluster-validity indices and stability by k  (selected k = 10)",
+        "fig_4_10.suptitle": "Cluster-validity indices and stability by k  (selected k = {k})",
         "fig_4_10.panel": ["Silhouette ↑", "Davies–Bouldin ↓", "Gap statistic ↑", "Stability ARI ↑"],
-        "fig_4_10.kline": "selected k (10)",
+        "fig_4_10.kline": "selected k ({k})",
         "fig_4_10.xlabel": "k",
         "fig_4_11.suptitle": "Factor share of the spatial variance of each segment's suitability",
         "fig_4_11.xlabel": "variance share (symmetric-log scale)",
@@ -175,16 +169,10 @@ TR = {
             "solar": "Geração fotovoltaica",
         },
         "zone": [
-            "Zona 1 — planalto alto e argiloso (pecuária)",
-            "Zona 2 — baixada ripária (piscicultura)",
-            "Zona 3 — planalto intermediário (outras culturas)",
-            "Zona 4 — vale úmido de transição (conservação)",
-            "Zona 5 — planalto alto e íngreme de conservação",
-            "Zona 6 — planície arenosa de baixa drenagem (geração fotovoltaica)",
-            "Zona 7 — baixada quente, arenosa e remota (pecuária/piscicultura)",
-            "Zona 8 — planalto alto periurbano (pecuária)",
-            "Zona 9 — planalto seco (soja/solar)",
-            "Zona 10 — planalto de cultivo privilegiado (soja e cana)",
+            "Zona 1 — planalto de cultivo alto e argiloso (cana-de-açúcar)",
+            "Zona 2 — baixada drenada (piscicultura)",
+            "Zona 3 — baixada quente e arenosa de pastagem (pecuária)",
+            "Zona 4 — escarpa íngreme de conservação (conservação)",
         ],
         "role": ["Outros", "Soja", "Cana-de-açúcar", "Outras culturas",
                  "Piscicultura", "Pastagem", "Vegetação nativa"],
@@ -221,7 +209,7 @@ TR = {
         "cbar.deltaS": "ΔS (futuro − presente), SSP5-8.5 2051–2070",
         "cbar.agreement": "fração de modelos que concordam quanto ao sinal da mudança",
         "fig_4_2.panel": "{seg} — classe FAO",
-        "fig_4_3.title": "Zonas agroambientais (k = 10)",
+        "fig_4_3.title": "Zonas agroambientais (k = {k})",
         "fig_4_4.panel": "Δ {seg}",
         "fig_4_5.title": "Concordância entre modelos — outras culturas anuais\n(SSP5-8.5, 2051–2070)",
         "fig_4_5.mean": "concordância média territorial = {val:.3f}",
@@ -231,9 +219,9 @@ TR = {
         "fig_4_8.annot": "{pct:.1f}% da terra avaliada",
         "fig_4_9.left": "Viabilidade média municipal da soja",
         "fig_4_9.right": "Municípios vulneráveis\n(ΔS projetado de outras culturas < −0,05)",
-        "fig_4_10.suptitle": "Índices de validade de agrupamento e estabilidade por k  (k selecionado = 10)",
+        "fig_4_10.suptitle": "Índices de validade de agrupamento e estabilidade por k  (k selecionado = {k})",
         "fig_4_10.panel": ["Silhueta ↑", "Davies–Bouldin ↓", "Estatística de gap ↑", "ARI de estabilidade ↑"],
-        "fig_4_10.kline": "k selecionado (10)",
+        "fig_4_10.kline": "k selecionado ({k})",
         "fig_4_10.xlabel": "k",
         "fig_4_11.suptitle": "Parcela de cada fator na variância espacial da viabilidade, por segmento",
         "fig_4_11.xlabel": "parcela da variância (escala simétrica-log)",
@@ -284,6 +272,27 @@ def seg_title(s):
 
 def zone_labels():
     return _tr()["zone"]
+
+
+def zone_k():
+    """The exported zone count, read from zone_profiles.csv -- never hardcoded.
+
+    Same rule tools/build_dashboard_assets.py already follows. A literal here
+    silently outlives the asset: the marked k drifted away from the exported
+    zones_present once already, leaving fig_4_10 contradicting its own caption.
+
+    Module-level (not a Renderer method) because _audit_i18n() needs it to size
+    the zone-label check before any Renderer exists.
+    """
+    import pandas as pd
+    path = Path(os.environ.get("SCRATCHPAD", str(FIG_DIR.parent.parent.parent))) / "zone_profiles.csv"
+    if not path.exists():
+        path = FIG_DIR.parent.parent.parent / "zone_profiles.csv"
+    if not path.exists():
+        raise SystemExit(
+            f"{path} not found -- fig_4_10 marks the k that was actually exported, "
+            f"so it needs the zone profile table written by the Part 10 cascade.")
+    return len(pd.read_csv(path))
 
 
 def role_labels():
@@ -340,7 +349,15 @@ def _audit_i18n():
             errs.append(f"{lang}: seg labels missing for {sorted(missing)}")
     if set(en["seg"]) != set(pt["seg"]):
         errs.append("seg keys differ en/pt")
-    for key, n in (("zone", 10), ("role", 7), ("fao", 4), ("fig_4_10.panel", 4),
+    # The zone-label lists must track the real zone count (zone_profiles.csv), never
+    # a literal -- see _zone_k(). If that CSV is unreadable, fall back to the en list
+    # so this check still catches an en/pt length mismatch instead of crashing.
+    try:
+        n_zone = zone_k()
+    except SystemExit as e:                      # zone_profiles.csv missing/unreadable
+        errs.append(f"could not determine the zone count: {e}")
+        n_zone = len(en.get("zone", []))
+    for key, n in (("zone", n_zone), ("role", 7), ("fao", 4), ("fig_4_10.panel", 4),
                    ("legend.underused", 2), ("legend.bestcrop", 2), ("legend.vuln", 2)):
         for lang, d in (("en", en), ("pt", pt)):
             got = len(d.get(key, []))
@@ -502,7 +519,7 @@ class Renderer:
         self._save(fig, "fig_4_2", tight=False)
 
     def fig_4_3(self):
-        """Agro-environmental zones (k, read from zone_labels() — currently 10).
+        """Agro-environmental zones (k, read from zone_labels() — currently 4).
 
         Full-width map with the legend below (not to the right): a side legend
         forced the map itself into ~60% of the figure canvas, wasting page width
@@ -516,11 +533,17 @@ class Renderer:
         arr = self.thumb(self.A("zones_present").visualize(min=0, max=len(labels) - 1, palette=pal))
         fig, ax = plt.subplots(figsize=(9, 10.4))
         self._imshow_map(ax, arr, carto=True, labels=True)
-        ax.set_title(t("fig_4_3.title"), fontsize=12)
+        ax.set_title(t("fig_4_3.title", k=len(labels)), fontsize=12)
         handles = [mpatches.Patch(color=c, label=l) for c, l in zip(pal, labels)]
+        # One legend column per two zones, capped at 2: with 10 long labels two
+        # columns kept the block from running off the page; with 4 it would leave
+        # half the reserved margin empty. Margin follows the resulting row count.
+        ncol = min(2, max(1, (len(labels) + 1) // 2))
+        nrow = -(-len(labels) // ncol)
         ax.legend(handles=handles, loc="upper center", bbox_to_anchor=(0.5, -0.08),
-                  frameon=False, fontsize=9, ncol=2, columnspacing=1.2, handlelength=1.4)
-        fig.subplots_adjust(left=0.09, right=0.98, top=0.95, bottom=0.22)
+                  frameon=False, fontsize=9, ncol=ncol, columnspacing=1.2, handlelength=1.4)
+        fig.subplots_adjust(left=0.09, right=0.98, top=0.95,
+                            bottom=0.10 + 0.024 * nrow)
         self._save(fig, "fig_4_3", tight=False)
 
     def fig_4_7(self):
@@ -765,14 +788,18 @@ class Renderer:
         import pandas as pd
         return pd.read_csv(path)
 
+    def _zone_k(self):
+        """Deprecated alias -- see the module-level zone_k()."""
+        return zone_k()
+
     def fig_4_10(self):
-        """k-selection: validity indices + cluster stability vs k (marks k=10),
-        swept over k=2..20 (CLAUDE.md §11: the extended sweep past k=10 that
-        confirms the silhouette peak isn't a truncated-range artifact). 2x2
-        grid instead of 1x4: four panels in one row left each too narrow to
-        read once the sweep doubled in length."""
+        """k-selection: validity indices + cluster stability vs k, swept over
+        k=2..20 (CLAUDE.md §11: the extended sweep that shows the chosen k is not
+        a truncated-range artifact). The marked k is read from zone_profiles.csv,
+        i.e. from what was actually exported. 2x2 grid instead of 1x4: four panels
+        in one row left each too narrow to read once the sweep doubled in length."""
         df = self._read_diag("zoning_kselect.csv").sort_values("k")
-        K = 10
+        K = self._zone_k()
         ks_all = sorted(df["k"].unique())
         xticks = ks_all if len(ks_all) <= 10 else ks_all[::2]
         fig, axes = plt.subplots(2, 2, figsize=(11, 9))
@@ -788,14 +815,14 @@ class Renderer:
                             ecolor="#999", elinewidth=0.8, capsize=2)
             kline = ax.axvline(K, color="#d7191c", ls="--", lw=1)
             if j == 0:
-                kline.set_label(t("fig_4_10.kline"))
+                kline.set_label(t("fig_4_10.kline", k=K))
                 ax.legend(fontsize=8, frameon=False, loc="lower right")
             ax.set_title(titles[j], fontsize=10)
             if j >= 2:
                 ax.set_xlabel(t("fig_4_10.xlabel"))
             ax.set_xticks(xticks)
         fig.subplots_adjust(hspace=0.28, wspace=0.22)
-        fig.suptitle(t("fig_4_10.suptitle"), fontsize=12)
+        fig.suptitle(t("fig_4_10.suptitle", k=K), fontsize=12)
         self._save(fig, "fig_4_10")
 
     def fig_4_11(self):
@@ -973,8 +1000,21 @@ def main():
         return
     _audit_i18n()
     group = argv[0] if argv else "present"
-    names = ({"present": PRESENT, "future": FUTURE, "diag": DIAG}.get(group)
-             or PRESENT + FUTURE + DIAG)
+    groups = {"present": PRESENT, "future": FUTURE, "diag": DIAG}
+    all_names = PRESENT + FUTURE + DIAG
+    if group in groups:
+        names = groups[group]
+    elif group == "all":
+        names = all_names
+    elif all(a in all_names for a in argv):
+        # Individual figure names. Worth having when only some assets exist, or
+        # under a restricted compute quota: rendering the whole set to get one
+        # figure is what made a single missing agreement_* asset fail the run.
+        names = argv
+    else:
+        raise SystemExit(
+            f"unknown figure/group: {[a for a in argv if a not in all_names] or group}\n"
+            f"groups: {sorted(groups)} + 'all'\nfigures: {all_names}")
     r = Renderer()
     for n in names:
         getattr(r, n)()

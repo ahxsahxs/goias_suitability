@@ -10,8 +10,10 @@ Run:  EE_PROJECT=probformer ../.venv/bin/python tools/extract_present.py
 """
 from __future__ import annotations
 
+import os
 import sys
 import time
+from pathlib import Path
 
 sys.path.insert(0, "src")
 
@@ -26,6 +28,13 @@ AOI = utils.load_aoi(P)
 SEG = utils.cfg("segments")
 SEGS = list(SEG["segments"])
 TS, CAP = 8, 4500
+
+# House pattern (see tools/anchor_breakpoints.py): CSVs land in thesis/Chapters/
+# so make_figures._read_diag finds them; $SCRATCHPAD overrides for scratch runs.
+REPO = Path(__file__).resolve().parent.parent
+CHAPTERS = REPO / "thesis" / "Chapters"
+OUT = Path(os.environ.get("SCRATCHPAD", str(CHAPTERS)))
+OUT.mkdir(parents=True, exist_ok=True)
 
 
 def log(m):
@@ -51,12 +60,30 @@ def block(name, fn):
 
 # A. zone area shares (% of AOI) --------------------------------------------------
 def zone_shares():
-    hist = zones.reduceRegion(
-        reducer=ee.Reducer.frequencyHistogram(), geometry=AOI, scale=250,
-        maxPixels=1e10, tileScale=TS).get("zone").getInfo()
-    tot = sum(hist.values())
-    for k in sorted(hist, key=lambda x: int(x)):
-        print(f"  zone {k}: {100*hist[k]/tot:5.1f}%  ({int(hist[k])} px)")
+    """Zone area shares via pixelArea(), written to zone_area.csv.
+
+    CLAUDE.md §7: areas come from ee.Image.pixelArea(), never from a pixel count.
+    A frequencyHistogram counts pixels, which is neither equal-area under
+    EPSG:4326 nor stable across reduction scales. zone_profiles.csv's `n` is a
+    *sample* count and is not an area share either (it differs by ~6 points on
+    the largest zone) -- this CSV is the only correct source for the area row of
+    the four zone-indexed thesis tables.
+    """
+    grouped = (ee.Image.pixelArea().divide(1e6).addBands(zones.toInt())
+               .reduceRegion(
+                   reducer=ee.Reducer.sum().group(groupField=1, groupName="zone"),
+                   geometry=AOI, scale=250, maxPixels=1e10, tileScale=TS)
+               .get("groups").getInfo())
+    tot = sum(g["sum"] for g in grouped)
+    rows = []
+    for g in sorted(grouped, key=lambda x: int(x["zone"])):
+        z = int(g["zone"]) + 1               # raster is 0-based, reporting is 1-based
+        rows.append({"zone": z, "area_km2": g["sum"], "share_pct": 100 * g["sum"] / tot})
+        print(f"  zone {z}: {100*g['sum']/tot:5.1f}%  ({g['sum']:,.0f} km2)")
+    print(f"  total classified: {tot:,.1f} km2")
+    path = OUT / "zone_area.csv"
+    pd.DataFrame(rows).to_csv(path, index=False)
+    print(f"  wrote {path}")
 
 
 # B. present S1+S2 share per segment (mean of class>=2 over evaluated land) --------
@@ -133,7 +160,9 @@ def municipal():
           f"min={df.suit_soybean.min():.3f} max={df.suit_soybean.max():.3f}")
     print(f"  S1-level (>=0.75): {(df.suit_soybean >= 0.75).sum()}   "
           f"S2+ (>=0.50): {(df.suit_soybean >= 0.50).sum()}")
-    zc = df.zone.round().astype(int).value_counts().sort_index()
+    # municipal_godf aggregates the 0-based raster, so shift to 1-based reporting
+    df["zone"] = df.zone.round().astype(int) + 1
+    zc = df.zone.value_counts().sort_index()
     print(f"  municipalities by majority zone: {zc.to_dict()}")
     vuln = df[df.delta_other_crops < -0.05]
     print(f"  vulnerable (delta_other_crops < -0.05): {len(vuln)}  "
@@ -145,8 +174,8 @@ def municipal():
               f"suit={r.suit_soybean:.3f} unused={r.underused_soybean:.3f}")
     print("  TOP-5 VULNERABILITY (most negative delta_other_crops):")
     for _, r in df.nsmallest(5, "delta_other_crops").iterrows():
-        print(f"    {r.NM_MUN:28s} dS={r.delta_other_crops:.3f} zone={int(round(r.zone))}")
-    out_path = "thesis/Chapters/Figures/municipal_ranking.csv"
+        print(f"    {r.NM_MUN:28s} dS={r.delta_other_crops:.3f} zone={int(r.zone)}")
+    out_path = CHAPTERS / "Figures" / "municipal_ranking.csv"   # not CWD-relative
     df.to_csv(out_path, index=False,
               columns=["NM_MUN", "delta_other_crops", "suit_soybean", "suit_sugarcane",
                        "underused_soybean", "underused_sugarcane", "zone", "opportunity"])

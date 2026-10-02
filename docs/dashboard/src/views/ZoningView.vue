@@ -29,9 +29,11 @@ const { data: profiles } = useCsv<ZoneProfileRow>('csv/zone_profiles.csv')
 const zoneCount = computed(() => profiles.value?.length ?? 0)
 const totalN = computed(() => (profiles.value ?? []).reduce((sum, p) => sum + p.n, 0))
 
+// Keyed by the 0-based palette slot (= the zones_present raster value), while
+// p.zone is the 1-based reported name — hence the -1. See zoneLegend().
 const zoneLabelsByIndex = computed(() =>
   Object.fromEntries(
-    (profiles.value ?? []).map((p) => [p.zone, labels.value[p.comparative_segment] ?? p.comparative_segment]),
+    (profiles.value ?? []).map((p) => [p.zone - 1, labels.value[p.comparative_segment] ?? p.comparative_segment]),
   ),
 )
 const mapLegend = computed(() => zoneLegend(zoneCount.value, zoneLabelsByIndex.value))
@@ -49,6 +51,32 @@ const kselectData = computed<PlotlyDatum[]>(() => {
     { type: 'scatter', mode: 'lines+markers', name: 'davies_bouldin', x: rows.map((r) => r.k), y: rows.map((r) => r.davies_bouldin), yaxis: 'y2' },
   ]
 })
+
+// Mark the k that was actually exported. Neither curve peaks at the selected k
+// (the territory is only weakly clustered at every k — the choice rests on
+// stability, not on a silhouette maximum), so without this line the chart gives
+// the reader no indication of which k was adopted. Mirrors fig_4_10 in the thesis.
+const kselectLayout = computed(() => ({
+  height: 280,
+  xaxis: { title: { text: 'k' } },
+  yaxis: { title: { text: 'silhueta' } },
+  yaxis2: { title: { text: 'davies-bouldin' }, overlaying: 'y' as const, side: 'right' as const },
+  shapes: zoneCount.value
+    ? [{
+        type: 'line' as const,
+        x0: zoneCount.value, x1: zoneCount.value,
+        yref: 'paper' as const, y0: 0, y1: 1,
+        line: { color: '#d7191c', width: 1, dash: 'dash' as const },
+      }]
+    : [],
+  annotations: zoneCount.value
+    ? [{
+        x: zoneCount.value, yref: 'paper' as const, y: 1,
+        text: `k = ${zoneCount.value}`, showarrow: false,
+        yanchor: 'bottom' as const, font: { color: '#d7191c', size: 11 },
+      }]
+    : [],
+}))
 
 const { data: factorVariance } = useCsv<FactorVarianceRow>('csv/factor_variance.csv')
 const selectedFvSegment = ref('soybean')
@@ -119,12 +147,7 @@ const hexbinData = computed<PlotlyDatum[]>(() => {
     <h2>Por que K={{ zoneCount }}? (diagnóstico de seleção de k)</h2>
     <PlotlyChart
       :data="kselectData"
-      :layout="{
-        height: 280,
-        xaxis: { title: { text: 'k' } },
-        yaxis: { title: { text: 'silhueta' } },
-        yaxis2: { title: { text: 'davies-bouldin' }, overlaying: 'y', side: 'right' },
-      }"
+      :layout="kselectLayout"
     />
 
     <h2>Decomposição da variância dos fatores</h2>

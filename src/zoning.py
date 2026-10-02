@@ -395,8 +395,16 @@ def profile_zones(df, labels, band_names, segments, realized_fracs=None):
       AOI (the |largest| standardized departures): what makes the zone distinct.
     - ``rl_*`` — mean realized-use fractions if ``realized_fracs`` band names are
       present in ``df`` (descriptive composition; never clustered).
+
+    Zone ids are emitted **1-based** (1..K). sklearn labels and the exported
+    ``zones_present`` raster are 0-based (0..K-1); the +1 is applied here, once,
+    so that every user-facing surface — this CSV, the thesis tables, the figures
+    and the dashboard — numbers zones from 1. Do not add a second +1 downstream.
     """
+    import numpy as np
     import pandas as pd
+
+    labels = np.asarray(labels) + 1          # 0-based (sklearn) -> 1-based (reported)
 
     d = df.copy()
     d["zone"] = labels

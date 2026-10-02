@@ -24,13 +24,27 @@ export interface FaoClasses {
 export interface AggregationConfig {
   epsilon: number
   sensitivity_delta: number
+  /** Exponent of the regional adaptation w = normalize(w_lit * sigma(mu)^lambda). */
+  lambda_regional: number
 }
 export type MembershipType = 'increasing' | 'decreasing' | 'range'
+/**
+ * `limiting` factors enter the weighted aggregation; `gate` factors are
+ * spatially constant over GO/DF, so they carry no weight and multiply the
+ * aggregate instead (anchored so the present value gives mu = 1).
+ */
+export type FactorRole = 'limiting' | 'gate'
 export interface FactorConfig {
+  /** Machine-written by tools/derive_weights.py; never hand-edited. */
   weight: number
+  role: FactorRole
   type: MembershipType
   points: number[]
-  ref: string
+  /** How the BREAKPOINTS were set, not how the weight was derived. */
+  basis: 'literatura' | 'empirico'
+  source?: string
+  locator?: string
+  note: string
 }
 export interface SegmentDef {
   label: string
@@ -41,20 +55,63 @@ export interface SegmentDef {
 export interface SegmentsConfig {
   fao_classes: FaoClasses
   aggregation: AggregationConfig
+  extras_prefixes: Record<string, string>
   segments: Record<string, SegmentDef>
 }
 
 // --- config/ahp_matrices.yaml -> json/ahp_matrices.json -------------------------
+/** One hand-written anchor: an ordinal band, plus the published priority when
+ *  the factor maps onto a source criterion. */
+export interface AhpAnchor {
+  band: number
+  r?: number
+  rank?: number
+  n_criteria?: number
+  source?: string
+  locator?: string
+  block?: string
+  rationale: string
+}
+/** Everything tools/derive_weights.py writes back. */
+export interface AhpDerived {
+  bands_final: Record<string, number>
+  matrix: number[][]
+  judgements: { pair: [string, string]; a_ij: number; rule: string; basis: string; source: string }[]
+  lambda_max: number
+  consistency_index: number
+  random_index: number
+  consistency_ratio: number
+  /** w_lit — the literature prior, before the regional adaptation. */
+  priority_vector: number[]
+  approx_eigenvector_max_gap: number
+  class_counts: { A: number; B: number; C: number }
+  /** Share of pairwise judgements taken directly from a published priority ratio. */
+  anchored_fraction: number
+  author_judgement_count: number
+  override_count: number
+  revisions: Record<string, string | number>[]
+}
 export interface AhpSegment {
   factors: string[]
-  matrix: number[][]
-  consistency_ratio: number
-  priority_vector: number[]
-  config_weights: number[]
+  anchors: Record<string, AhpAnchor>
+  derived: AhpDerived
 }
 export interface AhpMatrices {
-  _note: string
+  scale: { allowed: number[]; cr_threshold: number; max_revisions_per_segment: number }
   segments: Record<string, AhpSegment>
+}
+
+// --- csv/ahp_weights.csv ---------------------------------------------------------
+export interface AhpWeightRow {
+  segment: string
+  factor: string
+  /** Literature prior (principal eigenvector of the pairwise matrix). */
+  w_lit: number
+  /** sigma(mu) over available land — the regional discriminating power. */
+  d: number
+  w_final: number
+  w_atual: number | null
+  delta: number | null
 }
 
 // --- json/sensitivity_<segment>.json --------------------------------------------

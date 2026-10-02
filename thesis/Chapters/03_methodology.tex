@@ -11,6 +11,8 @@ um indicador independente de produtividade para o mascaramento, a análise poten
 realizado e a validação. A Figura~\ref{fig:metodologia} resume esse fluxo, do catálogo público ao
 atlas de viabilidade final.
 
+%% TODO: é possivel substituir essa imagem por um diagrama Tikz ou SVG?
+
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.75\textwidth]{Chapters/Figures/diagrama_metodologia.png}
@@ -63,12 +65,14 @@ Acessibilidade & Logaritmo do tempo de viagem à cidade mais próxima & 1 \\
 \end{table}
 
 As variáveis climáticas derivam de uma climatologia mensal de 1991--2020 por uma transformação
-determinística reutilizada sem alteração para o clima futuro do CMIP6 (\S\ref{sec:cmip6}). É essa
-identidade dos caminhos de derivação que torna a mudança projetada um sinal puramente climático.
+determinística reutilizada sem alteração para o clima futuro do CMIP6 (\S\ref{sec:cmip6}).
+É essa unicidade dos caminhos de derivação que torna a mudança projetada um sinal puramente climático.
 
+%% TODO: (Zotero) citar Hengl (2018), OpenLandMap SOL v02
+%% TODO: tambem nao estamos utilizando distancia a agua semipermanente no modelo?
 O terreno vem de um modelo digital de elevação (MDE) de 30~m (com a orientação decomposta em
 componentes norte e leste). O solo é a média das profundidades de 0, 10 e 30~cm de seis
-propriedades das camadas OpenLandMap v0.2 a 250~m. % TODO(Zotero): citar Hengl (2018), OpenLandMap SOL v02
+propriedades das camadas OpenLandMap v0.2 a 250~m.
 A água combina a distância à água permanente, definida como ocorrência superior a 80\% no JRC Global
 Surface Water \citep{pekel_high-resolution_2016}, a sazonalidade da água de superfície (número de meses
 com água no ano) do mesmo produto e a densidade de drenagem derivada da acumulação de fluxo do
@@ -78,7 +82,7 @@ por quatro parâmetros harmônicos do ciclo sazonal de NDVI. A acessibilidade é
 de viagem até a cidade mais próxima.
 
 A cobertura genérica da terra gera as máscaras de áreas \emph{excluídas} e \emph{disponíveis}, além
-de frações de cobertura por classe para contexto. Essa camada é derivada do MapBiomas (coleção~10)
+de frações de cobertura por classe para contexto. Essa camada é derivada do MapBiomas
 para melhor refletir a realidade brasileira. 
 Na Fase~B, o mesmo MapBiomas alimenta,
 por uma derivação distinta (papel de uso realizado por cultura, não um agrupamento genérico de
@@ -146,42 +150,111 @@ $0{,}50$ e $0{,}75$:
 \end{cases}
 \end{equation*}
 onde $\mathrm{N}$ é \emph{não viável} e $\mathrm{S3}$, $\mathrm{S2}$, $\mathrm{S1}$ são,
-respectivamente, \emph{marginalmente}, \emph{moderadamente} e \emph{altamente viável}.
+respectivamente, \emph{marginalmente}, \emph{moderadamente} e \emph{altamente} viável.
 
-\subsection{Ponderação AHP e sensibilidade dos pesos}\label{sec:ahp}
+%% TODO: Esta subseção esta completamente confusa e nao passa uma visao simples da abordagem numerica
+%% TODO: foi feito over engineering da AHP.
+%% TODO: neste metodos existem muitas condicionais (se tal parametro tiver tal valor, faça isso, se nao, faça aquilo)
+%% TODO: isto introduz uma grande subjetividade do autor, o que nao é desejavel
+%% TODO: é preciso pensar ainda sobre as variaveis saturadas e de baixa variabilidade. A ponderação por lambda parece adequada, mas os fatores porta talvez sejam um excesso
+%% TODO: por fim, é necessário remover menções ao codiog (e.g. role: gate)
 
-Os pesos dos fatores são prioridades do Processo Analítico Hierárquico (AHP) \citep{saaty_analytic_1987}.
-Para um segmento com $n$ fatores, elicita-se uma matriz Saaty de comparação par a par
-$A = [a_{ij}]$ (escala 1--9, $a_{ji} = 1/a_{ij}$). O vetor de prioridades $w$ aproxima o seu autovetor
-principal normalizado pela média das linhas da matriz de colunas normalizadas, e $\lambda_{\max}$ é
-estimado pela média de $(Aw)_i / w_i$ \citep[pp.~4--5, eq.~1]{frish_enhancing_2025}. A coerência interna da
+\subsection{Ponderação AHP e adaptação regional}\label{sec:ahp}
+
+Os pesos dos fatores resultam de duas etapas declaradas e separáveis: uma \textbf{prioridade de
+literatura}, obtida pelo Processo Analítico Hierárquico (AHP) \citep{saaty_analytic_1987} a partir
+de julgamentos par a par ancorados em fontes publicadas, e uma \textbf{adaptação regional}, que
+corrige essa prioridade pelo poder discriminante que cada fator de fato exibe em GO~e~DF. A
+ponderação final não é, portanto, um vetor AHP puro, e sim uma combinação subjetivo--objetiva; a
+separação em duas etapas é o que a torna auditável. A cadeia é
+
+\begin{equation*}
+  \underbrace{\text{âncoras}}_{\text{entrada escrita à mão}} \longrightarrow A \longrightarrow
+  \underbrace{w^{\mathrm{lit}}}_{\text{autovetor principal}} \longrightarrow
+  w_i = \frac{w^{\mathrm{lit}}_i \, \sigma(\mu_i)^{\lambda}}
+             {\sum_j w^{\mathrm{lit}}_j \, \sigma(\mu_j)^{\lambda}} .
+\end{equation*}
+
+\paragraph{Etapa 1 --- prioridade de literatura.}
+Para um segmento com $n$ fatores constrói-se uma matriz Saaty de comparação par a par
+$A = [a_{ij}]$, com $a_{ij}$ restrito à \textbf{escala inteira} $\{1,\dots,9\}$ e seus recíprocos e
+$a_{ji} = 1/a_{ij}$. O vetor de prioridades $w^{\mathrm{lit}}$ é o \textbf{autovetor principal} de
+$A$ --- o autovetor associado ao maior autovalor real, normalizado para somar~1 --- e
+$\lambda_{\max}$ é esse mesmo autovalor, extraído da mesma decomposição, de modo que o índice de
+consistência e o vetor de prioridades sejam mutuamente coerentes. A aproximação usual pela média das
+linhas da matriz de colunas normalizadas é calculada apenas para \emph{medir} a sua discordância com
+o autovetor exato, que não excede 0,0054 entre os sete segmentos. A coerência interna da
 elicitação é quantificada pela razão de consistência \citep[p.~171]{saaty_analytic_1987}:
 \begin{equation*}
   \mathrm{RC} = \frac{\mathrm{IC}}{\mathrm{RI}}, \qquad
    \mathrm{IC} = \frac{\lambda_{\max} - n}{n - 1},
 \end{equation*}
-onde $\lambda_{\max}$ é o autovalor principal (estimado como acima) e $\mathrm{RI}$ é o valor esperado do índice aleatório
-para a ordem $n$. Uma ponderação é aceita quando $\mathrm{RC} \le 0{,}10$. Cada matriz de comparação
-par a par é registrada por completo. Todos os segmentos são folgadamente consistentes: $0{,}0015$ é a
-maior razão de consistência entre os sete (Tabela~\ref{tab:ahp-cr} do Anexo). Os pesos se apoiam,
-assim, em uma elicitação auditável e internamente coerente, e não em mera afirmação.
+onde $\mathrm{RI}$ é o índice aleatório esperado para a ordem~$n$. Uma ponderação é aceita quando
+$\mathrm{RC} \le 0{,}10$. A maior razão de consistência entre os sete segmentos é 0,046
+(Tabela~\ref{tab:ahp-cr} do Anexo).
 
-Os próprios pesos, além dos limiares, foram revistos frente à distribuição amostral: para cada fator, 
-a amplitude interquartil ($P_{75}-P_{25}$) sobre a terra disponível é comparada à amplitude do seu próprio limiar de pertinência. Um
-fator cuja distribuição real é estreita frente a esse intervalo é, na prática, quase constante em
-GO~e~DF --- toda a área recebe uma pertinência próxima de 1, e o fator não separa uma célula da
-outra --- por mais importante que a literatura o considere \emph{a priori}. A revisão desloca peso
-dos fatores de baixo poder discriminante para os de alto poder discriminante dentro do mesmo
-segmento, renormalizando para somar~1; a literatura fixa a \emph{forma} funcional de cada
-pertinência e o conjunto de fatores candidatos, mas não mais congela a ordem final de importância
-quando a evidência amostral aponta o contrário. A matriz
-de comparação par a par (Tabela~\ref{tab:ahp-cr} do Anexo) é reconstruída a partir dos novos pesos,
-preservando a razão de consistência $\le 0{,}10$.
+\paragraph{A direção da derivação.}
+Uma matriz de $n$ fatores tem $n(n-1)/2$ células livres. Se o autor pode escolher todas elas tendo
+em mãos um vetor de pesos desejado, a elicitação é apenas uma forma elaborada de reescrever esse
+vetor, e a RC resultante mede o cuidado da reconstrução, não a coerência do julgamento. Para que a
+derivação não possa colapsar nesse caso, a superfície escrita à mão não é a matriz, e sim um
+conjunto de \textbf{âncoras}: uma \emph{faixa ordinal} de importância (1 a 4) por fator, mais a
+prioridade publicada $r$ quando o fator corresponde a um critério de uma fonte. O autor fixa $n$
+ordinais por segmento, não $n(n-1)/2$ reais, e cada $a_{ij}$ é função determinística das âncoras,
+recomputada e conferida em código. Os julgamentos classificam-se em três classes: \textbf{A}, ambos
+os fatores ancorados na mesma fonte e no mesmo bloco, com $a_{ij}$ obtido do quociente das
+prioridades publicadas arredondado à escala de Saaty; \textbf{B}, um dos fatores ancorado; e
+\textbf{C}, nenhum deles. A \emph{fração ancorada} --- a proporção de pares de classe A --- é
+reportada por segmento, e varia de 0,08 (conservação) a 1,00 (soja e cana, integralmente de classe~A): onde ela é baixa, o que a RC mede é
+a coerência interna da escada ordinal do autor, não concordância com a literatura, e é assim que
+deve ser lida.
 
-Como os pesos são subjetivos, sua influência é adicionalmente limitada por uma perturbação de
-$\pm 20\%$, um peso de cada vez: cada peso é ampliado e reduzido em 20\% (com renormalização), e a
-amplitude $S_{\max} - S_{\min}$ da viabilidade resultante é relatada como banda de robustez por
-segmento, sendo esta a medida de incerteza de cada superfície do presente.
+\paragraph{Etapa 2 --- adaptação regional.}
+Um fator pode ser decisivo na literatura e, ainda assim, não separar uma célula da outra na área de
+estudo. Mede-se esse poder discriminante pelo \textbf{desvio-padrão espacial da pertinência},
+$\sigma(\mu_i)$, sobre a terra disponível: adimensional, contido em $[0;\,0{,}5]$ e nulo por
+construção para um fator saturado ou espacialmente constante. A prioridade de literatura é então
+corrigida por $\sigma(\mu_i)^{\lambda}$ e renormalizada. O expoente $\lambda = 0{,}5$ é fixado
+\emph{a priori} e não é calibrado. Uma varredura $\lambda \in \{0;\,0{,}25;\,0{,}5;\,0{,}75;\,1\}$, pontuada por AUC contra
+a presença realizada, mostra AUC crescente com $\lambda$ em todos os segmentos com gradiente
+apreciável --- de 0,675 a 0,729 na soja --- de modo que $\lambda = 0{,}5$ situa-se \emph{abaixo} do
+ótimo empírico. A escolha é, portanto, deliberadamente conservadora: abre mão de parte do ganho
+disponível em vez de colhê-lo, que é precisamente o que se espera de um parâmetro fixado antes de
+ver o resultado.
+
+O procedimento tem precedente publicado. \citet[p.~155]{alburo_application_2019} identificam a
+profundidade do solo como o critério mais importante da sua própria matriz AHP para a cana e, ainda
+assim, a descartam da avaliação, porque \emph{``soil depth data obtained from the sample farms have
+similar values, hence, may not be considered a variable in the locality and need not be included in
+the evaluation''}. A etapa~$\lambda$ generaliza esse julgamento: em vez de aplicá-lo de forma
+binária e pontual, gradua-o por uma estatística medida, uniformemente, em todos os fatores de todos
+os segmentos.
+
+\paragraph{Fatores-porta.}
+No limite dessa lógica está o fator que não gradua coisa alguma. Adota-se um critério medido, sobre
+a terra disponível, com \textbf{duas} condições conjuntas:
+$\sigma(\mu) < 0{,}05$ \textbf{e} $\overline{\mu} > 0{,}95$. Um fator que as satisfaça recebe
+\texttt{role: gate}: sai da matriz AHP, não recebe peso, e é aplicado como \textbf{porta
+multiplicativa}, com os limiares ancorados de modo que o valor presente dê $\mu = 1$. Isso remove o
+deflator oculto que uma pertinência quase constante e menor que~1 aplicaria a toda a superfície
+--- os cortes da FAO são absolutos, de modo que tal deflator desloca as fatias de classe --- e
+\textbf{preserva a alavanca climática}: se a variável sair do platô sob o CMIP6, a porta morde.
+A segunda condição não é redundante. $\sigma(\mu)$ sozinho também captura o fator quase uniforme num
+$\mu$ \emph{baixo}, que não é um platô, e sim uma penalização real aplicada de modo homogêneo;
+reancorá-lo a $\mu = 1$ converteria essa penalização num no-op e elevaria indevidamente a superfície
+inteira. Todas as portas identificadas em GO~e~DF são climáticas, e nenhum fator de solo, relevo,
+água ou acesso satura --- a forma mais direta do achado central de que, nesta área, o clima
+\emph{habilita} enquanto relevo e solo \emph{graduam}.
+
+\paragraph{Sensibilidade dos pesos.}
+Como os pesos permanecem, em parte, subjetivos, sua influência é limitada por uma perturbação de
+$\pm 20\%$, um peso de cada vez. A perturbação é aplicada na escala \textbf{efetiva}: a participação
+normalizada do fator perturbado move-se exatamente $20\%$ e os demais absorvem o resto em proporção.
+Escalar o peso bruto por $1 \pm 0{,}20$ e deixar a renormalização agir \emph{não} produz uma variação
+de $20\%$ na participação efetiva --- quanto maior o peso, maior a parcela do aumento consumida pela
+renormalização --- e a banda relatada não seria a que o método declara. A amplitude
+$S_{\max} - S_{\min}$ resultante é reportada como banda de robustez por segmento, e é a medida de
+incerteza de cada superfície do presente.
 
 \section{Zoneamento não supervisionado}\label{sec:zoning}
 
@@ -208,7 +281,7 @@ divide cada banda pela raiz quadrada do número de bandas no seu tema, para que 
 com o número de bandas. E a \textbf{PCA} rotaciona o subconjunto ponderado para seus eixos principais,
 retendo o menor número de componentes que expliquem $\geq$~90\% da variância.
 
-Os componentes principais são a solução contínua (relaxada) dos indicadores de pertença do k-means,
+Os componentes principais são a solução contínua (relaxada) dos indicadores de pertencimento do k-means,
 de modo que agrupar no subespaço dos primeiros componentes aproxima a partição k-means do espaço
 original; essa é a base teórica para agrupar no espaço de componentes principais em vez de sobre o
 conjunto bruto \citep[Teor.~3.1]{ding_k-means_2004}. O k-means, ajustado nesse espaço, busca a partição que minimiza a soma intragrupo
@@ -221,19 +294,37 @@ O número de zonas é examinado em $k = 2,\dots,20$ pela silhueta média
 \citep[p.~59]{rousseeuw_silhouettes_1987}, pelo índice de Davies--Bouldin \citep{davies_cluster_1979},
 pela estatística de \emph{gap} % TODO(Zotero): citar Tibshirani, Walther & Hastie (2001) quando o PDF estiver no Zotero
 e pela estabilidade de subamostras (índice de Rand ajustado, ARI, em \emph{bootstrap}); uma revisão
-desses índices está em \citet{ikotun_cluster_2025}. Neste território fracamente agrupado nenhum
-índice decide sozinho. A silhueta é quase plana (0,161--0,187), com máximo em $k=10$ ($0{,}187$).
-O Davies--Bouldin é alto para $k \le 6$ (1,65--1,87) e praticamente plano de $k=7$ a $20$
-(1,50--1,57, mínimo de 1,504 em $k=19$), sem discriminar nessa faixa. O \emph{gap} cresce quase
-monotonicamente e, pelo critério do primeiro $k$ com $\mathrm{gap}(k) \geq \mathrm{gap}(k+1) - s_{k+1}$,
-só se estabiliza em $k=14$: indica que o território comporta mais de dez agrupamentos, mas não
-aponta um $k$ abaixo disso. O argumento decisivo é a estabilidade. Na faixa $k \geq 7$, em que o
-Davies--Bouldin deixa de penalizar a partição, só $k=9$ (ARI $=0{,}970$) e $k=10$ (ARI $=0{,}962$)
-são estáveis sob subamostragem; os demais ficam entre $0{,}676$ e $0{,}887$. As partições grossas
-$k=2$, $3$ e $5$ também são estáveis (ARI $0{,}96$--$0{,}98$), mas têm Davies--Bouldin bem pior e
-zonas agregadas demais para distinguir sete segmentos. Adota-se $k = 10$, que combina a silhueta
-mais alta do intervalo com uma estabilidade equivalente à de $k=9$ (a diferença de ARI é menor que
-o seu desvio-padrão entre réplicas, 0,011--0,016).
+desses índices está em \citet{ikotun_cluster_2025}.
+
+O primeiro resultado do painel não é a escolha de $k$, mas uma constatação sobre o território:
+\textbf{a silhueta permanece entre 0,158 e 0,210 em todo o intervalo $k = 2,\dots,20$}. Num
+índice em que valores acima de 0,5 indicam estrutura apreciável e valores abaixo de 0,25 indicam
+estrutura fraca ou ausente, isso significa que GO~e~DF não possuem agrupamentos naturais
+bem separados em nenhum $k$. O agrupamento aqui é, portanto, um dispositivo de
+partição, isto é, um modo de resumir um gradiente biofísico contínuo em unidades de decisão
+interpretáveis, e não a descoberta de grupos latentes. Como nenhum $k$ é privilegiado
+pela geometria dos dados o critério de escolha passa a ser a reprodutibilidade da partição.
+
+Sob essa leitura, dois dos três índices de validade e o critério de estabilidade convergem em
+$k = 4$. A silhueta tem seu máximo exatamente aí (0,210, contra 0,206 em $k=5$ e 0,198 em
+$k=7$). O ARI de subamostragem também é máximo em $k=4$ (0,988), e com
+o menor desvio-padrão entre réplicas ($\pm$0,004, contra
+$\pm$0,096 em $k=5$ e $\pm$0,124 em $k=6$). A partição em quatro zonas é praticamente a mesma a
+cada reamostragem, enquanto as vizinhas oscilam. O Davies--Bouldin é o único índice que aponta
+outro valor, preferindo $k=5$ (1,463, contra 1,574 em $k=4$); a diferença é pequena e não
+compensa a perda de estabilidade de $k=5$, mas é registrada aqui em vez de omitida.
+
+A estatística de \emph{gap} não é informativa neste território. Ela cresce de forma quase
+monotônica em todo o intervalo (2,12 em $k=2$ até 2,40 em $k=20$), e o critério do primeiro $k$
+com $\mathrm{gap}(k) \geq \mathrm{gap}(k+1) - s_{k+1}$ só é satisfeito em $k=15$ --- e apenas
+por causa de uma pequena queda entre $k=15$ e $k=16$, não por um patamar real. Em $k=15$ tanto a
+silhueta (0,169) quanto a estabilidade (ARI 0,852) estão perto dos piores valores do intervalo,
+de modo que esse ponto é um artefato do critério, não uma recomendação.
+
+Adota-se $k = 4$: a silhueta mais alta do intervalo, o ARI mais alto e a menor variância entre
+réplicas para todo $k = 2,\dots,20$. As quatro zonas resultantes têm, além disso, quatro vocações
+comparativas distintas (\S\ref{sec:zoning-results}), ao passo que uma análise com maior número de partições
+repetem o mesmo rótulo comparativo em várias zonas de perfil físico oposto, sem ganho de expressividade.
 
 \textbf{Estimação.} O agrupamento é estimado fora da plataforma sobre uma amostra estratificada por
 grade espacial (uma malha $8\times8$ sobre a extensão de GO~e~DF) cruzada com o segmento
@@ -253,7 +344,7 @@ diferentes sejam comparados em base comum.
 
 A projeção utiliza o método dos fatores de mudança (\emph{delta-change})
 \citep[p.~3]{ramirez-villegas_downscaling_2010}, que aplica a uma normal climática observada as
-mudanças de cada modelo relativas à sua própria linha de base, e não os valores absolutos do modelo.
+mudanças de cada modelo relativas à sua própria linha de base.
 A premissa é que os GCMs simulam mudanças relativas com mais confiabilidade do que valores absolutos,
 que na escala da célula podem ser muito imprecisos \citep[pp.~387, 396]{hay_comparison_2000}. Numa
 comparação em bacias montanhosas, esses autores obtêm estimativas mais conservadoras com o
@@ -287,6 +378,8 @@ então entre os modelos:
    \Delta T_m = \frac{1}{G}\sum_{g=1}^{G}
      \left(\overline{T}^{\,\text{fut}}_{g,m} - \overline{T}^{\,\text{hist}}_{g,m}\right).
 \end{equation*}
+
+%% Colocar a equação de Hargreaves em um ambiente proprio, fora da prosa, para melhor leitura.
 
 Os fatores são aplicados à normal climatológica mensal de 1991 a 2020,
 $P^{\text{fut}}_m = P^{\text{obs}}_m \cdot f^{P}_m$ e
@@ -322,9 +415,9 @@ fração de GCMs cujo sinal de mudança coincide com o sinal da média,
 \end{equation*}
 com $A > 0{,}5$ indicando a concordância da maioria.
 
-Na prática, essa concordância é alta: para outras culturas anuais sob SSP5-8.5 2051--2070 --- o
+Na prática, essa concordância é alta: para outras culturas anuais sob SSP5-8.5 2051--2070 (o
 segmento e a combinação mais expostos ao clima (\S\ref{sec:shift}) e por isso o teste mais
-rigoroso --- a concordância média territorial é $0{,}999$. O corolário é que a
+rigoroso) a concordância média territorial é $0{,}999$. O corolário é que a
 \emph{superfície} de concordância tem, em si, pouco contraste espacial para revelar: ela
 documenta que o sinal do CMIP6 é robusto ao GCM escolhido, mais do que localiza \emph{onde} a
 incerteza entre modelos se concentra.
@@ -339,7 +432,7 @@ viabilidade atual, o mapa de zonas e as mudanças projetadas. Em seguida, o uso 
 reduzido a uma classe majoritária na grade de 250~m, com frações por função de uso da terra;
 máscaras de lavoura, pastagem e vegetação nativa são obtidas do MapBiomas, com fidelidade
 específica para o Brasil, e reaplicadas às superfícies de viabilidade. O cruzamento entre as classes
-da FAO e o uso atual produz, por município, mapas de subutilização e estatísticas de descompasso ---
+da FAO e o uso atual produz, por município, mapas de subutilização e estatísticas de descompasso, formando assim
 o núcleo empírico da resposta a QP2. Em paralelo, a composição do uso atual é caracterizada em
 relação às zonas produtivas, de forma estritamente descritiva.
 
@@ -350,29 +443,29 @@ frente à superfície de viabilidade pelo índice contínuo de Boyce \citep{hirz
 a curva ROC (AUC). E uma ANOVA de um fator do \emph{proxy} entre zonas testa se as zonas capturam a
 estrutura de produtividade do território.
 
-Como o NPP anual é confundido pela cobertura da terra --- biomassa densa em pé tende a superar a
-lavoura em pousio, gerando uma correlação negativa espúria entre viabilidade agrícola e NPP ---,
-conduz-se um segundo teste: a GPP (produtividade primária bruta) da estação de crescimento,
-integrada na janela de outubro a março, é calculada exclusivamente sobre os pixels efetivamente
+Um problema, no entanto, é que o teste do NPP anual é confundido pela cobertura da terra, uma vez que 
+biomassa densa em pé tende a superar a lavoura em pousio, gerando uma correlação negativa espúria entre 
+viabilidade agrícola e NPP. Por tal razão é conduzido um segundo teste: a GPP (produtividade primária bruta) 
+da estação de crescimento, integrada na janela de outubro a março, é calculada exclusivamente sobre os pixels efetivamente
 cultivados de cada cultura e correlacionada com a viabilidade dessa mesma cultura. Por ser feita
 dentro da própria cultura, essa comparação remove tanto a confusão entre coberturas distintas quanto
 o efeito do pousio seco.
 
+%% Extender para outras culturas e cana de açucar
 Por fim, uma verificação cruzada orientada por dados contrasta o modelo baseado em conhecimento
 com um classificador treinado diretamente sobre o uso realizado da terra. Os pontos de presença
 são extraídos do MapBiomas (pixels de soja) e contrastados com pontos de fundo amostrados do
 restante do território; as variáveis preditoras, porém, são exatamente o mesmo conjunto
 padronizado de 34 atributos ambientais usado no modelo fuzzy/AHP --- o MapBiomas entra apenas como
-rótulo de treino, nunca como atributo, preservando a distinção estabelecida no
-\S\ref{sec:feature-eng}. Um classificador de floresta aleatória (100 árvores) é então treinado em
-modo probabilístico sobre uma amostra balanceada, com igual número de pontos de presença e de fundo,
+rótulo de treino. Um classificador de floresta aleatória (100 árvores) é então treinado sobre uma amostra balanceada, 
+com igual número de pontos de presença e de fundo,
 ao longo do conjunto padronizado de atributos. O balanceamento segue a recomendação de tratar o
 desequilíbrio entre presença e fundo, que degrada a floresta aleatória com parâmetros padrão nesse
 tipo de dado \citep{valavi_modelling_2021}. A superfície resultante, construída inteiramente a
 partir do uso realizado, é binarizada (probabilidade $\geq 0{,}5$) e comparada à superfície baseada
 em conhecimento, também binarizada (classe S2 ou melhor), pelo $\kappa$ de Cohen
 \citep[p.~40, eq.~1]{cohen_coefficient_1960}. O objetivo é, portanto, verificar se duas abordagens independentes para o
-mesmo fenômeno (uma orientada por conhecimento pericial (fuzzy/AHP) e outra orientada
+mesmo fenômeno (uma orientada por conhecimento difuso/AHP e outra orientada
 pelos dados de uso realizado) convergem espacialmente: concordância reforça a confiança no
 modelo; discordâncias são reportadas como achados de discussão.
 

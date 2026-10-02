@@ -1,90 +1,1272 @@
-_note: AHP pairwise matrices (Saaty 1-9) reconstructed from the elicited segment priorities; CR<=0.10
-  accepts the elicitation. Priority vector reproduces config/segments.yaml weights to Saaty rounding.
-  See tools/build_ahp.py + docs/weaknesses_mitigation.md WS-C.
+# =============================================================================
+# Part 9 — AHP pairwise judgements (INPUT, hand-written)
+# -----------------------------------------------------------------------------
+# This file is an INPUT, not a generated artifact. It records, per segment, the
+# declared basis of every pairwise comparison, and `tools/derive_weights.py`
+# turns it into the matrix, the true principal eigenvector (w_lit), lambda_max,
+# CI, RI and CR.
+#
+# Derivation chain:
+#     anchors (here) -> matrix -> w_lit -> x sigma(mu)^lambda -> config/segments.yaml
+#
+# The hand-written surface is `anchors:` — ONE ordinal band per factor, plus the
+# published priority `r` where a factor corresponds to a source criterion. Every
+# a_ij is a deterministic function of those anchors (rules A/B/C below), so the
+# author sets n ordinals per segment rather than n(n-1)/2 free matrix cells.
+# That is what keeps the derivation from collapsing back into reverse-
+# engineering a weight vector already chosen. See docs/ahp_literatura.md.
+#
+# Rules (enforced by derive_weights.py):
+#   A  both factors anchored in the SAME source AND the same `block`:
+#        a_ij = snap(r*_i / r*_j) on the integer Saaty scale, log-nearest.
+#   B/C one or neither anchored, or cross-block/cross-source:
+#        a_ij = ladder(band_j - band_i), ladder 0->1, 1->3, 2->5, 3->7.
+#   band 1 = most important ... 4 = least. An anchored factor's band must sit in
+#   the tercile of its own r within the source's criterion set.
+#
+# `factors:` lists only the factors that enter the matrix. Factors carrying
+# `role: gate` in config/segments.yaml are effectively constant in GO/DF and
+# are applied as a multiplicative gate instead — absent here by design.
+# Gate criterion, measured not arbitrated (thesis/Chapters/factor_discrimination.csv):
+#     sigma(mu) < 0.05  AND  mean(mu) > 0.95  over available land.
+# BOTH conditions are required. sigma(mu) alone would also catch a factor that
+# is near-uniform at a LOW mu — a genuine across-the-board penalty, not a
+# plateau — and re-anchoring that to mu = 1 would silently raise the whole
+# surface. That is why other_crops.clim_pr_cv (sigma = 0.047, mean mu = 0.694)
+# stays weighted.
+#
+# Everything under `derived:` is written by tools/derive_weights.py. Do not edit
+# it by hand; `derive_weights.py --check` fails if it drifts.
+# =============================================================================
+
+scale:
+  allowed: [1, 2, 3, 4, 5, 6, 7, 8, 9]   # + reciprocals; integer Saaty only
+  band_ladder: {0: 1, 1: 3, 2: 5, 3: 7}
+  max_revisions_per_segment: 3
+  cr_threshold: 0.10
+
 segments:
+
   soybean:
-    factors: [terr_slope, soil_clay, clim_twarm_q, soil_ph, clim_pr_annual, clim_aridity]
-    matrix:
-    - [1.0, 1.25, 2.5, 3.0, 3.0, 3.5]
-    - [0.8, 1.0, 1.75, 2.0, 2.5, 2.5]
-    - [0.4, 0.5714, 1.0, 1.25, 1.5, 1.5]
-    - [0.3333, 0.5, 0.8, 1.0, 1.0, 1.25]
-    - [0.3333, 0.4, 0.6667, 1.0, 1.0, 1.0]
-    - [0.2857, 0.4, 0.6667, 0.8, 1.0, 1.0]
-    consistency_ratio: 0.0013
-    priority_vector: [0.3194, 0.2395, 0.1381, 0.1104, 0.0994, 0.0932]
-    config_weights: [0.32, 0.24, 0.14, 0.11, 0.1, 0.09]
+    factors: [terr_slope, soil_clay, soil_ph]
+    anchors:
+      soil_ph:
+        band: 2
+        r: 0.254
+        rank: 2
+        n_criteria: 6
+        source: radocaj_optimal_2020
+        locator: tab. 6, p. 14
+        block: solo
+        rationale: pH; tercil superior da matriz de solo da fonte.
+      terr_slope:
+        band: 2
+        r: 0.178
+        rank: 3
+        n_criteria: 6
+        source: radocaj_optimal_2020
+        locator: tab. 6, p. 14
+        block: solo
+        rationale: Slope; tercil intermediário da matriz de solo da fonte.
+      soil_clay:
+        band: 3
+        r: 0.104
+        rank: 4
+        n_criteria: 6
+        source: radocaj_optimal_2020
+        locator: tab. 6, p. 14
+        block: solo
+        rationale: SoilTexture; tercil intermediário da matriz de solo da fonte.
+    derived:
+      bands_final:
+        terr_slope: 2
+        soil_clay: 3
+        soil_ph: 2
+      matrix:
+      - - 1.0
+        - 2.0
+        - 0.5
+      - - 0.5
+        - 1.0
+        - 0.5
+      - - 2.0
+        - 2.0
+        - 1.0
+      judgements:
+      - pair:
+        - terr_slope
+        - soil_clay
+        a_ij: 2.0
+        rule: A
+        basis: r*(terr_slope)/r*(soil_clay) = 0.3321/0.1940 = 1.712
+        source: radocaj_optimal_2020, tab. 6, p. 14
+      - pair:
+        - terr_slope
+        - soil_ph
+        a_ij: 0.5
+        rule: A
+        basis: r*(terr_slope)/r*(soil_ph) = 0.3321/0.4739 = 0.701
+        source: radocaj_optimal_2020, tab. 6, p. 14
+      - pair:
+        - soil_clay
+        - soil_ph
+        a_ij: 0.5
+        rule: A
+        basis: r*(soil_clay)/r*(soil_ph) = 0.1940/0.4739 = 0.409
+        source: radocaj_optimal_2020, tab. 6, p. 14
+      lambda_max: 3.0536
+      consistency_index: 0.0268
+      random_index: 0.58
+      consistency_ratio: 0.0462
+      priority_vector:
+      - 0.3108
+      - 0.1958
+      - 0.4934
+      approx_eigenvector_max_gap: 0.0029
+      class_counts:
+        A: 3
+        B: 0
+        C: 0
+      anchored_fraction: 1.0
+      author_judgement_count: 0
+      override_count: 0
+      revisions: []
   sugarcane:
-    factors: [terr_slope, soil_awc, soil_clay, clim_twarm_q, clim_pr_annual, clim_dry_months]
-    matrix:
-    - [1.0, 1.25, 1.25, 1.75, 2.5, 4.0]
-    - [0.8, 1.0, 1.0, 1.5, 2.0, 3.5]
-    - [0.8, 1.0, 1.0, 1.5, 2.0, 3.5]
-    - [0.5714, 0.6667, 0.6667, 1.0, 1.5, 2.5]
-    - [0.4, 0.5, 0.5, 0.6667, 1.0, 1.75]
-    - [0.25, 0.2857, 0.2857, 0.4, 0.5714, 1.0]
-    consistency_ratio: 0.0004
-    priority_vector: [0.2596, 0.2132, 0.2132, 0.1484, 0.1046, 0.0611]
-    config_weights: [0.26, 0.22, 0.22, 0.14, 0.1, 0.06]
+    factors: [terr_slope, soil_awc, soil_clay]
+    anchors:
+      soil_awc:
+        band: 2
+        r: 19.4
+        rank: 2
+        n_criteria: 6
+        source: alburo_application_2019
+        locator: tab. 2, p. 154 (grupos combinados)
+        block: solo
+        rationale: Water Holding Capacity; tercil superior do bloco solo/terreno da fonte.
+      terr_slope:
+        band: 2
+        r: 16.5
+        rank: 3
+        n_criteria: 6
+        source: alburo_application_2019
+        locator: tab. 2, p. 154 (grupos combinados)
+        block: solo
+        rationale: Slope; tercil intermediário do bloco solo/terreno da fonte.
+      soil_clay:
+        band: 3
+        r: 14.1
+        rank: 4
+        n_criteria: 6
+        source: alburo_application_2019
+        locator: tab. 2, p. 154 (grupos combinados)
+        block: solo
+        rationale: Soil Texture; tercil intermediário do bloco solo/terreno da fonte.
+    derived:
+      bands_final:
+        terr_slope: 2
+        soil_awc: 2
+        soil_clay: 3
+      matrix:
+      - - 1.0
+        - 1.0
+        - 1.0
+      - - 1.0
+        - 1.0
+        - 1.0
+      - - 1.0
+        - 1.0
+        - 1.0
+      judgements:
+      - pair:
+        - terr_slope
+        - soil_awc
+        a_ij: 1.0
+        rule: A
+        basis: r*(terr_slope)/r*(soil_awc) = 0.3300/0.3880 = 0.851
+        source: alburo_application_2019, tab. 2, p. 154 (grupos combinados)
+      - pair:
+        - terr_slope
+        - soil_clay
+        a_ij: 1.0
+        rule: A
+        basis: r*(terr_slope)/r*(soil_clay) = 0.3300/0.2820 = 1.170
+        source: alburo_application_2019, tab. 2, p. 154 (grupos combinados)
+      - pair:
+        - soil_awc
+        - soil_clay
+        a_ij: 1.0
+        rule: A
+        basis: r*(soil_awc)/r*(soil_clay) = 0.3880/0.2820 = 1.376
+        source: alburo_application_2019, tab. 2, p. 154 (grupos combinados)
+      lambda_max: 3.0
+      consistency_index: 0.0
+      random_index: 0.58
+      consistency_ratio: 0.0
+      priority_vector:
+      - 0.3333
+      - 0.3333
+      - 0.3333
+      approx_eigenvector_max_gap: 0.0
+      class_counts:
+        A: 3
+        B: 0
+        C: 0
+      anchored_fraction: 1.0
+      author_judgement_count: 0
+      override_count: 0
+      revisions: []
   other_crops:
-    factors: [terr_slope, soil_soc, clim_gdd, soil_ph, clim_pr_annual, clim_pr_cv]
-    matrix:
-    - [1.0, 1.5, 2.5, 3.0, 4.0, 4.0]
-    - [0.6667, 1.0, 1.5, 2.0, 2.5, 3.0]
-    - [0.4, 0.6667, 1.0, 1.25, 1.75, 1.75]
-    - [0.3333, 0.5, 0.8, 1.0, 1.25, 1.25]
-    - [0.25, 0.4, 0.5714, 0.8, 1.0, 1.0]
-    - [0.25, 0.3333, 0.5714, 0.8, 1.0, 1.0]
-    consistency_ratio: 0.0008
-    priority_vector: [0.3443, 0.2278, 0.1455, 0.1116, 0.0867, 0.0842]
-    config_weights: [0.34, 0.23, 0.15, 0.11, 0.09, 0.08]
+    factors: [terr_slope, soil_soc, clim_gdd, soil_ph, clim_pr_cv]
+    anchors:
+      soil_soc:
+        band: 1
+        r: 0.142
+        rank: 2
+        n_criteria: 14
+        source: tadesse_land_2020
+        locator: tab. 7, p. 10
+        block: unico
+        rationale: Organic Matter; tercil superior dos 14 critérios da fonte.
+      clim_gdd:
+        band: 3
+        r: 0.058
+        rank: 7
+        n_criteria: 14
+        source: tadesse_land_2020
+        locator: tab. 7, p. 10
+        block: unico
+        rationale: Temperature; tercil intermediário dos 14 critérios da fonte.
+      soil_ph:
+        band: 3
+        r: 0.054
+        rank: 8
+        n_criteria: 14
+        source: tadesse_land_2020
+        locator: tab. 7, p. 10
+        block: unico
+        rationale: Soil pH; tercil intermediário dos 14 critérios da fonte.
+      terr_slope:
+        band: 4
+        r: 0.031
+        rank: 13
+        n_criteria: 14
+        source: tadesse_land_2020
+        locator: tab. 7, p. 10
+        block: unico
+        rationale: Slope; MENOR peso dos 14 critérios da fonte. O estágio regional (lambda) é o que devolve peso ao relevo em GO/DF.
+      clim_pr_cv:
+        band: 4
+        source: amaral_metodologia_2023
+        rationale: Confiabilidade da chuva para a safrinha; o ZARC trata a variabilidade como risco de segunda ordem frente ao total sazonal.
+
+    derived:
+      bands_final:
+        terr_slope: 4
+        soil_soc: 1
+        clim_gdd: 3
+        soil_ph: 3
+        clim_pr_cv: 4
+      matrix:
+      - - 1.0
+        - 0.2
+        - 0.5
+        - 0.5
+        - 1.0
+      - - 5.0
+        - 1.0
+        - 2.0
+        - 3.0
+        - 7.0
+      - - 2.0
+        - 0.5
+        - 1.0
+        - 1.0
+        - 3.0
+      - - 2.0
+        - 0.3333
+        - 1.0
+        - 1.0
+        - 3.0
+      - - 1.0
+        - 0.1429
+        - 0.3333
+        - 0.3333
+        - 1.0
+      judgements:
+      - pair:
+        - terr_slope
+        - soil_soc
+        a_ij: 0.2
+        rule: A
+        basis: r*(terr_slope)/r*(soil_soc) = 0.1088/0.4982 = 0.218
+        source: tadesse_land_2020, tab. 7, p. 10
+      - pair:
+        - terr_slope
+        - clim_gdd
+        a_ij: 0.5
+        rule: A
+        basis: r*(terr_slope)/r*(clim_gdd) = 0.1088/0.2035 = 0.534
+        source: tadesse_land_2020, tab. 7, p. 10
+      - pair:
+        - terr_slope
+        - soil_ph
+        a_ij: 0.5
+        rule: A
+        basis: r*(terr_slope)/r*(soil_ph) = 0.1088/0.1895 = 0.574
+        source: tadesse_land_2020, tab. 7, p. 10
+      - pair:
+        - terr_slope
+        - clim_pr_cv
+        a_ij: 1.0
+        rule: B
+        basis: faixa 4 vs 4
+        source: faixa ordinal (R4)
+      - pair:
+        - soil_soc
+        - clim_gdd
+        a_ij: 2.0
+        rule: A
+        basis: r*(soil_soc)/r*(clim_gdd) = 0.4982/0.2035 = 2.448
+        source: tadesse_land_2020, tab. 7, p. 10
+      - pair:
+        - soil_soc
+        - soil_ph
+        a_ij: 3.0
+        rule: A
+        basis: r*(soil_soc)/r*(soil_ph) = 0.4982/0.1895 = 2.630
+        source: tadesse_land_2020, tab. 7, p. 10
+      - pair:
+        - soil_soc
+        - clim_pr_cv
+        a_ij: 7.0
+        rule: B
+        basis: faixa 1 vs 4
+        source: faixa ordinal (R4)
+      - pair:
+        - clim_gdd
+        - soil_ph
+        a_ij: 1.0
+        rule: A
+        basis: r*(clim_gdd)/r*(soil_ph) = 0.2035/0.1895 = 1.074
+        source: tadesse_land_2020, tab. 7, p. 10
+      - pair:
+        - clim_gdd
+        - clim_pr_cv
+        a_ij: 3.0
+        rule: B
+        basis: faixa 3 vs 4
+        source: faixa ordinal (R4)
+      - pair:
+        - soil_ph
+        - clim_pr_cv
+        a_ij: 3.0
+        rule: B
+        basis: faixa 3 vs 4
+        source: faixa ordinal (R4)
+      lambda_max: 5.0311
+      consistency_index: 0.0078
+      random_index: 1.12
+      consistency_ratio: 0.007
+      priority_vector:
+      - 0.0874
+      - 0.4629
+      - 0.1978
+      - 0.1824
+      - 0.0695
+      approx_eigenvector_max_gap: 0.0012
+      class_counts:
+        A: 6
+        B: 4
+        C: 0
+      anchored_fraction: 0.6
+      author_judgement_count: 0
+      override_count: 0
+      revisions: []
   pisciculture:
     factors: [terr_slope, soil_clay, sit_water_dist_seas, water_drain_density, clim_twarm_q]
-    matrix:
-    - [1.0, 1.0, 1.25, 2.0, 2.5]
-    - [1.0, 1.0, 1.0, 1.75, 2.5]
-    - [0.8, 1.0, 1.0, 1.75, 2.5]
-    - [0.5, 0.5714, 0.5714, 1.0, 1.5]
-    - [0.4, 0.4, 0.4, 0.6667, 1.0]
-    consistency_ratio: 0.0015
-    priority_vector: [0.2694, 0.2506, 0.2398, 0.1408, 0.0993]
-    config_weights: [0.27, 0.25, 0.24, 0.14, 0.1]
+    anchors:
+      sit_water_dist_seas:
+        band: 1
+        r: 0.358
+        rank: 1
+        n_criteria: 7
+        source: ssegane_geospatial_2012
+        locator: tab. 5, p. 160
+        block: unico
+        rationale: Water requirement; maior prioridade da fonte.
+      clim_twarm_q:
+        band: 2
+        r: 0.235
+        rank: 2
+        n_criteria: 7
+        source: ssegane_geospatial_2012
+        locator: tab. 5, p. 160
+        block: unico
+        rationale: Water Temperature; tercil superior da fonte.
+      soil_clay:
+        band: 3
+        r: 0.111
+        rank: 4
+        n_criteria: 7
+        source: ssegane_geospatial_2012
+        locator: tab. 5, p. 160
+        block: unico
+        rationale: Soil texture; tercil intermediário da fonte.
+      terr_slope:
+        band: 3
+        r: 0.070
+        rank: 5
+        n_criteria: 7
+        source: ssegane_geospatial_2012
+        locator: tab. 5, p. 160
+        block: unico
+        rationale: Slope; tercil intermediário da fonte. Francisco (tab. 4) o coloca em PRIMEIRO (0,4894) por modelar viveiros escavados; divergência resolvida em docs/ahp_literatura.md §2, com Francisco mantida como âncora dos limiares.
+      water_drain_density:
+        band: 4
+        rationale: author judgement — disponibilidade hídrica local, parcialmente redundante com a distância à água sazonal.
+
+    derived:
+      bands_final:
+        terr_slope: 3
+        soil_clay: 3
+        sit_water_dist_seas: 1
+        water_drain_density: 4
+        clim_twarm_q: 2
+      matrix:
+      - - 1.0
+        - 0.5
+        - 0.2
+        - 3.0
+        - 0.3333
+      - - 2.0
+        - 1.0
+        - 0.3333
+        - 3.0
+        - 0.5
+      - - 5.0
+        - 3.0
+        - 1.0
+        - 7.0
+        - 2.0
+      - - 0.3333
+        - 0.3333
+        - 0.1429
+        - 1.0
+        - 0.2
+      - - 3.0
+        - 2.0
+        - 0.5
+        - 5.0
+        - 1.0
+      judgements:
+      - pair:
+        - terr_slope
+        - soil_clay
+        a_ij: 0.5
+        rule: A
+        basis: r*(terr_slope)/r*(soil_clay) = 0.0904/0.1434 = 0.631
+        source: ssegane_geospatial_2012, tab. 5, p. 160
+      - pair:
+        - terr_slope
+        - sit_water_dist_seas
+        a_ij: 0.2
+        rule: A
+        basis: r*(terr_slope)/r*(sit_water_dist_seas) = 0.0904/0.4625 = 0.196
+        source: ssegane_geospatial_2012, tab. 5, p. 160
+      - pair:
+        - terr_slope
+        - water_drain_density
+        a_ij: 3.0
+        rule: B
+        basis: faixa 3 vs 4
+        source: faixa ordinal (R4)
+      - pair:
+        - terr_slope
+        - clim_twarm_q
+        a_ij: 0.3333
+        rule: A
+        basis: r*(terr_slope)/r*(clim_twarm_q) = 0.0904/0.3036 = 0.298
+        source: ssegane_geospatial_2012, tab. 5, p. 160
+      - pair:
+        - soil_clay
+        - sit_water_dist_seas
+        a_ij: 0.3333
+        rule: A
+        basis: r*(soil_clay)/r*(sit_water_dist_seas) = 0.1434/0.4625 = 0.310
+        source: ssegane_geospatial_2012, tab. 5, p. 160
+      - pair:
+        - soil_clay
+        - water_drain_density
+        a_ij: 3.0
+        rule: B
+        basis: faixa 3 vs 4
+        source: faixa ordinal (R4)
+      - pair:
+        - soil_clay
+        - clim_twarm_q
+        a_ij: 0.5
+        rule: A
+        basis: r*(soil_clay)/r*(clim_twarm_q) = 0.1434/0.3036 = 0.472
+        source: ssegane_geospatial_2012, tab. 5, p. 160
+      - pair:
+        - sit_water_dist_seas
+        - water_drain_density
+        a_ij: 7.0
+        rule: B
+        basis: faixa 1 vs 4
+        source: faixa ordinal (R4)
+      - pair:
+        - sit_water_dist_seas
+        - clim_twarm_q
+        a_ij: 2.0
+        rule: A
+        basis: r*(sit_water_dist_seas)/r*(clim_twarm_q) = 0.4625/0.3036 = 1.523
+        source: ssegane_geospatial_2012, tab. 5, p. 160
+      - pair:
+        - water_drain_density
+        - clim_twarm_q
+        a_ij: 0.2
+        rule: B
+        basis: faixa 4 vs 2
+        source: faixa ordinal (R4)
+      lambda_max: 5.0754
+      consistency_index: 0.0189
+      random_index: 1.12
+      consistency_ratio: 0.0168
+      priority_vector:
+      - 0.0974
+      - 0.1517
+      - 0.4423
+      - 0.0486
+      - 0.26
+      approx_eigenvector_max_gap: 0.0015
+      class_counts:
+        A: 6
+        B: 4
+        C: 0
+      anchored_fraction: 0.6
+      author_judgement_count: 1
+      override_count: 0
+      revisions: []
   cattle:
-    factors: [clim_pr_annual, clim_dry_months, clim_soil_moist, terr_slope, soil_soc]
-    matrix:
-    - [1.0, 1.25, 0.3333, 0.5, 0.2857]
-    - [0.8, 1.0, 0.2857, 0.4, 0.25]
-    - [3.0, 3.5, 1.0, 1.5, 0.8]
-    - [2.0, 2.5, 0.6667, 1.0, 0.5714]
-    - [3.5, 4.0, 1.25, 1.75, 1.0]
-    consistency_ratio: 0.0004
-    priority_vector: [0.0978, 0.0808, 0.2853, 0.1955, 0.3407]
-    config_weights: [0.1, 0.08, 0.28, 0.2, 0.34]
+    factors: [clim_soil_moist, terr_slope, soil_soc]
+    anchors:
+      clim_soil_moist:
+        band: 2
+        source: molossi_improve_2020
+        rationale: Umidade do solo é o determinante direto da produtividade forrageira; Balew usa a chuva como seu proxy por não dispor da variável.
+      terr_slope:
+        band: 3
+        r: 0.1049
+        rank: 4
+        n_criteria: 5
+        source: balew_identification_2022
+        locator: tab. 2, p. 10 (coluna do gado)
+        block: unico
+        rationale: Slope; tercil intermediário da fonte.
+      soil_soc:
+        band: 4
+        r: 0.0536
+        rank: 5
+        n_criteria: 5
+        source: balew_identification_2022
+        locator: tab. 2, p. 10 (coluna do gado)
+        block: unico
+        rationale: Soil type; menor peso da fonte.
+
+    derived:
+      bands_final:
+        clim_soil_moist: 2
+        terr_slope: 3
+        soil_soc: 4
+      matrix:
+      - - 1.0
+        - 3.0
+        - 5.0
+      - - 0.3333
+        - 1.0
+        - 2.0
+      - - 0.2
+        - 0.5
+        - 1.0
+      judgements:
+      - pair:
+        - clim_soil_moist
+        - terr_slope
+        a_ij: 3.0
+        rule: B
+        basis: faixa 2 vs 3
+        source: faixa ordinal (R4)
+      - pair:
+        - clim_soil_moist
+        - soil_soc
+        a_ij: 5.0
+        rule: B
+        basis: faixa 2 vs 4
+        source: faixa ordinal (R4)
+      - pair:
+        - terr_slope
+        - soil_soc
+        a_ij: 2.0
+        rule: A
+        basis: r*(terr_slope)/r*(soil_soc) = 0.6618/0.3382 = 1.957
+        source: balew_identification_2022, tab. 2, p. 10 (coluna do gado)
+      lambda_max: 3.0037
+      consistency_index: 0.0018
+      random_index: 0.58
+      consistency_ratio: 0.0032
+      priority_vector:
+      - 0.6483
+      - 0.2297
+      - 0.122
+      approx_eigenvector_max_gap: 0.0004
+      class_counts:
+        A: 1
+        B: 2
+        C: 0
+      anchored_fraction: 0.3333
+      author_judgement_count: 0
+      override_count: 0
+      revisions: []
   conservation:
-    factors: [cv_pa_dist, cv_carbon, cv_ruggedness, terr_twi, rl_native_frac, clim_aridity, terr_slope,
-      clim_twarm_q, water_drain_density]
-    matrix:
-    - [1.0, 1.5, 1.25, 1.25, 1.75, 1.75, 2.0, 2.0, 3.0]
-    - [0.6667, 1.0, 0.8, 1.0, 1.25, 1.25, 1.25, 1.5, 2.0]
-    - [0.8, 1.25, 1.0, 1.25, 1.5, 1.5, 1.75, 1.75, 2.5]
-    - [0.8, 1.0, 0.8, 1.0, 1.25, 1.25, 1.5, 1.5, 2.0]
-    - [0.5714, 0.8, 0.6667, 0.8, 1.0, 1.0, 1.0, 1.25, 1.75]
-    - [0.5714, 0.8, 0.6667, 0.8, 1.0, 1.0, 1.0, 1.25, 1.75]
-    - [0.5, 0.8, 0.5714, 0.6667, 1.0, 1.0, 1.0, 1.0, 1.5]
-    - [0.5, 0.6667, 0.5714, 0.6667, 0.8, 0.8, 1.0, 1.0, 1.25]
-    - [0.3333, 0.5, 0.4, 0.5, 0.5714, 0.5714, 0.6667, 0.8, 1.0]
-    consistency_ratio: 0.0009
-    priority_vector: [0.1742, 0.1205, 0.1493, 0.1255, 0.099, 0.099, 0.0902, 0.0824, 0.0599]
-    config_weights: [0.17, 0.12, 0.15, 0.13, 0.1, 0.1, 0.09, 0.08, 0.06]
+    factors: [cv_pa_dist, cv_carbon, cv_ruggedness, terr_twi, rl_native_frac, clim_aridity, terr_slope, clim_twarm_q, water_drain_density]
+    anchors:
+      cv_pa_dist:
+        band: 1
+        r: 1.715
+        rank: 1
+        n_criteria: 3
+        source: morandi_delimitation_2020
+        locator: tab. 4, p. 6
+        block: unico
+        rationale: PPA; maior prioridade da fonte. Pesos publicados somam n; renormalizados para 1.
+      cv_ruggedness:
+        band: 2
+        source: schuler_spatial_2022
+        rationale: Heterogeneidade de habitat e baixa aptidão agrícola — critério de irreplaceability no planejamento sistemático de conservação.
+      cv_carbon:
+        band: 2
+        source: schuler_spatial_2022
+        rationale: Serviço de estoque de carbono. Mantido nesta faixa, e não acima, pela circularidade branda biomassa ~ floresta já registrada.
+      rl_native_frac:
+        band: 3
+        r: 1.060
+        rank: 2
+        n_criteria: 3
+        source: morandi_delimitation_2020
+        locator: tab. 4, p. 6
+        block: unico
+        rationale: Land use/occupation; tercil intermediário da fonte, rebaixado aqui pela descircularização — é a única entrada de cobertura da terra sancionada.
+      terr_twi:
+        band: 3
+        rationale: author judgement — serviço hídrico ripário e de recarga.
+      clim_aridity:
+        band: 3
+        rationale: author judgement — viabilidade de balanço hídrico; é a alavanca CMIP6 do segmento.
+      clim_twarm_q:
+        band: 3
+        rationale: author judgement — estresse térmico e de fogo; segunda alavanca CMIP6.
+      terr_slope:
+        band: 4
+        r: 0.224
+        rank: 3
+        n_criteria: 3
+        source: morandi_delimitation_2020
+        locator: tab. 4, p. 6
+        block: unico
+        rationale: Terrain Slope; menor peso da fonte. Terra marginal = baixo custo de oportunidade da conservação.
+      water_drain_density:
+        band: 4
+        rationale: author judgement — serviço hídrico, parcialmente redundante com terr_twi.
+
+    derived:
+      bands_final:
+        cv_pa_dist: 1
+        cv_carbon: 2
+        cv_ruggedness: 2
+        terr_twi: 3
+        rl_native_frac: 3
+        clim_aridity: 3
+        terr_slope: 4
+        clim_twarm_q: 3
+        water_drain_density: 4
+      matrix:
+      - - 1.0
+        - 3.0
+        - 3.0
+        - 5.0
+        - 2.0
+        - 5.0
+        - 8.0
+        - 5.0
+        - 7.0
+      - - 0.3333
+        - 1.0
+        - 1.0
+        - 3.0
+        - 3.0
+        - 3.0
+        - 5.0
+        - 3.0
+        - 5.0
+      - - 0.3333
+        - 1.0
+        - 1.0
+        - 3.0
+        - 3.0
+        - 3.0
+        - 5.0
+        - 3.0
+        - 5.0
+      - - 0.2
+        - 0.3333
+        - 0.3333
+        - 1.0
+        - 1.0
+        - 1.0
+        - 3.0
+        - 1.0
+        - 3.0
+      - - 0.5
+        - 0.3333
+        - 0.3333
+        - 1.0
+        - 1.0
+        - 1.0
+        - 5.0
+        - 1.0
+        - 3.0
+      - - 0.2
+        - 0.3333
+        - 0.3333
+        - 1.0
+        - 1.0
+        - 1.0
+        - 3.0
+        - 1.0
+        - 3.0
+      - - 0.125
+        - 0.2
+        - 0.2
+        - 0.3333
+        - 0.2
+        - 0.3333
+        - 1.0
+        - 0.3333
+        - 1.0
+      - - 0.2
+        - 0.3333
+        - 0.3333
+        - 1.0
+        - 1.0
+        - 1.0
+        - 3.0
+        - 1.0
+        - 3.0
+      - - 0.1429
+        - 0.2
+        - 0.2
+        - 0.3333
+        - 0.3333
+        - 0.3333
+        - 1.0
+        - 0.3333
+        - 1.0
+      judgements:
+      - pair:
+        - cv_pa_dist
+        - cv_carbon
+        a_ij: 3.0
+        rule: B
+        basis: faixa 1 vs 2
+        source: faixa ordinal (R4)
+      - pair:
+        - cv_pa_dist
+        - cv_ruggedness
+        a_ij: 3.0
+        rule: B
+        basis: faixa 1 vs 2
+        source: faixa ordinal (R4)
+      - pair:
+        - cv_pa_dist
+        - terr_twi
+        a_ij: 5.0
+        rule: B
+        basis: faixa 1 vs 3
+        source: faixa ordinal (R4)
+      - pair:
+        - cv_pa_dist
+        - rl_native_frac
+        a_ij: 2.0
+        rule: A
+        basis: r*(cv_pa_dist)/r*(rl_native_frac) = 0.5719/0.3535 = 1.618
+        source: morandi_delimitation_2020, tab. 4, p. 6
+      - pair:
+        - cv_pa_dist
+        - clim_aridity
+        a_ij: 5.0
+        rule: B
+        basis: faixa 1 vs 3
+        source: faixa ordinal (R4)
+      - pair:
+        - cv_pa_dist
+        - terr_slope
+        a_ij: 8.0
+        rule: A
+        basis: r*(cv_pa_dist)/r*(terr_slope) = 0.5719/0.0747 = 7.656
+        source: morandi_delimitation_2020, tab. 4, p. 6
+      - pair:
+        - cv_pa_dist
+        - clim_twarm_q
+        a_ij: 5.0
+        rule: B
+        basis: faixa 1 vs 3
+        source: faixa ordinal (R4)
+      - pair:
+        - cv_pa_dist
+        - water_drain_density
+        a_ij: 7.0
+        rule: B
+        basis: faixa 1 vs 4
+        source: faixa ordinal (R4)
+      - pair:
+        - cv_carbon
+        - cv_ruggedness
+        a_ij: 1.0
+        rule: C
+        basis: faixa 2 vs 2
+        source: faixa ordinal (R4)
+      - pair:
+        - cv_carbon
+        - terr_twi
+        a_ij: 3.0
+        rule: C
+        basis: faixa 2 vs 3
+        source: faixa ordinal (R4)
+      - pair:
+        - cv_carbon
+        - rl_native_frac
+        a_ij: 3.0
+        rule: B
+        basis: faixa 2 vs 3
+        source: faixa ordinal (R4)
+      - pair:
+        - cv_carbon
+        - clim_aridity
+        a_ij: 3.0
+        rule: C
+        basis: faixa 2 vs 3
+        source: faixa ordinal (R4)
+      - pair:
+        - cv_carbon
+        - terr_slope
+        a_ij: 5.0
+        rule: B
+        basis: faixa 2 vs 4
+        source: faixa ordinal (R4)
+      - pair:
+        - cv_carbon
+        - clim_twarm_q
+        a_ij: 3.0
+        rule: C
+        basis: faixa 2 vs 3
+        source: faixa ordinal (R4)
+      - pair:
+        - cv_carbon
+        - water_drain_density
+        a_ij: 5.0
+        rule: C
+        basis: faixa 2 vs 4
+        source: faixa ordinal (R4)
+      - pair:
+        - cv_ruggedness
+        - terr_twi
+        a_ij: 3.0
+        rule: C
+        basis: faixa 2 vs 3
+        source: faixa ordinal (R4)
+      - pair:
+        - cv_ruggedness
+        - rl_native_frac
+        a_ij: 3.0
+        rule: B
+        basis: faixa 2 vs 3
+        source: faixa ordinal (R4)
+      - pair:
+        - cv_ruggedness
+        - clim_aridity
+        a_ij: 3.0
+        rule: C
+        basis: faixa 2 vs 3
+        source: faixa ordinal (R4)
+      - pair:
+        - cv_ruggedness
+        - terr_slope
+        a_ij: 5.0
+        rule: B
+        basis: faixa 2 vs 4
+        source: faixa ordinal (R4)
+      - pair:
+        - cv_ruggedness
+        - clim_twarm_q
+        a_ij: 3.0
+        rule: C
+        basis: faixa 2 vs 3
+        source: faixa ordinal (R4)
+      - pair:
+        - cv_ruggedness
+        - water_drain_density
+        a_ij: 5.0
+        rule: C
+        basis: faixa 2 vs 4
+        source: faixa ordinal (R4)
+      - pair:
+        - terr_twi
+        - rl_native_frac
+        a_ij: 1.0
+        rule: B
+        basis: faixa 3 vs 3
+        source: faixa ordinal (R4)
+      - pair:
+        - terr_twi
+        - clim_aridity
+        a_ij: 1.0
+        rule: C
+        basis: faixa 3 vs 3
+        source: faixa ordinal (R4)
+      - pair:
+        - terr_twi
+        - terr_slope
+        a_ij: 3.0
+        rule: B
+        basis: faixa 3 vs 4
+        source: faixa ordinal (R4)
+      - pair:
+        - terr_twi
+        - clim_twarm_q
+        a_ij: 1.0
+        rule: C
+        basis: faixa 3 vs 3
+        source: faixa ordinal (R4)
+      - pair:
+        - terr_twi
+        - water_drain_density
+        a_ij: 3.0
+        rule: C
+        basis: faixa 3 vs 4
+        source: faixa ordinal (R4)
+      - pair:
+        - rl_native_frac
+        - clim_aridity
+        a_ij: 1.0
+        rule: B
+        basis: faixa 3 vs 3
+        source: faixa ordinal (R4)
+      - pair:
+        - rl_native_frac
+        - terr_slope
+        a_ij: 5.0
+        rule: A
+        basis: r*(rl_native_frac)/r*(terr_slope) = 0.3535/0.0747 = 4.732
+        source: morandi_delimitation_2020, tab. 4, p. 6
+      - pair:
+        - rl_native_frac
+        - clim_twarm_q
+        a_ij: 1.0
+        rule: B
+        basis: faixa 3 vs 3
+        source: faixa ordinal (R4)
+      - pair:
+        - rl_native_frac
+        - water_drain_density
+        a_ij: 3.0
+        rule: B
+        basis: faixa 3 vs 4
+        source: faixa ordinal (R4)
+      - pair:
+        - clim_aridity
+        - terr_slope
+        a_ij: 3.0
+        rule: B
+        basis: faixa 3 vs 4
+        source: faixa ordinal (R4)
+      - pair:
+        - clim_aridity
+        - clim_twarm_q
+        a_ij: 1.0
+        rule: C
+        basis: faixa 3 vs 3
+        source: faixa ordinal (R4)
+      - pair:
+        - clim_aridity
+        - water_drain_density
+        a_ij: 3.0
+        rule: C
+        basis: faixa 3 vs 4
+        source: faixa ordinal (R4)
+      - pair:
+        - terr_slope
+        - clim_twarm_q
+        a_ij: 0.3333
+        rule: B
+        basis: faixa 4 vs 3
+        source: faixa ordinal (R4)
+      - pair:
+        - terr_slope
+        - water_drain_density
+        a_ij: 1.0
+        rule: B
+        basis: faixa 4 vs 4
+        source: faixa ordinal (R4)
+      - pair:
+        - clim_twarm_q
+        - water_drain_density
+        a_ij: 3.0
+        rule: C
+        basis: faixa 3 vs 4
+        source: faixa ordinal (R4)
+      lambda_max: 9.2843
+      consistency_index: 0.0355
+      random_index: 1.45
+      consistency_ratio: 0.0245
+      priority_vector:
+      - 0.3164
+      - 0.1706
+      - 0.1706
+      - 0.0678
+      - 0.0838
+      - 0.0678
+      - 0.0267
+      - 0.0678
+      - 0.0285
+      approx_eigenvector_max_gap: 0.0054
+      class_counts:
+        A: 3
+        B: 18
+        C: 15
+      anchored_fraction: 0.0833
+      author_judgement_count: 4
+      override_count: 0
+      revisions: []
   solar:
     factors: [clim_srad, sit_clearness, terr_northing, terr_slope, access_logtt, clim_twarm_q]
-    matrix:
-    - [1.0, 1.0, 1.5, 1.25, 1.5, 2.0]
-    - [1.0, 1.0, 1.5, 1.25, 1.5, 2.0]
-    - [0.6667, 0.6667, 1.0, 0.8, 1.0, 1.5]
-    - [0.8, 0.8, 1.25, 1.0, 1.25, 1.75]
-    - [0.6667, 0.6667, 1.0, 0.8, 1.0, 1.5]
-    - [0.5, 0.5, 0.6667, 0.5714, 0.6667, 1.0]
-    consistency_ratio: 0.0004
-    priority_vector: [0.2152, 0.2152, 0.1453, 0.1771, 0.1453, 0.102]
-    config_weights: [0.22, 0.22, 0.15, 0.17, 0.14, 0.1]
+    anchors:
+      clim_srad:
+        band: 1
+        r: 27.0
+        rank: 1
+        n_criteria: 10
+        source: elboshy_suitability_2022
+        locator: tab. 2, p. 5
+        block: unico
+        rationale: Solar radiation; maior prioridade da fonte.
+      clim_twarm_q:
+        band: 2
+        r: 14.9
+        rank: 2
+        n_criteria: 10
+        source: elboshy_suitability_2022
+        locator: tab. 2, p. 5
+        block: unico
+        rationale: Annual Average Temperature; tercil superior da fonte (de-rating térmico do painel).
+      sit_clearness:
+        band: 3
+        r: 10.4
+        rank: 4
+        n_criteria: 10
+        source: elboshy_suitability_2022
+        locator: tab. 2, p. 5
+        block: unico
+        rationale: Average annual cloudy days; tercil intermediário da fonte. O índice de claridade Kt é o proxy de nebulosidade.
+      access_logtt:
+        band: 3
+        r: 10.1
+        rank: 5
+        n_criteria: 10
+        source: elboshy_suitability_2022
+        locator: tab. 2, p. 5
+        block: unico
+        rationale: Distance from Urban; tercil intermediário da fonte. A distância a linhas de transmissão (10,8%) não tem camada correspondente para GO/DF.
+      terr_slope:
+        band: 4
+        r: 6.5
+        rank: 7
+        n_criteria: 10
+        source: elboshy_suitability_2022
+        locator: tab. 2, p. 5
+        block: unico
+        rationale: Slope; tercil inferior da fonte.
+      terr_northing:
+        band: 4
+        rationale: author judgement — a geometria solar do hemisfério sul favorece encostas voltadas ao norte; ausente em Elboshy e em Rane.
+    derived:
+      bands_final:
+        clim_srad: 1
+        sit_clearness: 3
+        terr_northing: 4
+        terr_slope: 4
+        access_logtt: 3
+        clim_twarm_q: 2
+      matrix:
+      - - 1.0
+        - 3.0
+        - 7.0
+        - 4.0
+        - 3.0
+        - 2.0
+      - - 0.3333
+        - 1.0
+        - 3.0
+        - 2.0
+        - 1.0
+        - 0.5
+      - - 0.1429
+        - 0.3333
+        - 1.0
+        - 1.0
+        - 0.3333
+        - 0.2
+      - - 0.25
+        - 0.5
+        - 1.0
+        - 1.0
+        - 0.5
+        - 0.5
+      - - 0.3333
+        - 1.0
+        - 3.0
+        - 2.0
+        - 1.0
+        - 0.5
+      - - 0.5
+        - 2.0
+        - 5.0
+        - 2.0
+        - 2.0
+        - 1.0
+      judgements:
+      - pair:
+        - clim_srad
+        - sit_clearness
+        a_ij: 3.0
+        rule: A
+        basis: r*(clim_srad)/r*(sit_clearness) = 0.3919/0.1509 = 2.596
+        source: elboshy_suitability_2022, tab. 2, p. 5
+      - pair:
+        - clim_srad
+        - terr_northing
+        a_ij: 7.0
+        rule: B
+        basis: faixa 1 vs 4
+        source: faixa ordinal (R4)
+      - pair:
+        - clim_srad
+        - terr_slope
+        a_ij: 4.0
+        rule: A
+        basis: r*(clim_srad)/r*(terr_slope) = 0.3919/0.0943 = 4.154
+        source: elboshy_suitability_2022, tab. 2, p. 5
+      - pair:
+        - clim_srad
+        - access_logtt
+        a_ij: 3.0
+        rule: A
+        basis: r*(clim_srad)/r*(access_logtt) = 0.3919/0.1466 = 2.673
+        source: elboshy_suitability_2022, tab. 2, p. 5
+      - pair:
+        - clim_srad
+        - clim_twarm_q
+        a_ij: 2.0
+        rule: A
+        basis: r*(clim_srad)/r*(clim_twarm_q) = 0.3919/0.2163 = 1.812
+        source: elboshy_suitability_2022, tab. 2, p. 5
+      - pair:
+        - sit_clearness
+        - terr_northing
+        a_ij: 3.0
+        rule: B
+        basis: faixa 3 vs 4
+        source: faixa ordinal (R4)
+      - pair:
+        - sit_clearness
+        - terr_slope
+        a_ij: 2.0
+        rule: A
+        basis: r*(sit_clearness)/r*(terr_slope) = 0.1509/0.0943 = 1.600
+        source: elboshy_suitability_2022, tab. 2, p. 5
+      - pair:
+        - sit_clearness
+        - access_logtt
+        a_ij: 1.0
+        rule: A
+        basis: r*(sit_clearness)/r*(access_logtt) = 0.1509/0.1466 = 1.030
+        source: elboshy_suitability_2022, tab. 2, p. 5
+      - pair:
+        - sit_clearness
+        - clim_twarm_q
+        a_ij: 0.5
+        rule: A
+        basis: r*(sit_clearness)/r*(clim_twarm_q) = 0.1509/0.2163 = 0.698
+        source: elboshy_suitability_2022, tab. 2, p. 5
+      - pair:
+        - terr_northing
+        - terr_slope
+        a_ij: 1.0
+        rule: B
+        basis: faixa 4 vs 4
+        source: faixa ordinal (R4)
+      - pair:
+        - terr_northing
+        - access_logtt
+        a_ij: 0.3333
+        rule: B
+        basis: faixa 4 vs 3
+        source: faixa ordinal (R4)
+      - pair:
+        - terr_northing
+        - clim_twarm_q
+        a_ij: 0.2
+        rule: B
+        basis: faixa 4 vs 2
+        source: faixa ordinal (R4)
+      - pair:
+        - terr_slope
+        - access_logtt
+        a_ij: 0.5
+        rule: A
+        basis: r*(terr_slope)/r*(access_logtt) = 0.0943/0.1466 = 0.644
+        source: elboshy_suitability_2022, tab. 2, p. 5
+      - pair:
+        - terr_slope
+        - clim_twarm_q
+        a_ij: 0.5
+        rule: A
+        basis: r*(terr_slope)/r*(clim_twarm_q) = 0.0943/0.2163 = 0.436
+        source: elboshy_suitability_2022, tab. 2, p. 5
+      - pair:
+        - access_logtt
+        - clim_twarm_q
+        a_ij: 0.5
+        rule: A
+        basis: r*(access_logtt)/r*(clim_twarm_q) = 0.1466/0.2163 = 0.678
+        source: elboshy_suitability_2022, tab. 2, p. 5
+      lambda_max: 6.0917
+      consistency_index: 0.0183
+      random_index: 1.24
+      consistency_ratio: 0.0148
+      priority_vector:
+      - 0.3784
+      - 0.1341
+      - 0.0521
+      - 0.0772
+      - 0.1341
+      - 0.224
+      approx_eigenvector_max_gap: 0.0015
+      class_counts:
+        A: 10
+        B: 5
+        C: 0
+      anchored_fraction: 0.6667
+      author_judgement_count: 1
+      override_count: 0
+      revisions: []
