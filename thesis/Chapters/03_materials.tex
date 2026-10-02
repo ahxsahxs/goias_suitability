@@ -25,6 +25,8 @@ unidades municipais dessa mesma malha alimentam a agregação e o relato municip
 
 O atlas avalia sete segmentos, escolhidos de forma a cobrir produção agrícola, fibra, proteína animal, energia e
 conservação, de modo que a análise possa expressar genuínas compensações (\emph{trade-offs}) entre segmentos.
+A tabela abaixo caracteriza cada segmento em termos agronômicos; a literatura de mapeamento
+multicritério por segmento é revista em \S\ref{sec:sota-casos}.
 
 \begin{table}[H]
 \centering
@@ -43,8 +45,9 @@ conservação, de modo que a análise possa expressar genuínas compensações (
   seca; as faixas de temperatura e precipitação partem do zoneamento de aptidão climática da cultura no
   Brasil \citep[p.~782]{aparecido_climate_2021} e foram recalibradas às distribuições observadas em
   GO/DF (Anexo~\ref{anx:spec}). \\
-%% TODO: preciso de citação para outras culturas anuais. como estamos ancorando os pesos deste segmento?
-3 & \textbf{Outras culturas anuais} & Milho, algodão e sorgo, incluindo a safrinha (segunda-safra). \\
+3 & \textbf{Outras culturas anuais} & Milho, algodão e sorgo, incluindo a safrinha (segunda-safra);
+  os critérios e as faixas de classe seguem avaliações GIS-AHP publicadas para cereais de sequeiro
+  \citep[pp.~6--8]{tadesse_land_2020}. \\
 4 & \textbf{Piscicultura} & Aquicultura em tanques (açudes) e reservatórios (espécies de água quente,
   como a tilápia), seguindo critérios de viabilidade local (temperatura --- aqui a do ar, como
   aproximação da temperatura da água ---, textura do solo, declive, acesso à água) estabelecidos para

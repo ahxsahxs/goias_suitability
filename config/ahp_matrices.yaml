@@ -7,7 +7,7 @@
 # CI, RI and CR.
 #
 # Derivation chain:
-#     anchors (here) -> matrix -> w_lit -> x sigma(mu)^lambda -> config/segments.yaml
+#     anchors (here) -> matrix -> w_lit -> x sigma_horizon(mu)^lambda -> config/segments.yaml
 #
 # The hand-written surface is `anchors:` — ONE ordinal band per factor, plus the
 # published priority `r` where a factor corresponds to a source criterion. Every
@@ -24,16 +24,30 @@
 #   band 1 = most important ... 4 = least. An anchored factor's band must sit in
 #   the tercile of its own r within the source's criterion set.
 #
-# `factors:` lists only the factors that enter the matrix. Factors carrying
-# `role: gate` in config/segments.yaml are effectively constant in GO/DF and
-# are applied as a multiplicative gate instead — absent here by design.
-# Gate criterion, measured not arbitrated (thesis/Chapters/factor_discrimination.csv):
-#     sigma(mu) < 0.05  AND  mean(mu) > 0.95  over available land.
-# BOTH conditions are required. sigma(mu) alone would also catch a factor that
-# is near-uniform at a LOW mu — a genuine across-the-board penalty, not a
-# plateau — and re-anchoring that to mu = 1 would silently raise the whole
-# surface. That is why other_crops.clim_pr_cv (sigma = 0.047, mean mu = 0.694)
-# stays weighted.
+# `factors:` lists EVERY factor of the segment. There is no exempt category: the
+# `role: gate` mechanism — a two-condition test (sigma(mu) < 0.05 AND mean(mu) >
+# 0.95) that pulled a near-constant factor out of the matrix and re-applied it as
+# a multiplicative gate — was removed on 2026-10-02. It bought a correct result
+# (no hidden global deflator, CMIP6 lever preserved) at the price of an author
+# conditional in the middle of a derivation whose whole point is not to have one.
+# The single regional rule now does that work alone, with one caveat:
+#
+#   d = sigma_mu_horizon, measured over the PRESENT union the FUTURE
+#       (SSP5-8.5, 2051–2070) rather than over the present alone.
+#
+# Measured over the present alone, the seven climate factors whose observed range
+# sits inside their own optimal plateau have d = 0 EXACTLY, so w = w_lit * 0^lambda
+# = 0, mu^0 = 1, and the factor leaves the product — worse than the gate, since it
+# kills the deflator AND the CMIP6 lever. Over the horizon the question becomes
+# "how much does this factor grade across the range it actually traverses within
+# the analysis horizon", so a factor that is saturated today but moves under
+# warming earns a weight instead of vanishing. Still one measured rule, still no
+# author conditional.
+#
+# The alternative considered and declined: a floor sigma_min = epsilon on the
+# present. Simpler to state, but it arbitrates an epsilon — exactly the
+# subjectivity this change removes — and hands the full constant mu < 1 global
+# deflator back to the FAO cuts, which are absolute.
 #
 # Everything under `derived:` is written by tools/derive_weights.py. Do not edit
 # it by hand; `derive_weights.py --check` fails if it drifts.
@@ -48,8 +62,39 @@ scale:
 segments:
 
   soybean:
-    factors: [terr_slope, soil_clay, soil_ph]
+    factors: [terr_slope, soil_clay, soil_ph, clim_pr_annual, clim_twarm_q, clim_aridity]
     anchors:
+      clim_pr_annual:
+        band: 2
+        r: 0.261
+        rank: 2
+        n_criteria: 6
+        source: radocaj_optimal_2020
+        locator: tab. 5, p. 13
+        block: clima
+        rationale: >-
+          Precipitation; 2.º de 6 na matriz CLIMÁTICA da fonte (tercil superior). Fica na mesma faixa
+          que o pH e o declive, e não acima, porque a própria fonte declara os grupos clima e solo
+          igualmente influentes no resultado de aptidão (p. 7).
+      clim_twarm_q:
+        band: 3
+        r: 0.082
+        rank: 5
+        n_criteria: 6
+        source: radocaj_optimal_2020
+        locator: tab. 5, p. 13
+        block: clima
+        rationale: >-
+          Tmax, a média das máximas do trimestre quente na fonte; 5.º de 6 na matriz climática. O par
+          com clim_pr_annual é de regra A -- r*(pr)/r*(twarm) = 3,18, que arredonda a 3 na escala de
+          Saaty -- e não depende desta faixa.
+      clim_aridity:
+        band: 3
+        rationale: >-
+          author judgement -- índice de aridez (P/PET) como integrador do balanço hídrico que o total
+          pluviométrico não captura. Ausente do conjunto de critérios de Radočaj et al., por isso
+          entra como faixa ordinal e não como prioridade publicada; é a alavanca CMIP6 que combina
+          chuva e demanda atmosférica no mesmo número.
       soil_ph:
         band: 2
         r: 0.254
@@ -132,8 +177,34 @@ segments:
       override_count: 0
       revisions: []
   sugarcane:
-    factors: [terr_slope, soil_awc, soil_clay]
+    factors: [terr_slope, soil_awc, soil_clay, clim_pr_annual, clim_dry_months, clim_twarm_q]
     anchors:
+      clim_pr_annual:
+        band: 2
+        source: aparecido_climate_2021
+        locator: p. 777
+        rationale: >-
+          A fonte declara a água como o principal fator limitante do rendimento da cana e situa
+          1100-1500 mm como adequados ao ciclo. É um zoneamento de eficiência climática, não uma AHP,
+          logo não há prioridade publicada: entra como faixa ordinal, na mesma faixa que a CAD --
+          as duas medem a mesma disponibilidade hídrica, uma pelo aporte e outra pelo armazenamento.
+      clim_dry_months:
+        band: 3
+        source: aparecido_climate_2021
+        locator: p. 777
+        rationale: >-
+          Duração da estação seca. A fonte trata o déficit hídrico como o mecanismo da perda de
+          rendimento, mas na cana a maturação seca é desejável: o fator tem ótimo intermediário
+          (pontos 3/5/5/9), não é monotónico, e fica por isso uma faixa abaixo do total pluviométrico.
+      clim_twarm_q:
+        band: 3
+        source: aparecido_climate_2021
+        locator: p. 777
+        rationale: >-
+          Temperatura média do trimestre mais quente; a fonte situa 28-38 °C como favoráveis ao
+          desenvolvimento. Faixa ordinal abaixo da água, seguindo a hierarquia explícita da fonte.
+          Alburo et al., de onde vêm os pesos de solo e terreno deste segmento, não inclui critério
+          climático algum -- é o próprio precedente de descartar um critério sem variabilidade local.
       soil_awc:
         band: 2
         r: 19.4
@@ -216,8 +287,20 @@ segments:
       override_count: 0
       revisions: []
   other_crops:
-    factors: [terr_slope, soil_soc, clim_gdd, soil_ph, clim_pr_cv]
+    factors: [terr_slope, soil_soc, clim_gdd, soil_ph, clim_pr_cv, clim_pr_annual]
     anchors:
+      clim_pr_annual:
+        band: 3
+        r: 0.054
+        rank: 9
+        n_criteria: 14
+        source: tadesse_land_2020
+        locator: tab. 7, p. 10
+        block: unico
+        rationale: >-
+          Rainfall (mm); 0,054 dos 14 critérios da fonte, empatado com Soil Ph e K -- tercil
+          intermediário, a mesma faixa de soil_ph e clim_gdd. Os limiares de pertença vêm do ZARC do
+          milho (amaral_metodologia_2023, registados em segments.yaml); daqui vem só a prioridade.
       soil_soc:
         band: 1
         r: 0.142
@@ -549,8 +632,27 @@ segments:
       override_count: 0
       revisions: []
   cattle:
-    factors: [clim_soil_moist, terr_slope, soil_soc]
+    factors: [clim_soil_moist, terr_slope, soil_soc, clim_pr_annual, clim_dry_months]
     anchors:
+      clim_pr_annual:
+        band: 2
+        r: 0.3375
+        rank: 1
+        n_criteria: 5
+        source: balew_identification_2022
+        locator: tab. 2, p. 10 (coluna do gado)
+        block: unico
+        rationale: >-
+          Rainfall; maior peso da coluna do gado da fonte, empatado com LULC (0,3375) -- e LULC está
+          fora por guardrail de cobertura da terra. Partilha a faixa com clim_soil_moist em vez de
+          ficar acima: são duas medidas do mesmo construto de disponibilidade hídrica, e a chuva é
+          justamente o proxy que a fonte usa por não dispor da umidade do solo.
+      clim_dry_months:
+        band: 3
+        rationale: >-
+          author judgement -- duração do vazio forrageiro da seca, que determina a taxa de lotação no
+          Cerrado. Ausente do conjunto de critérios de Balew et al.; faixa ordinal uma abaixo da
+          chuva e da umidade do solo, por redundância parcial com ambas.
       clim_soil_moist:
         band: 2
         source: molossi_improve_2020
@@ -1049,7 +1151,7 @@ segments:
       override_count: 0
       revisions: []
   solar:
-    factors: [clim_srad, sit_clearness, terr_northing, terr_slope, access_logtt, clim_twarm_q]
+    factors: [clim_srad, sit_clearness, terr_northing, terr_slope, clim_twarm_q]
     anchors:
       clim_srad:
         band: 1
@@ -1078,15 +1180,6 @@ segments:
         locator: tab. 2, p. 5
         block: unico
         rationale: Average annual cloudy days; tercil intermediário da fonte. O índice de claridade Kt é o proxy de nebulosidade.
-      access_logtt:
-        band: 3
-        r: 10.1
-        rank: 5
-        n_criteria: 10
-        source: elboshy_suitability_2022
-        locator: tab. 2, p. 5
-        block: unico
-        rationale: Distance from Urban; tercil intermediário da fonte. A distância a linhas de transmissão (10,8%) não tem camada correspondente para GO/DF.
       terr_slope:
         band: 4
         r: 6.5

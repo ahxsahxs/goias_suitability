@@ -217,10 +217,12 @@ write(
     [
         md(
             "# Part 8 — Feature-stack assembly (250 m)\n\n"
-            "Concatenate the continuous themes (climate, terrain, soil, water, phenology, "
-            "access) into one multiband image; build a **raw** stack (for fuzzy suitability) "
-            "and a **z-scored** stack (for clustering). Land cover is excluded — it is a "
-            "mask/context layer, not a clustering feature.\n\n"
+            "Concatenate the continuous themes (climate, terrain, soil, water) into one "
+            "multiband image; build a **raw** stack (for fuzzy suitability) and a "
+            "**z-scored** stack (for clustering). Land cover is excluded — it is a "
+            "mask/context layer, not a clustering feature. Phenology and access left the "
+            "stack on 2026-10-02 (34 bands → 29): both encode the current state of land "
+            "use and infrastructure rather than biophysical potential.\n\n"
             "**Output:** `feature_stack_250m`, `feature_stack_250m_z`. "
             "**DoD:** single multiband asset, gap-free over AOI, documented band list."
         ),
@@ -269,7 +271,7 @@ write(
             "(`membership._source_image`): `sit_` → `feat_siting` (solar clearness / pisci "
             "seasonal-water distance), `rl_` → the realized-use image (conservation's demoted "
             "`rl_native_frac`), `cv_` → `feat_conservation` (conservation-value: WDPA distance / "
-            "ruggedness / biomass carbon). These stay **out** of the 34-band stack (guardrail)."
+            "ruggedness / biomass carbon). These stay **out** of the 29-band stack (guardrail)."
         ),
         code(
             "stack = ee.Image(utils.asset_id(project, 'feature_stack_250m'))\n"
@@ -357,7 +359,7 @@ write(
             "# Part 10 — Unsupervised biophysical zoning + profiling (decorrelated)\n\n"
             "Cluster a **curated, decorrelated** subset of the z-scored stack into biophysical "
             "zones, then profile each zone. Engine: `src/zoning.py`.\n\n"
-            "**Decorrelation (2026-07-14):** clustering the raw 34-band stack resolved only 3 "
+            "**Decorrelation (2026-07-14):** clustering the raw z-stack (then 34 bands) resolved only 3 "
             "low-expressiveness zones — GO is climatically near-uniform yet the 14 collinear climate "
             "bands each carried full Euclidean weight and swamped the soil/relief/hydrology structure. "
             "We now cluster on `zoning.ZONING_BANDS` (13 biophysical bands, s2-2026: "
@@ -718,9 +720,10 @@ write(
             "**random-forest** cross-check quantified by **Cohen's κ**. Engines: "
             "`src/external.py` + `src/metrics.py`.\n\n"
             "**Caveats:** MOD17 is *vegetation primary productivity, not agronomic yield* "
-            "(coarse surrogate); the in-stack NDVI integral is excluded as validator (it is a "
-            "suitability input → circular), so MOD17 is a distinct product with a noted residual "
-            "shared-signal caveat.\n\n"
+            "(coarse surrogate); the NDVI integral is excluded as validator on principle — a "
+            "vegetation index describes the vegetation that is there, so validating a potential "
+            "surface against it is circular. Since 2026-10-02 phenology is also out of the "
+            "feature stack entirely, so MOD17 no longer shares a band with the model.\n\n"
             "**Output:** validation tables (κ / ρ / Boyce / AUC / ANOVA). **DoD:** RQ1 validated."
         ),
         code(INIT + "\nimport external, metrics\nimport pandas as pd"),
@@ -752,8 +755,8 @@ write(
             "canopy window) evaluated **only on each crop's own realized pixels**, correlated against "
             "that crop's suitability (`metrics.within_crop_gradient`). This validates *how much* crops "
             "produce; the Boyce/AUC below validate *where*. Sign should be **non-negative** for the "
-            "extensive crops. (Residual shared signal with the in-stack `phen_integral` remains — an "
-            "IBGE-yield validator is the future upgrade.)"
+            "extensive crops. (Phenology left the stack on 2026-10-02, so the residual shared signal "
+            "with `phen_integral` is gone; an IBGE-yield validator remains the future upgrade.)"
         ),
         code(
             "gpp = external.season_gpp(aoi)  # sugarcane: pass months=list(range(1,13))\n"

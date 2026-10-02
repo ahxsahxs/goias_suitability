@@ -5,7 +5,7 @@ zones, then profile each zone (mean of every feature + the comparative best-fit
 segment, ranked from ``suit_present``).
 
 Clustering is done **offline with scikit-learn** rather than EE's weka clusterer:
-weka ``SimpleKMeans`` collapses to a single cluster on this 34-band, highly
+weka ``SimpleKMeans`` collapses to a single cluster on this stack, highly
 collinear stack (fails for >~4 inputs regardless of the ``init`` mode), whereas
 sklearn KMeans is robust and is already needed for the elbow/silhouette/gap
 k-selection the plan calls for. We fit centroids offline on a sample, then
@@ -13,7 +13,7 @@ classify the **full image server-side by nearest-centroid band math** — fully
 deterministic and label-identical to sklearn (Euclidean metric, same centroids).
 
 **Decorrelated zoning (2026-07-14 robustness iteration).** Clustering the raw
-34-band stack resolved only 3 low-expressiveness zones: GO/DF is climatically
+full z-stack (then 34 bands) resolved only 3 low-expressiveness zones: GO/DF is climatically
 near-uniform (annual precip 1373–1635 mm, dry-months a spatial constant), yet the
 14 collinear climate bands each carried a full unit of Euclidean weight and
 swamped the soil/relief/hydrology structure that actually separates the land. The
@@ -391,6 +391,11 @@ def profile_zones(df, labels, band_names, segments, realized_fracs=None):
       (see ``comparative_suitability``): the segment a zone is *comparatively* best
       suited to, on common footing. This replaces the earlier ad-hoc
       "distinctive_segment" (zone-mean − AOI-mean) and is the zone's headline label.
+    - ``comparative_segment_2`` / ``comparative_margin`` — the SECOND-ranked
+      comparative segment and the z-gap to the first. With K below the number of
+      segments, a single label leaves segments unrepresented by any zone; the
+      runner-up recovers them, and the margin says whether the headline label is a
+      real distinction or a coin toss. Both are K-independent by construction.
     - ``top_features`` — the 3 z-features whose zone mean deviates most from the
       AOI (the |largest| standardized departures): what makes the zone distinct.
     - ``rl_*`` — mean realized-use fractions if ``realized_fracs`` band names are
@@ -423,6 +428,16 @@ def profile_zones(df, labels, band_names, segments, realized_fracs=None):
     comp_mean = comp.groupby("zone")[suit_cols].mean()
     prof["comparative_segment"] = comp_mean.idxmax(axis=1).str.replace(
         "suit_", "", regex=False)
+
+    # secondary vocation: runner-up of the same ranking, plus the z-gap to the
+    # winner. ``np.argsort`` on the negated row gives a stable descending order.
+    order = np.argsort(-comp_mean.to_numpy(), axis=1)
+    cols = np.asarray(suit_cols)
+    prof["comparative_segment_2"] = [
+        cols[row[1]].replace("suit_", "") for row in order]
+    vals = comp_mean.to_numpy()
+    prof["comparative_margin"] = [
+        round(float(v[o[0]] - v[o[1]]), 4) for v, o in zip(vals, order)]
 
     # de-meaned 7-segment signature (comparative radar, not absolute means)
     rel = (suit - df[suit_cols].mean()).add_prefix("rel_")

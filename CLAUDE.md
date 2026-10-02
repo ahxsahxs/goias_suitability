@@ -31,10 +31,10 @@ conservation · solar PV generation.
 **Method, in one line:** FAO-style multi-criteria land evaluation (fuzzy membership + AHP weights,
 weighted geometric mean → FAO S1/S2/S3/N) for suitability; unsupervised clustering for zoning;
 delta-change CMIP6 for the future shift; validated against realized land use (MapBiomas) and a
-MODIS MOD17 productivity proxy. Full treatment in `thesis/Chapters/03_methodology.tex`.
+MODIS MOD17 productivity proxy. Full treatment in `thesis/Chapters/04_methodology.tex`.
 
 **Research questions** (full treatment in `thesis/Chapters/01_introduction.tex` and
-`03_methodology.tex`):
+`04_methodology.tex`):
 - **RQ1 — suitability & segmentation:** how is GO/DF partitioned into agro-environmental zones, and
   what is each zone's potential-productivity profile across the seven segments?
 - **RQ2 — potential vs. realized:** where does realized use (MapBiomas) / the MOD17 proxy diverge
@@ -76,7 +76,7 @@ is finished and live** — a static Vue 3 + TypeScript + Vite dashboard (`docs/d
 superseding the old `gee_js/atlas_app.js` EE-App plan (see `docs/dashboard_ux_plan.md`) — all 11
 routes are in place, deployed via `deploy-dashboard.yml` to GitHub Pages at
 <https://ahxsahxs.github.io/goias_suitability> (the repo-settings flip is done). The i18n pass and
-image trim are done, and it is now linked from the thesis (`02_materials.tex`); the thesis text no
+image trim are done, and it is now linked from the thesis (`03_materials.tex`); the thesis text no
 longer lists it as future work.
 
 | Part | State | Notes |
@@ -85,8 +85,8 @@ longer lists it as future work.
 | 9 — suitability | **BUILT (re-derived weights)** | `suit_present` / `suit_present_comp` / `suit_present_sens`: 7 `suit_*` (0–1) + 7 `class_*` (FAO S1/S2/S3/N) + 7 `sens_*` (±20% AHP). Conservation is a value/priority index (arithmetic-mean aggregation — compensatory); the other six segments use the weighted geometric mean. Weights are derived by `tools/derive_weights.py` (see §11); seven constant climate factors were promoted to `role: gate`, so soybean/sugarcane carry 3 weighted factors (not 6), other_crops 5, cattle 3. Worst consistency ratio 0.0462 (soybean), 6 author judgements, 0 overrides. |
 | 10 — zoning | **BUILT — K=4**, offline `k=2..20` sweep | `zones_present`, offline sklearn KMeans on a decorrelated PCA input (`src/zoning.py`), classified server-side by nearest-centroid band math. Zones labelled by `comparative_segment` (argmax of each segment's z-normalized suitability), not raw dominance. `zone_profiles.csv` + `zoning_kselect.csv`. |
 | 11 — CMIP6 shift | **BUILT** | `suit_future_*`, `delta_*`, `agreement_*` assets across SSP2-4.5/SSP5-8.5 × 2031–2050/2051–2070 × 5-GCM ensemble. Delta-change engine validated against an identity change-factor (Δ=0.000). No structurally climate-invariant segment remains — every segment (including conservation and solar) moves under at least one climate lever. |
-| 12–14 — Phase B | **BUILT** | `realized_vs_potential`, `municipal_godf` (IBGE malha municipal aggregation, 247 municipalities), MOD17 productivity validation (municipal Spearman + within-crop GPP gradient), RF presence cross-check (Cohen's κ = +0.269, AUC = 0.871 for soybean), AHP consistency ratios. See `config/ahp_matrices.yaml` and `thesis/Chapters/04_results.tex` / `05_discussion_conclusion.tex` for the full numbers. |
-| 15 — synthesis | **BUILT & live** | `docs/dashboard/` (Vue 3 + TS + Vite SPA): 11 routes covering every Part, built via `tools/build_dashboard_assets.py` from the assets in this table + config YAML. CI (`.github/workflows/deploy-dashboard.yml`) builds/type-checks/deploys successfully to GitHub Pages at <https://ahxsahxs.github.io/goias_suitability>, i18n and image trim done, and it's linked from `02_materials.tex`. See `docs/dashboard_ux_plan.md` for the architecture. |
+| 12–14 — Phase B | **BUILT** | `realized_vs_potential`, `municipal_godf` (IBGE malha municipal aggregation, 247 municipalities), MOD17 productivity validation (municipal Spearman + within-crop GPP gradient), RF presence cross-check (Cohen's κ = +0.269, AUC = 0.871 for soybean), AHP consistency ratios. See `config/ahp_matrices.yaml` and `thesis/Chapters/05_results.tex` / `06_discussion_conclusion.tex` for the full numbers. |
+| 15 — synthesis | **BUILT & live** | `docs/dashboard/` (Vue 3 + TS + Vite SPA): 11 routes covering every Part, built via `tools/build_dashboard_assets.py` from the assets in this table + config YAML. CI (`.github/workflows/deploy-dashboard.yml`) builds/type-checks/deploys successfully to GitHub Pages at <https://ahxsahxs.github.io/goias_suitability>, i18n and image trim done, and it's linked from `03_materials.tex`. See `docs/dashboard_ux_plan.md` for the architecture. |
 
 - **Asset backups:** pre-recalibration and pre-reconceptualization snapshots were copied server-side
   under `projects/probformer/assets/goias_backup_*` before each major re-export cascade
@@ -249,7 +249,7 @@ is deliberately excluded** (guardrail, §7).
   (`simplify_tolerance_deg` in `config/datasets.yaml`, default ~111 m, ~5x finer than
   `GAUL_SIMPLIFIED_500m`) before being embedded in any EE request — the committed `.gpkg` itself
   stays full precision. The 2026-09-19/20 rebuild propagated this swap through the full cascade
-  (Parts 1–14, `aoi`, `municipal_godf`) and the thesis text (`02_materials.tex`, `06_annex.tex`) —
+  (Parts 1–14, `aoi`, `municipal_godf`) and the thesis text (`03_materials.tex`, `07_annex.tex`) —
   GAUL is only mentioned there historically, as the boundary source used in an earlier iteration.
 - **Small artifacts only leave GEE** (PNG thumbnails, GeoTIFFs, CSV sample/summary tables).
 
@@ -325,11 +325,12 @@ thesis/template.tex                # entry point — pulls in Config/ then Chapt
 thesis/Config/1_novathesis.tex     # language (lang=pt), degree/specialization (imsDegree/imsSpecialization)
 thesis/Config/3_cover.tex          # title (pt/en), author, adviser
 thesis/Chapters/01_introduction.tex
-thesis/Chapters/02_materials.tex
-thesis/Chapters/03_methodology.tex
-thesis/Chapters/04_results.tex
-thesis/Chapters/05_discussion_conclusion.tex
-thesis/Chapters/06_annex.tex
+thesis/Chapters/02_estado_arte.tex
+thesis/Chapters/03_materials.tex
+thesis/Chapters/04_methodology.tex
+thesis/Chapters/05_results.tex
+thesis/Chapters/06_discussion_conclusion.tex
+thesis/Chapters/07_annex.tex
 thesis/Chapters/abstract-pt.tex, abstract-en.tex, abstract-{de,es,fr,gr,it}.tex
 thesis/Chapters/Figures/           # fig_4_*.png etc. — regenerated by tools/make_figures.py
 thesis/Bibliography/bibliography.bib            # GENERATED from Zotero — never hand-edit (§12)
@@ -383,9 +384,25 @@ assuming what's done, since it's a live checklist, not a static plan:
 
 **https://claude.ai/artifact/HrMpse386bFykBeBsBeJN6** ("Cronograma de revisão — tese")
 
-All 7 examiner points and the author TODOs are resolved in the thesis text. The two dashboard
-follow-ups tracked here previously — i18n/image polish and enabling GitHub Pages — are both done
-(§4). What remains is the Week 3 text work in the artifact: rewriting "Trabalhos futuros," a final
+The two dashboard follow-ups tracked here previously — i18n/image polish and enabling GitHub Pages
+— are both done (§4). The artifact was rewritten on 2026-10-02 into a five-phase cycle (A1–A4 model
+changes, rebuild, text reconciliation, form, conclusions); read it before assuming any point is
+closed.
+
+**Examiner point P4 (estado da arte) — chapter written 2026-10-02.** There was no state-of-the-art
+section anywhere in the thesis; `thesis/Chapters/02_estado_arte.tex` (302 lines, `\label{ch:sota}`)
+now covers FAO/GAEZ v4, ZARC + ZEE-GO, GIS-MCDA and the fuzzy/AHP extension, seven per-segment case
+studies, data-driven modelling, cloud platforms, spatial validation, and closes on a five-axis
+research gap plus `tab:estado-arte`. **The chapter files were renumbered** when it landed — Materiais
+02→03, Metodologia 03→04, Resultados 04→05, Discussão 05→06, Anexo 06→07 — registered in
+`thesis/Config/4_files.tex`. Nineteen keys that sat in the `.bib` without a single `\cite` are now
+cited with locators, including the three added on 2026-10-02 for this chapter: `mapa_port_2026`
+(Portaria SPA/MAPA 198/2026 — ZARC soja/Goiás, the primary source for the ZARC section),
+`junior_indice_2009` (the ISNA definition) and the de-duplicated `balew_identification_2022`.
+`sync_zotero_bib.py --check` passes; the only entry without a local PDF is the sanctioned
+`da_silva_goias_suitability_2026`.
+
+What remains is the Week 3 text work in the artifact: rewriting "Trabalhos futuros," a final
 cross-chapter consistency pass, compiling the PDF, and the adviser checkpoint.
 
 One decision worth keeping visible here rather than only in the artifact: examiner point 5 (climate
@@ -400,7 +417,7 @@ The mismatch is now evidenced with a genuine spatial statistic instead of assert
 z-scored feature-stack bands, grouped climate vs. terrain+soil, at three window radii (250 m /
 750 m / 4,750 m, the last anchored to TerraClimate's own native pixel) — even at TerraClimate's own
 scale, terrain+soil local variability is 42× climate's, rising to 320× at 250 m. Landed as
-`fig:scale-mismatch`/`tab:scale-mismatch` in `thesis/Chapters/06_annex.tex`. `fig_4_12()` in
+`fig:scale-mismatch`/`tab:scale-mismatch` in `thesis/Chapters/07_annex.tex`. `fig_4_12()` in
 `tools/make_figures.py` deliberately plots a hexbin from `theme_roughness_points.csv` rather than a
 `getThumbURL` raster — a full-AOI render of this moving-window computation at native 250 m exceeds
 GEE's interactive compute/size limits, and pre-coarsening the input would smooth away the exact

@@ -171,14 +171,28 @@ def zone_header(first, zs):
 
 # --- fragments ------------------------------------------------------------------
 def zone_suit():
+    """Per-zone mean suitability, closed by the comparative vocation rows.
+
+    Two label rows, not one: with K below the seven segments a single argmax
+    leaves segments spoken for by no zone at all, so the runner-up is reported
+    beside the winner, with the z-gap between them. A small margin is the honest
+    way to say the headline label is nearly a tie (zoning.profile_zones).
+    """
     p = read_csv("zone_profiles.csv").set_index("zone")
     zs = sorted(p.index)
     rows = [[SEG_PT[s]] + [num(p.loc[z, f"suit_{s}"], 2) for z in zs] for s in SEG_PT]
-    rows.append(["\\textbf{Melhor comparativo}"]
-                + [SEG_SHORT[p.loc[z, "comparative_segment"]] for z in zs])
+    label_rows = [["\\textbf{Vocação primária}"]
+                  + [SEG_SHORT[p.loc[z, "comparative_segment"]] for z in zs]]
+    if "comparative_segment_2" in p.columns:
+        label_rows.append(["\\textbf{Vocação secundária}"]
+                          + [SEG_SHORT[p.loc[z, "comparative_segment_2"]] for z in zs])
+    if "comparative_margin" in p.columns:
+        label_rows.append(["\\textbf{Margem} ($z$)"]
+                          + [num(p.loc[z, "comparative_margin"], 2) for z in zs])
+    rows += label_rows
     write("zone_suit.tex",
           tabular("l" + "r" * len(zs), zone_header("Segmento", zs), rows,
-                  midrules={len(rows) - 1}))
+                  midrules={len(rows) - len(label_rows)}))
 
 
 def zone_means():
@@ -304,16 +318,17 @@ def transition():
 
 
 def ahp_weights():
-    """tab:spec-longtable body: every factor, gates included.
+    """tab:spec-longtable body: every factor of every segment.
 
-    ahp_weights.csv holds only the weighted factors (gates are out of the AHP
-    matrix by construction), so the full roster comes from breakpoint_anchoring.csv
-    and the role from factor_discrimination.csv. w_atual/delta are deliberately NOT
-    printed: they are a snapshot of the previous derivation, not current drift.
+    The roster comes from breakpoint_anchoring.csv (it carries the shape and the
+    adopted thresholds) and the weight from ahp_weights.csv. Since the removal of
+    the ``role: gate`` exemption (2026-10-02) every factor carries a weight, so
+    there is no longer a "porta" row and no second sort key. w_atual/delta are
+    deliberately NOT printed: they are a snapshot of the previous derivation, not
+    current drift.
     """
     bp = read_csv("breakpoint_anchoring.csv")
     w = read_csv("ahp_weights.csv").set_index(["segment", "factor"])["w_final"]
-    role = read_csv("factor_discrimination.csv").set_index(["segment", "factor"])["role"]
     seg_cfg = yaml.safe_load((REPO / "config" / "segments.yaml").read_text())["segments"]
 
     lines = []
@@ -321,11 +336,10 @@ def ahp_weights():
         sub = bp[bp.segment == seg]
         if sub.empty:
             continue
-        # weighted factors first, by descending weight; then the gates
+        # by descending weight
         sub = sub.assign(
             _w=[w.get((seg, f), float("nan")) for f in sub.factor],
-            _gate=[role.get((seg, f), "limiting") == "gate" for f in sub.factor],
-        ).sort_values(["_gate", "_w"], ascending=[True, False])
+        ).sort_values("_w", ascending=False)
         spec = seg_cfg.get(seg, {})
         mask_pt = MASK_PT.get(spec.get("mask", "available"), spec.get("mask"))
         if spec.get("aggregate") == "arithmetic":
@@ -338,7 +352,7 @@ def ahp_weights():
             pts = ast.literal_eval(r.points_adotados)
             thresh = ", ".join(num(v, 2).rstrip("0").rstrip(",") if isinstance(v, float)
                                else str(v) for v in pts)
-            weight = "porta" if r._gate else num(r._w, 2)
+            weight = num(r._w, 2)
             head = f"\\textbf{{{SEG_PT[seg]}}} ({mask_pt})" if first else ""
             first = False
             lines.append([head, name, weight, SHAPE_PT.get(r.type, r.type), thresh])

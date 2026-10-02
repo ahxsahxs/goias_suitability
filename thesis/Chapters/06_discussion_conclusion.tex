@@ -84,13 +84,18 @@ trabalho; testá-los é o objeto da camada econômica proposta em \S\ref{sec:fut
 
 \section{Contribuições metodológicas}\label{sec:contributions}
 
-Além dos mapas em si, algumas escolhas de desenho valem registro. O procedimento roda
+Além dos mapas em si, algumas escolhas de desenho valem registro. Cada uma responde a um dos eixos
+da lacuna identificada em \S\ref{sec:sota-lacuna}. O procedimento roda
 quase inteiramente na nuvem, a partir do catálogo público e de uma especificação de parâmetros sob
 controle de versão, sem custo de infraestrutura dedicada; isso o torna reexecutável para outros
 estados do Cerrado. Os sete segmentos são avaliados por um mecanismo comum de pertinência
 fuzzy/AHP e comparados em base normalizada (escore~z), com a regra de agregação ajustada a cada
 caso: média geométrica (fator limitante) para os segmentos de produção, e média aritmética
-ponderada para a conservação, tratada como índice de valor e não de estado, construída a
+ponderada para a conservação. A primeira é um afastamento deliberado da soma ponderada
+compensatória que predomina na análise multicritério em SIG
+\citep[tab.~4, p.~710]{malczewski_gisbased_2006}, em favor da lógica de fator limitante da avaliação
+de terras \citep[p.~62]{sys_land_1991}; a segunda é um retorno consciente àquele padrão, apropriado
+a um índice de valor e não de estado, construído a
 partir de critérios de conectividade, heterogeneidade de habitat e serviço de carbono/água, em
 vez de simplesmente repetir a cobertura nativa atual.
 
@@ -100,7 +105,8 @@ PCA antes do agrupamento \citep{ding_k-means_2004} resolveu as quatro zonas rela
 transformação de derivação climática tanto para a linha de base quanto para o futuro do CMIP6
 garante que a mudança projetada seja um sinal puramente climático (fatores de mudança identidade
 dão $\Delta S=0$), com os demais fatores mantidos estáticos para isolar essa componente. A
-comparação com floresta aleatória sob validação cruzada espacial (\S\ref{sec:interpretation})
+comparação com floresta aleatória sob amostragem espacialmente estratificada
+(\S\ref{sec:interpretation}, \S\ref{sec:sota-validacao})
 serve de checagem independente do mapa baseado em conhecimento, não de substituto: as
 divergências encontradas são tratadas como achado sobre potencial \emph{versus} realizado, não
 como defeito oculto do modelo.
@@ -196,7 +202,7 @@ Por fim, cabe revisar os critérios de
 valor de conservação e a direção de sua resposta climática (perda de viabilidade \emph{versus}
 prioridade crescente de proteção), no espírito do planejamento multicritério de compromissos entre
 restauração, serviços ecossistêmicos e aptidão agrícola já aplicado ao Cerrado
-\citep{schuler_spatial_2022}, estendendo-o à dimensão climática, que aquele estudo não considera.
+\citep{schuler_spatial_2022}, estendendo-o à dimensão climática (\S\ref{sec:sota-casos}).
 
 \section{Conclusão}\label{sec:conclusion}
 

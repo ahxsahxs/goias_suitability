@@ -26,19 +26,21 @@
 #
 # Per-factor fields:
 #   weight   machine-written (above)
-#   role     `limiting` -> enters the weighted aggregation.
-#            `gate`     -> effectively constant in GO/DF, by the measured criterion
-#                        sigma(mu) < 0.05 AND mean(mu) > 0.95 over available land
-#                        (BOTH required; see config/ahp_matrices.yaml header), so
-#                        it can discriminate nothing and carries no weight. It is
-#                        kept OUT of the AHP matrix and applied as a
-#                        multiplicative gate, with breakpoints anchored so the
-#                        present value gives mu = 1. That removes the hidden
-#                        deflator a constant mu < 1 would otherwise apply to
-#                        every pixel -- the FAO cuts are absolute, so such a
-#                        deflator shifts the reported class shares -- while
-#                        preserving the factor as a CMIP6 lever: if the
-#                        variable moves under warming, the gate bites.
+#   role     `limiting` -> the only role there is. EVERY factor enters the AHP
+#                        matrix and the weighted aggregation. The former `gate`
+#                        role -- a factor pulled out of the matrix by the test
+#                        sigma(mu) < 0.05 AND mean(mu) > 0.95 and re-applied as a
+#                        multiplicative gate -- was removed on 2026-10-02. The
+#                        single regional rule covers that case on its own, by
+#                        measuring sigma(mu) over the PRESENT union the FUTURE
+#                        (SSP5-8.5, 2051-2070) instead of the present alone: a
+#                        factor saturated today but moving under warming earns a
+#                        weight from measured gradation, not from an author
+#                        exemption. Breakpoints are still anchored so the present
+#                        value gives mu = 1, which is what removes the hidden
+#                        deflator a constant mu < 1 would apply against the
+#                        ABSOLUTE FAO cuts. Full argument in the header of
+#                        config/ahp_matrices.yaml.
 #   basis    `literatura` or `empirico`: how the BREAKPOINTS were set.
 #            `empirico` means anchored to the percentile distribution actually
 #            observed in GO/DF; see thesis/Chapters/breakpoint_anchoring.csv.
@@ -107,12 +109,16 @@ segments:
           disponivel.
       clim_twarm_q:
         weight: 0.0            # machine-written by tools/derive_weights.py
-        role: gate
         type: range
         points: [18, 22, 30, 34]
         basis: empirico
         note: >-
-          Temperatura media do trimestre mais quente (C); o otimo termico da soja situa-se em torno de 20-30 C. Em GO/DF a distribuicao observada (23,6-27,6 C) cai INTEIRAMENTE dentro do plato otimo, de modo que mu = 1 em toda a area e o fator nao distingue celula alguma: sigma(mu) = 0. Entra, por isso, como PORTA multiplicativa, fora da matriz AHP. Nao e uma limitacao do dado, e um achado: o clima de GO/DF esta dentro da faixa otima quase em todo lugar, e por isso habilita em vez de graduar. A porta preserva a alavanca CMIP6 -- se a variavel sair do plato sob aquecimento, ela morde.
+          Temperatura media do trimestre mais quente (C); o otimo termico da soja situa-se em torno de
+          20-30 C. Em GO/DF a distribuicao observada (23,6-27,6 C) cai INTEIRAMENTE dentro do plato
+          otimo, de modo que mu = 1 em toda a area e sigma(mu) = 0 NO PRESENTE: hoje o fator nao
+          distingue celula alguma. Nao e uma limitacao do dado, e um achado -- o clima de GO/DF esta
+          dentro da faixa otima quase em todo lugar, e por isso habilita em vez de graduar. O peso vem de sigma(mu) medido no HORIZONTE (presente U SSP5-8.5 2051-2070), nao no presente: e a gradacao que o fator percorre dentro do horizonte da analise que lhe da peso, por medida e nao por excecao.
+          Aqui a alavanca e o ombro superior (c = 30), que morde sob aquecimento.
       soil_ph:
         weight: 0.3836         # machine-written by tools/derive_weights.py
         role: limiting
@@ -122,27 +128,27 @@ segments:
         note: "pH em agua; solos acidos corrigiveis por calagem ate a faixa neutra."
       clim_pr_annual:
         weight: 0.0           # machine-written by tools/derive_weights.py
-        role: gate
         type: range
         points: [800, 1100, 1800, 2200]
         basis: empirico
         note: >-
-          Precipitacao anual (mm) como proxy da lamina sazonal. Em GO/DF a distribuicao observada (1375-1637 mm) cai INTEIRAMENTE dentro do plato otimo, de modo que mu = 1 em toda a area e o fator nao distingue celula alguma: sigma(mu) = 0. Entra, por isso, como PORTA multiplicativa, fora da matriz AHP. Nao e uma limitacao do dado, e um achado: o clima de GO/DF esta dentro da faixa otima quase em todo lugar, e por isso habilita em vez de graduar. A porta preserva a alavanca CMIP6 -- se a variavel sair do plato sob aquecimento, ela morde.
+          Precipitacao anual (mm) como proxy da lamina sazonal. Em GO/DF a distribuicao observada
+          (1375-1637 mm) cai INTEIRAMENTE dentro do plato otimo, de modo que mu = 1 em toda a area e
+          sigma(mu) = 0 NO PRESENTE. O peso vem de sigma(mu) medido no HORIZONTE (presente U SSP5-8.5 2051-2070), nao no presente: e a gradacao que o fator percorre dentro do horizonte da analise que lhe da peso, por medida e nao por excecao. A alavanca e o ombro
+          inferior (b = 1100): se a chuva projetada se aproximar dele, o fator gradua e ganha peso.
       clim_aridity:
-        weight: 0.0            # role: gate -- carries no weight (see header)
-        role: gate
+        weight: 0.0            # machine-written by tools/derive_weights.py
         type: range
         points: [0.4, 0.7, 1.3, 1.6]
         basis: empirico
         note: >-
           Indice de aridez P/PET; suficiencia hidrica. Em GO/DF o observado sobre a terra disponivel vai
-          de 0,83 a 1,26 e cai quase todo dentro do plato otimo: sigma(mu) = 0,026 e mu medio = 0,992,
-          dentro do criterio de PORTA (sigma(mu) < 0,05 E mu medio > 0,95). O ombro superior foi movido
-          de 1,2 para 1,3 -- acima do maximo observado (1,26) -- para que o valor presente de mu = 1 em
-          toda a area, removendo o deflator residual que um mu quase constante < 1 aplicaria contra os
-          cortes ABSOLUTOS da FAO. Sai da matriz AHP e entra como porta multiplicativa. A alavanca CMIP6
-          fica no ombro INFERIOR (b = 0,7, contra um minimo observado de 0,83): se o Cerrado secar, a
-          porta morde.
+          de 0,83 a 1,26 e cai quase todo dentro do plato otimo: sigma(mu) = 0,026 e mu medio = 0,992
+          no presente. O ombro superior foi movido de 1,2 para 1,3 -- acima do maximo observado (1,26)
+          -- para que o valor presente de mu = 1 em toda a area, removendo o deflator residual que um
+          mu quase constante < 1 aplicaria contra os cortes ABSOLUTOS da FAO. O peso vem de sigma(mu) medido no HORIZONTE (presente U SSP5-8.5 2051-2070), nao no presente: e a gradacao que o fator percorre dentro do horizonte da analise que lhe da peso, por medida e nao por excecao.
+          A alavanca fica no ombro INFERIOR (b = 0,7, contra um minimo observado de 0,83): se o
+          Cerrado secar, o fator gradua.
 
   sugarcane:
     label: Cana-de-açúcar
@@ -179,8 +185,7 @@ segments:
           b = 32 (p50 31,9); o plato segue ate 52 e a queda ate 66, acima do p95 disponivel (45,1) e do
           realizado (45,6), porque solo argiloso nao limita a cana. Nenhum limiar segue o nicho realizado.
       clim_twarm_q:
-        weight: 0.0            # role: gate -- carries no weight (see header)
-        role: gate
+        weight: 0.0            # machine-written by tools/derive_weights.py
         type: range
         points: [20, 23, 32, 36]
         basis: empirico
@@ -190,35 +195,38 @@ segments:
           Temperatura media do trimestre mais quente (C); a cana e uma C4 termofila, com desenvolvimento
           favorecido em regime tropical quente -- a FORMA intervalar e os limiares 20/32/36 vem de
           Aparecido et al. Em GO/DF o observado sobre a terra disponivel vai de 23,0 a 28,2 C e cai quase
-          todo dentro do plato: sigma(mu) = 0,039 e mu medio = 0,988, dentro do criterio de PORTA
-          (sigma(mu) < 0,05 E mu medio > 0,95). O ombro inferior foi movido de 24 para 23 -- abaixo do
-          minimo observado -- para que o valor presente de mu = 1; por isso `basis` passa a `empirico`,
-          embora a fonte permaneca registrada. Antes desta revisao o fator carregava o MAIOR peso do
-          segmento (0,3024) enquanto contribuia ~0,996 para a media geometrica: peso sem poder
-          discriminante, diluindo declive, CAD e argila. Como porta, a alavanca CMIP6 e o ombro superior
-          (c = 32), que morde se o trimestre mais quente aquecer cerca de 4 C.
+          todo dentro do plato: sigma(mu) = 0,039 e mu medio = 0,988 no presente. O ombro inferior foi
+          movido de 24 para 23 -- abaixo do minimo observado -- para que o valor presente de mu = 1; por
+          isso `basis` passa a `empirico`, embora a fonte permaneca registrada. Numa revisao anterior o
+          fator carregava o MAIOR peso do segmento (0,3024) enquanto contribuia ~0,996 para a media
+          geometrica: peso sem poder discriminante, diluindo declive, CAD e argila. O peso vem de sigma(mu) medido no HORIZONTE (presente U SSP5-8.5 2051-2070), nao no presente: e a gradacao que o fator percorre dentro do horizonte da analise que lhe da peso, por medida e nao por excecao.
+          A alavanca e o ombro superior (c = 32), que morde se o trimestre mais quente aquecer cerca
+          de 4 C.
       clim_pr_annual:
         weight: 0.0           # machine-written by tools/derive_weights.py
-        role: gate
         type: range
         points: [900, 1300, 2000, 2600]
         basis: literatura
         source: aparecido_climate_2021
         locator: "p. 778"
         note: >-
-          Precipitacao anual (mm). Aparecido et al. situam 1100-1500 mm bem distribuidos como adequados ao ciclo. Em GO/DF a distribuicao observada (1375-1637 mm) cai INTEIRAMENTE dentro do plato otimo, de modo que mu = 1 em toda a area e o fator nao distingue celula alguma: sigma(mu) = 0. Entra, por isso, como PORTA multiplicativa, fora da matriz AHP. Nao e uma limitacao do dado, e um achado: o clima de GO/DF esta dentro da faixa otima quase em todo lugar, e por isso habilita em vez de graduar. A porta preserva a alavanca CMIP6 -- se a variavel sair do plato sob aquecimento, ela morde.
+          Precipitacao anual (mm). Aparecido et al. situam 1100-1500 mm bem distribuidos como adequados
+          ao ciclo, e declaram a agua o principal fator limitante do rendimento da cana (p. 777). Em
+          GO/DF a distribuicao observada (1375-1637 mm) cai quase toda dentro do plato otimo:
+          sigma(mu) = 0,014 e mu medio = 0,998 no presente. O peso vem de sigma(mu) medido no HORIZONTE (presente U SSP5-8.5 2051-2070), nao no presente: e a gradacao que o fator percorre dentro do horizonte da analise que lhe da peso, por medida e nao por excecao.
+          A alavanca e o ombro inferior (b = 1300), que esta DENTRO da faixa observada -- este fator
+          ja gradua hoje na borda seca do estado.
       clim_dry_months:
-        weight: 0.0            # role: gate -- carries no weight (see header)
-        role: gate
+        weight: 0.0            # machine-written by tools/derive_weights.py
         type: range
         points: [3, 5, 5, 9]
         basis: empirico
         note: >-
-          Meses secos por ano. Espacialmente CONSTANTE (=5) em GO/DF: nao discrimina celula alguma,
-          e por isso entra como PORTA multiplicativa, fora da matriz AHP. Os limiares estao
-          ancorados de modo que o valor presente de mu = 1, removendo o deflator oculto; a porta so
-          morde se o numero de meses secos se afastar do presente sob o CMIP6, em qualquer direcao
-          (poucos demais suprimem a janela de maturacao, muitos demais impoem estresse hidrico).
+          Meses secos por ano. Quase CONSTANTE (=5) em GO/DF, com sigma(mu) = 0,014 no presente. Os
+          limiares estao ancorados de modo que o valor presente de mu = 1, removendo o deflator
+          oculto. O peso vem de sigma(mu) medido no HORIZONTE (presente U SSP5-8.5 2051-2070), nao no presente: e a gradacao que o fator percorre dentro do horizonte da analise que lhe da peso, por medida e nao por excecao. O fator e de otimo intermediario, e por isso
+          responde em QUALQUER direcao: poucos meses secos demais suprimem a janela de maturacao,
+          muitos demais impoem estresse hidrico.
 
   other_crops:
     label: Outras culturas anuais (milho/algodão/sorgo)
@@ -257,14 +265,17 @@ segments:
         note: "pH em agua; janela de disponibilidade de nutrientes."
       clim_pr_annual:
         weight: 0.0            # machine-written by tools/derive_weights.py
-        role: gate
         type: range
         points: [700, 1000, 1700, 2200]
         basis: literatura
         source: amaral_metodologia_2023
         locator: "p. 258"
         note: >-
-          Precipitacao anual (mm) como proxy da lamina sazonal; o ZARC-milho situa o consumo do ciclo em 400-700 mm. Em GO/DF a distribuicao observada (1375-1637 mm) cai INTEIRAMENTE dentro do plato otimo, de modo que mu = 1 em toda a area e o fator nao distingue celula alguma: sigma(mu) = 0. Entra, por isso, como PORTA multiplicativa, fora da matriz AHP. Nao e uma limitacao do dado, e um achado: o clima de GO/DF esta dentro da faixa otima quase em todo lugar, e por isso habilita em vez de graduar. A porta preserva a alavanca CMIP6 -- se a variavel sair do plato sob aquecimento, ela morde.
+          Precipitacao anual (mm) como proxy da lamina sazonal; o ZARC-milho situa o consumo do ciclo
+          em 400-700 mm. Em GO/DF a distribuicao observada (1375-1637 mm) cai INTEIRAMENTE dentro do
+          plato otimo, de modo que mu = 1 em toda a area e sigma(mu) = 0 NO PRESENTE. O peso vem de sigma(mu) medido no HORIZONTE (presente U SSP5-8.5 2051-2070), nao no presente: e a gradacao que o fator percorre dentro do horizonte da analise que lhe da peso, por medida e nao por excecao.
+          A alavanca e o ombro inferior (b = 1000); a safrinha e o uso mais exposto, porque depende
+          do prolongamento da estacao chuvosa, nao do total anual.
       clim_pr_cv:
         weight: 0.0376         # machine-written by tools/derive_weights.py
         role: limiting
@@ -333,23 +344,24 @@ segments:
     factors:
       clim_pr_annual:
         weight: 0.0           # machine-written by tools/derive_weights.py
-        role: gate
         type: range
         points: [700, 1000, 2000, 2600]
         basis: empirico
         note: >-
-          Precipitacao anual (mm). Em GO/DF a distribuicao observada (1375-1637 mm) cai INTEIRAMENTE dentro do plato otimo, de modo que mu = 1 em toda a area e o fator nao distingue celula alguma: sigma(mu) = 0. Entra, por isso, como PORTA multiplicativa, fora da matriz AHP. Nao e uma limitacao do dado, e um achado: o clima de GO/DF esta dentro da faixa otima quase em todo lugar, e por isso habilita em vez de graduar. A porta preserva a alavanca CMIP6 -- se a variavel sair do plato sob aquecimento, ela morde.
+          Precipitacao anual (mm). Em GO/DF a distribuicao observada (1375-1637 mm) cai INTEIRAMENTE
+          dentro do plato otimo, de modo que mu = 1 em toda a area e sigma(mu) = 0 NO PRESENTE. O peso vem de sigma(mu) medido no HORIZONTE (presente U SSP5-8.5 2051-2070), nao no presente: e a gradacao que o fator percorre dentro do horizonte da analise que lhe da peso, por medida e nao por excecao.
+          Balew et al. dao a chuva o maior peso da coluna do gado (0,3375), usando-a como proxy da
+          umidade do solo, que aqui e medida diretamente -- as duas partilham faixa na matriz.
       clim_dry_months:
-        weight: 0.0            # role: gate -- carries no weight (see header)
-        role: gate
+        weight: 0.0            # machine-written by tools/derive_weights.py
         type: decreasing
         points: [5, 9]
         basis: empirico
         note: >-
-          Meses secos por ano. Espacialmente CONSTANTE (=5) em GO/DF: entra como PORTA
-          multiplicativa, fora da matriz AHP, com limiares ancorados de modo que o valor presente de
-          mu = 1. Diferentemente da cana, aqui a direcao e monotona: mais meses secos reduzem a
-          oferta de forragem.
+          Meses secos por ano. Espacialmente CONSTANTE (=5) em GO/DF, com sigma(mu) = 0 no presente e
+          limiares ancorados de modo que o valor presente de mu = 1. O peso vem de sigma(mu) medido no HORIZONTE (presente U SSP5-8.5 2051-2070), nao no presente: e a gradacao que o fator percorre dentro do horizonte da analise que lhe da peso, por medida e nao por excecao.
+          Diferentemente da cana, aqui a direcao e monotona: mais meses secos reduzem a oferta de
+          forragem, e e esse o vazio forrageiro da seca que determina a taxa de lotacao.
       clim_soil_moist:
         weight: 0.6969         # machine-written by tools/derive_weights.py
         role: limiting
@@ -504,16 +516,6 @@ segments:
         points: [2.86, 8.53]
         basis: empirico
         note: "Declividade em graus; a instalacao de paineis favorece terreno plano."
-      access_logtt:
-        weight: 0.1434         # machine-written by tools/derive_weights.py
-        role: limiting
-        type: decreasing
-        points: [3.5, 5.4]
-        basis: empirico
-        note: >-
-          Logaritmo do tempo de viagem a cidades, log(min+1); proxy de acesso a rede e a centros de
-          carga. Limiares no intervalo p10-p90 observado. Nao existe camada de linhas de transmissao
-          para GO/DF no catalogo, limitacao registrada no Capitulo 5.
       clim_twarm_q:
         weight: 0.1753        # machine-written by tools/derive_weights.py
         role: limiting

@@ -15,8 +15,8 @@ Here the arrow points the other way::
              v                    anchors, recomputed and asserted here
         pairwise matrix  ->  true principal eigenvector  =  w_lit
              |
-             |  x sigma(mu)^lambda    regional adaptation, lambda fixed a priori
-             v
+             |  x sigma_h(mu)^lambda   regional adaptation, lambda fixed a priori,
+             v                       sigma_h measured over present U future
         config/segments.yaml      weight: (machine-written)
 
 The point of the band mechanism is arithmetic, not moral: the author sets *n*
@@ -34,6 +34,15 @@ Offline and deterministic; no Earth Engine. The discrimination column ``d`` is r
 from ``thesis/Chapters/factor_discrimination.csv`` (produced by
 ``tools/anchor_breakpoints.py``); without it the tool reports ``w_lit`` and stops
 before the regional stage.
+
+``d`` is ``sigma_mu_horizon`` -- sigma(mu) over the present UNION the CMIP6 horizon
+(SSP5-8.5, 2051-2070) -- not ``sigma_mu_available``, which is the present alone.
+A factor whose observed range sits inside its own optimal plateau has
+sigma_mu_available = 0 exactly, so w = w_lit * 0^lambda = 0, mu^0 = 1, and the
+factor drops out of the geometric mean, taking its CMIP6 lever with it. That was
+what the ``role: gate`` exemption existed to avoid; measuring the gradation over
+the horizon instead removes the exemption without reintroducing the trap. See the
+header of ``config/ahp_matrices.yaml``.
 """
 from __future__ import annotations
 
@@ -239,12 +248,25 @@ def derive_segment(name, spec, cr_max, max_rev, verbose=True):
 
 
 # --- regional adaptation -----------------------------------------------------
+D_COLUMN = "sigma_mu_horizon"
+
+
 def load_discrimination():
-    """``d = sigma(mu)`` over available land, per (segment, factor)."""
+    """``d = sigma(mu)`` over present U horizon, per (segment, factor)."""
     if not os.path.exists(DISCRIM_CSV):
         return None
     df = pd.read_csv(DISCRIM_CSV)
-    return {(r.segment, r.factor): float(r.sigma_mu_available)
+    if D_COLUMN not in df.columns:
+        raise SystemExit(
+            f"\n[FALHA] {os.path.relpath(DISCRIM_CSV, ROOT)} nao tem a coluna "
+            f"{D_COLUMN!r}.\n"
+            "        O CSV e anterior a remocao dos fatores-porta (2026-10-02).\n"
+            "        Rode:  EE_PROJECT=probformer uv run python "
+            "tools/anchor_breakpoints.py discrimination\n"
+            "        Usar sigma_mu_available aqui zeraria o peso de todo fator\n"
+            "        saturado no presente -- o que a mudanca existe para evitar."
+        )
+    return {(r.segment, r.factor): float(getattr(r, D_COLUMN))
             for r in df.itertuples()}
 
 

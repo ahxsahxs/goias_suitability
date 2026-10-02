@@ -173,7 +173,7 @@ def future_climate_image(baseline: dict, factors, aoi):
 
 
 def stack_with_climate(project, climate, aoi):
-    """Raw 34-band stack with ``climate`` swapped in for the climate block, in
+    """Raw 29-band stack with ``climate`` swapped in for the climate block, in
     ``feature_stack_250m`` band order so ``membership`` consumes it unchanged.
 
     Used for both the future stack (CMIP6-adjusted climate) and the **rederived

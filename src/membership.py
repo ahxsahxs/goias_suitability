@@ -152,40 +152,22 @@ def _factor_images(stack, lc, factors, extras=None):
     a side image so siting / realized-use factors can be sourced without entering
     the feature stack (see ``_source_image``).
 
-    Factors declared ``role: gate`` are excluded here and returned by
-    ``_gate_images`` instead: they are spatially constant in GO/DF, so they carry
-    no weight and are applied multiplicatively (see ``segment_suitability``).
+    EVERY factor of the segment enters here. Until 2026-10-02 a factor could carry
+    ``role: gate`` and be pulled out of the weighted aggregation, to be re-applied
+    multiplicatively; that exemption is gone, and with it ``_gate_images``. The
+    regional stage of ``tools/derive_weights.py`` handles the same case by measuring
+    sigma(mu) over the present-union-future horizon, so a factor that is saturated
+    today but moves under CMIP6 gets a small measured weight instead of an author
+    exemption. See the header of ``config/ahp_matrices.yaml``.
     """
     images, weights = [], []
     for band, spec in factors.items():
-        if spec.get("role") == "gate":
-            continue
         src = _source_image(band, stack, lc, extras)
         images.append(membership(src, band, spec))
         weights.append(spec["weight"])
     if not images:
-        raise ValueError("segment has no weighted factor (all are gates?)")
+        raise ValueError("segment has no factor")
     return images, weights
-
-
-def _gate_images(stack, lc, factors, extras=None):
-    """Membership images of the ``role: gate`` factors of a segment.
-
-    A gate is a factor whose value is spatially constant over GO/DF: it cannot
-    discriminate one cell from another, so it gets no AHP weight and is left out
-    of the pairwise matrix. Its breakpoints are anchored so the *present* value
-    gives mu = 1, which is what stops a constant mu < 1 from silently deflating
-    the whole surface (the FAO cuts are absolute, so a global deflator moves the
-    reported class shares). It still multiplies the aggregate, so if the variable
-    moves under CMIP6 the gate bites.
-    """
-    out = []
-    for band, spec in factors.items():
-        if spec.get("role") != "gate":
-            continue
-        src = _source_image(band, stack, lc, extras)
-        out.append(membership(src, band, spec))
-    return out
 
 
 def _aggregate(images, weights, seg_spec, cfg):
@@ -209,11 +191,9 @@ def _aggregate(images, weights, seg_spec, cfg):
 
 
 def segment_suitability(stack, lc, seg_spec, cfg, extras=None):
-    """Masked [0,1] suitability for one segment: aggregate(weighted) x gates."""
+    """Masked [0,1] suitability for one segment: aggregate over ALL its factors."""
     images, weights = _factor_images(stack, lc, seg_spec["factors"], extras)
     suit = _aggregate(images, weights, seg_spec, cfg)
-    for g in _gate_images(stack, lc, seg_spec["factors"], extras):
-        suit = suit.multiply(g)
     return apply_mask(suit, lc, seg_spec["mask"])
 
 
@@ -293,9 +273,10 @@ def comparative_present(suit, region, segments, scale=1000):
 def segment_membership_image(stack, lc, seg_spec, cfg, extras=None):
     """Per-factor membership image (``mem_<factor>`` bands), the memberships *before*
     the weighted geomean — sample it, then feed ``variance_shares`` to see which
-    factors drive a segment's spatial variance. Includes ``role: gate`` factors, so
-    the diagnostic can show directly that their sigma(mu) is zero -- which is the
-    evidence for treating them as gates rather than weighted factors."""
+    factors drive a segment's spatial variance. This is also the image
+    ``tools/anchor_breakpoints.py discrimination`` reduces to sigma(mu): run it on the
+    present stack and on the CMIP6 future stack and the pooled spread of the two is
+    ``sigma_mu_horizon``, the ``d`` of the regional stage."""
     bands = []
     for band, spec in seg_spec["factors"].items():
         src = _source_image(band, stack, lc, extras)
@@ -391,12 +372,8 @@ def segment_sensitivity(stack, lc, seg_spec, cfg, extras=None):
     images, weights = _factor_images(stack, lc, seg_spec["factors"], extras)
     delta = cfg["aggregation"]["sensitivity_delta"]
 
-    gates = _gate_images(stack, lc, seg_spec["factors"], extras)
-
     def masked(w):
         s = _aggregate(images, w, seg_spec, cfg)
-        for g in gates:
-            s = s.multiply(g)
         return apply_mask(s, lc, seg_spec["mask"])
 
     base = masked(weights)

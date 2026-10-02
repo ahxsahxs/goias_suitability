@@ -72,7 +72,7 @@ CARTO = True
 # Keys are stable; `en` entries are the strings previously hard-coded in this
 # module (zone labels excepted — those were stale and are corrected to the
 # 2026-07-25 re-profiling described in both theses). `pt` entries are taken from
-# thesis/Chapters/04_results.tex and 06_annex.tex.
+# thesis/Chapters/05_results.tex and 07_annex.tex.
 TR = {
     "en": {
         "seg": {

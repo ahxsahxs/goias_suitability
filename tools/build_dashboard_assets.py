@@ -18,7 +18,7 @@ segments (soybean/sugarcane/other_crops/conservation/solar) x 4 SSP/window combo
 files. The dashboard no longer ships
 agreement_* (GCM ensemble agreement) rasters — the territory-mean agreement is ~0.999
 and near-uniform everywhere regardless of scenario/segment (see
-thesis/Chapters/03_methodology.tex's concordância paragraph and fig:ensemble-agreement),
+thesis/Chapters/04_methodology.tex's concordância paragraph and fig:ensemble-agreement),
 so the maps were non-informative and were dropped from the dashboard.
 
 Note: the zone count is read from zone_profiles.csv at run time, NOT hardcoded — the
@@ -545,8 +545,9 @@ def build_datasets_catalog() -> None:
 def build_stack_composition() -> None:
     out = DATA_DIR / "json"
     out.mkdir(parents=True, exist_ok=True)
-    # Static — matches STACK_THEMES in src/features.py / CLAUDE.md's own 34-band breakdown.
-    composition = {"climate": 14, "terrain": 6, "soil": 6, "water": 3, "phenology": 4, "access": 1}
+    # Static — matches STACK_THEMES in src/features.py / CLAUDE.md's own band breakdown.
+    # Phenology (4) and access (1) left the stack on 2026-10-02: 34 bands -> 29.
+    composition = {"climate": 14, "terrain": 6, "soil": 6, "water": 3}
     dest = out / "stack_composition.json"
     dest.write_text(json.dumps({
         "themes": composition,
@@ -583,8 +584,8 @@ def build_band_percentiles() -> None:
 
 # =============================================================================
 # 6f. Validation scorecard — hand-transcribed from the thesis's already-published
-# numbers (04_results.tex tab:presence-auc / tab:pot-real-gap / within-crop GPP /
-# ANOVA / kappa paragraphs, 06_annex.tex tab:spearman-npp). Re-deriving via
+# numbers (05_results.tex tab:presence-auc / tab:pot-real-gap / within-crop GPP /
+# ANOVA / kappa paragraphs, 07_annex.tex tab:spearman-npp). Re-deriving via
 # tools/run_validation.py would reproduce the same values (they already match) at
 # the cost of a 10+ minute RF/stratified-sample rerun — not worth it here.
 # =============================================================================
@@ -620,7 +621,7 @@ def build_validation_scorecard() -> None:
         "underuse_pct": {
             "other_crops": 57.3, "sugarcane": 51.6, "soybean": 41.8, "pisciculture": 9.4,
         },
-        "source": "thesis/Chapters/04_results.tex + 06_annex.tex, referente ao rebuild de 2026-09",
+        "source": "thesis/Chapters/05_results.tex + 07_annex.tex, referente ao rebuild de 2026-09",
     }
     dest = out / "validation_scorecard.json"
     dest.write_text(json.dumps(scorecard, indent=2))
@@ -628,7 +629,7 @@ def build_validation_scorecard() -> None:
 
 
 # =============================================================================
-# 6g. Feature Stack PCA comparison — naive 34-band z-stack vs the curated,
+# 6g. Feature Stack PCA comparison — naive full z-stack vs the curated,
 # theme-weighted 13-band ZONING_BANDS space that Part 10 actually clusters on
 # (src/zoning.py). Same stratified sample + seed as tools/rezone.py, so the 13-band
 # PCA is the zoning's own decorrelated space (fit_pca's var_keep only truncates it).

@@ -202,7 +202,10 @@ def season_gpp(aoi, months=None, year_range=None) -> "ee.Image":
     at the call site and correlate against that crop's suitability — the
     **within-crop** productivity gradient (``metrics.within_crop_gradient``). This
     validates *how much* crops produce; presence AUC/Boyce validates *where*.
-    Still shares residual signal with the in-stack ``phen_integral`` (documented).
+    Until 2026-10-02 it shared residual signal with ``phen_integral``, which was
+    then a stack band; phenology has since left the stack entirely
+    (``features.STACK_THEMES``), so GPP no longer validates against a surface that
+    was partly built from a vegetation index.
     """
     p = cfg()["productivity"]["gpp"]
     months = months or GROWING_MONTHS

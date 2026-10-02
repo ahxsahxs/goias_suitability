@@ -383,9 +383,13 @@ produtividade MODIS MOD17 (NPP anual e, para o validador intracultura, GPP da es
 crescimento).
 
 Cada um é usado \textbf{apenas} como máscara, referência de validação ou área descritiva.
-Nenhum entra no conjunto de bandas ou no agrupamento, de modo que a independência do potencial
-modelado (QP1) em relação ao uso atual da terra (QP2) seja preservada. Qualquer
-concordância entre os dois é, portanto, corroboração do modelo, e não circularidade.
+Nenhum entra no conjunto de bandas, no agrupamento ou nos pesos: nessa extensão --- que cobre todo o
+zoneamento (QP1) --- a independência em relação ao uso atual da terra (QP2) é estrita. Há, porém, um
+ponto em que o uso atual informou o modelo: a ancoragem empírica dos limiares móveis de pertinência,
+que usou a distribuição percentílica dos pixels realizados de cada segmento
+(\S\ref{sec:suitability}). A concordância entre potencial e uso atual é, por isso, corroboração
+\emph{parcial} das superfícies de viabilidade, e corroboração plena apenas do zoneamento. O risco de
+circularidade que essa distinção delimita é o discutido em \S\ref{sec:sota-ml}.
 
 \subsection{Composição do uso atual da terra}\label{sec:realized-composition}
 
@@ -465,8 +469,13 @@ Piscicultura           & 22,4\% \\
 \subsection{Validação da viabilidade do presente (QP1)}\label{sec:validation-present}
 
 As superfícies baseadas em conhecimento foram submetidas a três verificações independentes.
-Cada uma delas é reforçada com uma validação cruzada espacial, que protege contra a inflação
-por autocorrelação espacial a que as métricas de presença estão sujeitas.
+A amostragem de cada uma é estratificada espacialmente, o que mitiga parte do otimismo que a
+autocorrelação espacial introduz nas métricas de presença. Não equivale, porém, a uma validação
+cruzada por blocos: treino e teste não ficam separados por distância, e é dessa separação que depende
+a correção do viés descrita em \S\ref{sec:sota-validacao}
+\citep[p.~913]{roberts_crossvalidation_2017}. As métricas aqui reportadas devem, nessa medida, ser
+lidas como limites superiores do desempenho fora da amostra; uma partição por blocos dimensionada pelo
+alcance medido da autocorrelação fica indicada em \S\ref{sec:futurework}.
 
 %% TODO: segunda vez que se fala de malha 8x8. Acho que nao esta claro pro leitor a que malha isso se refere
 

@@ -1,0 +1,299 @@
+\chapter{Estado da arte}\label{ch:sota}
+
+Avaliar o potencial de uso de um território não é um problema novo, e as respostas já dadas a ele
+diferem menos nos dados de entrada do que naquilo que se propõem a entregar. Este capítulo organiza
+essas respostas em torno de três perguntas, aplicadas de forma uniforme a cada linha de trabalho:
+\emph{o que ela entrega, em que unidade espacial, e pode ser reexecutada?} A primeira separa modelos
+de rendimento de modelos de aptidão; a segunda separa o pixel do município; a terceira separa um
+produto cartográfico publicado de um modelo aberto. O percurso vai da avaliação de terras da FAO e de
+sua operacionalização global (\S\ref{sec:sota-fao}) ao zoneamento institucional brasileiro
+(\S\ref{sec:sota-brasil}), passa pela análise multicritério em sistemas de informação geográfica
+(SIG), que é a família metodológica a que esta dissertação pertence (\S\ref{sec:sota-mcda}), e pelos
+estudos de caso por segmento que a aplicam (\S\ref{sec:sota-casos}); depois examina a alternativa
+orientada a dados (\S\ref{sec:sota-ml}), a plataforma de computação (\S\ref{sec:sota-plataforma}) e o
+desenho de validação (\S\ref{sec:sota-validacao}). A síntese (\S\ref{sec:sota-lacuna}) localiza a
+lacuna que o trabalho ocupa. A revisão de análise multicritério em SIG de \citet{malczewski_gisbased_2006}
+serve de moldura para a parte central desse percurso.
+
+\section{Avaliação de terras: da FAO ao GAEZ v4}\label{sec:sota-fao}
+
+A avaliação de terras na tradição da FAO (\emph{Food and Agriculture Organization}) parte de uma
+inversão útil: em vez de medir diretamente a aptidão, mede-se o quanto cada característica da terra se
+afasta da condição ótima para um dado tipo de utilização. Essas \emph{limitações} são graduadas numa
+escala de cinco níveis --- nenhuma, ligeira, moderada, severa e muito severa --- em que o nível
+ligeiro é definido quantitativamente como aquele que reduz a produtividade em não mais de 20\% do
+rendimento ótimo \citep[p.~61]{sys_land_1991}.
+
+Os níveis de limitação traduzem-se então em classes de aptidão. \citet[p.~62]{sys_land_1991}
+estabelecem a correspondência que esta dissertação adota: limitações nulas ou ligeiras definem a
+classe \textbf{S1} (muito apta), limitações moderadas a \textbf{S2} (moderadamente apta), limitações
+severas a \textbf{S3} (marginalmente apta) e limitações muito severas as classes \textbf{N1}
+(inapta, mas corrigível) e \textbf{N2} (inapta e não corrigível). O esquema de quatro classes usado
+aqui (\S\ref{sec:aggregation}) funde N1 e N2 numa única ordem N, por não modelar intervenções
+corretivas. Na mesma página, o \emph{método da limitação simples} fixa a regra de agregação por fator
+limitante: a classe atribuída corresponde à pior classe entre as características avaliadas. Essa é a
+lógica que a média geométrica ponderada reproduz de forma contínua (\S\ref{sec:aggregation}), e as
+definições das quatro classes continuam a ser aplicadas nestes termos na literatura recente de
+avaliação de terras \citep[tab.~1, p.~5]{haile_assessment_2026}.
+
+A operacionalização global desses princípios é o \emph{Global Agro-Ecological Zones} (GAEZ~v4), que se
+declara explicitamente assente nos fundamentos da avaliação de terras da FAO
+\citep[p.~1]{fischer_global_2021}. Três características do GAEZ~v4 importam para situar este trabalho,
+e nenhuma delas é um defeito do GAEZ --- são consequências de ele responder a uma pergunta diferente,
+de alcance global. Primeiro, o GAEZ~v4 é um modelo de rendimento potencial acoplado a um procedimento
+de \emph{matching} entre requisitos da cultura e condições da terra, e não uma análise multicritério;
+segundo, sua grade de trabalho a 30 segundos de arco é agregada para entrega a 5 minutos de arco,
+cerca de 9~km; terceiro, ele classifica o território em \emph{seis} classes --- VS, S, MS, mS, vmS e
+NS ---, e não nas quatro classes S1--N da avaliação de terras clássica
+\citep[p.~8]{fischer_global_2021}. Sua dimensão prospectiva apoia-se no AR5 do IPCC: quatro
+trajetórias RCP, projeções do ISI-MIP a meio grau, um conjunto de cinco modelos do sistema terrestre e
+três fatias temporais, 2011--2040, 2041--2070 e 2070--2099 \citep[p.~15]{fischer_global_2021}.
+
+\section{Zoneamento institucional no Brasil}\label{sec:sota-brasil}
+
+\subsection{Zoneamento Agrícola de Risco Climático}\label{sec:sota-zarc}
+
+O ZARC é o instrumento com que o Estado brasileiro vincula crédito e seguro agrícola a uma avaliação
+climática do território. Sua forma jurídica condiciona o que ele pode entregar: é aprovado por
+portaria, uma cultura e um estado de cada vez, com vigência restrita a um único ano-safra
+\citep[art.~1\textsuperscript{o}, parágrafo único]{mapa_port_2026}.
+
+O procedimento é o de um balanço hídrico. O \emph{índice de satisfação da necessidade de água} (ISNA)
+é a razão entre a evapotranspiração real e a máxima da cultura, isto é, a fração da água que a planta
+efetivamente consome em relação ao que consumiria sem restrição hídrica \citep[p.~1]{junior_indice_2009}.
+A portaria vigente para a soja em Goiás fixa os cortes desse índice por fase fenológica, exigindo
+ISNA $\geq 0{,}50$ na fase de estabelecimento e ISNA $\geq 0{,}55$ na fase de floração e enchimento de
+grãos \citep[\S1.9.4]{mapa_port_2026}. O risco é simulado para cada decêndio de semeadura e para
+seis classes de água disponível no solo, de AD1 a AD6 \citep[\S\S1.6, 2.1--2.2]{mapa_port_2026},
+e o resultado é expresso em três níveis de probabilidade de perda de rendimento --- 20\%, 30\% e 40\%
+\citep[\S1.6]{mapa_port_2026}.
+
+A unidade de decisão, porém, não é a célula simulada: é o município. A portaria considera apto ao
+cultivo da soja o município que apresente, em no mínimo 20\% de sua área, risco inferior ao nível
+considerado \citep[\S1.10]{mapa_port_2026}. O produto final é, portanto, uma classificação
+binária --- apto ou inapto, a 20\%, 30\% ou 40\% de risco --- atribuída a polígonos municipais.
+
+A geração metodológica em curso substitui o balanço hídrico por simulação de processos. O ZarcPro-Milho
+aplica o modelo CSM-CERES-Maize, da plataforma DSSAT, parametrizado sobre ensaios de valor de cultivo e
+uso \citep[p.~11]{amaral_metodologia_2023}, sobre uma base de 34 anos de dados diários a partir de 1981
+interpolada numa grade nacional \citep[p.~13]{amaral_metodologia_2023}. O desenho combina três grupos de
+cultivares, seis classes de água disponível e trinta e seis decêndios de semeadura, resultando em 648
+cenários que, multiplicados pelos 34 anos, produzem 22.032 rendimentos simulados e dez níveis de
+produtividade esperada \citep[pp.~19--20]{amaral_metodologia_2023}; os níveis de risco de 20\%, 30\% e
+40\% e a regra de aptidão municipal permanecem \citep[p.~20]{amaral_metodologia_2023}. Essa metodologia
+está publicada para o milho, e não se estende aqui à soja por analogia: para a soja em Goiás vale o que
+a portaria citada acima estabelece.
+
+\subsection{Zoneamento Ecológico-Econômico de Goiás}\label{sec:sota-zee}
+
+Se o ZARC responde pela dimensão climática por cultura, o Zoneamento Ecológico-Econômico (ZEE) responde
+pelo ordenamento territorial, como instrumento previsto no Decreto~n\textsuperscript{o}~4.297/2002
+\citep[p.~2320]{queiroz_o_2022}. O ZEE de Goiás foi construído sobre a base geográfica do
+MacroZAEE-GO, cujo mapa de aptidão agrícola e cuja atualização do mapa de uso e cobertura vegetal
+foram elaborados na escala de 1:250.000, com os trabalhos concluídos no primeiro semestre de 2014
+\citep[p.~2323]{queiroz_o_2022}. Seu método cruza a vulnerabilidade ambiental com o Índice de
+Desempenho dos Municípios Goianos, de ano-base 2010 \citep[p.~2327]{queiroz_o_2022}, compondo um
+Índice Ecológico-Econômico que resolve o cruzamento em seis categorias --- A1, A2, B1, B2, C1 e C2
+--- que dão as zonas ecológico-econômicas do estado \citep[quadro~1, p.~2328]{queiroz_o_2022}.
+
+Duas características delimitam o que esse produto responde. Suas zonas são categorias de governança e de
+desempenho socioeconômico assentes sobre polígonos municipais, e não gradientes de potencial biofísico;
+e sua cobertura é o estado de Goiás, sem o Distrito Federal --- ao contrário das 247 unidades municipais
+adotadas aqui (\S\ref{ch:materials}).
+
+\section{Análise multicritério em SIG e a extensão fuzzy/AHP}\label{sec:sota-mcda}
+
+A família metodológica a que esta dissertação pertence consolidou-se entre o fim da década de 1980 e o
+início dos anos 2000. O levantamento de \citet[p.~704]{malczewski_gisbased_2006} identifica 319 artigos
+revistos por pares em análise multicritério aplicada a SIG entre 1990 e 2004, dos quais 47,6\% operam
+sobre dados matriciais \citep[p.~707]{malczewski_gisbased_2006}.
+
+Um dado desse levantamento é diretamente pertinente ao desenho adotado aqui. A regra de combinação
+dominante no campo é a soma ponderada, sozinha ou com sobreposição booleana, presente em 143 dos
+artigos classificados, ou 39,3\% do total, enquanto o processo analítico hierárquico (AHP, do inglês
+\emph{analytic hierarchy process}) aparece como regra de combinação em 34 artigos, ou 9,4\%
+\citep[tab.~4, p.~710]{malczewski_gisbased_2006}. A soma ponderada é \emph{compensatória}: um valor
+elevado num critério compensa um valor baixo noutro. Essa é precisamente a propriedade que a avaliação
+de terras da FAO recusa ao classificar pela pior característica \citep[p.~62]{sys_land_1991}. A opção
+desta dissertação pela média geométrica ponderada (\S\ref{sec:aggregation}) é, portanto, um
+afastamento deliberado do padrão do campo, em favor da lógica do fator limitante; e a exceção
+aritmética adotada para o segmento de conservação é, pelo mesmo critério, um retorno consciente ao
+padrão compensatório, apropriado a um índice de valor e não de produtividade.
+
+A ponderação por AHP assenta em comparações par a par expressas numa escala de números inteiros de 1 a
+9, cujo limite superior \citet[pp.~245--246]{saaty_scaling_1977} deriva da constatação psicológica de
+que um indivíduo não compara simultaneamente mais do que sete elementos, mais ou menos dois; a tabela
+de intensidades correspondente, de ``importância igual'' a ``importância absoluta'', está em
+\citet[tab.~1, p.~246]{saaty_scaling_1977}, e o vetor de prioridades é o autovetor principal
+normalizado da matriz de comparações. A coerência da elicitação é aferida pela razão de consistência,
+com o limiar convencional de 0,10 \citep[p.~171]{saaty_analytic_1987}. Convém reter o alcance exato
+dessa verificação: uma razão de consistência aceitável não garante uma boa decisão final, assegurando
+apenas que não existem conflitos intoleráveis entre as comparações e que a priorização não é fruto do
+acaso \citep[p.~2]{frish_enhancing_2025}.
+
+A extensão fuzzy da avaliação de terras substitui os cortes abruptos entre classes por funções de
+pertinência contínuas, preservando a informação que uma classificação em degraus descarta
+\citep{nisar_ahamed_gis-based_2000,yaghmaeian_mahabadi_land_2012}. O procedimento de
+\citet{alburo_application_2019} é um precedente publicado para o tratamento de critérios sem
+variabilidade local, discutido em detalhe adiante (\S\ref{sec:ahp}).
+
+\section{Estudos de caso por segmento}\label{sec:sota-casos}
+
+A aplicação dessa família a segmentos específicos é numerosa, e cada um dos sete segmentos avaliados
+aqui tem precedentes diretos. Esta secção revisa como a literatura \emph{mapeou} cada segmento; a
+caracterização agronômica dos segmentos está em \S\ref{ch:materials}.
+
+Para a \textbf{soja}, \citet[p.~1]{radocaj_optimal_2020} combinam pertinência fuzzy, pesos AHP,
+agrupamento por $k$-médias e classificação nas classes da FAO sobre um condado de 4.155~km\textsuperscript{2},
+validando o resultado contra o NDVI do Sentinel-2 ($R^2 = 0{,}8438$) e identificando 14,5\% da área,
+ou 602~km\textsuperscript{2}, como muito apta. É o análogo metodológico mais próximo deste trabalho em
+toda a literatura revista, e por isso serve de termo de comparação na Tabela~\ref{tab:estado-arte}.
+Para a \textbf{cana-de-açúcar}, \citet[pp.~2, 4--5]{haile_assessment_2026} avaliam aptidão e requisitos
+hídricos de cana irrigada sobre rasters a 30~m, reportando os resultados nas classes S1--N. Para o grupo
+de \textbf{outras culturas anuais}, \citet[pp.~6--8]{tadesse_land_2020} constroem uma avaliação GIS-AHP
+para o sorgo, com faixas S1/S2/S3 explicitadas critério a critério e verificação da razão de
+consistência.
+
+Para a \textbf{piscicultura}, \citet[pp.~4--5, 7, 9]{francisco_classification_2019} classificam a
+aptidão para criação de peixes no Paraná a partir do SRTM e do MapBiomas a 30~m, numa escala de quatro
+níveis, com índice aleatório de 0,90 para quatro critérios. Para a \textbf{pecuária},
+\citet[pp.~3--5]{balew_identification_2022} identificam terras aptas a diferentes espécies de rebanho
+usando as classes S1/S2/S3/N1, precipitação do CHIRPS a 0,25\textsuperscript{o} e sobreposição a 30~m.
+Para a \textbf{conservação}, \citet[pp.~2, 6]{morandi_delimitation_2020} delimitam corredores
+ecológicos no Cerrado por AHP sobre superfície de custo, com verificação de consistência. Para a
+\textbf{geração fotovoltaica}, \citet[pp.~6, 8]{elboshy_suitability_2022} aplicam GIS-AHP à implantação
+de usinas em escala de concessionária.
+
+Três limites são comuns a todo esse conjunto, e é deles que decorre a oportunidade desta dissertação.
+Cada estudo avalia um único segmento; cada um opera sob o clima presente, sem horizonte projetado; e as
+extensões vão da bacia ao condado. Mais importante, os sete \emph{não são comparáveis entre si}: as
+escalas de pertinência, os conjuntos de critérios e os cortes de classe são escolhidos de forma
+independente em cada trabalho, de modo que uma área classificada como S2 para a soja num estudo e S2
+para a pecuária noutro não exprime qualquer relação entre os dois usos naquela área.
+
+\section{Modelagem orientada a dados e o risco de circularidade}\label{sec:sota-ml}
+
+A alternativa a um modelo baseado em conhecimento é estimar a aptidão a partir dos próprios padrões
+observados. Essa via produziu o resultado que melhor justifica uma abordagem multissegmentar:
+\citet[p.~1]{rising_crop_2020}, modelando seis culturas em condados dos Estados Unidos entre 1949 e
+2009, estimam que manter as culturas nas localizações atuais custaria 31\% dos lucros sob o cenário
+RCP~8.5 em 2070, ao passo que permitir a realocação entre culturas reduz a perda a 16\%, com 57\% dos
+condados mudando de cultura dominante. A grandeza relevante para o planejamento, portanto, não é o
+impacto sobre uma cultura isolada, mas a \emph{realocação} entre usos --- que só é observável se vários
+usos forem avaliados sobre um mecanismo comum.
+
+Essa via carrega, contudo, duas dificuldades bem documentadas. Modelos ajustados a dados de presença
+aprendem o nicho \emph{realizado}, e não o potencial, e são sensíveis ao desenho da amostra de fundo
+\citep{valavi_modelling_2021}. Além disso, quando os dados têm estrutura espacial, a dependência
+persiste nos resíduos e os preditores podem ajustar-se a ela, o que infla a perícia aparente do modelo
+\citep[p.~913]{roberts_crossvalidation_2017}. Disso decorre uma consequência que esta dissertação
+assume como argumento próprio, e não como achado de terceiros: se o uso atual da terra entra como
+preditor da aptidão, o modelo tende a confirmar a alocação existente em vez de a avaliar. É essa
+circularidade que a restrição metodológica adotada aqui --- cobertura da terra apenas como máscara,
+validação ou contexto descritivo (\S\ref{sec:phaseb}) --- se destina a evitar.
+
+\section{Plataformas em nuvem para avaliação de terras}\label{sec:sota-plataforma}
+
+A viabilidade de executar uma avaliação territorial completa sem infraestrutura local decorre da
+maturidade das plataformas de geocomputação em nuvem, descritas em \S\ref{sec:cost}. O levantamento de
+\citet[p.~152]{tamiminia_google_2020} cobre 349 artigos revistos por pares em 146 periódicos, entre
+2010 e outubro de 2019, e organiza-os numa taxonomia de aplicações em que o mapeamento de culturas é o
+maior grupo, com 74 trabalhos, seguido de água, cobertura e uso da terra, fogo, inundação, neve, risco
+de doenças, estimativa de rendimento, evapotranspiração, linha de costa, albedo, área urbana e solos
+\citep[tab.~1, pp.~154--155]{tamiminia_google_2020}. A avaliação de terras multicritério não figura
+entre as categorias de aplicação ali levantadas --- uma ausência no conjunto revisto por aqueles
+autores, que não equivale a inexistência, mas indica que o encontro entre essa plataforma e essa
+tradição metodológica não era, até ali, uma prática estabelecida.
+
+\section{Validação de modelos espaciais}\label{sec:sota-validacao}
+
+Um modelo de aptidão é uma predição espacial, e a avaliação de predições espaciais tem uma literatura
+própria cuja conclusão central é inconveniente: a validação cruzada aleatória, aplicada a dados com
+estrutura espacial, subestima seriamente o erro de predição, porque observações de treino e de teste
+vizinhas não são independentes \citep[p.~913]{roberts_crossvalidation_2017}. O remédio é separar
+treino e teste não ao acaso, mas por blocos --- no espaço, no tempo ou no espaço de preditores ---,
+estratégia que aqueles autores consideram preferível à alternativa aleatória em todos os casos que
+testaram, com a ressalva de que a blocagem pode induzir extrapolação ao restringir as combinações de
+preditores disponíveis para o treino \citep[p.~913]{roberts_crossvalidation_2017}.
+
+A magnitude do efeito justifica o cuidado. Avaliando um mapa de biomassa aérea de larga escala,
+\citet[pp.~2, 4--5]{ploton_spatial_2020} obtêm $R^2 = 0{,}53$ por validação cruzada aleatória em $k$
+partições e apenas $R^2 = 0{,}14$ pelo procedimento com exclusão espacial por \emph{buffer}, sobre os
+mesmos dados; a autocorrelação nos dados de referência estende-se por cerca de 120~km. Do lado
+operacional, \citet[p.~225]{valavi_blockcv_2019} sistematizam três estratégias --- blocos espaciais,
+\emph{buffers} e blocos ambientais --- e fornecem instrumentos para medir o alcance da autocorrelação
+espacial nas covariáveis, de modo que o tamanho do bloco seja escolhido a partir da estrutura medida
+dos dados, e não por arbítrio.
+
+Para a concordância entre mapas categóricos, as faixas de interpretação do coeficiente $\kappa$ usadas
+nesta dissertação são as de \citet[p.~165]{landis_measurement_1977}: valores entre 0,00 e 0,20
+correspondem a concordância \emph{ligeira}, entre 0,21 e 0,40 a \emph{razoável}, entre 0,41 e 0,60 a
+\emph{moderada}, entre 0,61 e 0,80 a \emph{substancial} e acima de 0,81 a \emph{quase perfeita}. Os
+próprios autores advertem que essas divisões são arbitrárias e valem como referências para a discussão,
+não como critérios de decisão \citep[p.~165]{landis_measurement_1977}.
+
+\section{Síntese e lacuna de pesquisa}\label{sec:sota-lacuna}
+
+As linhas revistas acima respondem bem às perguntas que se colocam, e nenhuma delas é substituída por
+este trabalho. O que a revisão mostra é que cinco exigências, tomadas \emph{em conjunto}, não são
+atendidas por nenhuma delas isoladamente.
+
+\textbf{(i) Multissegmentar e comparativa.} O ZARC é emitido uma cultura e um estado de cada vez
+\citep[ementa]{mapa_port_2026}, e a literatura de estudos de caso trata um segmento por trabalho,
+com escalas de pertinência e cortes de classe não comparáveis entre si (\S\ref{sec:sota-casos}).
+Entretanto, a grandeza relevante para o planejamento é a realocação entre usos, não o impacto sobre um
+uso isolado \citep[p.~1]{rising_crop_2020}. Avaliar sete segmentos sobre um mecanismo comum é o que
+torna essa comparação possível.
+
+\textbf{(ii) Interpretável e baseada em conhecimento.} A família da sobreposição ponderada com pesos
+AHP é o ramo interpretável consolidado do campo \citep[tab.~4, p.~710]{malczewski_gisbased_2006}, em
+contraste com estimadores ajustados a dados de presença, sujeitos ao nicho realizado e ao otimismo por
+estrutura espacial (\S\ref{sec:sota-ml}). A escolha aqui é pelo primeiro ramo, com o afastamento
+declarado da agregação compensatória que nele predomina.
+
+\textbf{(iii) Voltada ao futuro.} O GAEZ~v4 projeta sobre o AR5, em trajetórias RCP a meio grau
+\citep[p.~15]{fischer_global_2021}; o ZARC tem vigência de um ano-safra
+\citep[art.~1\textsuperscript{o}, parágrafo único]{mapa_port_2026} e base retrospectiva desde 1981,
+sem cenário projetado \citep[p.~13]{amaral_metodologia_2023}; o ZEE-GO tem ano-base 2010
+\citep[p.~2327]{queiroz_o_2022}; e os estudos de caso operam sob clima presente. A projeção adotada aqui usa a
+geração seguinte de cenários, CMIP6 sob SSP2-4.5 e SSP5-8.5, em duas janelas (\S\ref{sec:cmip6}).
+
+\textbf{(iv) Reprodutível a custo marginal desprezível.} A plataforma existe e está consolidada
+\citep[p.~152]{tamiminia_google_2020}, mas a avaliação de terras multicritério não figura entre as
+aplicações levantadas naquele conjunto \citep[tab.~1]{tamiminia_google_2020}. O ZARC é reemitido por
+portaria a cada ano-safra e o ZEE-GO é uma carta publicada: ambos são produtos, não modelos que um
+terceiro possa reexecutar com outros parâmetros.
+
+\textbf{(v) Granularidade e unidade de análise.} É o contraste mais direto. A decisão do ZARC recai
+sobre o município, pela regra dos 20\% da área \citep[\S1.10]{mapa_port_2026}; o ZEE-GO assenta em
+cartografia de 1:250.000 \citep[p.~2323]{queiroz_o_2022}; o GAEZ~v4 entrega células de cerca de
+9~km \citep[p.~8]{fischer_global_2021}. Uma grade de 250~m situa a avaliação abaixo da escala em que
+essas decisões são hoje tomadas, o que é condição para que a divergência entre potencial e uso atual
+seja observável dentro de um mesmo município.
+
+\begin{table}[H]
+\centering\footnotesize\setlength{\tabcolsep}{4pt}
+\caption{Posicionamento deste trabalho frente ao zoneamento institucional, à avaliação de terras global
+e a um estudo de caso multicritério representativo.}\label{tab:estado-arte}
+\begin{tabular}{@{}p{2.1cm}p{2.0cm}p{2.3cm}p{1.9cm}p{2.0cm}p{2.3cm}@{}}
+\toprule
+Eixo & GAEZ~v4 & ZARC & ZEE-GO & \citet{radocaj_optimal_2020} & Este trabalho \\
+\midrule
+Escopo & muitas culturas, global & uma cultura por portaria e estado & zonas de desenvolvimento & uma cultura (soja) & sete segmentos comparáveis \\
+Unidade espacial & 5$'$ ($\approx$9~km) & município & 1:250.000 & condado, 4.155~km\textsuperscript{2} & raster de 250~m \\
+Método & rendimento potencial e \emph{matching} & balanço hídrico (ISNA); DSSAT no ZarcPro & vulnerabilidade $\times$ IDM & fuzzy, AHP e $k$-médias & fuzzy e AHP, média geométrica \\
+Classes & seis (VS--NS) & apto/inapto a 20, 30 ou 40\% de risco & seis zonas & FAO & FAO S1/S2/S3/N \\
+Horizonte & AR5, quatro RCPs & um ano-safra & ano-base 2010 & presente & CMIP6 SSP2-4.5 e SSP5-8.5, duas janelas \\
+Reprodutibi\-lidade & documentado, não reexecutável & portaria anual & carta publicada & sem código publicado & código e catálogo públicos \\
+Validação & --- & ensaios de cultivo e uso & --- & NDVI Sentinel-2 & uso atual e \emph{proxy} de produtividade \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Cabe delimitar o que esse posicionamento não afirma. Este trabalho não produz dados primários novos:
+opera inteiramente sobre produtos públicos já existentes. Não reivindica exatidão superior à do GAEZ~v4
+ou do ZARC, que resolvem problemas distintos --- rendimento potencial global, no primeiro caso, e risco
+climático com consequência jurídica, no segundo --- e cujos resultados não são diretamente comparáveis
+aos de um índice de aptidão multicritério. A contribuição reivindicada é de cobertura conjunta: tratar
+sete segmentos, sob um mecanismo único, numa grade fina, com horizonte climático explícito e com todo o
+procedimento reexecutável.

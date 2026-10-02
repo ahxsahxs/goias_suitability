@@ -12,8 +12,21 @@ Read-only. Two jobs, selected by the CLI argument:
     the fuzzy MEMBERSHIP (not the raw band) to:
 
       * ``sigma_mu_available`` -- the spatial standard deviation of mu over the
-        reference population. This is ``d`` in the regional adaptation
-        ``w = normalize(w_lit * d**lambda)`` of tools/derive_weights.py.
+        reference population, in the PRESENT.
+      * ``sigma_mu_future`` -- the same statistic with the climate bands replaced
+        by the CMIP6 horizon (SSP5-8.5, 2051-2070); the static themes and the
+        side-images are held at baseline exactly as in ``cmip6.suit_future``.
+      * ``sigma_mu_horizon`` -- the pooled spread of the two populations, i.e.
+        sigma(mu) over present-union-future. This is ``d`` in the regional
+        adaptation ``w = normalize(w_lit * d**lambda)`` of
+        tools/derive_weights.py. Measuring ``d`` on the present alone gives
+        d = 0 EXACTLY for a factor whose observed range sits inside its own
+        optimal plateau, hence w = 0, mu^0 = 1, and the factor silently leaves
+        the product -- taking the CMIP6 lever with it. Over the horizon the
+        question is "how much does this factor grade across the range it
+        actually traverses", so a factor saturated today but moving under
+        warming earns a weight by measurement rather than by exemption. This
+        replaced the ``role: gate`` category on 2026-10-02.
       * ``frac_saturated`` / ``frac_vetoed`` -- the share of the population at
         mu = 1 and at mu = 0, which exposes silent global deflators and
         zero-inflated vetoes directly rather than by inference.
@@ -28,6 +41,11 @@ adaptation rule needs.
 It NEVER writes an Earth Engine asset. The realized masks only *report*; ``d`` is
 taken from the `available` population alone, so land use never enters the
 calibration (CLAUDE.md section 7).
+
+The horizon half of ``discrimination`` is the one expensive part: a live 5-GCM x
+20-yr monthly ensemble can stall an interactive reduceRegion (CLAUDE.md section
+11). It therefore prefers a cached ``clim_future_<scenario>_<window>`` asset and
+only falls back to building the graph live, saying which it used.
 
 Run::
 
@@ -48,9 +66,17 @@ import ee  # noqa: E402
 import pandas as pd  # noqa: E402
 
 import utils  # noqa: E402
+import cmip6  # noqa: E402
 import external  # noqa: E402
 import features  # noqa: E402
 import membership  # noqa: E402
+
+# The analysis horizon that defines ``sigma_mu_horizon``: the hottest/driest
+# corner of the CMIP6 grid actually reported in the thesis. Using the extreme of
+# the grid, not an average over it, keeps ``d`` an upper bound on the gradation a
+# factor can show within the horizon -- a conservative choice for a weight.
+HORIZON_SCENARIO = "ssp585"
+HORIZON_WINDOW = "2051_2070"
 
 # Percentiles reported per field.
 PCTLS = [5, 10, 25, 50, 75, 90, 95]
@@ -214,6 +240,42 @@ REALIZED_ROLE = {
 }
 
 
+def _horizon_climate(project, aoi):
+    """Future 14-band climate image for the horizon, cached asset when available."""
+    name = f"clim_future_{HORIZON_SCENARIO}_{HORIZON_WINDOW}"
+    try:
+        img = ee.Image(utils.asset_id(project, name))
+        img.bandNames().getInfo()
+        print(f"# horizon climate: cached asset {name}")
+        return img
+    except Exception:
+        print(f"# horizon climate: {name} not cached -- building the 5-GCM ensemble "
+              "live; export it as that asset first if this stalls")
+    c = utils.cfg()["cmip6"]
+    base = cmip6.baseline_monthly(aoi)
+    fac = cmip6.ensemble_factors(
+        c["models"], HORIZON_SCENARIO, c["windows"][HORIZON_WINDOW], aoi)
+    return cmip6.future_climate_image(base, fac, aoi)
+
+
+def _pool_sigma(sd_p, mn_p, sd_f, mn_f, band):
+    """sigma over the union of the present and future populations.
+
+    The two populations are the same pixels measured twice, so they are equal in
+    size and the pooled variance is exact:
+
+        sigma_union^2 = (sigma_p^2 + sigma_f^2) / 2 + (mean_p - mean_f)^2 / 4
+
+    i.e. the average within-population variance plus the between-population term.
+    Computing it this way needs no second pass over a doubled sample.
+    """
+    sp, sf = sd_p.get(band), sd_f.get(band)
+    mp, mf = mn_p.get(band), mn_f.get(band)
+    if None in (sp, sf, mp, mf):
+        return None
+    return ((sp ** 2 + sf ** 2) / 2.0 + (mp - mf) ** 2 / 4.0) ** 0.5
+
+
 def _mem_stats(M, geom, mask, scale):
     """sigma(mu), mean(mu), saturated and vetoed fractions, per band of ``M``."""
     src = M.updateMask(mask) if mask is not None else M
@@ -238,6 +300,7 @@ def discrimination():
     print(f"# discrimination over AOI @ {scale} m (project={project})")
 
     stack = ee.Image(utils.asset_id(project, "feature_stack_250m"))
+    stack_fut = cmip6.stack_with_climate(project, _horizon_climate(project, aoi), aoi)
     lc = features.landcover_features_mapbiomas(aoi)
     realized = ee.Image(utils.asset_id(project, "feat_realized"))
     extras = {
@@ -253,6 +316,10 @@ def discrimination():
         print(f"  -> {name} ...", flush=True)
         M = membership.segment_membership_image(stack, lc, seg, seg_cfg, extras)
         sd_a, mn_a = _mem_stats(M, aoi, avail, scale)
+        # Same memberships on the CMIP6 horizon stack. ``extras`` are held at
+        # baseline, as in cmip6.suit_future, so only the climate factors move.
+        Mf = membership.segment_membership_image(stack_fut, lc, seg, seg_cfg, extras)
+        sd_f, mn_f = _mem_stats(Mf, aoi, avail, scale)
         code = REALIZED_ROLE.get(name)
         sd_r = _mem_stats(M, aoi, role.eq(code), scale)[0] if code else {}
         for f, spec in seg["factors"].items():
@@ -261,8 +328,11 @@ def discrimination():
                 "segment": name, "factor": f, "role": spec.get("role", "limiting"),
                 "type": spec["type"], "points": str(spec["points"]),
                 "sigma_mu_available": sd_a.get(b),
+                "sigma_mu_future": sd_f.get(b),
+                "sigma_mu_horizon": _pool_sigma(sd_a, mn_a, sd_f, mn_f, b),
                 "sigma_mu_realized": sd_r.get(b),
                 "mean_mu_available": mn_a.get(b),
+                "mean_mu_future": mn_f.get(b),
                 "frac_saturated": mn_a.get(f"sat__{b}"),
                 "frac_vetoed": mn_a.get(f"vet__{b}"),
             })

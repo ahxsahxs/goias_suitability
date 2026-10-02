@@ -370,7 +370,7 @@ def access_features(aoi) -> "ee.Image":
 # same band set as the ESA builder (`lc_mode`/`lc_tree_frac`/`lc_crop_frac`/
 # `lc_grass_frac`/`mask_excluded`/`mask_available`), so no downstream code
 # (`src/membership.py`'s `apply_mask`) needs to change. See the non-circularity
-# paragraph in `thesis/Chapters/03_methodology.tex` §Uso atual da terra.
+# paragraph in `thesis/Chapters/04_methodology.tex` §Uso atual da terra.
 # =============================================================================
 def landcover_features_mapbiomas(aoi, year: "int | None" = None) -> "ee.Image":
     """Generic land-cover mask/context sourced from MapBiomas (supersedes ESA)."""
@@ -453,7 +453,7 @@ def landcover_features(aoi) -> "ee.Image":
 # Part 7c — Siting features (solar/pisciculture; NOT in the stack) [2026-07-14]
 # =============================================================================
 # Catalog-only biophysical bands that give the two low-variance segments real
-# discriminating structure. Deliberately kept OUT of STACK_THEMES so the 34-band
+# discriminating structure. Deliberately kept OUT of STACK_THEMES so the 29-band
 # feature stack and the zoning are unchanged; consumed by the membership engine
 # via the `sit_` band-routing (see src/membership._source_image). Guardrail: these
 # are biophysical/irradiance/hydrology fields, never land use.
@@ -523,7 +523,7 @@ def siting_features(aoi) -> "ee.Image":
 # Catalog-only conservation-VALUE / priority factors that ground conservation in
 # systematic-conservation-planning criteria (connectivity, habitat heterogeneity,
 # carbon service) rather than "where native vegetation currently is". Deliberately
-# kept OUT of STACK_THEMES so the 34-band stack and the zoning are unchanged;
+# kept OUT of STACK_THEMES so the 29-band stack and the zoning are unchanged;
 # consumed by the membership engine via the ``cv_`` band-routing (see
 # src/membership._source_image). Guardrail: WDPA is a *governance* layer, not land
 # cover; ruggedness is terrain; biomass carbon is an ecosystem-service value — none
@@ -582,7 +582,21 @@ def conservation_features(aoi) -> "ee.Image":
 # =============================================================================
 # Continuous themes that enter the clustering stack (land cover excluded — it is
 # a mask/context layer, never a clustering feature).
-STACK_THEMES = ("climate", "terrain", "soil", "water", "phenology", "access")
+#
+# 29 bands since 2026-10-02 (was 34): `phenology` (4) and `access` (1) left the
+# analysis. Both encode the CURRENT state of land use and infrastructure rather
+# than biophysical potential, which is the same circularity argument that keeps
+# land cover out — NDVI amplitude is high because the land is cropped, and travel
+# time is short because roads were built where the land was already used. They had
+# already been dropped from `zoning.ZONING_BANDS` on 2026-09-27 for exactly that
+# reason; this completes the removal. `access_logtt` was additionally the only
+# in-stack band any segment consumed (solar), and solar now carries 5 factors.
+#
+# The builders and the `feat_phenology` / `feat_access` assets are kept: Parts 6
+# and 7 remain part of the documented provenance and the dashboard's theme
+# gallery reads them directly, not through the stack. Nothing downstream of the
+# stack consumes them any more.
+STACK_THEMES = ("climate", "terrain", "soil", "water")
 
 THEME_BUILDERS = {
     "climate": climate_features,

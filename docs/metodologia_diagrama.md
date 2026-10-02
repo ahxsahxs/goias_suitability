@@ -3,7 +3,7 @@
 > Material de apoio visual para reuniões de orientação e apresentações/pósteres.
 > Os diagramas seguem a estrutura do Capítulo 3 (Metodologia) da dissertação e o pipeline
 > efetivamente implementado no repositório (`notebooks/`, `src/`, `tools/`). Fonte de verdade
-> textual: `../thesis/Chapters/03_methodology.tex` (racional completo) e `../CLAUDE.md` (estado de
+> textual: `../thesis/Chapters/04_methodology.tex` (racional completo) e `../CLAUDE.md` (estado de
 > execução).
 
 ---

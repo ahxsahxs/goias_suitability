@@ -173,12 +173,13 @@ def gen_factor_variance_theme():
 # --- theme_roughness.csv (Point 5: spatial climate vs. terrain/soil local
 # variability, companion to factor_variance.csv's pooled decomposition) -------
 RADII_M = [250, 750, 4750]   # native cell, cv_ruggedness's own radius, TerraClimate's native cell
+# Groups over the band names of feature_stack_250m_z. Phenology and access left
+# the stack on 2026-10-02 (features.STACK_THEMES), so their groups are gone too —
+# keeping them would just build empty reducers.
 THEME_PREFIX = {
     "climate": ("clim_",),
     "terrain_soil": ("terr_", "soil_"),
     "water": ("water_",),
-    "phenology": ("phen_",),
-    "access": ("access_",),
 }
 
 
@@ -190,7 +191,7 @@ def gen_theme_roughness():
     log(f"roughness: local stdDev per theme group at radii {RADII_M} m ...")
     lonlat = ee.Image.pixelLonLat()
     # One .sample() call per radius (not all 3 at once): the r=4750 m kernel
-    # (~19 px, ~1100 px/window) across 34 bands times out as a single combined
+    # (~19 px, ~1100 px/window) across every stack band times out as a single combined
     # request even at tileScale=8. Splitting keeps each interactive call small;
     # tileScale=16 gives extra headroom for the heaviest (largest-radius) call.
     frames = []

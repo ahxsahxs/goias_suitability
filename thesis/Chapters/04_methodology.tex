@@ -2,7 +2,7 @@
 
 O método é uma avaliação de terras multicritério na tradição da avaliação de terras da
 FAO (Food and Agriculture Organization), hoje operacionalizada no \emph{Global Agro-Ecological
-Zones} (GAEZ~v4) \citep{fischer_global_2021,sys_land_1991}. Ele é implementado
+Zones} (GAEZ~v4) \citep[p.~1]{fischer_global_2021}, revista em \S\ref{sec:sota-fao}. Ele é implementado
 nativamente na plataforma de observação da Terra, estendido com um zoneamento não supervisionado e
 uma projeção CMIP6, e concebido para validação contra o uso atual da terra. O trabalho corre em duas
 fases. A \textbf{Fase~A} constrói o atlas de potencial biofísico e a projeção climática apenas a
@@ -92,7 +92,8 @@ cobertura), o sinal de uso atual da terra.
 
 Para cada segmento, a viabilidade é um agregado ponderado de pertinências fuzzy dos fatores. Ela é
 mascarada pela cobertura da terra e classificada nas classes da FAO, seguindo a extensão fuzzy/AHP
-do arcabouço de avaliação de terras da FAO \citep{nisar_ahamed_gis-based_2000,yaghmaeian_mahabadi_land_2012}. A
+do arcabouço de avaliação de terras da FAO \citep{nisar_ahamed_gis-based_2000,yaghmaeian_mahabadi_land_2012}
+(\S\ref{sec:sota-mcda}). A
 especificação completa por segmento --- fator, peso, forma e limiares --- está na Tabela~\ref{tab:spec-longtable} do Anexo.
 
 Os limiares móveis (não fixados por um padrão técnico, como um limite legal de declive) foram
@@ -150,7 +151,11 @@ $0{,}50$ e $0{,}75$:
 \end{cases}
 \end{equation*}
 onde $\mathrm{N}$ é \emph{não viável} e $\mathrm{S3}$, $\mathrm{S2}$, $\mathrm{S1}$ são,
-respectivamente, \emph{marginalmente}, \emph{moderadamente} e \emph{altamente} viável.
+respectivamente, \emph{marginalmente}, \emph{moderadamente} e \emph{altamente} viável. As ordens e
+classes seguem a avaliação de terras da FAO, em que limitações nulas ou ligeiras definem S1,
+moderadas S2 e severas S3 \citep[p.~62]{sys_land_1991}; as classes N1 e N2 daquele esquema, que
+distinguem a inaptidão corrigível da não corrigível, são aqui fundidas numa única ordem N, por não se
+modelarem intervenções corretivas (\S\ref{sec:sota-fao}).
 
 %% TODO: Esta subseção esta completamente confusa e nao passa uma visao simples da abordagem numerica
 %% TODO: foi feito over engineering da AHP.

@@ -1,5 +1,7 @@
 # Checkpoint — bibliografia Zotero e auditoria de citações (26/09/2026)
 
+> **Nota de 2026-10-02.** Os capítulos foram renumerados quando o capítulo `02_estado_arte.tex` entrou (Materiais passou a 03, Metodologia a 04, Resultados a 05, Discussão a 06, Anexo a 07). Os nomes de ficheiro e os números de linha citados abaixo são os da época da auditoria (26–27/09) e foram deliberadamente preservados.
+
 Checkpoint da sessão de 26/09/2026, item **s0** do cronograma de revisão
 (<https://claude.ai/artifact/HrMpse386bFykBeBsBeJN6>). Registra:
 
