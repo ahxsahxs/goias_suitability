@@ -3,11 +3,9 @@
     "climate": 14,
     "terrain": 6,
     "soil": 6,
-    "water": 3,
-    "phenology": 4,
-    "access": 1
+    "water": 3
   },
-  "total_bands": 34,
+  "total_bands": 29,
   "excluded": [
     "landcover"
   ],

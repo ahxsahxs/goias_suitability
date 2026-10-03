@@ -84,7 +84,7 @@ segments:
     mask: available
     factors:
       terr_slope:
-        weight: 0.374          # machine-written by tools/derive_weights.py
+        weight: 0.4028         # machine-written by tools/derive_weights.py
         role: limiting
         type: decreasing
         points: [4, 8]
@@ -95,7 +95,7 @@ segments:
           zera em 8. Sao mais largos que o nicho realizado da soja (p95 5,3 graus) -- nao foram
           ajustados a ele, e nenhuma informacao de uso realizado entra no valor.
       soil_clay:
-        weight: 0.2424         # machine-written by tools/derive_weights.py
+        weight: 0.1887         # machine-written by tools/derive_weights.py
         role: limiting
         type: range
         points: [20, 32, 45, 62]
@@ -108,7 +108,7 @@ segments:
           desta revisao que seguia o uso realizado em vez da terra disponivel; foi realinhado ao p95
           disponivel.
       clim_twarm_q:
-        weight: 0.0            # machine-written by tools/derive_weights.py
+        weight: 0.0783         # machine-written by tools/derive_weights.py
         type: range
         points: [18, 22, 30, 34]
         basis: empirico
@@ -120,7 +120,7 @@ segments:
           dentro da faixa otima quase em todo lugar, e por isso habilita em vez de graduar. O peso vem de sigma(mu) medido no HORIZONTE (presente U SSP5-8.5 2051-2070), nao no presente: e a gradacao que o fator percorre dentro do horizonte da analise que lhe da peso, por medida e nao por excecao.
           Aqui a alavanca e o ombro superior (c = 30), que morde sob aquecimento.
       soil_ph:
-        weight: 0.3836         # machine-written by tools/derive_weights.py
+        weight: 0.3302         # machine-written by tools/derive_weights.py
         role: limiting
         type: range
         points: [4.5, 5.5, 6.8, 7.5]
@@ -155,7 +155,7 @@ segments:
     mask: available
     factors:
       terr_slope:
-        weight: 0.3022         # machine-written by tools/derive_weights.py
+        weight: 0.2891         # machine-written by tools/derive_weights.py
         role: limiting
         type: decreasing
         points: [5, 10]
@@ -165,7 +165,7 @@ segments:
           largos que a terra disponivel (p5-p95 1,8-8,8 graus) e bem mais largos que o nicho realizado
           da cana (p95 4,8 graus): a forma vem da exigencia de mecanizacao, nao do uso observado.
       soil_awc:
-        weight: 0.318          # machine-written by tools/derive_weights.py
+        weight: 0.3043         # machine-written by tools/derive_weights.py
         role: limiting
         type: increasing
         points:
@@ -175,7 +175,7 @@ segments:
         note: >-
           Agua disponivel no solo (% vol a 33 kPa, 0-30 cm); a cana e exigente em armazenamento hidrico. Limiares no intervalo p5-p95 observado em GO/DF (22,1-33,6): a faixa anterior (5-20) ficava inteiramente ABAIXO da distribuicao real, saturando o fator em mu = 1 em 99,3% da terra disponivel.
       soil_clay:
-        weight: 0.3798         # machine-written by tools/derive_weights.py
+        weight: 0.2231         # machine-written by tools/derive_weights.py
         role: limiting
         type: range
         points: [22, 32, 52, 66]
@@ -203,7 +203,7 @@ segments:
           A alavanca e o ombro superior (c = 32), que morde se o trimestre mais quente aquecer cerca
           de 4 C.
       clim_pr_annual:
-        weight: 0.0           # machine-written by tools/derive_weights.py
+        weight: 0.1366        # machine-written by tools/derive_weights.py
         type: range
         points: [900, 1300, 2000, 2600]
         basis: literatura
@@ -217,7 +217,7 @@ segments:
           A alavanca e o ombro inferior (b = 1300), que esta DENTRO da faixa observada -- este fator
           ja gradua hoje na borda seca do estado.
       clim_dry_months:
-        weight: 0.0            # machine-written by tools/derive_weights.py
+        weight: 0.0469         # machine-written by tools/derive_weights.py
         type: range
         points: [3, 5, 5, 9]
         basis: empirico
@@ -233,7 +233,7 @@ segments:
     mask: available
     factors:
       terr_slope:
-        weight: 0.1223         # machine-written by tools/derive_weights.py
+        weight: 0.1079         # machine-written by tools/derive_weights.py
         role: limiting
         type: decreasing
         points: [4, 8]
@@ -242,14 +242,14 @@ segments:
           Declividade em graus; limita a mecanizacao. Limiares (4, 8) cobrem a cauda declivosa da terra
           DISPONIVEL (p5-p95 1,8-8,8 graus), mais largos que o nicho realizado (p95 5,4 graus).
       soil_soc:
-        weight: 0.5378         # machine-written by tools/derive_weights.py
+        weight: 0.4849         # machine-written by tools/derive_weights.py
         role: limiting
         type: increasing
         points: [6, 20]
         basis: empirico
         note: "Carbono organico do solo (g/kg) como proxy de fertilidade."
       clim_gdd:
-        weight: 0.1374         # machine-written by tools/derive_weights.py
+        weight: 0.2266         # machine-written by tools/derive_weights.py
         role: limiting
         type: range
         points: [2500, 3500, 5500, 7000]
@@ -257,7 +257,7 @@ segments:
         source: mcmaster_growing_1997
         note: "Graus-dia acumulados, base 10 C; soma termica do ciclo."
       soil_ph:
-        weight: 0.1649         # machine-written by tools/derive_weights.py
+        weight: 0.1442         # machine-written by tools/derive_weights.py
         role: limiting
         type: range
         points: [4.5, 5.5, 6.8, 7.5]
@@ -277,7 +277,7 @@ segments:
           A alavanca e o ombro inferior (b = 1000); a safrinha e o uso mais exposto, porque depende
           do prolongamento da estacao chuvosa, nao do total anual.
       clim_pr_cv:
-        weight: 0.0376         # machine-written by tools/derive_weights.py
+        weight: 0.0364         # machine-written by tools/derive_weights.py
         role: limiting
         type: decreasing
         points: [0.6, 1.3]
@@ -291,7 +291,7 @@ segments:
     mask: available
     factors:
       terr_slope:
-        weight: 0.1101         # machine-written by tools/derive_weights.py
+        weight: 0.1116         # machine-written by tools/derive_weights.py
         role: limiting
         type: decreasing
         points: [2.86, 5.71]
@@ -304,14 +304,14 @@ segments:
           10%, que e o intervalo adotado (2,86 e 5,71 graus). Assefa (>8% ja inadequado) e o valor
           rejeitado, por avaliar outro sistema produtivo.
       soil_clay:
-        weight: 0.1395         # machine-written by tools/derive_weights.py
+        weight: 0.1414         # machine-written by tools/derive_weights.py
         role: limiting
         type: increasing
         points: [15, 35]
         basis: empirico
         note: "Teor de argila (%); solos argilosos retem a agua do viveiro."
       sit_water_dist_seas:
-        weight: 0.4815         # machine-written by tools/derive_weights.py
+        weight: 0.4881         # machine-written by tools/derive_weights.py
         role: limiting
         type: decreasing
         points: [750, 6000]
@@ -321,7 +321,7 @@ segments:
           prefixo sit_. A agua permanente esta a 13,6 km da mediana em GO/DF, longe demais para
           discriminar; a semipermanente esta a 2,3 km.
       water_drain_density:
-        weight: 0.0525         # machine-written by tools/derive_weights.py
+        weight: 0.0532         # machine-written by tools/derive_weights.py
         role: limiting
         type: increasing
         points:
@@ -331,7 +331,7 @@ segments:
         note: >-
           Densidade de drenagem (fracao de celulas de curso d'agua); disponibilidade hidrica local. Banda fortemente zero-inflada a 250 m (p50 = 0, p75 = 0,013, p90 = 0,093): limiares ancorados em p5-p90. VER RESSALVA no relatorio de revisao -- sob a media geometrica um zero estrutural ainda atua como veto, e o zero aqui significa 'sem celula de curso d'agua mapeada nesta resolucao', nao 'sem agua'.
       clim_twarm_q:
-        weight: 0.2164        # machine-written by tools/derive_weights.py
+        weight: 0.2057        # machine-written by tools/derive_weights.py
         role: limiting
         type: range
         points: [22, 26, 32, 36]
@@ -353,7 +353,7 @@ segments:
           Balew et al. dao a chuva o maior peso da coluna do gado (0,3375), usando-a como proxy da
           umidade do solo, que aqui e medida diretamente -- as duas partilham faixa na matriz.
       clim_dry_months:
-        weight: 0.0            # machine-written by tools/derive_weights.py
+        weight: 0.0902         # machine-written by tools/derive_weights.py
         type: decreasing
         points: [5, 9]
         basis: empirico
@@ -363,7 +363,7 @@ segments:
           Diferentemente da cana, aqui a direcao e monotona: mais meses secos reduzem a oferta de
           forragem, e e esse o vazio forrageiro da seca que determina a taxa de lotacao.
       clim_soil_moist:
-        weight: 0.6969         # machine-written by tools/derive_weights.py
+        weight: 0.647          # machine-written by tools/derive_weights.py
         role: limiting
         type: increasing
         points: [55, 120]
@@ -373,14 +373,14 @@ segments:
           coincidentes com o intervalo p5-p95 da terra DISPONIVEL (50,7-121,3), e nao com a cauda seca do
           pasto realizado: o uso observado nao entra no valor.
       terr_slope:
-        weight: 0.1719        # machine-written by tools/derive_weights.py
+        weight: 0.1552        # machine-written by tools/derive_weights.py
         role: limiting
         type: decreasing
         points: [6, 15]
         basis: empirico
         note: "Declividade em graus; encostas moderadas ja reduzem a capacidade de suporte."
       soil_soc:
-        weight: 0.1312         # machine-written by tools/derive_weights.py
+        weight: 0.1076         # machine-written by tools/derive_weights.py
         role: limiting
         type: increasing
         points: [8, 18]
@@ -397,7 +397,7 @@ segments:
     aggregate: arithmetic   # compensatory weighted linear combination
     factors:
       cv_pa_dist:
-        weight: 0.3522         # machine-written by tools/derive_weights.py
+        weight: 0.3433         # machine-written by tools/derive_weights.py
         role: limiting
         type: decreasing
         points: [5000, 40000]
@@ -407,7 +407,7 @@ segments:
           cv_; conectividade e consolidacao. A WDPA e camada de governanca, nao de cobertura da
           terra.
       cv_carbon:
-        weight: 0.1734         # machine-written by tools/derive_weights.py
+        weight: 0.169          # machine-written by tools/derive_weights.py
         role: limiting
         type: increasing
         points: [10, 20]
@@ -417,7 +417,7 @@ segments:
           correlaciona-se com floresta, uma circularidade branda que mantem o peso deste fator
           abaixo do que sua variancia sugeriria.
       cv_ruggedness:
-        weight: 0.1695         # machine-written by tools/derive_weights.py
+        weight: 0.1652         # machine-written by tools/derive_weights.py
         role: limiting
         type: increasing
         points: [5, 30]
@@ -426,7 +426,7 @@ segments:
           Desvio-padrao da elevacao na vizinhanca (m); heterogeneidade de habitat e baixa aptidao
           agricola.
       terr_twi:
-        weight: 0.0708         # machine-written by tools/derive_weights.py
+        weight: 0.069          # machine-written by tools/derive_weights.py
         role: limiting
         type: increasing
         points:
@@ -436,7 +436,7 @@ segments:
         note: >-
           Indice topografico de umidade; servico hidrico ripario e de recarga. Limiares no intervalo p10-p90 observado (9,44-11,56). Ancorar na distribuicao observada torna desnecessario o deslocamento manual que a mudanca da celula de captacao do HydroSHEDS exigia: se a escala nominal mudar, basta reexecutar tools/anchor_breakpoints.py.
       rl_native_frac:
-        weight: 0.0692        # machine-written by tools/derive_weights.py
+        weight: 0.0674        # machine-written by tools/derive_weights.py
         role: limiting
         type: increasing
         points: [0.25, 0.85]
@@ -446,7 +446,7 @@ segments:
           roteada pelo prefixo rl_. E a unica entrada de cobertura da terra sancionada em todo o
           modelo, e entra rebaixada justamente para nao tornar o indice circular.
       clim_aridity:
-        weight: 0.0591        # machine-written by tools/derive_weights.py
+        weight: 0.0659        # machine-written by tools/derive_weights.py
         role: limiting
         type: increasing
         points: [0.95, 1.25]
@@ -455,14 +455,14 @@ segments:
           Indice de aridez P/PET; viabilidade de balanco hidrico. E a alavanca climatica do
           segmento: cai sob aquecimento, tornando a conservacao perdedora no CMIP6.
       terr_slope:
-        weight: 0.0242         # machine-written by tools/derive_weights.py
+        weight: 0.0236         # machine-written by tools/derive_weights.py
         role: limiting
         type: increasing
         points: [2.86, 11.31]
         basis: empirico
         note: "Declividade em graus; terreno marginal tem baixo custo de oportunidade para a conservacao."
       clim_twarm_q:
-        weight: 0.0492         # machine-written by tools/derive_weights.py
+        weight: 0.065          # machine-written by tools/derive_weights.py
         role: limiting
         type: decreasing
         points: [23, 31]
@@ -471,7 +471,7 @@ segments:
           Temperatura media do trimestre mais quente (C); estresse termico e de fogo. Segunda
           alavanca climatica do segmento.
       water_drain_density:
-        weight: 0.0324         # machine-written by tools/derive_weights.py
+        weight: 0.0316         # machine-written by tools/derive_weights.py
         role: limiting
         type: increasing
         points: [0.01, 0.08]
@@ -483,7 +483,7 @@ segments:
     mask: available
     factors:
       clim_srad:
-        weight: 0.4002         # machine-written by tools/derive_weights.py
+        weight: 0.4321         # machine-written by tools/derive_weights.py
         role: limiting
         type: increasing
         points: [186, 204]
@@ -492,7 +492,7 @@ segments:
           Irradiancia (W/m2); fator primario. Homogenea em GO/DF, com limiares no intervalo p10-p90
           realmente observado.
       sit_clearness:
-        weight: 0.143          # machine-written by tools/derive_weights.py
+        weight: 0.1573         # machine-written by tools/derive_weights.py
         role: limiting
         type: increasing
         points: [0.466, 0.501]
@@ -501,7 +501,7 @@ segments:
           Indice de claridade Kt = Rs/Ra, proxy de nebulosidade, roteado de feat_siting pelo prefixo
           sit_. Limiares no intervalo p10-p90 observado.
       terr_northing:
-        weight: 0.0559         # machine-written by tools/derive_weights.py
+        weight: 0.0632         # machine-written by tools/derive_weights.py
         role: limiting
         type: increasing
         points: [-0.3, 0.5]
@@ -510,14 +510,14 @@ segments:
           Componente norte da orientacao da encosta, cos(azimute). No hemisferio sul as encostas
           voltadas ao norte recebem mais radiacao.
       terr_slope:
-        weight: 0.0822         # machine-written by tools/derive_weights.py
+        weight: 0.0918         # machine-written by tools/derive_weights.py
         role: limiting
         type: decreasing
         points: [2.86, 8.53]
         basis: empirico
         note: "Declividade em graus; a instalacao de paineis favorece terreno plano."
       clim_twarm_q:
-        weight: 0.1753        # machine-written by tools/derive_weights.py
+        weight: 0.2556        # machine-written by tools/derive_weights.py
         role: limiting
         type: decreasing
         points: [24, 31]

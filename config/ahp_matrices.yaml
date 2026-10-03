@@ -127,15 +127,45 @@ segments:
         terr_slope: 2
         soil_clay: 3
         soil_ph: 2
+        clim_pr_annual: 2
+        clim_twarm_q: 3
+        clim_aridity: 3
       matrix:
       - - 1.0
         - 2.0
         - 0.5
+        - 1.0
+        - 3.0
+        - 3.0
       - - 0.5
         - 1.0
         - 0.5
+        - 0.3333
+        - 1.0
+        - 1.0
       - - 2.0
         - 2.0
+        - 1.0
+        - 1.0
+        - 3.0
+        - 3.0
+      - - 1.0
+        - 3.0
+        - 1.0
+        - 1.0
+        - 3.0
+        - 3.0
+      - - 0.3333
+        - 1.0
+        - 0.3333
+        - 0.3333
+        - 1.0
+        - 1.0
+      - - 0.3333
+        - 1.0
+        - 0.3333
+        - 0.3333
+        - 1.0
         - 1.0
       judgements:
       - pair:
@@ -153,27 +183,114 @@ segments:
         basis: r*(terr_slope)/r*(soil_ph) = 0.3321/0.4739 = 0.701
         source: radocaj_optimal_2020, tab. 6, p. 14
       - pair:
+        - terr_slope
+        - clim_pr_annual
+        a_ij: 1.0
+        rule: B
+        basis: faixa 2 vs 2
+        source: faixa ordinal (R4)
+      - pair:
+        - terr_slope
+        - clim_twarm_q
+        a_ij: 3.0
+        rule: B
+        basis: faixa 2 vs 3
+        source: faixa ordinal (R4)
+      - pair:
+        - terr_slope
+        - clim_aridity
+        a_ij: 3.0
+        rule: B
+        basis: faixa 2 vs 3
+        source: faixa ordinal (R4)
+      - pair:
         - soil_clay
         - soil_ph
         a_ij: 0.5
         rule: A
         basis: r*(soil_clay)/r*(soil_ph) = 0.1940/0.4739 = 0.409
         source: radocaj_optimal_2020, tab. 6, p. 14
-      lambda_max: 3.0536
-      consistency_index: 0.0268
-      random_index: 0.58
-      consistency_ratio: 0.0462
+      - pair:
+        - soil_clay
+        - clim_pr_annual
+        a_ij: 0.3333
+        rule: B
+        basis: faixa 3 vs 2
+        source: faixa ordinal (R4)
+      - pair:
+        - soil_clay
+        - clim_twarm_q
+        a_ij: 1.0
+        rule: B
+        basis: faixa 3 vs 3
+        source: faixa ordinal (R4)
+      - pair:
+        - soil_clay
+        - clim_aridity
+        a_ij: 1.0
+        rule: B
+        basis: faixa 3 vs 3
+        source: faixa ordinal (R4)
+      - pair:
+        - soil_ph
+        - clim_pr_annual
+        a_ij: 1.0
+        rule: B
+        basis: faixa 2 vs 2
+        source: faixa ordinal (R4)
+      - pair:
+        - soil_ph
+        - clim_twarm_q
+        a_ij: 3.0
+        rule: B
+        basis: faixa 2 vs 3
+        source: faixa ordinal (R4)
+      - pair:
+        - soil_ph
+        - clim_aridity
+        a_ij: 3.0
+        rule: B
+        basis: faixa 2 vs 3
+        source: faixa ordinal (R4)
+      - pair:
+        - clim_pr_annual
+        - clim_twarm_q
+        a_ij: 3.0
+        rule: A
+        basis: r*(clim_pr_annual)/r*(clim_twarm_q) = 0.7609/0.2391 = 3.183
+        source: radocaj_optimal_2020, tab. 5, p. 13
+      - pair:
+        - clim_pr_annual
+        - clim_aridity
+        a_ij: 3.0
+        rule: B
+        basis: faixa 2 vs 3
+        source: faixa ordinal (R4)
+      - pair:
+        - clim_twarm_q
+        - clim_aridity
+        a_ij: 1.0
+        rule: B
+        basis: faixa 3 vs 3
+        source: faixa ordinal (R4)
+      lambda_max: 6.0822
+      consistency_index: 0.0164
+      random_index: 1.24
+      consistency_ratio: 0.0133
       priority_vector:
-      - 0.3108
-      - 0.1958
-      - 0.4934
-      approx_eigenvector_max_gap: 0.0029
+      - 0.2133
+      - 0.0971
+      - 0.2706
+      - 0.2515
+      - 0.0838
+      - 0.0838
+      approx_eigenvector_max_gap: 0.0023
       class_counts:
-        A: 3
-        B: 0
+        A: 4
+        B: 11
         C: 0
-      anchored_fraction: 1.0
-      author_judgement_count: 0
+      anchored_fraction: 0.2667
+      author_judgement_count: 1
       override_count: 0
       revisions: []
   sugarcane:
@@ -237,14 +354,44 @@ segments:
         terr_slope: 2
         soil_awc: 2
         soil_clay: 3
+        clim_pr_annual: 2
+        clim_dry_months: 3
+        clim_twarm_q: 3
       matrix:
       - - 1.0
         - 1.0
         - 1.0
+        - 1.0
+        - 3.0
+        - 3.0
       - - 1.0
         - 1.0
         - 1.0
+        - 1.0
+        - 3.0
+        - 3.0
       - - 1.0
+        - 1.0
+        - 1.0
+        - 0.3333
+        - 1.0
+        - 1.0
+      - - 1.0
+        - 1.0
+        - 3.0
+        - 1.0
+        - 3.0
+        - 3.0
+      - - 0.3333
+        - 0.3333
+        - 1.0
+        - 0.3333
+        - 1.0
+        - 1.0
+      - - 0.3333
+        - 0.3333
+        - 1.0
+        - 0.3333
         - 1.0
         - 1.0
       judgements:
@@ -263,26 +410,113 @@ segments:
         basis: r*(terr_slope)/r*(soil_clay) = 0.3300/0.2820 = 1.170
         source: alburo_application_2019, tab. 2, p. 154 (grupos combinados)
       - pair:
+        - terr_slope
+        - clim_pr_annual
+        a_ij: 1.0
+        rule: B
+        basis: faixa 2 vs 2
+        source: faixa ordinal (R4)
+      - pair:
+        - terr_slope
+        - clim_dry_months
+        a_ij: 3.0
+        rule: B
+        basis: faixa 2 vs 3
+        source: faixa ordinal (R4)
+      - pair:
+        - terr_slope
+        - clim_twarm_q
+        a_ij: 3.0
+        rule: B
+        basis: faixa 2 vs 3
+        source: faixa ordinal (R4)
+      - pair:
         - soil_awc
         - soil_clay
         a_ij: 1.0
         rule: A
         basis: r*(soil_awc)/r*(soil_clay) = 0.3880/0.2820 = 1.376
         source: alburo_application_2019, tab. 2, p. 154 (grupos combinados)
-      lambda_max: 3.0
-      consistency_index: 0.0
-      random_index: 0.58
-      consistency_ratio: 0.0
+      - pair:
+        - soil_awc
+        - clim_pr_annual
+        a_ij: 1.0
+        rule: B
+        basis: faixa 2 vs 2
+        source: faixa ordinal (R4)
+      - pair:
+        - soil_awc
+        - clim_dry_months
+        a_ij: 3.0
+        rule: B
+        basis: faixa 2 vs 3
+        source: faixa ordinal (R4)
+      - pair:
+        - soil_awc
+        - clim_twarm_q
+        a_ij: 3.0
+        rule: B
+        basis: faixa 2 vs 3
+        source: faixa ordinal (R4)
+      - pair:
+        - soil_clay
+        - clim_pr_annual
+        a_ij: 0.3333
+        rule: B
+        basis: faixa 3 vs 2
+        source: faixa ordinal (R4)
+      - pair:
+        - soil_clay
+        - clim_dry_months
+        a_ij: 1.0
+        rule: B
+        basis: faixa 3 vs 3
+        source: faixa ordinal (R4)
+      - pair:
+        - soil_clay
+        - clim_twarm_q
+        a_ij: 1.0
+        rule: B
+        basis: faixa 3 vs 3
+        source: faixa ordinal (R4)
+      - pair:
+        - clim_pr_annual
+        - clim_dry_months
+        a_ij: 3.0
+        rule: C
+        basis: faixa 2 vs 3
+        source: faixa ordinal (R4)
+      - pair:
+        - clim_pr_annual
+        - clim_twarm_q
+        a_ij: 3.0
+        rule: C
+        basis: faixa 2 vs 3
+        source: faixa ordinal (R4)
+      - pair:
+        - clim_dry_months
+        - clim_twarm_q
+        a_ij: 1.0
+        rule: C
+        basis: faixa 3 vs 3
+        source: faixa ordinal (R4)
+      lambda_max: 6.2076
+      consistency_index: 0.0415
+      random_index: 1.24
+      consistency_ratio: 0.0335
       priority_vector:
-      - 0.3333
-      - 0.3333
-      - 0.3333
-      approx_eigenvector_max_gap: 0.0
+      - 0.2169
+      - 0.2169
+      - 0.1332
+      - 0.2598
+      - 0.0866
+      - 0.0866
+      approx_eigenvector_max_gap: 0.0009
       class_counts:
         A: 3
-        B: 0
-        C: 0
-      anchored_fraction: 1.0
+        B: 9
+        C: 3
+      anchored_fraction: 0.2
       author_judgement_count: 0
       override_count: 0
       revisions: []
@@ -349,31 +583,43 @@ segments:
         clim_gdd: 3
         soil_ph: 3
         clim_pr_cv: 4
+        clim_pr_annual: 3
       matrix:
       - - 1.0
         - 0.2
         - 0.5
         - 0.5
         - 1.0
+        - 0.5
       - - 5.0
         - 1.0
         - 2.0
         - 3.0
         - 7.0
+        - 3.0
       - - 2.0
         - 0.5
         - 1.0
         - 1.0
         - 3.0
+        - 1.0
       - - 2.0
         - 0.3333
         - 1.0
         - 1.0
         - 3.0
+        - 1.0
       - - 1.0
         - 0.1429
         - 0.3333
         - 0.3333
+        - 1.0
+        - 0.3333
+      - - 2.0
+        - 0.3333
+        - 1.0
+        - 1.0
+        - 3.0
         - 1.0
       judgements:
       - pair:
@@ -381,21 +627,21 @@ segments:
         - soil_soc
         a_ij: 0.2
         rule: A
-        basis: r*(terr_slope)/r*(soil_soc) = 0.1088/0.4982 = 0.218
+        basis: r*(terr_slope)/r*(soil_soc) = 0.0914/0.4189 = 0.218
         source: tadesse_land_2020, tab. 7, p. 10
       - pair:
         - terr_slope
         - clim_gdd
         a_ij: 0.5
         rule: A
-        basis: r*(terr_slope)/r*(clim_gdd) = 0.1088/0.2035 = 0.534
+        basis: r*(terr_slope)/r*(clim_gdd) = 0.0914/0.1711 = 0.534
         source: tadesse_land_2020, tab. 7, p. 10
       - pair:
         - terr_slope
         - soil_ph
         a_ij: 0.5
         rule: A
-        basis: r*(terr_slope)/r*(soil_ph) = 0.1088/0.1895 = 0.574
+        basis: r*(terr_slope)/r*(soil_ph) = 0.0914/0.1593 = 0.574
         source: tadesse_land_2020, tab. 7, p. 10
       - pair:
         - terr_slope
@@ -405,18 +651,25 @@ segments:
         basis: faixa 4 vs 4
         source: faixa ordinal (R4)
       - pair:
+        - terr_slope
+        - clim_pr_annual
+        a_ij: 0.5
+        rule: A
+        basis: r*(terr_slope)/r*(clim_pr_annual) = 0.0914/0.1593 = 0.574
+        source: tadesse_land_2020, tab. 7, p. 10
+      - pair:
         - soil_soc
         - clim_gdd
         a_ij: 2.0
         rule: A
-        basis: r*(soil_soc)/r*(clim_gdd) = 0.4982/0.2035 = 2.448
+        basis: r*(soil_soc)/r*(clim_gdd) = 0.4189/0.1711 = 2.448
         source: tadesse_land_2020, tab. 7, p. 10
       - pair:
         - soil_soc
         - soil_ph
         a_ij: 3.0
         rule: A
-        basis: r*(soil_soc)/r*(soil_ph) = 0.4982/0.1895 = 2.630
+        basis: r*(soil_soc)/r*(soil_ph) = 0.4189/0.1593 = 2.630
         source: tadesse_land_2020, tab. 7, p. 10
       - pair:
         - soil_soc
@@ -426,11 +679,18 @@ segments:
         basis: faixa 1 vs 4
         source: faixa ordinal (R4)
       - pair:
+        - soil_soc
+        - clim_pr_annual
+        a_ij: 3.0
+        rule: A
+        basis: r*(soil_soc)/r*(clim_pr_annual) = 0.4189/0.1593 = 2.630
+        source: tadesse_land_2020, tab. 7, p. 10
+      - pair:
         - clim_gdd
         - soil_ph
         a_ij: 1.0
         rule: A
-        basis: r*(clim_gdd)/r*(soil_ph) = 0.2035/0.1895 = 1.074
+        basis: r*(clim_gdd)/r*(soil_ph) = 0.1711/0.1593 = 1.074
         source: tadesse_land_2020, tab. 7, p. 10
       - pair:
         - clim_gdd
@@ -440,28 +700,50 @@ segments:
         basis: faixa 3 vs 4
         source: faixa ordinal (R4)
       - pair:
+        - clim_gdd
+        - clim_pr_annual
+        a_ij: 1.0
+        rule: A
+        basis: r*(clim_gdd)/r*(clim_pr_annual) = 0.1711/0.1593 = 1.074
+        source: tadesse_land_2020, tab. 7, p. 10
+      - pair:
         - soil_ph
         - clim_pr_cv
         a_ij: 3.0
         rule: B
         basis: faixa 3 vs 4
         source: faixa ordinal (R4)
-      lambda_max: 5.0311
-      consistency_index: 0.0078
-      random_index: 1.12
-      consistency_ratio: 0.007
+      - pair:
+        - soil_ph
+        - clim_pr_annual
+        a_ij: 1.0
+        rule: A
+        basis: r*(soil_ph)/r*(clim_pr_annual) = 0.1593/0.1593 = 1.000
+        source: tadesse_land_2020, tab. 7, p. 10
+      - pair:
+        - clim_pr_cv
+        - clim_pr_annual
+        a_ij: 0.3333
+        rule: B
+        basis: faixa 4 vs 3
+        source: faixa ordinal (R4)
+      lambda_max: 6.0335
+      consistency_index: 0.0067
+      random_index: 1.24
+      consistency_ratio: 0.0054
       priority_vector:
-      - 0.0874
-      - 0.4629
-      - 0.1978
-      - 0.1824
-      - 0.0695
-      approx_eigenvector_max_gap: 0.0012
+      - 0.0738
+      - 0.3999
+      - 0.1638
+      - 0.1527
+      - 0.0571
+      - 0.1527
+      approx_eigenvector_max_gap: 0.001
       class_counts:
-        A: 6
-        B: 4
+        A: 10
+        B: 5
         C: 0
-      anchored_fraction: 0.6
+      anchored_fraction: 0.6667
       author_judgement_count: 0
       override_count: 0
       revisions: []
@@ -681,15 +963,33 @@ segments:
         clim_soil_moist: 2
         terr_slope: 3
         soil_soc: 4
+        clim_pr_annual: 2
+        clim_dry_months: 3
       matrix:
       - - 1.0
         - 3.0
         - 5.0
+        - 1.0
+        - 3.0
       - - 0.3333
         - 1.0
         - 2.0
+        - 0.3333
+        - 1.0
       - - 0.2
         - 0.5
+        - 1.0
+        - 0.1667
+        - 0.3333
+      - - 1.0
+        - 3.0
+        - 6.0
+        - 1.0
+        - 3.0
+      - - 0.3333
+        - 1.0
+        - 3.0
+        - 0.3333
         - 1.0
       judgements:
       - pair:
@@ -707,27 +1007,78 @@ segments:
         basis: faixa 2 vs 4
         source: faixa ordinal (R4)
       - pair:
+        - clim_soil_moist
+        - clim_pr_annual
+        a_ij: 1.0
+        rule: B
+        basis: faixa 2 vs 2
+        source: faixa ordinal (R4)
+      - pair:
+        - clim_soil_moist
+        - clim_dry_months
+        a_ij: 3.0
+        rule: C
+        basis: faixa 2 vs 3
+        source: faixa ordinal (R4)
+      - pair:
         - terr_slope
         - soil_soc
         a_ij: 2.0
         rule: A
-        basis: r*(terr_slope)/r*(soil_soc) = 0.6618/0.3382 = 1.957
+        basis: r*(terr_slope)/r*(soil_soc) = 0.2115/0.1081 = 1.957
         source: balew_identification_2022, tab. 2, p. 10 (coluna do gado)
-      lambda_max: 3.0037
-      consistency_index: 0.0018
-      random_index: 0.58
-      consistency_ratio: 0.0032
+      - pair:
+        - terr_slope
+        - clim_pr_annual
+        a_ij: 0.3333
+        rule: A
+        basis: r*(terr_slope)/r*(clim_pr_annual) = 0.2115/0.6804 = 0.311
+        source: balew_identification_2022, tab. 2, p. 10 (coluna do gado)
+      - pair:
+        - terr_slope
+        - clim_dry_months
+        a_ij: 1.0
+        rule: B
+        basis: faixa 3 vs 3
+        source: faixa ordinal (R4)
+      - pair:
+        - soil_soc
+        - clim_pr_annual
+        a_ij: 0.1667
+        rule: A
+        basis: r*(soil_soc)/r*(clim_pr_annual) = 0.1081/0.6804 = 0.159
+        source: balew_identification_2022, tab. 2, p. 10 (coluna do gado)
+      - pair:
+        - soil_soc
+        - clim_dry_months
+        a_ij: 0.3333
+        rule: B
+        basis: faixa 4 vs 3
+        source: faixa ordinal (R4)
+      - pair:
+        - clim_pr_annual
+        - clim_dry_months
+        a_ij: 3.0
+        rule: B
+        basis: faixa 2 vs 3
+        source: faixa ordinal (R4)
+      lambda_max: 5.0299
+      consistency_index: 0.0075
+      random_index: 1.12
+      consistency_ratio: 0.0067
       priority_vector:
-      - 0.6483
-      - 0.2297
-      - 0.122
-      approx_eigenvector_max_gap: 0.0004
+      - 0.3423
+      - 0.1179
+      - 0.0569
+      - 0.3537
+      - 0.1292
+      approx_eigenvector_max_gap: 0.0006
       class_counts:
-        A: 1
-        B: 2
-        C: 0
-      anchored_fraction: 0.3333
-      author_judgement_count: 0
+        A: 3
+        B: 6
+        C: 1
+      anchored_fraction: 0.3
+      author_judgement_count: 1
       override_count: 0
       revisions: []
   conservation:
@@ -1198,43 +1549,31 @@ segments:
         sit_clearness: 3
         terr_northing: 4
         terr_slope: 4
-        access_logtt: 3
         clim_twarm_q: 2
       matrix:
       - - 1.0
         - 3.0
         - 7.0
         - 4.0
-        - 3.0
         - 2.0
       - - 0.3333
         - 1.0
         - 3.0
         - 2.0
-        - 1.0
         - 0.5
       - - 0.1429
         - 0.3333
         - 1.0
         - 1.0
-        - 0.3333
         - 0.2
       - - 0.25
         - 0.5
         - 1.0
         - 1.0
         - 0.5
-        - 0.5
-      - - 0.3333
-        - 1.0
-        - 3.0
-        - 2.0
-        - 1.0
-        - 0.5
       - - 0.5
         - 2.0
         - 5.0
-        - 2.0
         - 2.0
         - 1.0
       judgements:
@@ -1243,7 +1582,7 @@ segments:
         - sit_clearness
         a_ij: 3.0
         rule: A
-        basis: r*(clim_srad)/r*(sit_clearness) = 0.3919/0.1509 = 2.596
+        basis: r*(clim_srad)/r*(sit_clearness) = 0.4592/0.1769 = 2.596
         source: elboshy_suitability_2022, tab. 2, p. 5
       - pair:
         - clim_srad
@@ -1257,21 +1596,14 @@ segments:
         - terr_slope
         a_ij: 4.0
         rule: A
-        basis: r*(clim_srad)/r*(terr_slope) = 0.3919/0.0943 = 4.154
-        source: elboshy_suitability_2022, tab. 2, p. 5
-      - pair:
-        - clim_srad
-        - access_logtt
-        a_ij: 3.0
-        rule: A
-        basis: r*(clim_srad)/r*(access_logtt) = 0.3919/0.1466 = 2.673
+        basis: r*(clim_srad)/r*(terr_slope) = 0.4592/0.1105 = 4.154
         source: elboshy_suitability_2022, tab. 2, p. 5
       - pair:
         - clim_srad
         - clim_twarm_q
         a_ij: 2.0
         rule: A
-        basis: r*(clim_srad)/r*(clim_twarm_q) = 0.3919/0.2163 = 1.812
+        basis: r*(clim_srad)/r*(clim_twarm_q) = 0.4592/0.2534 = 1.812
         source: elboshy_suitability_2022, tab. 2, p. 5
       - pair:
         - sit_clearness
@@ -1285,21 +1617,14 @@ segments:
         - terr_slope
         a_ij: 2.0
         rule: A
-        basis: r*(sit_clearness)/r*(terr_slope) = 0.1509/0.0943 = 1.600
-        source: elboshy_suitability_2022, tab. 2, p. 5
-      - pair:
-        - sit_clearness
-        - access_logtt
-        a_ij: 1.0
-        rule: A
-        basis: r*(sit_clearness)/r*(access_logtt) = 0.1509/0.1466 = 1.030
+        basis: r*(sit_clearness)/r*(terr_slope) = 0.1769/0.1105 = 1.600
         source: elboshy_suitability_2022, tab. 2, p. 5
       - pair:
         - sit_clearness
         - clim_twarm_q
         a_ij: 0.5
         rule: A
-        basis: r*(sit_clearness)/r*(clim_twarm_q) = 0.1509/0.2163 = 0.698
+        basis: r*(sit_clearness)/r*(clim_twarm_q) = 0.1769/0.2534 = 0.698
         source: elboshy_suitability_2022, tab. 2, p. 5
       - pair:
         - terr_northing
@@ -1310,13 +1635,6 @@ segments:
         source: faixa ordinal (R4)
       - pair:
         - terr_northing
-        - access_logtt
-        a_ij: 0.3333
-        rule: B
-        basis: faixa 4 vs 3
-        source: faixa ordinal (R4)
-      - pair:
-        - terr_northing
         - clim_twarm_q
         a_ij: 0.2
         rule: B
@@ -1324,42 +1642,27 @@ segments:
         source: faixa ordinal (R4)
       - pair:
         - terr_slope
-        - access_logtt
-        a_ij: 0.5
-        rule: A
-        basis: r*(terr_slope)/r*(access_logtt) = 0.0943/0.1466 = 0.644
-        source: elboshy_suitability_2022, tab. 2, p. 5
-      - pair:
-        - terr_slope
         - clim_twarm_q
         a_ij: 0.5
         rule: A
-        basis: r*(terr_slope)/r*(clim_twarm_q) = 0.0943/0.2163 = 0.436
+        basis: r*(terr_slope)/r*(clim_twarm_q) = 0.1105/0.2534 = 0.436
         source: elboshy_suitability_2022, tab. 2, p. 5
-      - pair:
-        - access_logtt
-        - clim_twarm_q
-        a_ij: 0.5
-        rule: A
-        basis: r*(access_logtt)/r*(clim_twarm_q) = 0.1466/0.2163 = 0.678
-        source: elboshy_suitability_2022, tab. 2, p. 5
-      lambda_max: 6.0917
-      consistency_index: 0.0183
-      random_index: 1.24
-      consistency_ratio: 0.0148
+      lambda_max: 5.0918
+      consistency_index: 0.0229
+      random_index: 1.12
+      consistency_ratio: 0.0205
       priority_vector:
-      - 0.3784
-      - 0.1341
-      - 0.0521
-      - 0.0772
-      - 0.1341
-      - 0.224
-      approx_eigenvector_max_gap: 0.0015
+      - 0.4359
+      - 0.1573
+      - 0.0628
+      - 0.092
+      - 0.2519
+      approx_eigenvector_max_gap: 0.002
       class_counts:
-        A: 10
-        B: 5
+        A: 6
+        B: 4
         C: 0
-      anchored_fraction: 0.6667
+      anchored_fraction: 0.6
       author_judgement_count: 1
       override_count: 0
       revisions: []

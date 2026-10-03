@@ -78,7 +78,7 @@
   },
   {
     "theme": "Uso realizado da terra",
-    "source": "MapBiomas Cole\u00e7\u00e3o 10",
+    "source": "MapBiomas",
     "id": "projects/mapbiomas-public/assets/brazil/lulc/collection10/mapbiomas_brazil_collection10_integration_v1",
     "native_res": "30 m",
     "period": "1985-2024"

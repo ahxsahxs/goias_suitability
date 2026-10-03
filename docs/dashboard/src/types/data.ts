@@ -246,12 +246,15 @@ export interface StackComposition {
   note: string
 }
 
-// --- json/pca_compare.json (build_pca_compare: 34-band z-stack vs 15 ZONING_BANDS) --
+// --- json/pca_compare.json (build_pca_compare: the whole z-stack vs ZONING_BANDS) ---
+// Variant keys are semantic, never band counts: the stack has gone 34 -> 29 bands and
+// ZONING_BANDS 15 -> 13, and keys naming a count silently stop matching the emitter.
+// Read the count from `bands.length`.
 export interface PcaVariant {
   bands: string[]
-  /** Band-name prefix per band: clim/terr/soil/water/phen/access. */
+  /** Band-name prefix per band: clim/terr/soil/water. */
   themes: string[]
-  /** 1/√(bands-in-theme) for the 15-band variant; all 1 for the 34-band one. */
+  /** 1/√(bands-in-theme) for the curated variant; all 1 for the full stack. */
   weights: number[]
   explained_variance_ratio: number[]
   n_pc_90: number
@@ -264,8 +267,8 @@ export interface PcaVariant {
 }
 
 export interface PcaPoints {
-  pc34: [number, number, number][]
-  pc15: [number, number, number][]
+  pc_full: [number, number, number][]
+  pc_curated: [number, number, number][]
   zone: number[]
   lon: number[]
   lat: number[]
@@ -275,7 +278,7 @@ export interface PcaPoints {
 }
 
 export interface PcaCompare {
-  variants: { '34': PcaVariant; '15': PcaVariant }
+  variants: { full: PcaVariant; curated: PcaVariant }
   n_sample: number
   points: PcaPoints
 }

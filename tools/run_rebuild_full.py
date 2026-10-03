@@ -218,18 +218,27 @@ def main():
     present = ["suit_present", "suit_present_comp", "suit_present_sens"]
     if all(exists(n) for n in present):
         log("  suit_present/_comp/_sens exist -- skip")
-        t_suit = None
+        suit_tasks = []
     else:
         suit = membership.suit_present(stack, lc, SEG, extras)
         comp = membership.comparative_present(suit, AOI, SEGS, scale=1000)
         sens = membership.sensitivity_present(stack, lc, SEG, extras)
-        t_suit = export(suit, "suit_present", AOI)
-        export(comp, "suit_present_comp", AOI)
-        export(sens, "suit_present_sens", AOI)
-    wait_for("suit_present", tasks=[t_suit] if t_suit else [])
+        suit_tasks = [
+            export(suit, "suit_present", AOI),
+            export(comp, "suit_present_comp", AOI),
+            export(sens, "suit_present_sens", AOI),
+        ]
+    # Only suit_present gates the next stage (zoning stratifies on it), so the zoning
+    # path waits on that one alone.
+    wait_for("suit_present", tasks=suit_tasks)
     suit_a = img("suit_present")
 
     if stop_after("suit"):
+        # ... but a run that STOPS here must not return while _comp/_sens are still in
+        # flight: REBUILD_FORCE deletes the asset before submitting, so an early return
+        # leaves them simply absent, and the K gate that follows reads suit_present_comp.
+        log("  waiting on suit_present_comp/_sens before stopping ...")
+        wait_for(present, tasks=suit_tasks)
         log("=== STOP after Part 9 (REBUILD_UNTIL=suit) ===")
         log("Next: pick K from the full validity+stability panel, then rerun "
             "with ZONE_K=<k>.")

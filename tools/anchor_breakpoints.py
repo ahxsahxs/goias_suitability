@@ -83,9 +83,13 @@ PCTLS = [5, 10, 25, 50, 75, 90, 95]
 
 # Stack factors (present in feature_stack_250m) whose breakpoints/weights are
 # reviewed this iteration.
+# `access_logtt` was here until 2026-10-02, for solar. It left the 29-band stack
+# together with phenology (both encode the current state of land use/infrastructure),
+# and `stack.select()` raises on a band the stack no longer carries -- so leaving it
+# listed breaks BOTH subcommands against a rebuilt stack, not just the solar rows.
 TARGET_BANDS = [
     # solar
-    "clim_srad", "terr_northing", "access_logtt",
+    "clim_srad", "terr_northing",
     # pisciculture / solar water proximity
     "water_dist",
     # cattle forage grading

@@ -1,159 +1,619 @@
 {
-  "_note": "AHP pairwise matrices (Saaty 1-9) reconstructed from the elicited segment priorities; CR<=0.10 accepts the elicitation. Priority vector reproduces config/segments.yaml weights to Saaty rounding. See tools/build_ahp.py + docs/weaknesses_mitigation.md WS-C.",
+  "scale": {
+    "allowed": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    "band_ladder": {
+      "0": 1,
+      "1": 3,
+      "2": 5,
+      "3": 7
+    },
+    "max_revisions_per_segment": 3,
+    "cr_threshold": 0.1
+  },
   "segments": {
     "soybean": {
       "factors": [
         "terr_slope",
         "soil_clay",
-        "clim_twarm_q",
         "soil_ph",
         "clim_pr_annual",
+        "clim_twarm_q",
         "clim_aridity"
       ],
-      "matrix": [
-        [
-          1.0,
-          1.25,
-          2.5,
-          3.0,
-          3.0,
-          3.5
+      "anchors": {
+        "clim_pr_annual": {
+          "band": 2,
+          "r": 0.261,
+          "rank": 2,
+          "n_criteria": 6,
+          "source": "radocaj_optimal_2020",
+          "locator": "tab. 5, p. 13",
+          "block": "clima",
+          "rationale": "Precipitation; 2.\u00ba de 6 na matriz CLIM\u00c1TICA da fonte (tercil superior). Fica na mesma faixa que o pH e o declive, e n\u00e3o acima, porque a pr\u00f3pria fonte declara os grupos clima e solo igualmente influentes no resultado de aptid\u00e3o (p. 7)."
+        },
+        "clim_twarm_q": {
+          "band": 3,
+          "r": 0.082,
+          "rank": 5,
+          "n_criteria": 6,
+          "source": "radocaj_optimal_2020",
+          "locator": "tab. 5, p. 13",
+          "block": "clima",
+          "rationale": "Tmax, a m\u00e9dia das m\u00e1ximas do trimestre quente na fonte; 5.\u00ba de 6 na matriz clim\u00e1tica. O par com clim_pr_annual \u00e9 de regra A -- r*(pr)/r*(twarm) = 3,18, que arredonda a 3 na escala de Saaty -- e n\u00e3o depende desta faixa."
+        },
+        "clim_aridity": {
+          "band": 3,
+          "rationale": "author judgement -- \u00edndice de aridez (P/PET) como integrador do balan\u00e7o h\u00eddrico que o total pluviom\u00e9trico n\u00e3o captura. Ausente do conjunto de crit\u00e9rios de Rado\u010daj et al., por isso entra como faixa ordinal e n\u00e3o como prioridade publicada; \u00e9 a alavanca CMIP6 que combina chuva e demanda atmosf\u00e9rica no mesmo n\u00famero."
+        },
+        "soil_ph": {
+          "band": 2,
+          "r": 0.254,
+          "rank": 2,
+          "n_criteria": 6,
+          "source": "radocaj_optimal_2020",
+          "locator": "tab. 6, p. 14",
+          "block": "solo",
+          "rationale": "pH; tercil superior da matriz de solo da fonte."
+        },
+        "terr_slope": {
+          "band": 2,
+          "r": 0.178,
+          "rank": 3,
+          "n_criteria": 6,
+          "source": "radocaj_optimal_2020",
+          "locator": "tab. 6, p. 14",
+          "block": "solo",
+          "rationale": "Slope; tercil intermedi\u00e1rio da matriz de solo da fonte."
+        },
+        "soil_clay": {
+          "band": 3,
+          "r": 0.104,
+          "rank": 4,
+          "n_criteria": 6,
+          "source": "radocaj_optimal_2020",
+          "locator": "tab. 6, p. 14",
+          "block": "solo",
+          "rationale": "SoilTexture; tercil intermedi\u00e1rio da matriz de solo da fonte."
+        }
+      },
+      "derived": {
+        "bands_final": {
+          "terr_slope": 2,
+          "soil_clay": 3,
+          "soil_ph": 2,
+          "clim_pr_annual": 2,
+          "clim_twarm_q": 3,
+          "clim_aridity": 3
+        },
+        "matrix": [
+          [
+            1.0,
+            2.0,
+            0.5,
+            1.0,
+            3.0,
+            3.0
+          ],
+          [
+            0.5,
+            1.0,
+            0.5,
+            0.3333,
+            1.0,
+            1.0
+          ],
+          [
+            2.0,
+            2.0,
+            1.0,
+            1.0,
+            3.0,
+            3.0
+          ],
+          [
+            1.0,
+            3.0,
+            1.0,
+            1.0,
+            3.0,
+            3.0
+          ],
+          [
+            0.3333,
+            1.0,
+            0.3333,
+            0.3333,
+            1.0,
+            1.0
+          ],
+          [
+            0.3333,
+            1.0,
+            0.3333,
+            0.3333,
+            1.0,
+            1.0
+          ]
         ],
-        [
-          0.8,
-          1.0,
-          1.75,
-          2.0,
-          2.5,
-          2.5
+        "judgements": [
+          {
+            "pair": [
+              "terr_slope",
+              "soil_clay"
+            ],
+            "a_ij": 2.0,
+            "rule": "A",
+            "basis": "r*(terr_slope)/r*(soil_clay) = 0.3321/0.1940 = 1.712",
+            "source": "radocaj_optimal_2020, tab. 6, p. 14"
+          },
+          {
+            "pair": [
+              "terr_slope",
+              "soil_ph"
+            ],
+            "a_ij": 0.5,
+            "rule": "A",
+            "basis": "r*(terr_slope)/r*(soil_ph) = 0.3321/0.4739 = 0.701",
+            "source": "radocaj_optimal_2020, tab. 6, p. 14"
+          },
+          {
+            "pair": [
+              "terr_slope",
+              "clim_pr_annual"
+            ],
+            "a_ij": 1.0,
+            "rule": "B",
+            "basis": "faixa 2 vs 2",
+            "source": "faixa ordinal (R4)"
+          },
+          {
+            "pair": [
+              "terr_slope",
+              "clim_twarm_q"
+            ],
+            "a_ij": 3.0,
+            "rule": "B",
+            "basis": "faixa 2 vs 3",
+            "source": "faixa ordinal (R4)"
+          },
+          {
+            "pair": [
+              "terr_slope",
+              "clim_aridity"
+            ],
+            "a_ij": 3.0,
+            "rule": "B",
+            "basis": "faixa 2 vs 3",
+            "source": "faixa ordinal (R4)"
+          },
+          {
+            "pair": [
+              "soil_clay",
+              "soil_ph"
+            ],
+            "a_ij": 0.5,
+            "rule": "A",
+            "basis": "r*(soil_clay)/r*(soil_ph) = 0.1940/0.4739 = 0.409",
+            "source": "radocaj_optimal_2020, tab. 6, p. 14"
+          },
+          {
+            "pair": [
+              "soil_clay",
+              "clim_pr_annual"
+            ],
+            "a_ij": 0.3333,
+            "rule": "B",
+            "basis": "faixa 3 vs 2",
+            "source": "faixa ordinal (R4)"
+          },
+          {
+            "pair": [
+              "soil_clay",
+              "clim_twarm_q"
+            ],
+            "a_ij": 1.0,
+            "rule": "B",
+            "basis": "faixa 3 vs 3",
+            "source": "faixa ordinal (R4)"
+          },
+          {
+            "pair": [
+              "soil_clay",
+              "clim_aridity"
+            ],
+            "a_ij": 1.0,
+            "rule": "B",
+            "basis": "faixa 3 vs 3",
+            "source": "faixa ordinal (R4)"
+          },
+          {
+            "pair": [
+              "soil_ph",
+              "clim_pr_annual"
+            ],
+            "a_ij": 1.0,
+            "rule": "B",
+            "basis": "faixa 2 vs 2",
+            "source": "faixa ordinal (R4)"
+          },
+          {
+            "pair": [
+              "soil_ph",
+              "clim_twarm_q"
+            ],
+            "a_ij": 3.0,
+            "rule": "B",
+            "basis": "faixa 2 vs 3",
+            "source": "faixa ordinal (R4)"
+          },
+          {
+            "pair": [
+              "soil_ph",
+              "clim_aridity"
+            ],
+            "a_ij": 3.0,
+            "rule": "B",
+            "basis": "faixa 2 vs 3",
+            "source": "faixa ordinal (R4)"
+          },
+          {
+            "pair": [
+              "clim_pr_annual",
+              "clim_twarm_q"
+            ],
+            "a_ij": 3.0,
+            "rule": "A",
+            "basis": "r*(clim_pr_annual)/r*(clim_twarm_q) = 0.7609/0.2391 = 3.183",
+            "source": "radocaj_optimal_2020, tab. 5, p. 13"
+          },
+          {
+            "pair": [
+              "clim_pr_annual",
+              "clim_aridity"
+            ],
+            "a_ij": 3.0,
+            "rule": "B",
+            "basis": "faixa 2 vs 3",
+            "source": "faixa ordinal (R4)"
+          },
+          {
+            "pair": [
+              "clim_twarm_q",
+              "clim_aridity"
+            ],
+            "a_ij": 1.0,
+            "rule": "B",
+            "basis": "faixa 3 vs 3",
+            "source": "faixa ordinal (R4)"
+          }
         ],
-        [
-          0.4,
-          0.5714,
-          1.0,
-          1.25,
-          1.5,
-          1.5
+        "lambda_max": 6.0822,
+        "consistency_index": 0.0164,
+        "random_index": 1.24,
+        "consistency_ratio": 0.0133,
+        "priority_vector": [
+          0.2133,
+          0.0971,
+          0.2706,
+          0.2515,
+          0.0838,
+          0.0838
         ],
-        [
-          0.3333,
-          0.5,
-          0.8,
-          1.0,
-          1.0,
-          1.25
-        ],
-        [
-          0.3333,
-          0.4,
-          0.6667,
-          1.0,
-          1.0,
-          1.0
-        ],
-        [
-          0.2857,
-          0.4,
-          0.6667,
-          0.8,
-          1.0,
-          1.0
-        ]
-      ],
-      "consistency_ratio": 0.0013,
-      "priority_vector": [
-        0.3194,
-        0.2395,
-        0.1381,
-        0.1104,
-        0.0994,
-        0.0932
-      ],
-      "config_weights": [
-        0.32,
-        0.24,
-        0.14,
-        0.11,
-        0.1,
-        0.09
-      ]
+        "approx_eigenvector_max_gap": 0.0023,
+        "class_counts": {
+          "A": 4,
+          "B": 11,
+          "C": 0
+        },
+        "anchored_fraction": 0.2667,
+        "author_judgement_count": 1,
+        "override_count": 0,
+        "revisions": []
+      }
     },
     "sugarcane": {
       "factors": [
         "terr_slope",
         "soil_awc",
         "soil_clay",
-        "clim_twarm_q",
         "clim_pr_annual",
-        "clim_dry_months"
+        "clim_dry_months",
+        "clim_twarm_q"
       ],
-      "matrix": [
-        [
-          1.0,
-          1.25,
-          1.25,
-          1.75,
-          2.5,
-          4.0
+      "anchors": {
+        "clim_pr_annual": {
+          "band": 2,
+          "source": "aparecido_climate_2021",
+          "locator": "p. 777",
+          "rationale": "A fonte declara a \u00e1gua como o principal fator limitante do rendimento da cana e situa 1100-1500 mm como adequados ao ciclo. \u00c9 um zoneamento de efici\u00eancia clim\u00e1tica, n\u00e3o uma AHP, logo n\u00e3o h\u00e1 prioridade publicada: entra como faixa ordinal, na mesma faixa que a CAD -- as duas medem a mesma disponibilidade h\u00eddrica, uma pelo aporte e outra pelo armazenamento."
+        },
+        "clim_dry_months": {
+          "band": 3,
+          "source": "aparecido_climate_2021",
+          "locator": "p. 777",
+          "rationale": "Dura\u00e7\u00e3o da esta\u00e7\u00e3o seca. A fonte trata o d\u00e9ficit h\u00eddrico como o mecanismo da perda de rendimento, mas na cana a matura\u00e7\u00e3o seca \u00e9 desej\u00e1vel: o fator tem \u00f3timo intermedi\u00e1rio (pontos 3/5/5/9), n\u00e3o \u00e9 monot\u00f3nico, e fica por isso uma faixa abaixo do total pluviom\u00e9trico."
+        },
+        "clim_twarm_q": {
+          "band": 3,
+          "source": "aparecido_climate_2021",
+          "locator": "p. 777",
+          "rationale": "Temperatura m\u00e9dia do trimestre mais quente; a fonte situa 28-38 \u00b0C como favor\u00e1veis ao desenvolvimento. Faixa ordinal abaixo da \u00e1gua, seguindo a hierarquia expl\u00edcita da fonte. Alburo et al., de onde v\u00eam os pesos de solo e terreno deste segmento, n\u00e3o inclui crit\u00e9rio clim\u00e1tico algum -- \u00e9 o pr\u00f3prio precedente de descartar um crit\u00e9rio sem variabilidade local."
+        },
+        "soil_awc": {
+          "band": 2,
+          "r": 19.4,
+          "rank": 2,
+          "n_criteria": 6,
+          "source": "alburo_application_2019",
+          "locator": "tab. 2, p. 154 (grupos combinados)",
+          "block": "solo",
+          "rationale": "Water Holding Capacity; tercil superior do bloco solo/terreno da fonte."
+        },
+        "terr_slope": {
+          "band": 2,
+          "r": 16.5,
+          "rank": 3,
+          "n_criteria": 6,
+          "source": "alburo_application_2019",
+          "locator": "tab. 2, p. 154 (grupos combinados)",
+          "block": "solo",
+          "rationale": "Slope; tercil intermedi\u00e1rio do bloco solo/terreno da fonte."
+        },
+        "soil_clay": {
+          "band": 3,
+          "r": 14.1,
+          "rank": 4,
+          "n_criteria": 6,
+          "source": "alburo_application_2019",
+          "locator": "tab. 2, p. 154 (grupos combinados)",
+          "block": "solo",
+          "rationale": "Soil Texture; tercil intermedi\u00e1rio do bloco solo/terreno da fonte."
+        }
+      },
+      "derived": {
+        "bands_final": {
+          "terr_slope": 2,
+          "soil_awc": 2,
+          "soil_clay": 3,
+          "clim_pr_annual": 2,
+          "clim_dry_months": 3,
+          "clim_twarm_q": 3
+        },
+        "matrix": [
+          [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            3.0,
+            3.0
+          ],
+          [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            3.0,
+            3.0
+          ],
+          [
+            1.0,
+            1.0,
+            1.0,
+            0.3333,
+            1.0,
+            1.0
+          ],
+          [
+            1.0,
+            1.0,
+            3.0,
+            1.0,
+            3.0,
+            3.0
+          ],
+          [
+            0.3333,
+            0.3333,
+            1.0,
+            0.3333,
+            1.0,
+            1.0
+          ],
+          [
+            0.3333,
+            0.3333,
+            1.0,
+            0.3333,
+            1.0,
+            1.0
+          ]
         ],
-        [
-          0.8,
-          1.0,
-          1.0,
-          1.5,
-          2.0,
-          3.5
+        "judgements": [
+          {
+            "pair": [
+              "terr_slope",
+              "soil_awc"
+            ],
+            "a_ij": 1.0,
+            "rule": "A",
+            "basis": "r*(terr_slope)/r*(soil_awc) = 0.3300/0.3880 = 0.851",
+            "source": "alburo_application_2019, tab. 2, p. 154 (grupos combinados)"
+          },
+          {
+            "pair": [
+              "terr_slope",
+              "soil_clay"
+            ],
+            "a_ij": 1.0,
+            "rule": "A",
+            "basis": "r*(terr_slope)/r*(soil_clay) = 0.3300/0.2820 = 1.170",
+            "source": "alburo_application_2019, tab. 2, p. 154 (grupos combinados)"
+          },
+          {
+            "pair": [
+              "terr_slope",
+              "clim_pr_annual"
+            ],
+            "a_ij": 1.0,
+            "rule": "B",
+            "basis": "faixa 2 vs 2",
+            "source": "faixa ordinal (R4)"
+          },
+          {
+            "pair": [
+              "terr_slope",
+              "clim_dry_months"
+            ],
+            "a_ij": 3.0,
+            "rule": "B",
+            "basis": "faixa 2 vs 3",
+            "source": "faixa ordinal (R4)"
+          },
+          {
+            "pair": [
+              "terr_slope",
+              "clim_twarm_q"
+            ],
+            "a_ij": 3.0,
+            "rule": "B",
+            "basis": "faixa 2 vs 3",
+            "source": "faixa ordinal (R4)"
+          },
+          {
+            "pair": [
+              "soil_awc",
+              "soil_clay"
+            ],
+            "a_ij": 1.0,
+            "rule": "A",
+            "basis": "r*(soil_awc)/r*(soil_clay) = 0.3880/0.2820 = 1.376",
+            "source": "alburo_application_2019, tab. 2, p. 154 (grupos combinados)"
+          },
+          {
+            "pair": [
+              "soil_awc",
+              "clim_pr_annual"
+            ],
+            "a_ij": 1.0,
+            "rule": "B",
+            "basis": "faixa 2 vs 2",
+            "source": "faixa ordinal (R4)"
+          },
+          {
+            "pair": [
+              "soil_awc",
+              "clim_dry_months"
+            ],
+            "a_ij": 3.0,
+            "rule": "B",
+            "basis": "faixa 2 vs 3",
+            "source": "faixa ordinal (R4)"
+          },
+          {
+            "pair": [
+              "soil_awc",
+              "clim_twarm_q"
+            ],
+            "a_ij": 3.0,
+            "rule": "B",
+            "basis": "faixa 2 vs 3",
+            "source": "faixa ordinal (R4)"
+          },
+          {
+            "pair": [
+              "soil_clay",
+              "clim_pr_annual"
+            ],
+            "a_ij": 0.3333,
+            "rule": "B",
+            "basis": "faixa 3 vs 2",
+            "source": "faixa ordinal (R4)"
+          },
+          {
+            "pair": [
+              "soil_clay",
+              "clim_dry_months"
+            ],
+            "a_ij": 1.0,
+            "rule": "B",
+            "basis": "faixa 3 vs 3",
+            "source": "faixa ordinal (R4)"
+          },
+          {
+            "pair": [
+              "soil_clay",
+              "clim_twarm_q"
+            ],
+            "a_ij": 1.0,
+            "rule": "B",
+            "basis": "faixa 3 vs 3",
+            "source": "faixa ordinal (R4)"
+          },
+          {
+            "pair": [
+              "clim_pr_annual",
+              "clim_dry_months"
+            ],
+            "a_ij": 3.0,
+            "rule": "C",
+            "basis": "faixa 2 vs 3",
+            "source": "faixa ordinal (R4)"
+          },
+          {
+            "pair": [
+              "clim_pr_annual",
+              "clim_twarm_q"
+            ],
+            "a_ij": 3.0,
+            "rule": "C",
+            "basis": "faixa 2 vs 3",
+            "source": "faixa ordinal (R4)"
+          },
+          {
+            "pair": [
+              "clim_dry_months",
+              "clim_twarm_q"
+            ],
+            "a_ij": 1.0,
+            "rule": "C",
+            "basis": "faixa 3 vs 3",
+            "source": "faixa ordinal (R4)"
+          }
         ],
-        [
-          0.8,
-          1.0,
-          1.0,
-          1.5,
-          2.0,
-          3.5
+        "lambda_max": 6.2076,
+        "consistency_index": 0.0415,
+        "random_index": 1.24,
+        "consistency_ratio": 0.0335,
+        "priority_vector": [
+          0.2169,
+          0.2169,
+          0.1332,
+          0.2598,
+          0.0866,
+          0.0866
         ],
-        [
-          0.5714,
-          0.6667,
-          0.6667,
-          1.0,
-          1.5,
-          2.5
-        ],
-        [
-          0.4,
-          0.5,
-          0.5,
-          0.6667,
-          1.0,
-          1.75
-        ],
-        [
-          0.25,
-          0.2857,
-          0.2857,
-          0.4,
-          0.5714,
-          1.0
-        ]
-      ],
-      "consistency_ratio": 0.0004,
-      "priority_vector": [
-        0.2596,
-        0.2132,
-        0.2132,
-        0.1484,
-        0.1046,
-        0.0611
-      ],
-      "config_weights": [
-        0.26,
-        0.22,
-        0.22,
-        0.14,
-        0.1,
-        0.06
-      ]
+        "approx_eigenvector_max_gap": 0.0009,
+        "class_counts": {
+          "A": 3,
+          "B": 9,
+          "C": 3
+        },
+        "anchored_fraction": 0.2,
+        "author_judgement_count": 0,
+        "override_count": 0,
+        "revisions": []
+      }
     },
     "other_crops": {
       "factors": [
@@ -161,76 +621,300 @@
         "soil_soc",
         "clim_gdd",
         "soil_ph",
-        "clim_pr_annual",
-        "clim_pr_cv"
+        "clim_pr_cv",
+        "clim_pr_annual"
       ],
-      "matrix": [
-        [
-          1.0,
-          1.5,
-          2.5,
-          3.0,
-          4.0,
-          4.0
+      "anchors": {
+        "clim_pr_annual": {
+          "band": 3,
+          "r": 0.054,
+          "rank": 9,
+          "n_criteria": 14,
+          "source": "tadesse_land_2020",
+          "locator": "tab. 7, p. 10",
+          "block": "unico",
+          "rationale": "Rainfall (mm); 0,054 dos 14 crit\u00e9rios da fonte, empatado com Soil Ph e K -- tercil intermedi\u00e1rio, a mesma faixa de soil_ph e clim_gdd. Os limiares de perten\u00e7a v\u00eam do ZARC do milho (amaral_metodologia_2023, registados em segments.yaml); daqui vem s\u00f3 a prioridade."
+        },
+        "soil_soc": {
+          "band": 1,
+          "r": 0.142,
+          "rank": 2,
+          "n_criteria": 14,
+          "source": "tadesse_land_2020",
+          "locator": "tab. 7, p. 10",
+          "block": "unico",
+          "rationale": "Organic Matter; tercil superior dos 14 crit\u00e9rios da fonte."
+        },
+        "clim_gdd": {
+          "band": 3,
+          "r": 0.058,
+          "rank": 7,
+          "n_criteria": 14,
+          "source": "tadesse_land_2020",
+          "locator": "tab. 7, p. 10",
+          "block": "unico",
+          "rationale": "Temperature; tercil intermedi\u00e1rio dos 14 crit\u00e9rios da fonte."
+        },
+        "soil_ph": {
+          "band": 3,
+          "r": 0.054,
+          "rank": 8,
+          "n_criteria": 14,
+          "source": "tadesse_land_2020",
+          "locator": "tab. 7, p. 10",
+          "block": "unico",
+          "rationale": "Soil pH; tercil intermedi\u00e1rio dos 14 crit\u00e9rios da fonte."
+        },
+        "terr_slope": {
+          "band": 4,
+          "r": 0.031,
+          "rank": 13,
+          "n_criteria": 14,
+          "source": "tadesse_land_2020",
+          "locator": "tab. 7, p. 10",
+          "block": "unico",
+          "rationale": "Slope; MENOR peso dos 14 crit\u00e9rios da fonte. O est\u00e1gio regional (lambda) \u00e9 o que devolve peso ao relevo em GO/DF."
+        },
+        "clim_pr_cv": {
+          "band": 4,
+          "source": "amaral_metodologia_2023",
+          "rationale": "Confiabilidade da chuva para a safrinha; o ZARC trata a variabilidade como risco de segunda ordem frente ao total sazonal."
+        }
+      },
+      "derived": {
+        "bands_final": {
+          "terr_slope": 4,
+          "soil_soc": 1,
+          "clim_gdd": 3,
+          "soil_ph": 3,
+          "clim_pr_cv": 4,
+          "clim_pr_annual": 3
+        },
+        "matrix": [
+          [
+            1.0,
+            0.2,
+            0.5,
+            0.5,
+            1.0,
+            0.5
+          ],
+          [
+            5.0,
+            1.0,
+            2.0,
+            3.0,
+            7.0,
+            3.0
+          ],
+          [
+            2.0,
+            0.5,
+            1.0,
+            1.0,
+            3.0,
+            1.0
+          ],
+          [
+            2.0,
+            0.3333,
+            1.0,
+            1.0,
+            3.0,
+            1.0
+          ],
+          [
+            1.0,
+            0.1429,
+            0.3333,
+            0.3333,
+            1.0,
+            0.3333
+          ],
+          [
+            2.0,
+            0.3333,
+            1.0,
+            1.0,
+            3.0,
+            1.0
+          ]
         ],
-        [
-          0.6667,
-          1.0,
-          1.5,
-          2.0,
-          2.5,
-          3.0
+        "judgements": [
+          {
+            "pair": [
+              "terr_slope",
+              "soil_soc"
+            ],
+            "a_ij": 0.2,
+            "rule": "A",
+            "basis": "r*(terr_slope)/r*(soil_soc) = 0.0914/0.4189 = 0.218",
+            "source": "tadesse_land_2020, tab. 7, p. 10"
+          },
+          {
+            "pair": [
+              "terr_slope",
+              "clim_gdd"
+            ],
+            "a_ij": 0.5,
+            "rule": "A",
+            "basis": "r*(terr_slope)/r*(clim_gdd) = 0.0914/0.1711 = 0.534",
+            "source": "tadesse_land_2020, tab. 7, p. 10"
+          },
+          {
+            "pair": [
+              "terr_slope",
+              "soil_ph"
+            ],
+            "a_ij": 0.5,
+            "rule": "A",
+            "basis": "r*(terr_slope)/r*(soil_ph) = 0.0914/0.1593 = 0.574",
+            "source": "tadesse_land_2020, tab. 7, p. 10"
+          },
+          {
+            "pair": [
+              "terr_slope",
+              "clim_pr_cv"
+            ],
+            "a_ij": 1.0,
+            "rule": "B",
+            "basis": "faixa 4 vs 4",
+            "source": "faixa ordinal (R4)"
+          },
+          {
+            "pair": [
+              "terr_slope",
+              "clim_pr_annual"
+            ],
+            "a_ij": 0.5,
+            "rule": "A",
+            "basis": "r*(terr_slope)/r*(clim_pr_annual) = 0.0914/0.1593 = 0.574",
+            "source": "tadesse_land_2020, tab. 7, p. 10"
+          },
+          {
+            "pair": [
+              "soil_soc",
+              "clim_gdd"
+            ],
+            "a_ij": 2.0,
+            "rule": "A",
+            "basis": "r*(soil_soc)/r*(clim_gdd) = 0.4189/0.1711 = 2.448",
+            "source": "tadesse_land_2020, tab. 7, p. 10"
+          },
+          {
+            "pair": [
+              "soil_soc",
+              "soil_ph"
+            ],
+            "a_ij": 3.0,
+            "rule": "A",
+            "basis": "r*(soil_soc)/r*(soil_ph) = 0.4189/0.1593 = 2.630",
+            "source": "tadesse_land_2020, tab. 7, p. 10"
+          },
+          {
+            "pair": [
+              "soil_soc",
+              "clim_pr_cv"
+            ],
+            "a_ij": 7.0,
+            "rule": "B",
+            "basis": "faixa 1 vs 4",
+            "source": "faixa ordinal (R4)"
+          },
+          {
+            "pair": [
+              "soil_soc",
+              "clim_pr_annual"
+            ],
+            "a_ij": 3.0,
+            "rule": "A",
+            "basis": "r*(soil_soc)/r*(clim_pr_annual) = 0.4189/0.1593 = 2.630",
+            "source": "tadesse_land_2020, tab. 7, p. 10"
+          },
+          {
+            "pair": [
+              "clim_gdd",
+              "soil_ph"
+            ],
+            "a_ij": 1.0,
+            "rule": "A",
+            "basis": "r*(clim_gdd)/r*(soil_ph) = 0.1711/0.1593 = 1.074",
+            "source": "tadesse_land_2020, tab. 7, p. 10"
+          },
+          {
+            "pair": [
+              "clim_gdd",
+              "clim_pr_cv"
+            ],
+            "a_ij": 3.0,
+            "rule": "B",
+            "basis": "faixa 3 vs 4",
+            "source": "faixa ordinal (R4)"
+          },
+          {
+            "pair": [
+              "clim_gdd",
+              "clim_pr_annual"
+            ],
+            "a_ij": 1.0,
+            "rule": "A",
+            "basis": "r*(clim_gdd)/r*(clim_pr_annual) = 0.1711/0.1593 = 1.074",
+            "source": "tadesse_land_2020, tab. 7, p. 10"
+          },
+          {
+            "pair": [
+              "soil_ph",
+              "clim_pr_cv"
+            ],
+            "a_ij": 3.0,
+            "rule": "B",
+            "basis": "faixa 3 vs 4",
+            "source": "faixa ordinal (R4)"
+          },
+          {
+            "pair": [
+              "soil_ph",
+              "clim_pr_annual"
+            ],
+            "a_ij": 1.0,
+            "rule": "A",
+            "basis": "r*(soil_ph)/r*(clim_pr_annual) = 0.1593/0.1593 = 1.000",
+            "source": "tadesse_land_2020, tab. 7, p. 10"
+          },
+          {
+            "pair": [
+              "clim_pr_cv",
+              "clim_pr_annual"
+            ],
+            "a_ij": 0.3333,
+            "rule": "B",
+            "basis": "faixa 4 vs 3",
+            "source": "faixa ordinal (R4)"
+          }
         ],
-        [
-          0.4,
-          0.6667,
-          1.0,
-          1.25,
-          1.75,
-          1.75
+        "lambda_max": 6.0335,
+        "consistency_index": 0.0067,
+        "random_index": 1.24,
+        "consistency_ratio": 0.0054,
+        "priority_vector": [
+          0.0738,
+          0.3999,
+          0.1638,
+          0.1527,
+          0.0571,
+          0.1527
         ],
-        [
-          0.3333,
-          0.5,
-          0.8,
-          1.0,
-          1.25,
-          1.25
-        ],
-        [
-          0.25,
-          0.4,
-          0.5714,
-          0.8,
-          1.0,
-          1.0
-        ],
-        [
-          0.25,
-          0.3333,
-          0.5714,
-          0.8,
-          1.0,
-          1.0
-        ]
-      ],
-      "consistency_ratio": 0.0008,
-      "priority_vector": [
-        0.3443,
-        0.2278,
-        0.1455,
-        0.1116,
-        0.0867,
-        0.0842
-      ],
-      "config_weights": [
-        0.34,
-        0.23,
-        0.15,
-        0.11,
-        0.09,
-        0.08
-      ]
+        "approx_eigenvector_max_gap": 0.001,
+        "class_counts": {
+          "A": 10,
+          "B": 5,
+          "C": 0
+        },
+        "anchored_fraction": 0.6667,
+        "author_judgement_count": 0,
+        "override_count": 0,
+        "revisions": []
+      }
     },
     "pisciculture": {
       "factors": [
@@ -240,119 +924,440 @@
         "water_drain_density",
         "clim_twarm_q"
       ],
-      "matrix": [
-        [
-          1.0,
-          1.0,
-          1.25,
-          2.0,
-          2.5
+      "anchors": {
+        "sit_water_dist_seas": {
+          "band": 1,
+          "r": 0.358,
+          "rank": 1,
+          "n_criteria": 7,
+          "source": "ssegane_geospatial_2012",
+          "locator": "tab. 5, p. 160",
+          "block": "unico",
+          "rationale": "Water requirement; maior prioridade da fonte."
+        },
+        "clim_twarm_q": {
+          "band": 2,
+          "r": 0.235,
+          "rank": 2,
+          "n_criteria": 7,
+          "source": "ssegane_geospatial_2012",
+          "locator": "tab. 5, p. 160",
+          "block": "unico",
+          "rationale": "Water Temperature; tercil superior da fonte."
+        },
+        "soil_clay": {
+          "band": 3,
+          "r": 0.111,
+          "rank": 4,
+          "n_criteria": 7,
+          "source": "ssegane_geospatial_2012",
+          "locator": "tab. 5, p. 160",
+          "block": "unico",
+          "rationale": "Soil texture; tercil intermedi\u00e1rio da fonte."
+        },
+        "terr_slope": {
+          "band": 3,
+          "r": 0.07,
+          "rank": 5,
+          "n_criteria": 7,
+          "source": "ssegane_geospatial_2012",
+          "locator": "tab. 5, p. 160",
+          "block": "unico",
+          "rationale": "Slope; tercil intermedi\u00e1rio da fonte. Francisco (tab. 4) o coloca em PRIMEIRO (0,4894) por modelar viveiros escavados; diverg\u00eancia resolvida em docs/ahp_literatura.md \u00a72, com Francisco mantida como \u00e2ncora dos limiares."
+        },
+        "water_drain_density": {
+          "band": 4,
+          "rationale": "author judgement \u2014 disponibilidade h\u00eddrica local, parcialmente redundante com a dist\u00e2ncia \u00e0 \u00e1gua sazonal."
+        }
+      },
+      "derived": {
+        "bands_final": {
+          "terr_slope": 3,
+          "soil_clay": 3,
+          "sit_water_dist_seas": 1,
+          "water_drain_density": 4,
+          "clim_twarm_q": 2
+        },
+        "matrix": [
+          [
+            1.0,
+            0.5,
+            0.2,
+            3.0,
+            0.3333
+          ],
+          [
+            2.0,
+            1.0,
+            0.3333,
+            3.0,
+            0.5
+          ],
+          [
+            5.0,
+            3.0,
+            1.0,
+            7.0,
+            2.0
+          ],
+          [
+            0.3333,
+            0.3333,
+            0.1429,
+            1.0,
+            0.2
+          ],
+          [
+            3.0,
+            2.0,
+            0.5,
+            5.0,
+            1.0
+          ]
         ],
-        [
-          1.0,
-          1.0,
-          1.0,
-          1.75,
-          2.5
+        "judgements": [
+          {
+            "pair": [
+              "terr_slope",
+              "soil_clay"
+            ],
+            "a_ij": 0.5,
+            "rule": "A",
+            "basis": "r*(terr_slope)/r*(soil_clay) = 0.0904/0.1434 = 0.631",
+            "source": "ssegane_geospatial_2012, tab. 5, p. 160"
+          },
+          {
+            "pair": [
+              "terr_slope",
+              "sit_water_dist_seas"
+            ],
+            "a_ij": 0.2,
+            "rule": "A",
+            "basis": "r*(terr_slope)/r*(sit_water_dist_seas) = 0.0904/0.4625 = 0.196",
+            "source": "ssegane_geospatial_2012, tab. 5, p. 160"
+          },
+          {
+            "pair": [
+              "terr_slope",
+              "water_drain_density"
+            ],
+            "a_ij": 3.0,
+            "rule": "B",
+            "basis": "faixa 3 vs 4",
+            "source": "faixa ordinal (R4)"
+          },
+          {
+            "pair": [
+              "terr_slope",
+              "clim_twarm_q"
+            ],
+            "a_ij": 0.3333,
+            "rule": "A",
+            "basis": "r*(terr_slope)/r*(clim_twarm_q) = 0.0904/0.3036 = 0.298",
+            "source": "ssegane_geospatial_2012, tab. 5, p. 160"
+          },
+          {
+            "pair": [
+              "soil_clay",
+              "sit_water_dist_seas"
+            ],
+            "a_ij": 0.3333,
+            "rule": "A",
+            "basis": "r*(soil_clay)/r*(sit_water_dist_seas) = 0.1434/0.4625 = 0.310",
+            "source": "ssegane_geospatial_2012, tab. 5, p. 160"
+          },
+          {
+            "pair": [
+              "soil_clay",
+              "water_drain_density"
+            ],
+            "a_ij": 3.0,
+            "rule": "B",
+            "basis": "faixa 3 vs 4",
+            "source": "faixa ordinal (R4)"
+          },
+          {
+            "pair": [
+              "soil_clay",
+              "clim_twarm_q"
+            ],
+            "a_ij": 0.5,
+            "rule": "A",
+            "basis": "r*(soil_clay)/r*(clim_twarm_q) = 0.1434/0.3036 = 0.472",
+            "source": "ssegane_geospatial_2012, tab. 5, p. 160"
+          },
+          {
+            "pair": [
+              "sit_water_dist_seas",
+              "water_drain_density"
+            ],
+            "a_ij": 7.0,
+            "rule": "B",
+            "basis": "faixa 1 vs 4",
+            "source": "faixa ordinal (R4)"
+          },
+          {
+            "pair": [
+              "sit_water_dist_seas",
+              "clim_twarm_q"
+            ],
+            "a_ij": 2.0,
+            "rule": "A",
+            "basis": "r*(sit_water_dist_seas)/r*(clim_twarm_q) = 0.4625/0.3036 = 1.523",
+            "source": "ssegane_geospatial_2012, tab. 5, p. 160"
+          },
+          {
+            "pair": [
+              "water_drain_density",
+              "clim_twarm_q"
+            ],
+            "a_ij": 0.2,
+            "rule": "B",
+            "basis": "faixa 4 vs 2",
+            "source": "faixa ordinal (R4)"
+          }
         ],
-        [
-          0.8,
-          1.0,
-          1.0,
-          1.75,
-          2.5
+        "lambda_max": 5.0754,
+        "consistency_index": 0.0189,
+        "random_index": 1.12,
+        "consistency_ratio": 0.0168,
+        "priority_vector": [
+          0.0974,
+          0.1517,
+          0.4423,
+          0.0486,
+          0.26
         ],
-        [
-          0.5,
-          0.5714,
-          0.5714,
-          1.0,
-          1.5
-        ],
-        [
-          0.4,
-          0.4,
-          0.4,
-          0.6667,
-          1.0
-        ]
-      ],
-      "consistency_ratio": 0.0015,
-      "priority_vector": [
-        0.2694,
-        0.2506,
-        0.2398,
-        0.1408,
-        0.0993
-      ],
-      "config_weights": [
-        0.27,
-        0.25,
-        0.24,
-        0.14,
-        0.1
-      ]
+        "approx_eigenvector_max_gap": 0.0015,
+        "class_counts": {
+          "A": 6,
+          "B": 4,
+          "C": 0
+        },
+        "anchored_fraction": 0.6,
+        "author_judgement_count": 1,
+        "override_count": 0,
+        "revisions": []
+      }
     },
     "cattle": {
       "factors": [
-        "clim_pr_annual",
-        "clim_dry_months",
         "clim_soil_moist",
         "terr_slope",
-        "soil_soc"
+        "soil_soc",
+        "clim_pr_annual",
+        "clim_dry_months"
       ],
-      "matrix": [
-        [
-          1.0,
-          1.25,
-          0.3333,
-          0.5,
-          0.2857
+      "anchors": {
+        "clim_pr_annual": {
+          "band": 2,
+          "r": 0.3375,
+          "rank": 1,
+          "n_criteria": 5,
+          "source": "balew_identification_2022",
+          "locator": "tab. 2, p. 10 (coluna do gado)",
+          "block": "unico",
+          "rationale": "Rainfall; maior peso da coluna do gado da fonte, empatado com LULC (0,3375) -- e LULC est\u00e1 fora por guardrail de cobertura da terra. Partilha a faixa com clim_soil_moist em vez de ficar acima: s\u00e3o duas medidas do mesmo construto de disponibilidade h\u00eddrica, e a chuva \u00e9 justamente o proxy que a fonte usa por n\u00e3o dispor da umidade do solo."
+        },
+        "clim_dry_months": {
+          "band": 3,
+          "rationale": "author judgement -- dura\u00e7\u00e3o do vazio forrageiro da seca, que determina a taxa de lota\u00e7\u00e3o no Cerrado. Ausente do conjunto de crit\u00e9rios de Balew et al.; faixa ordinal uma abaixo da chuva e da umidade do solo, por redund\u00e2ncia parcial com ambas."
+        },
+        "clim_soil_moist": {
+          "band": 2,
+          "source": "molossi_improve_2020",
+          "rationale": "Umidade do solo \u00e9 o determinante direto da produtividade forrageira; Balew usa a chuva como seu proxy por n\u00e3o dispor da vari\u00e1vel."
+        },
+        "terr_slope": {
+          "band": 3,
+          "r": 0.1049,
+          "rank": 4,
+          "n_criteria": 5,
+          "source": "balew_identification_2022",
+          "locator": "tab. 2, p. 10 (coluna do gado)",
+          "block": "unico",
+          "rationale": "Slope; tercil intermedi\u00e1rio da fonte."
+        },
+        "soil_soc": {
+          "band": 4,
+          "r": 0.0536,
+          "rank": 5,
+          "n_criteria": 5,
+          "source": "balew_identification_2022",
+          "locator": "tab. 2, p. 10 (coluna do gado)",
+          "block": "unico",
+          "rationale": "Soil type; menor peso da fonte."
+        }
+      },
+      "derived": {
+        "bands_final": {
+          "clim_soil_moist": 2,
+          "terr_slope": 3,
+          "soil_soc": 4,
+          "clim_pr_annual": 2,
+          "clim_dry_months": 3
+        },
+        "matrix": [
+          [
+            1.0,
+            3.0,
+            5.0,
+            1.0,
+            3.0
+          ],
+          [
+            0.3333,
+            1.0,
+            2.0,
+            0.3333,
+            1.0
+          ],
+          [
+            0.2,
+            0.5,
+            1.0,
+            0.1667,
+            0.3333
+          ],
+          [
+            1.0,
+            3.0,
+            6.0,
+            1.0,
+            3.0
+          ],
+          [
+            0.3333,
+            1.0,
+            3.0,
+            0.3333,
+            1.0
+          ]
         ],
-        [
-          0.8,
-          1.0,
-          0.2857,
-          0.4,
-          0.25
+        "judgements": [
+          {
+            "pair": [
+              "clim_soil_moist",
+              "terr_slope"
+            ],
+            "a_ij": 3.0,
+            "rule": "B",
+            "basis": "faixa 2 vs 3",
+            "source": "faixa ordinal (R4)"
+          },
+          {
+            "pair": [
+              "clim_soil_moist",
+              "soil_soc"
+            ],
+            "a_ij": 5.0,
+            "rule": "B",
+            "basis": "faixa 2 vs 4",
+            "source": "faixa ordinal (R4)"
+          },
+          {
+            "pair": [
+              "clim_soil_moist",
+              "clim_pr_annual"
+            ],
+            "a_ij": 1.0,
+            "rule": "B",
+            "basis": "faixa 2 vs 2",
+            "source": "faixa ordinal (R4)"
+          },
+          {
+            "pair": [
+              "clim_soil_moist",
+              "clim_dry_months"
+            ],
+            "a_ij": 3.0,
+            "rule": "C",
+            "basis": "faixa 2 vs 3",
+            "source": "faixa ordinal (R4)"
+          },
+          {
+            "pair": [
+              "terr_slope",
+              "soil_soc"
+            ],
+            "a_ij": 2.0,
+            "rule": "A",
+            "basis": "r*(terr_slope)/r*(soil_soc) = 0.2115/0.1081 = 1.957",
+            "source": "balew_identification_2022, tab. 2, p. 10 (coluna do gado)"
+          },
+          {
+            "pair": [
+              "terr_slope",
+              "clim_pr_annual"
+            ],
+            "a_ij": 0.3333,
+            "rule": "A",
+            "basis": "r*(terr_slope)/r*(clim_pr_annual) = 0.2115/0.6804 = 0.311",
+            "source": "balew_identification_2022, tab. 2, p. 10 (coluna do gado)"
+          },
+          {
+            "pair": [
+              "terr_slope",
+              "clim_dry_months"
+            ],
+            "a_ij": 1.0,
+            "rule": "B",
+            "basis": "faixa 3 vs 3",
+            "source": "faixa ordinal (R4)"
+          },
+          {
+            "pair": [
+              "soil_soc",
+              "clim_pr_annual"
+            ],
+            "a_ij": 0.1667,
+            "rule": "A",
+            "basis": "r*(soil_soc)/r*(clim_pr_annual) = 0.1081/0.6804 = 0.159",
+            "source": "balew_identification_2022, tab. 2, p. 10 (coluna do gado)"
+          },
+          {
+            "pair": [
+              "soil_soc",
+              "clim_dry_months"
+            ],
+            "a_ij": 0.3333,
+            "rule": "B",
+            "basis": "faixa 4 vs 3",
+            "source": "faixa ordinal (R4)"
+          },
+          {
+            "pair": [
+              "clim_pr_annual",
+              "clim_dry_months"
+            ],
+            "a_ij": 3.0,
+            "rule": "B",
+            "basis": "faixa 2 vs 3",
+            "source": "faixa ordinal (R4)"
+          }
         ],
-        [
-          3.0,
-          3.5,
-          1.0,
-          1.5,
-          0.8
+        "lambda_max": 5.0299,
+        "consistency_index": 0.0075,
+        "random_index": 1.12,
+        "consistency_ratio": 0.0067,
+        "priority_vector": [
+          0.3423,
+          0.1179,
+          0.0569,
+          0.3537,
+          0.1292
         ],
-        [
-          2.0,
-          2.5,
-          0.6667,
-          1.0,
-          0.5714
-        ],
-        [
-          3.5,
-          4.0,
-          1.25,
-          1.75,
-          1.0
-        ]
-      ],
-      "consistency_ratio": 0.0004,
-      "priority_vector": [
-        0.0978,
-        0.0808,
-        0.2853,
-        0.1955,
-        0.3407
-      ],
-      "config_weights": [
-        0.1,
-        0.08,
-        0.28,
-        0.2,
-        0.34
-      ]
+        "approx_eigenvector_max_gap": 0.0006,
+        "class_counts": {
+          "A": 3,
+          "B": 6,
+          "C": 1
+        },
+        "anchored_fraction": 0.3,
+        "author_judgement_count": 1,
+        "override_count": 0,
+        "revisions": []
+      }
     },
     "conservation": {
       "factors": [
@@ -366,130 +1371,565 @@
         "clim_twarm_q",
         "water_drain_density"
       ],
-      "matrix": [
-        [
-          1.0,
-          1.5,
-          1.25,
-          1.25,
-          1.75,
-          1.75,
-          2.0,
-          2.0,
-          3.0
+      "anchors": {
+        "cv_pa_dist": {
+          "band": 1,
+          "r": 1.715,
+          "rank": 1,
+          "n_criteria": 3,
+          "source": "morandi_delimitation_2020",
+          "locator": "tab. 4, p. 6",
+          "block": "unico",
+          "rationale": "PPA; maior prioridade da fonte. Pesos publicados somam n; renormalizados para 1."
+        },
+        "cv_ruggedness": {
+          "band": 2,
+          "source": "schuler_spatial_2022",
+          "rationale": "Heterogeneidade de habitat e baixa aptid\u00e3o agr\u00edcola \u2014 crit\u00e9rio de irreplaceability no planejamento sistem\u00e1tico de conserva\u00e7\u00e3o."
+        },
+        "cv_carbon": {
+          "band": 2,
+          "source": "schuler_spatial_2022",
+          "rationale": "Servi\u00e7o de estoque de carbono. Mantido nesta faixa, e n\u00e3o acima, pela circularidade branda biomassa ~ floresta j\u00e1 registrada."
+        },
+        "rl_native_frac": {
+          "band": 3,
+          "r": 1.06,
+          "rank": 2,
+          "n_criteria": 3,
+          "source": "morandi_delimitation_2020",
+          "locator": "tab. 4, p. 6",
+          "block": "unico",
+          "rationale": "Land use/occupation; tercil intermedi\u00e1rio da fonte, rebaixado aqui pela descirculariza\u00e7\u00e3o \u2014 \u00e9 a \u00fanica entrada de cobertura da terra sancionada."
+        },
+        "terr_twi": {
+          "band": 3,
+          "rationale": "author judgement \u2014 servi\u00e7o h\u00eddrico rip\u00e1rio e de recarga."
+        },
+        "clim_aridity": {
+          "band": 3,
+          "rationale": "author judgement \u2014 viabilidade de balan\u00e7o h\u00eddrico; \u00e9 a alavanca CMIP6 do segmento."
+        },
+        "clim_twarm_q": {
+          "band": 3,
+          "rationale": "author judgement \u2014 estresse t\u00e9rmico e de fogo; segunda alavanca CMIP6."
+        },
+        "terr_slope": {
+          "band": 4,
+          "r": 0.224,
+          "rank": 3,
+          "n_criteria": 3,
+          "source": "morandi_delimitation_2020",
+          "locator": "tab. 4, p. 6",
+          "block": "unico",
+          "rationale": "Terrain Slope; menor peso da fonte. Terra marginal = baixo custo de oportunidade da conserva\u00e7\u00e3o."
+        },
+        "water_drain_density": {
+          "band": 4,
+          "rationale": "author judgement \u2014 servi\u00e7o h\u00eddrico, parcialmente redundante com terr_twi."
+        }
+      },
+      "derived": {
+        "bands_final": {
+          "cv_pa_dist": 1,
+          "cv_carbon": 2,
+          "cv_ruggedness": 2,
+          "terr_twi": 3,
+          "rl_native_frac": 3,
+          "clim_aridity": 3,
+          "terr_slope": 4,
+          "clim_twarm_q": 3,
+          "water_drain_density": 4
+        },
+        "matrix": [
+          [
+            1.0,
+            3.0,
+            3.0,
+            5.0,
+            2.0,
+            5.0,
+            8.0,
+            5.0,
+            7.0
+          ],
+          [
+            0.3333,
+            1.0,
+            1.0,
+            3.0,
+            3.0,
+            3.0,
+            5.0,
+            3.0,
+            5.0
+          ],
+          [
+            0.3333,
+            1.0,
+            1.0,
+            3.0,
+            3.0,
+            3.0,
+            5.0,
+            3.0,
+            5.0
+          ],
+          [
+            0.2,
+            0.3333,
+            0.3333,
+            1.0,
+            1.0,
+            1.0,
+            3.0,
+            1.0,
+            3.0
+          ],
+          [
+            0.5,
+            0.3333,
+            0.3333,
+            1.0,
+            1.0,
+            1.0,
+            5.0,
+            1.0,
+            3.0
+          ],
+          [
+            0.2,
+            0.3333,
+            0.3333,
+            1.0,
+            1.0,
+            1.0,
+            3.0,
+            1.0,
+            3.0
+          ],
+          [
+            0.125,
+            0.2,
+            0.2,
+            0.3333,
+            0.2,
+            0.3333,
+            1.0,
+            0.3333,
+            1.0
+          ],
+          [
+            0.2,
+            0.3333,
+            0.3333,
+            1.0,
+            1.0,
+            1.0,
+            3.0,
+            1.0,
+            3.0
+          ],
+          [
+            0.1429,
+            0.2,
+            0.2,
+            0.3333,
+            0.3333,
+            0.3333,
+            1.0,
+            0.3333,
+            1.0
+          ]
         ],
-        [
-          0.6667,
-          1.0,
-          0.8,
-          1.0,
-          1.25,
-          1.25,
-          1.25,
-          1.5,
-          2.0
+        "judgements": [
+          {
+            "pair": [
+              "cv_pa_dist",
+              "cv_carbon"
+            ],
+            "a_ij": 3.0,
+            "rule": "B",
+            "basis": "faixa 1 vs 2",
+            "source": "faixa ordinal (R4)"
+          },
+          {
+            "pair": [
+              "cv_pa_dist",
+              "cv_ruggedness"
+            ],
+            "a_ij": 3.0,
+            "rule": "B",
+            "basis": "faixa 1 vs 2",
+            "source": "faixa ordinal (R4)"
+          },
+          {
+            "pair": [
+              "cv_pa_dist",
+              "terr_twi"
+            ],
+            "a_ij": 5.0,
+            "rule": "B",
+            "basis": "faixa 1 vs 3",
+            "source": "faixa ordinal (R4)"
+          },
+          {
+            "pair": [
+              "cv_pa_dist",
+              "rl_native_frac"
+            ],
+            "a_ij": 2.0,
+            "rule": "A",
+            "basis": "r*(cv_pa_dist)/r*(rl_native_frac) = 0.5719/0.3535 = 1.618",
+            "source": "morandi_delimitation_2020, tab. 4, p. 6"
+          },
+          {
+            "pair": [
+              "cv_pa_dist",
+              "clim_aridity"
+            ],
+            "a_ij": 5.0,
+            "rule": "B",
+            "basis": "faixa 1 vs 3",
+            "source": "faixa ordinal (R4)"
+          },
+          {
+            "pair": [
+              "cv_pa_dist",
+              "terr_slope"
+            ],
+            "a_ij": 8.0,
+            "rule": "A",
+            "basis": "r*(cv_pa_dist)/r*(terr_slope) = 0.5719/0.0747 = 7.656",
+            "source": "morandi_delimitation_2020, tab. 4, p. 6"
+          },
+          {
+            "pair": [
+              "cv_pa_dist",
+              "clim_twarm_q"
+            ],
+            "a_ij": 5.0,
+            "rule": "B",
+            "basis": "faixa 1 vs 3",
+            "source": "faixa ordinal (R4)"
+          },
+          {
+            "pair": [
+              "cv_pa_dist",
+              "water_drain_density"
+            ],
+            "a_ij": 7.0,
+            "rule": "B",
+            "basis": "faixa 1 vs 4",
+            "source": "faixa ordinal (R4)"
+          },
+          {
+            "pair": [
+              "cv_carbon",
+              "cv_ruggedness"
+            ],
+            "a_ij": 1.0,
+            "rule": "C",
+            "basis": "faixa 2 vs 2",
+            "source": "faixa ordinal (R4)"
+          },
+          {
+            "pair": [
+              "cv_carbon",
+              "terr_twi"
+            ],
+            "a_ij": 3.0,
+            "rule": "C",
+            "basis": "faixa 2 vs 3",
+            "source": "faixa ordinal (R4)"
+          },
+          {
+            "pair": [
+              "cv_carbon",
+              "rl_native_frac"
+            ],
+            "a_ij": 3.0,
+            "rule": "B",
+            "basis": "faixa 2 vs 3",
+            "source": "faixa ordinal (R4)"
+          },
+          {
+            "pair": [
+              "cv_carbon",
+              "clim_aridity"
+            ],
+            "a_ij": 3.0,
+            "rule": "C",
+            "basis": "faixa 2 vs 3",
+            "source": "faixa ordinal (R4)"
+          },
+          {
+            "pair": [
+              "cv_carbon",
+              "terr_slope"
+            ],
+            "a_ij": 5.0,
+            "rule": "B",
+            "basis": "faixa 2 vs 4",
+            "source": "faixa ordinal (R4)"
+          },
+          {
+            "pair": [
+              "cv_carbon",
+              "clim_twarm_q"
+            ],
+            "a_ij": 3.0,
+            "rule": "C",
+            "basis": "faixa 2 vs 3",
+            "source": "faixa ordinal (R4)"
+          },
+          {
+            "pair": [
+              "cv_carbon",
+              "water_drain_density"
+            ],
+            "a_ij": 5.0,
+            "rule": "C",
+            "basis": "faixa 2 vs 4",
+            "source": "faixa ordinal (R4)"
+          },
+          {
+            "pair": [
+              "cv_ruggedness",
+              "terr_twi"
+            ],
+            "a_ij": 3.0,
+            "rule": "C",
+            "basis": "faixa 2 vs 3",
+            "source": "faixa ordinal (R4)"
+          },
+          {
+            "pair": [
+              "cv_ruggedness",
+              "rl_native_frac"
+            ],
+            "a_ij": 3.0,
+            "rule": "B",
+            "basis": "faixa 2 vs 3",
+            "source": "faixa ordinal (R4)"
+          },
+          {
+            "pair": [
+              "cv_ruggedness",
+              "clim_aridity"
+            ],
+            "a_ij": 3.0,
+            "rule": "C",
+            "basis": "faixa 2 vs 3",
+            "source": "faixa ordinal (R4)"
+          },
+          {
+            "pair": [
+              "cv_ruggedness",
+              "terr_slope"
+            ],
+            "a_ij": 5.0,
+            "rule": "B",
+            "basis": "faixa 2 vs 4",
+            "source": "faixa ordinal (R4)"
+          },
+          {
+            "pair": [
+              "cv_ruggedness",
+              "clim_twarm_q"
+            ],
+            "a_ij": 3.0,
+            "rule": "C",
+            "basis": "faixa 2 vs 3",
+            "source": "faixa ordinal (R4)"
+          },
+          {
+            "pair": [
+              "cv_ruggedness",
+              "water_drain_density"
+            ],
+            "a_ij": 5.0,
+            "rule": "C",
+            "basis": "faixa 2 vs 4",
+            "source": "faixa ordinal (R4)"
+          },
+          {
+            "pair": [
+              "terr_twi",
+              "rl_native_frac"
+            ],
+            "a_ij": 1.0,
+            "rule": "B",
+            "basis": "faixa 3 vs 3",
+            "source": "faixa ordinal (R4)"
+          },
+          {
+            "pair": [
+              "terr_twi",
+              "clim_aridity"
+            ],
+            "a_ij": 1.0,
+            "rule": "C",
+            "basis": "faixa 3 vs 3",
+            "source": "faixa ordinal (R4)"
+          },
+          {
+            "pair": [
+              "terr_twi",
+              "terr_slope"
+            ],
+            "a_ij": 3.0,
+            "rule": "B",
+            "basis": "faixa 3 vs 4",
+            "source": "faixa ordinal (R4)"
+          },
+          {
+            "pair": [
+              "terr_twi",
+              "clim_twarm_q"
+            ],
+            "a_ij": 1.0,
+            "rule": "C",
+            "basis": "faixa 3 vs 3",
+            "source": "faixa ordinal (R4)"
+          },
+          {
+            "pair": [
+              "terr_twi",
+              "water_drain_density"
+            ],
+            "a_ij": 3.0,
+            "rule": "C",
+            "basis": "faixa 3 vs 4",
+            "source": "faixa ordinal (R4)"
+          },
+          {
+            "pair": [
+              "rl_native_frac",
+              "clim_aridity"
+            ],
+            "a_ij": 1.0,
+            "rule": "B",
+            "basis": "faixa 3 vs 3",
+            "source": "faixa ordinal (R4)"
+          },
+          {
+            "pair": [
+              "rl_native_frac",
+              "terr_slope"
+            ],
+            "a_ij": 5.0,
+            "rule": "A",
+            "basis": "r*(rl_native_frac)/r*(terr_slope) = 0.3535/0.0747 = 4.732",
+            "source": "morandi_delimitation_2020, tab. 4, p. 6"
+          },
+          {
+            "pair": [
+              "rl_native_frac",
+              "clim_twarm_q"
+            ],
+            "a_ij": 1.0,
+            "rule": "B",
+            "basis": "faixa 3 vs 3",
+            "source": "faixa ordinal (R4)"
+          },
+          {
+            "pair": [
+              "rl_native_frac",
+              "water_drain_density"
+            ],
+            "a_ij": 3.0,
+            "rule": "B",
+            "basis": "faixa 3 vs 4",
+            "source": "faixa ordinal (R4)"
+          },
+          {
+            "pair": [
+              "clim_aridity",
+              "terr_slope"
+            ],
+            "a_ij": 3.0,
+            "rule": "B",
+            "basis": "faixa 3 vs 4",
+            "source": "faixa ordinal (R4)"
+          },
+          {
+            "pair": [
+              "clim_aridity",
+              "clim_twarm_q"
+            ],
+            "a_ij": 1.0,
+            "rule": "C",
+            "basis": "faixa 3 vs 3",
+            "source": "faixa ordinal (R4)"
+          },
+          {
+            "pair": [
+              "clim_aridity",
+              "water_drain_density"
+            ],
+            "a_ij": 3.0,
+            "rule": "C",
+            "basis": "faixa 3 vs 4",
+            "source": "faixa ordinal (R4)"
+          },
+          {
+            "pair": [
+              "terr_slope",
+              "clim_twarm_q"
+            ],
+            "a_ij": 0.3333,
+            "rule": "B",
+            "basis": "faixa 4 vs 3",
+            "source": "faixa ordinal (R4)"
+          },
+          {
+            "pair": [
+              "terr_slope",
+              "water_drain_density"
+            ],
+            "a_ij": 1.0,
+            "rule": "B",
+            "basis": "faixa 4 vs 4",
+            "source": "faixa ordinal (R4)"
+          },
+          {
+            "pair": [
+              "clim_twarm_q",
+              "water_drain_density"
+            ],
+            "a_ij": 3.0,
+            "rule": "C",
+            "basis": "faixa 3 vs 4",
+            "source": "faixa ordinal (R4)"
+          }
         ],
-        [
-          0.8,
-          1.25,
-          1.0,
-          1.25,
-          1.5,
-          1.5,
-          1.75,
-          1.75,
-          2.5
+        "lambda_max": 9.2843,
+        "consistency_index": 0.0355,
+        "random_index": 1.45,
+        "consistency_ratio": 0.0245,
+        "priority_vector": [
+          0.3164,
+          0.1706,
+          0.1706,
+          0.0678,
+          0.0838,
+          0.0678,
+          0.0267,
+          0.0678,
+          0.0285
         ],
-        [
-          0.8,
-          1.0,
-          0.8,
-          1.0,
-          1.25,
-          1.25,
-          1.5,
-          1.5,
-          2.0
-        ],
-        [
-          0.5714,
-          0.8,
-          0.6667,
-          0.8,
-          1.0,
-          1.0,
-          1.0,
-          1.25,
-          1.75
-        ],
-        [
-          0.5714,
-          0.8,
-          0.6667,
-          0.8,
-          1.0,
-          1.0,
-          1.0,
-          1.25,
-          1.75
-        ],
-        [
-          0.5,
-          0.8,
-          0.5714,
-          0.6667,
-          1.0,
-          1.0,
-          1.0,
-          1.0,
-          1.5
-        ],
-        [
-          0.5,
-          0.6667,
-          0.5714,
-          0.6667,
-          0.8,
-          0.8,
-          1.0,
-          1.0,
-          1.25
-        ],
-        [
-          0.3333,
-          0.5,
-          0.4,
-          0.5,
-          0.5714,
-          0.5714,
-          0.6667,
-          0.8,
-          1.0
-        ]
-      ],
-      "consistency_ratio": 0.0009,
-      "priority_vector": [
-        0.1742,
-        0.1205,
-        0.1493,
-        0.1255,
-        0.099,
-        0.099,
-        0.0902,
-        0.0824,
-        0.0599
-      ],
-      "config_weights": [
-        0.17,
-        0.12,
-        0.15,
-        0.13,
-        0.1,
-        0.1,
-        0.09,
-        0.08,
-        0.06
-      ]
+        "approx_eigenvector_max_gap": 0.0054,
+        "class_counts": {
+          "A": 3,
+          "B": 18,
+          "C": 15
+        },
+        "anchored_fraction": 0.0833,
+        "author_judgement_count": 4,
+        "override_count": 0,
+        "revisions": []
+      }
     },
     "solar": {
       "factors": [
@@ -497,76 +1937,223 @@
         "sit_clearness",
         "terr_northing",
         "terr_slope",
-        "access_logtt",
         "clim_twarm_q"
       ],
-      "matrix": [
-        [
-          1.0,
-          1.0,
-          1.5,
-          1.25,
-          1.5,
-          2.0
+      "anchors": {
+        "clim_srad": {
+          "band": 1,
+          "r": 27.0,
+          "rank": 1,
+          "n_criteria": 10,
+          "source": "elboshy_suitability_2022",
+          "locator": "tab. 2, p. 5",
+          "block": "unico",
+          "rationale": "Solar radiation; maior prioridade da fonte."
+        },
+        "clim_twarm_q": {
+          "band": 2,
+          "r": 14.9,
+          "rank": 2,
+          "n_criteria": 10,
+          "source": "elboshy_suitability_2022",
+          "locator": "tab. 2, p. 5",
+          "block": "unico",
+          "rationale": "Annual Average Temperature; tercil superior da fonte (de-rating t\u00e9rmico do painel)."
+        },
+        "sit_clearness": {
+          "band": 3,
+          "r": 10.4,
+          "rank": 4,
+          "n_criteria": 10,
+          "source": "elboshy_suitability_2022",
+          "locator": "tab. 2, p. 5",
+          "block": "unico",
+          "rationale": "Average annual cloudy days; tercil intermedi\u00e1rio da fonte. O \u00edndice de claridade Kt \u00e9 o proxy de nebulosidade."
+        },
+        "terr_slope": {
+          "band": 4,
+          "r": 6.5,
+          "rank": 7,
+          "n_criteria": 10,
+          "source": "elboshy_suitability_2022",
+          "locator": "tab. 2, p. 5",
+          "block": "unico",
+          "rationale": "Slope; tercil inferior da fonte."
+        },
+        "terr_northing": {
+          "band": 4,
+          "rationale": "author judgement \u2014 a geometria solar do hemisf\u00e9rio sul favorece encostas voltadas ao norte; ausente em Elboshy e em Rane."
+        }
+      },
+      "derived": {
+        "bands_final": {
+          "clim_srad": 1,
+          "sit_clearness": 3,
+          "terr_northing": 4,
+          "terr_slope": 4,
+          "clim_twarm_q": 2
+        },
+        "matrix": [
+          [
+            1.0,
+            3.0,
+            7.0,
+            4.0,
+            2.0
+          ],
+          [
+            0.3333,
+            1.0,
+            3.0,
+            2.0,
+            0.5
+          ],
+          [
+            0.1429,
+            0.3333,
+            1.0,
+            1.0,
+            0.2
+          ],
+          [
+            0.25,
+            0.5,
+            1.0,
+            1.0,
+            0.5
+          ],
+          [
+            0.5,
+            2.0,
+            5.0,
+            2.0,
+            1.0
+          ]
         ],
-        [
-          1.0,
-          1.0,
-          1.5,
-          1.25,
-          1.5,
-          2.0
+        "judgements": [
+          {
+            "pair": [
+              "clim_srad",
+              "sit_clearness"
+            ],
+            "a_ij": 3.0,
+            "rule": "A",
+            "basis": "r*(clim_srad)/r*(sit_clearness) = 0.4592/0.1769 = 2.596",
+            "source": "elboshy_suitability_2022, tab. 2, p. 5"
+          },
+          {
+            "pair": [
+              "clim_srad",
+              "terr_northing"
+            ],
+            "a_ij": 7.0,
+            "rule": "B",
+            "basis": "faixa 1 vs 4",
+            "source": "faixa ordinal (R4)"
+          },
+          {
+            "pair": [
+              "clim_srad",
+              "terr_slope"
+            ],
+            "a_ij": 4.0,
+            "rule": "A",
+            "basis": "r*(clim_srad)/r*(terr_slope) = 0.4592/0.1105 = 4.154",
+            "source": "elboshy_suitability_2022, tab. 2, p. 5"
+          },
+          {
+            "pair": [
+              "clim_srad",
+              "clim_twarm_q"
+            ],
+            "a_ij": 2.0,
+            "rule": "A",
+            "basis": "r*(clim_srad)/r*(clim_twarm_q) = 0.4592/0.2534 = 1.812",
+            "source": "elboshy_suitability_2022, tab. 2, p. 5"
+          },
+          {
+            "pair": [
+              "sit_clearness",
+              "terr_northing"
+            ],
+            "a_ij": 3.0,
+            "rule": "B",
+            "basis": "faixa 3 vs 4",
+            "source": "faixa ordinal (R4)"
+          },
+          {
+            "pair": [
+              "sit_clearness",
+              "terr_slope"
+            ],
+            "a_ij": 2.0,
+            "rule": "A",
+            "basis": "r*(sit_clearness)/r*(terr_slope) = 0.1769/0.1105 = 1.600",
+            "source": "elboshy_suitability_2022, tab. 2, p. 5"
+          },
+          {
+            "pair": [
+              "sit_clearness",
+              "clim_twarm_q"
+            ],
+            "a_ij": 0.5,
+            "rule": "A",
+            "basis": "r*(sit_clearness)/r*(clim_twarm_q) = 0.1769/0.2534 = 0.698",
+            "source": "elboshy_suitability_2022, tab. 2, p. 5"
+          },
+          {
+            "pair": [
+              "terr_northing",
+              "terr_slope"
+            ],
+            "a_ij": 1.0,
+            "rule": "B",
+            "basis": "faixa 4 vs 4",
+            "source": "faixa ordinal (R4)"
+          },
+          {
+            "pair": [
+              "terr_northing",
+              "clim_twarm_q"
+            ],
+            "a_ij": 0.2,
+            "rule": "B",
+            "basis": "faixa 4 vs 2",
+            "source": "faixa ordinal (R4)"
+          },
+          {
+            "pair": [
+              "terr_slope",
+              "clim_twarm_q"
+            ],
+            "a_ij": 0.5,
+            "rule": "A",
+            "basis": "r*(terr_slope)/r*(clim_twarm_q) = 0.1105/0.2534 = 0.436",
+            "source": "elboshy_suitability_2022, tab. 2, p. 5"
+          }
         ],
-        [
-          0.6667,
-          0.6667,
-          1.0,
-          0.8,
-          1.0,
-          1.5
+        "lambda_max": 5.0918,
+        "consistency_index": 0.0229,
+        "random_index": 1.12,
+        "consistency_ratio": 0.0205,
+        "priority_vector": [
+          0.4359,
+          0.1573,
+          0.0628,
+          0.092,
+          0.2519
         ],
-        [
-          0.8,
-          0.8,
-          1.25,
-          1.0,
-          1.25,
-          1.75
-        ],
-        [
-          0.6667,
-          0.6667,
-          1.0,
-          0.8,
-          1.0,
-          1.5
-        ],
-        [
-          0.5,
-          0.5,
-          0.6667,
-          0.5714,
-          0.6667,
-          1.0
-        ]
-      ],
-      "consistency_ratio": 0.0004,
-      "priority_vector": [
-        0.2152,
-        0.2152,
-        0.1453,
-        0.1771,
-        0.1453,
-        0.102
-      ],
-      "config_weights": [
-        0.22,
-        0.22,
-        0.15,
-        0.17,
-        0.14,
-        0.1
-      ]
+        "approx_eigenvector_max_gap": 0.002,
+        "class_counts": {
+          "A": 6,
+          "B": 4,
+          "C": 0
+        },
+        "anchored_fraction": 0.6,
+        "author_judgement_count": 1,
+        "override_count": 0,
+        "revisions": []
+      }
     }
   }
 }

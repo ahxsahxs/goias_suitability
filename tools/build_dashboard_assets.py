@@ -690,19 +690,25 @@ def build_pca_compare(only_band: str | None = None) -> None:
     stack = ee.Image(aid("feature_stack_250m"))
     suit = ee.Image(aid("suit_present"))
     zones = ee.Image(aid("zones_present")).select([0]).rename("zone")
-    bands34 = z.bandNames().getInfo()
-    bands13 = list(zoning.ZONING_BANDS)
-    log(f"  sampling {len(bands34)}-band z-stack (stratified, seed=42) ...")
+    bands_full = z.bandNames().getInfo()
+    bands_curated = list(zoning.ZONING_BANDS)
+    log(f"  sampling {len(bands_full)}-band z-stack (stratified, seed=42) ...")
 
     extra = zones.addBands(ee.Image.pixelLonLat())
-    sample = zoning.build_sample(z, stack, suit, region, bands34, segments=SEGMENTS,
+    sample = zoning.build_sample(z, stack, suit, region, bands_full, segments=SEGMENTS,
                                  seed=42, tile_scale=TS, extra=extra)
     df = zoning.fc_to_df(sample).dropna().reset_index(drop=True)
     log(f"  sample: {len(df)} points")
 
+    # Keys are SEMANTIC ("full"/"curated"), never band counts: they name the raster
+    # files and the JSON contract the dashboard reads. The old "34"/"15" keys drifted
+    # the moment the stack went 34 -> 29 and ZONING_BANDS 15 -> 13, which blanks the
+    # page instead of failing loudly. The counts live only in each variant's `bands`.
     variants = {
-        "34": (bands34, [1.0] * len(bands34), zoning.cluster_matrix(df, bands34, theme_weighted=False)),
-        "13": (bands13, zoning.theme_weight_vector(bands13), zoning.cluster_matrix(df, bands13)),
+        "full": (bands_full, [1.0] * len(bands_full),
+                 zoning.cluster_matrix(df, bands_full, theme_weighted=False)),
+        "curated": (bands_curated, zoning.theme_weight_vector(bands_curated),
+                    zoning.cluster_matrix(df, bands_curated)),
     }
     payload: dict = {"variants": {}, "n_sample": int(len(df))}
     scores: dict[str, np.ndarray] = {}
@@ -735,8 +741,8 @@ def build_pca_compare(only_band: str | None = None) -> None:
     idx = np.sort(rng.choice(len(df), size=min(PCA_N_POINTS, len(df)), replace=False))
     r3 = lambda a: [round(float(v), 3) for v in a]  # noqa: E731
     payload["points"] = {
-        "pc34": [r3(scores["34"][i]) for i in idx],
-        "pc13": [r3(scores["13"][i]) for i in idx],
+        "pc_full": [r3(scores["full"][i]) for i in idx],
+        "pc_curated": [r3(scores["curated"][i]) for i in idx],
         "zone": [int(df["zone"].iloc[i]) for i in idx],
         "lon": r3(df["longitude"].iloc[idx]),
         "lat": r3(df["latitude"].iloc[idx]),

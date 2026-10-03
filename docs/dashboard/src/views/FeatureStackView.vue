@@ -16,32 +16,38 @@ const { data: pca } = useJson<PcaCompare>('json/pca_compare.json')
 const { data: segmentsCfg } = useJson<SegmentsConfig>('json/segments.json')
 const { data: profiles } = useCsv<ZoneProfileRow>('csv/zone_profiles.csv')
 
-type VariantKey = '34' | '15'
-const VARIANTS: { key: VariantKey; title: string }[] = [
-  { key: '34', title: 'Pilha completa — 34 bandas' },
-  { key: '15', title: 'Subconjunto do zoneamento — 15 bandas ponderadas' },
-]
+// Variant keys are semantic, never band counts — they must match the keys written by
+// tools/build_dashboard_assets.py and they also name the pca_rgb_<key>.pmtiles raster.
+// Keys spelling a count ('34'/'15') silently stopped matching when the stack went
+// 34 -> 29 bands and ZONING_BANDS 15 -> 13; every count below is read from the data.
+type VariantKey = 'full' | 'curated'
 
-// Band-name prefix -> theme label (same labels as FeatureThemesView).
+// Band-name prefix -> theme label (same labels as FeatureThemesView). Phenology and
+// access left the stack on 2026-10-02: both encode the current state of land use and
+// infrastructure, the same circularity that keeps land cover out.
 const THEMES: { prefix: string; label: string }[] = [
   { prefix: 'clim', label: 'Clima' },
   { prefix: 'terr', label: 'Relevo' },
   { prefix: 'soil', label: 'Solo' },
   { prefix: 'water', label: 'Água' },
-  { prefix: 'phen', label: 'Fenologia' },
-  { prefix: 'access', label: 'Acesso a mercados' },
 ]
 const themeLabel = (prefix: string) => THEMES.find((t) => t.prefix === prefix)?.label ?? prefix
 const bandLabel = (band: string) => band.replace(/^[a-z]+_/, '')
 
-const v34 = computed(() => pca.value?.variants['34'] ?? null)
-const v15 = computed(() => pca.value?.variants['15'] ?? null)
-const variant = (key: VariantKey) => (key === '34' ? v34.value : v15.value)
+const vFull = computed(() => pca.value?.variants.full ?? null)
+const vCurated = computed(() => pca.value?.variants.curated ?? null)
+const variant = (key: VariantKey) => (key === 'full' ? vFull.value : vCurated.value)
+const nBands = (key: VariantKey) => variant(key)?.bands.length ?? null
 
-// --- 1. composition: 34 bands grouped by theme, the 15 zoning bands highlighted ---
+const VARIANTS = computed<{ key: VariantKey; title: string }[]>(() => [
+  { key: 'full', title: `Pilha completa — ${nBands('full') ?? '—'} bandas` },
+  { key: 'curated', title: `Subconjunto do zoneamento — ${nBands('curated') ?? '—'} bandas ponderadas` },
+])
+
+// --- 1. composition: the whole stack grouped by theme, the zoning bands highlighted ---
 const bandGroups = computed(() => {
-  const full = v34.value
-  const sub = v15.value
+  const full = vFull.value
+  const sub = vCurated.value
   if (!full || !sub) return []
   const weightOf = new Map(sub.bands.map((b, i) => [b, sub.weights[i]!]))
   return THEMES.map((t) => {
@@ -81,7 +87,7 @@ const cum3 = (key: VariantKey) => variant(key)?.explained_variance_ratio.slice(0
 
 // --- 2. explained variance ---------------------------------------------------------
 const screeData = computed<PlotlyDatum[]>(() =>
-  VARIANTS.flatMap(({ key }) => {
+  VARIANTS.value.flatMap(({ key }) => {
     const v = variant(key)
     if (!v) return []
     let cum = 0
@@ -128,7 +134,7 @@ const fmtSil = (x: number | undefined) => (Math.abs(x ?? 0) < 0.005 ? '0,00' : (
 function scatterData(key: VariantKey, showScale: boolean): PlotlyDatum[] {
   const pts = pca.value?.points
   if (!pts) return []
-  const scores = key === '34' ? pts.pc34 : pts.pc15
+  const scores = key === 'full' ? pts.pc_full : pts.pc_curated
   const three = dims.value === 3
   const coords = (idx: number[]) => ({
     x: idx.map((i) => scores[i]![0]),
@@ -232,14 +238,15 @@ function loadingsLayout(key: VariantKey): Partial<Layout> {
 
 <template>
   <section>
-    <h1>Pilha de Atributos ({{ composition?.total_bands ?? 34 }} bandas)</h1>
+    <h1>Pilha de Atributos ({{ composition?.total_bands ?? nBands('full') }} bandas)</h1>
     <p>
-      Os seis temas contínuos formam uma única imagem harmonizada de 250 m (Parte 8),
+      Os quatro temas contínuos formam uma única imagem harmonizada de 250 m (Parte 8),
       padronizada em z-score. A cobertura da terra é deliberadamente excluída — apenas
       máscara/contexto, nunca empilhada ou agrupada. O zoneamento (Parte 10), porém,
-      <strong>não</strong> agrupa as 34 bandas: usa um subconjunto curado de 15, sem
-      quase-duplicatas, com cada tema ponderado por 1/√(nº de bandas do tema) e
-      descorrelacionado por PCA. Esta página compara os dois espaços.
+      <strong>não</strong> agrupa as {{ nBands('full') }} bandas: usa um subconjunto curado
+      de {{ nBands('curated') }}, sem quase-duplicatas, com cada tema ponderado por
+      1/√(nº de bandas do tema) e descorrelacionado por PCA. Esta página compara os dois
+      espaços.
     </p>
 
     <h2>Composição</h2>
@@ -257,20 +264,21 @@ function loadingsLayout(key: VariantKey): Partial<Layout> {
       </div>
     </div>
     <p class="note">
-      <span class="chip kept inline">destacadas</span> = as 15 bandas de <code>ZONING_BANDS</code>.
+      <span class="chip kept inline">destacadas</span> = as {{ nBands('curated') }} bandas de
+      <code>ZONING_BANDS</code>.
       <template v-if="composition">{{ composition.note }}</template>
     </p>
 
     <template v-if="pca">
       <h2>Variância explicada</h2>
       <p>
-        Nas 34 bandas, os dois primeiros componentes são essencialmente climáticos
-        (PC1: {{ pcThemes('34', 0) }}; PC2: {{ pcThemes('34', 1) }}) — os 14 índices
-        climáticos colineares dominam a distância euclidiana, embora o território seja
-        quase uniforme em clima. São precisos <strong>{{ v34?.n_pc_90 }} PCs</strong> para 90% da
-        variância. No subconjunto ponderado, bastam <strong>{{ v15?.n_pc_90 }}</strong>, e os três
-        primeiros já somam {{ pct(cum3('15')) }} (contra {{ pct(cum3('34')) }}), repartidos entre
-        temas distintos (PC1: {{ pcThemes('15', 0) }}; PC3: {{ pcThemes('15', 2) }}).
+        Nas {{ nBands('full') }} bandas, os dois primeiros componentes são essencialmente
+        climáticos (PC1: {{ pcThemes('full', 0) }}; PC2: {{ pcThemes('full', 1) }}) — os 14
+        índices climáticos colineares dominam a distância euclidiana, embora o território seja
+        quase uniforme em clima. São precisos <strong>{{ vFull?.n_pc_90 }} PCs</strong> para 90% da
+        variância. No subconjunto ponderado, bastam <strong>{{ vCurated?.n_pc_90 }}</strong>, e os três
+        primeiros já somam {{ pct(cum3('curated')) }} (contra {{ pct(cum3('full')) }}), repartidos entre
+        temas distintos (PC1: {{ pcThemes('curated', 0) }}; PC3: {{ pcThemes('curated', 2) }}).
       </p>
       <PlotlyChart :data="screeData" :layout="screeLayout" />
 
@@ -280,8 +288,8 @@ function loadingsLayout(key: VariantKey): Partial<Layout> {
         (n = {{ pca.n_sample.toLocaleString('pt-BR') }}, a mesma do zoneamento), projetados
         nos três primeiros componentes de cada espaço, coloridos pela zona final
         (<code>zones_present</code>). As zonas se separam no espaço de 15 bandas
-        (silhueta em PC1–3 = {{ fmtSil(v15?.zone_silhouette_pc3) }}) e se sobrepõem no de 34
-        (silhueta = {{ fmtSil(v34?.zone_silhouette_pc3) }}: em média, um pixel fica tão perto de
+        (silhueta em PC1–3 = {{ fmtSil(vCurated?.zone_silhouette_pc3) }}) e se sobrepõem no de
+        {{ nBands('full') }} (silhueta = {{ fmtSil(vFull?.zone_silhouette_pc3) }}: em média, um pixel fica tão perto de
         outras zonas quanto da sua).
       </p>
       <div class="controls">

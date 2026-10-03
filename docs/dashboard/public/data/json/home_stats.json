@@ -1,13 +1,13 @@
 {
-  "n_zones": 10,
+  "n_zones": 4,
   "n_segments": 7,
   "n_municipalities": 247,
-  "mean_suit_soybean": 0.544,
-  "top_zone": 5,
-  "top_zone_share_pct": 17.6,
+  "mean_suit_soybean": 0.526,
+  "top_zone": 2,
+  "top_zone_share_pct": 38.3,
   "kappa_soybean": 0.269,
   "auc_soybean": 0.871,
   "boyce_soybean": 0.964,
   "underused_soybean_pct": 41.8,
-  "mean_delta_other_crops_ssp585_2051_2070": -0.0478
+  "mean_delta_other_crops_ssp585_2051_2070": -0.0517
 }
