@@ -81,6 +81,17 @@ HORIZON_WINDOW = "2051_2070"
 # Percentiles reported per field.
 PCTLS = [5, 10, 25, 50, 75, 90, 95]
 
+# Measurement domain, from $SPLIT_HALF (env, because the positional slot is taken
+# by the mode and this file already reads ANCHOR_SCALE from the environment):
+#   full  -- the whole AOI; reproduces the pre-holdout numbers EXACTLY, because
+#            utils.split_mask returns None and the reduction graph is unchanged
+#   calib -- the calibration half of the spatial holdout; this is what the weights
+#            are derived from once the holdout is in force
+#   val   -- the held-out half, for the domain comparison only
+#   all   -- measure every domain in one pass, emitting a `half` column
+# Default 'full' so an unset environment keeps the historical behaviour.
+HALF = utils.split_half("full")
+
 # Stack factors (present in feature_stack_250m) whose breakpoints/weights are
 # reviewed this iteration.
 # `access_logtt` was here until 2026-10-02, for solar. It left the 29-band stack
@@ -155,7 +166,7 @@ def main():
     project = utils.init()
     aoi = utils.load_aoi(project)
     scale = int(os.environ.get("ANCHOR_SCALE", "1000"))
-    print(f"# anchoring over AOI @ {scale} m (project={project})")
+    print(f"# anchoring over AOI @ {scale} m (project={project}, domain={HALF})")
 
     stack = ee.Image(utils.asset_id(project, "feature_stack_250m"))
     suit = ee.Image(utils.asset_id(project, "suit_present"))
@@ -192,14 +203,22 @@ def main():
         if code is not None:
             masks[label] = role.eq(code)
 
+    halves = list(utils.SPLIT_HALVES) if HALF == "all" else [HALF]
+    print(f"# measurement domain(s): {', '.join(halves)}")
+
     rows = []
-    for label, mask in masks.items():
-        print(f"  -> reducing over {label} ...", flush=True)
-        stats = pctl_over(factors_img, aoi, mask, scale)
-        for band in factors_img.bandNames().getInfo():
-            p = {f"p{q}": stats.get(f"{band}_p{q}") for q in PCTLS}
-            iqr = (p["p75"] - p["p25"]) if p["p75"] is not None and p["p25"] is not None else None
-            rows.append({"mask": label, "field": band, **p, "iqr": iqr})
+    band_names = factors_img.bandNames().getInfo()
+    for half in halves:
+        for label, mask in masks.items():
+            print(f"  -> reducing over {label} [{half}] ...", flush=True)
+            stats = pctl_over(factors_img, aoi,
+                              utils.and_split(mask, project, half), scale)
+            for band in band_names:
+                p = {f"p{q}": stats.get(f"{band}_p{q}") for q in PCTLS}
+                iqr = ((p["p75"] - p["p25"])
+                       if p["p75"] is not None and p["p25"] is not None else None)
+                rows.append({"mask": label, "half": half, "field": band,
+                             **p, "iqr": iqr})
 
     # present suitability quantiles at each segment's realized pixels (S3/N
     # lower edge) — now also pisciculture and conservation (native), previously
@@ -211,12 +230,16 @@ def main():
         "suit_pisciculture": ("realized_pisciculture", 4),
         "suit_conservation": ("realized_native", 6),
     }
-    for sb, (label, code) in suit_at.items():
-        print(f"  -> suitability quantiles: {sb} at {label} ...", flush=True)
-        stats = pctl_over(suit.select(sb), aoi, role.eq(code), scale)
-        p = {f"p{q}": stats.get(f"{sb}_p{q}") for q in PCTLS}
-        iqr = (p["p75"] - p["p25"]) if p["p75"] is not None and p["p25"] is not None else None
-        rows.append({"mask": label, "field": sb, **p, "iqr": iqr})
+    for half in halves:
+        for sb, (label, code) in suit_at.items():
+            print(f"  -> suitability quantiles: {sb} at {label} [{half}] ...",
+                  flush=True)
+            stats = pctl_over(suit.select(sb), aoi,
+                              utils.and_split(role.eq(code), project, half), scale)
+            p = {f"p{q}": stats.get(f"{sb}_p{q}") for q in PCTLS}
+            iqr = ((p["p75"] - p["p25"])
+                   if p["p75"] is not None and p["p25"] is not None else None)
+            rows.append({"mask": label, "half": half, "field": sb, **p, "iqr": iqr})
 
     df = pd.DataFrame(rows)
     scratch = os.environ.get("SCRATCHPAD", os.getcwd())
@@ -301,7 +324,7 @@ def discrimination():
     aoi = utils.load_aoi(project)
     scale = int(os.environ.get("ANCHOR_SCALE", "1000"))
     seg_cfg = utils.cfg("segments")
-    print(f"# discrimination over AOI @ {scale} m (project={project})")
+    print(f"# discrimination over AOI @ {scale} m (project={project}, domain={HALF})")
 
     stack = ee.Image(utils.asset_id(project, "feature_stack_250m"))
     stack_fut = cmip6.stack_with_climate(project, _horizon_climate(project, aoi), aoi)
@@ -315,31 +338,53 @@ def discrimination():
     avail = lc.select("mask_available")
     role = realized.select("rl_role")
 
+    # $SPLIT_HALF selects the measurement domain: 'full' reproduces the
+    # pre-holdout numbers exactly (utils.split_mask returns None, so the graph is
+    # unchanged), 'calib'/'val' restrict d to one half of the spatial holdout, and
+    # 'all' measures every domain in ONE pass. The pass matters: stack_fut is the
+    # expensive object here, so building the membership graphs once and reducing
+    # them under three masks costs ~3x the reductions but ~1x the graph, whereas
+    # three separate runs cost 3x both.
+    halves = list(utils.SPLIT_HALVES) if HALF == "all" else [HALF]
+    print(f"# measurement domain(s): {', '.join(halves)}")
+
     rows, anchor_rows = [], []
     for name, seg in seg_cfg["segments"].items():
         print(f"  -> {name} ...", flush=True)
         M = membership.segment_membership_image(stack, lc, seg, seg_cfg, extras)
-        sd_a, mn_a = _mem_stats(M, aoi, avail, scale)
         # Same memberships on the CMIP6 horizon stack. ``extras`` are held at
         # baseline, as in cmip6.suit_future, so only the climate factors move.
         Mf = membership.segment_membership_image(stack_fut, lc, seg, seg_cfg, extras)
-        sd_f, mn_f = _mem_stats(Mf, aoi, avail, scale)
         code = REALIZED_ROLE.get(name)
-        sd_r = _mem_stats(M, aoi, role.eq(code), scale)[0] if code else {}
+
+        for half in halves:
+            avail_h = utils.and_split(avail, project, half)
+            sd_a, mn_a = _mem_stats(M, aoi, avail_h, scale)
+            sd_f, mn_f = _mem_stats(Mf, aoi, avail_h, scale)
+            # The realized column only ever REPORTS (land use must not enter the
+            # calibration, CLAUDE.md S7), but it is restricted too so the thesis
+            # can cite a realized-niche percentile measured on the same half.
+            sd_r = (_mem_stats(M, aoi, utils.and_split(role.eq(code), project, half),
+                               scale)[0] if code else {})
+            for f, spec in seg["factors"].items():
+                b = f"mem_{f}"
+                rows.append({
+                    "segment": name, "factor": f, "half": half,
+                    "role": spec.get("role", "limiting"),
+                    "type": spec["type"], "points": str(spec["points"]),
+                    "sigma_mu_available": sd_a.get(b),
+                    "sigma_mu_future": sd_f.get(b),
+                    "sigma_mu_horizon": _pool_sigma(sd_a, mn_a, sd_f, mn_f, b),
+                    "sigma_mu_realized": sd_r.get(b),
+                    "mean_mu_available": mn_a.get(b),
+                    "mean_mu_future": mn_f.get(b),
+                    "frac_saturated": mn_a.get(f"sat__{b}"),
+                    "frac_vetoed": mn_a.get(f"vet__{b}"),
+                })
+
+        # Half-invariant: this reports the ADOPTED config, not a measurement, so
+        # it is emitted once per factor rather than once per (factor, half).
         for f, spec in seg["factors"].items():
-            b = f"mem_{f}"
-            rows.append({
-                "segment": name, "factor": f, "role": spec.get("role", "limiting"),
-                "type": spec["type"], "points": str(spec["points"]),
-                "sigma_mu_available": sd_a.get(b),
-                "sigma_mu_future": sd_f.get(b),
-                "sigma_mu_horizon": _pool_sigma(sd_a, mn_a, sd_f, mn_f, b),
-                "sigma_mu_realized": sd_r.get(b),
-                "mean_mu_available": mn_a.get(b),
-                "mean_mu_future": mn_f.get(b),
-                "frac_saturated": mn_a.get(f"sat__{b}"),
-                "frac_vetoed": mn_a.get(f"vet__{b}"),
-            })
             anchor_rows.append({
                 "segment": name, "factor": f, "basis": spec.get("basis"),
                 "source": spec.get("source"), "locator": spec.get("locator"),

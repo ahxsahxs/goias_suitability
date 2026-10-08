@@ -351,6 +351,13 @@ def cluster_stability(X, k, B=20, sample_frac=0.8, seed=42, n_init=5):
 def stability_sweep(X, ks=range(2, 11), B=20, sample_frac=0.8, seed=42):
     """ARI ``cluster_stability`` across a range of k (DataFrame: k, ari, ari_std).
 
+    REPRODUCIBILITY, NOT VALIDITY. Every replicate relabels the full ``X`` via
+    ``predict``, so the 20 % left out of each fit is never scored separately: this
+    says how stable the partition is under resampling, NOT how it performs on
+    unseen territory. For that, use ``holdout_sweep``, which withholds half the
+    map. The two are written to zoning_kselect.csv as ``ari_subsample`` and
+    ``ari_holdout`` precisely so the columns cannot be confused.
+
     Reported alongside ``kmeans_sweep`` + ``gap_statistic`` so the k choice rests
     on internal validity **and** reproducibility, not one index alone."""
     import pandas as pd
@@ -362,11 +369,108 @@ def stability_sweep(X, ks=range(2, 11), B=20, sample_frac=0.8, seed=42):
     return pd.DataFrame(rows)
 
 
-def fit_kmeans(X, k, seed=42):
-    """Fit the final sklearn KMeans; returns the model (``.cluster_centers_``)."""
+def holdout_sweep(X, split, ks=range(2, 11), seed=42, n_init=10, sil_sample=5000):
+    """Genuinely OUT-OF-SAMPLE k-selection over the spatial holdout.
+
+    ``stability_sweep`` is NOT a holdout and must not be presented as one: each of
+    its replicates fits on an 80 % subsample but then relabels the FULL ``X`` with
+    ``predict``, so its ARI measures label reproducibility under resampling, not
+    validity on unseen ground. This function withholds territory instead.
+
+    Per k, fitting ONLY on the calibration rows:
+      silhouette_val      silhouette of the held-out rows under the calibration
+                          model's assignment -- does the partition separate data
+                          it never saw?
+      davies_bouldin_val  the same, lower-is-better.
+      ari_holdout         agreement between the calibration model's labelling of
+                          the held-out half and a partition fitted independently
+                          ON that half. This is the sharper question: not "is the
+                          partition reproducible" but "would someone with only the
+                          other half of Goias have drawn the same map?"
+
+    ``split``: 0 = calibration, 1 = validation, aligned row-wise with ``X``.
+    Returns DataFrame: k, silhouette_val, davies_bouldin_val, ari_holdout.
+    """
+    import numpy as np
+    import pandas as pd
+    from sklearn.cluster import KMeans
+    from sklearn.metrics import (adjusted_rand_score, davies_bouldin_score,
+                                 silhouette_score)
+
+    split = np.asarray(split)
+    Xc, Xv = X[split == 0], X[split == 1]
+    if len(Xc) < 50 or len(Xv) < 50:
+        raise ValueError(f"holdout_sweep: too few rows (calib={len(Xc)}, "
+                         f"val={len(Xv)}) -- check the split band reached the sample")
+
+    rng = np.random.default_rng(seed)
+    rows = []
+    for k in ks:
+        km_c = KMeans(n_clusters=k, random_state=seed, n_init=n_init).fit(Xc)
+        lab_v = km_c.predict(Xv)
+        km_v = KMeans(n_clusters=k, random_state=seed, n_init=n_init).fit(Xv)
+
+        m = min(sil_sample, len(Xv))
+        idx = rng.choice(len(Xv), m, replace=False) if len(Xv) > m else slice(None)
+        # silhouette is undefined when the calibration model happens to place no
+        # held-out point in some cluster; report nan rather than crash the sweep
+        sub = lab_v[idx]
+        sil = (float(silhouette_score(Xv[idx], sub))
+               if len(np.unique(sub)) > 1 else float("nan"))
+        db = (float(davies_bouldin_score(Xv, lab_v))
+              if len(np.unique(lab_v)) > 1 else float("nan"))
+        rows.append({
+            "k": k,
+            "silhouette_val": sil,
+            "davies_bouldin_val": db,
+            "ari_holdout": float(adjusted_rand_score(lab_v, km_v.labels_)),
+        })
+    return pd.DataFrame(rows)
+
+
+CANONICAL_ORDER_BAND = "terr_elev"
+
+
+def fit_kmeans(X, k, seed=42, order_by=None):
+    """Fit the final sklearn KMeans; returns the model (``.cluster_centers_``).
+
+    ``order_by`` makes the LABELS CANONICAL. sklearn's cluster order comes from
+    k-means++ initialisation, so it is arbitrary: the same four zones come back
+    under different numbers after any change to the sample, the weights or the
+    PCA. That churn is not cosmetic -- it silently invalidates every "Zona N"
+    in the thesis prose while the generated tables renumber themselves, so the
+    text and its own tables end up describing different zones. It had already
+    happened twice before this guard existed.
+
+    Pass a 1-D array aligned with ``X``'s rows (in practice the sample's
+    ``terr_elev``, i.e. ``CANONICAL_ORDER_BAND``) and the clusters are
+    renumbered by **descending mean** of it: zone 1 is always the highest
+    ground, zone K the lowest. That is stable under re-derivation as long as the
+    elevation ordering of the zones themselves does not change, and it is
+    interpretable -- the numbering carries meaning instead of an init seed.
+
+    ``cluster_centers_`` and ``labels_`` are both permuted, so ``predict``,
+    ``nearest_centroid_image`` and ``profile_zones`` all agree without any
+    further bookkeeping. Omit ``order_by`` and the raw sklearn order is kept.
+    """
+    import numpy as np
     from sklearn.cluster import KMeans
 
-    return KMeans(n_clusters=k, random_state=seed, n_init=10).fit(X)
+    km = KMeans(n_clusters=k, random_state=seed, n_init=10).fit(X)
+    if order_by is None:
+        return km
+    key = np.asarray(order_by, dtype=float).ravel()
+    if key.shape[0] != km.labels_.shape[0]:
+        raise ValueError(
+            f"order_by has {key.shape[0]} rows, X has {km.labels_.shape[0]}")
+    means = np.array([np.nanmean(key[km.labels_ == c]) if (km.labels_ == c).any()
+                      else -np.inf for c in range(k)])
+    order = np.argsort(-means)            # descending
+    remap = np.empty(k, dtype=int)
+    remap[order] = np.arange(k)           # old label -> new label
+    km.cluster_centers_ = km.cluster_centers_[order]
+    km.labels_ = remap[km.labels_]
+    return km
 
 
 def comparative_suitability(df, segments):

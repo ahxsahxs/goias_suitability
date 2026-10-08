@@ -78,7 +78,8 @@ def main():
     pca = zoning.fit_pca(X, var_keep=0.90)
     S = pca.transform(X)
     log(f"  PCs={pca.n_components_}; fitting KMeans k={K}")
-    km = zoning.fit_kmeans(S, K, seed=42)
+    km = zoning.fit_kmeans(S, K, seed=42,
+                           order_by=df[zoning.CANONICAL_ORDER_BAND])
     theme_w = zoning.theme_weight_vector(bands)
     pc_img = zoning.pca_project_image(z, bands, theme_w, pca)
     zones = zoning.nearest_centroid_image(pc_img, zoning.pc_names(pca), km.cluster_centers_)

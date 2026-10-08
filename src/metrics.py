@@ -183,8 +183,8 @@ def continuous_boyce(presence_scores, background_scores, n_bins: int = 10,
 
 
 def empirical_variogram(df, value_col: str, lon_col: str, lat_col: str,
-                         n_sub: int = 2000, max_lag_km: float = 120.0,
-                         n_bins: int = 12, seed: int = 42):
+                         n_sub: int = 2000, max_lag_km: float = 400.0,
+                         n_bins: int = 40, seed: int = 42):
     """Empirical semivariogram via haversine pairwise distances.
 
     γ(h) = (1/2N_h) Σ [Z(xᵢ) − Z(xⱼ)]²  for pairs in each lag bin.
@@ -196,15 +196,22 @@ def empirical_variogram(df, value_col: str, lon_col: str, lat_col: str,
     value_col : variable to compute semivariance for (e.g. "suit_soybean").
     lon_col, lat_col : decimal-degree coordinate columns.
     n_sub : subsample size (df is randomly drawn down when larger).
-    max_lag_km : pairs beyond this distance are excluded.
-    n_bins : number of equal-width lag bins in [0, max_lag_km].
+    max_lag_km : pairs beyond this distance are excluded. The default 400 km is
+        set so the window can actually CONTAIN the plateau: GO+DF spans ~800 km,
+        and a short window cannot distinguish "sill reached" from "still
+        climbing" (see the sill note below).
+    n_bins : number of equal-width lag bins in [0, max_lag_km]. The default 40
+        keeps 10 km bins at the default window.
     seed : RNG seed for subsample draw.
 
     Returns
     -------
     (vario_df, range_km)
-        vario_df — DataFrame: lag_km_center, gamma, n_pairs (nan gamma for empty bins).
-        range_km — lag of first bin reaching 95 % of sill (nan if sill never reached).
+        vario_df — DataFrame: lag_km_center, gamma, n_pairs, sill, nugget,
+            nugget_share (nan gamma for empty bins; the last three are constant
+            down the column).
+        range_km — lag of the first bin whose monotone envelope reaches 95 % of
+            the sill, or nan when no plateau was reached inside the window.
     """
     import pandas as pd
 
@@ -242,8 +249,44 @@ def empirical_variogram(df, value_col: str, lon_col: str, lat_col: str,
                      "gamma": gamma, "n_pairs": n_p})
 
     vdf = pd.DataFrame(rows)
-    sill = vdf["gamma"].max()
-    reached = vdf[vdf["gamma"] >= 0.95 * sill]
+
+    # Sill from the MONOTONE ENVELOPE's tail, never from gamma.max(). A
+    # within-window maximum always exists, so the 95 % crossing is always found
+    # and the estimator could never report "no plateau" -- precisely the answer
+    # it has to be able to give. Worse, a noisy gamma whose maximum lands in an
+    # early bin yielded an absurdly SHORT range, which then silently passed a
+    # block-size check it should have failed. Instead: a semivariogram is
+    # non-decreasing in theory, so take the running maximum, call the mean of its
+    # last quartile of bins the sill, and refuse to report a range while the
+    # envelope is still climbing in the final bin -- that is the signature of a
+    # true range lying beyond max_lag_km, and the caller must widen the window
+    # rather than believe a number.
+    g = vdf["gamma"].to_numpy(dtype=float)
+    ok = ~np.isnan(g)
+    if ok.sum() < 4:
+        # keep the column set identical on every return path, so a caller can
+        # concatenate results across bands without reindexing
+        vdf["sill"] = vdf["nugget"] = vdf["nugget_share"] = float("nan")
+        return vdf, float("nan")
+
+    env = np.maximum.accumulate(np.where(ok, g, -np.inf))
+    tail = max(1, int(round(0.25 * n_bins)))
+    sill = float(np.mean(env[-tail:]))
+    # Nugget share = gamma of the first populated bin / sill. It is reported
+    # because it bounds what a range estimate can mean: when the nugget share
+    # approaches 1 the variance is almost all noise at the sampling support, the
+    # envelope plateaus at the noise floor, and EVERY estimator -- this one
+    # included -- returns a short range that says nothing about the structural
+    # range. Read range_km together with this column, never alone.
+    first = int(np.argmax(ok))
+    nugget = float(g[first])
+    vdf["sill"] = sill
+    vdf["nugget"] = nugget
+    vdf["nugget_share"] = (nugget / sill) if (np.isfinite(sill) and sill > 0) else float("nan")
+    if not np.isfinite(sill) or sill <= 0 or env[-1] > 1.05 * sill:
+        return vdf, float("nan")
+
+    reached = vdf[ok & (env >= 0.95 * sill)]
     range_km = (float(reached["lag_km_center"].iloc[0])
                 if not reached.empty else float("nan"))
     return vdf, range_km

@@ -583,49 +583,105 @@ def build_band_percentiles() -> None:
 
 
 # =============================================================================
-# 6f. Validation scorecard — hand-transcribed from the thesis's already-published
-# numbers (05_results.tex tab:presence-auc / tab:pot-real-gap / within-crop GPP /
-# ANOVA / kappa paragraphs, 07_annex.tex tab:spearman-npp). Re-deriving via
-# tools/run_validation.py would reproduce the same values (they already match) at
-# the cost of a 10+ minute RF/stratified-sample rerun — not worth it here.
+# 6f. Validation scorecard — DERIVED from tools/run_validation.py's output, on the
+# HELD-OUT half (`half == "val"`), which is the column the thesis quotes.
+#
+# This used to be a hand-transcribed literal dict, on the argument that re-deriving
+# it "would reproduce the same values". That stopped being true the moment the
+# weights were re-derived, and because no tool wrote to it, nothing detected the
+# drift: it shipped 2026-09 numbers (soybean AUC 0,871) through the 2026-10 rebuild
+# while build_home_stats() read them for the Home route's stat chips. It now reads
+# the CSVs, so it cannot silently go stale again, and it refuses rather than
+# falling back when they predate the spatial holdout (CLAUDE.md §11).
 # =============================================================================
+SCORECARD_HALF = "val"
+THESIS_DIR = REPO_ROOT / "thesis" / "Chapters"
+
+
+def _scorecard_metrics() -> "pd.DataFrame":
+    src = THESIS_DIR / "validation_metrics.csv"
+    if not src.exists():
+        raise SystemExit(f"missing {src}\nRe-run: EE_PROJECT=probformer uv run "
+                         f"python tools/run_validation.py")
+    df = pd.read_csv(src)
+    if "half" not in df.columns:
+        raise SystemExit(
+            f"{src} has no `half` column, so it predates the spatial holdout and every "
+            f"value in it is in-sample.\nRe-run: EE_PROJECT=probformer uv run python "
+            f"tools/run_validation.py")
+    return df
+
+
 def build_validation_scorecard() -> None:
     out = DATA_DIR / "json"
     out.mkdir(parents=True, exist_ok=True)
 
+    df = _scorecard_metrics()
+    v = df[df.half == SCORECARD_HALF]
+    if v.empty:
+        raise SystemExit(f"no rows with half={SCORECARD_HALF!r} in validation_metrics.csv")
+
+    def pick(metric: str) -> dict:
+        s = v[v.metric == metric]
+        return {r.segment: float(r.value) for r in s.itertuples()}
+
+    def n_of(metric: str, segment: str) -> int:
+        s = v[(v.metric == metric) & (v.segment == segment)]
+        return int(s.n.iloc[0]) if len(s) else 0
+
+    auc, boyce = pick("auc"), pick("boyce")
+    rho_npp, gpp = pick("spearman_mod17"), pick("within_crop_gpp_rho")
+    kappa = pick("cohen_kappa_rf")
+
+    anova_src = THESIS_DIR / "validation_zone_anova.csv"
+    an = pd.read_csv(anova_src)
+    if "half" not in an.columns:
+        raise SystemExit(f"{anova_src} has no `half` column; re-run tools/run_validation.py")
+    an = an[an.half == SCORECARD_HALF]
+
+    p_npp = {r.segment: float(r.p) for r in v[v.metric == "spearman_mod17"].itertuples()}
+    notes = {seg: f"n.s., p={p:.2f}".replace(".", ",")
+             for seg, p in p_npp.items() if p >= 0.05}
+
     scorecard = {
+        "half": SCORECARD_HALF,
         "presence_auc_boyce": {
-            "soybean": {"auc": 0.871, "boyce": 0.964},
-            "sugarcane": {"auc": 0.821, "boyce": 0.769},
-            "other_crops": {"auc": 0.698, "boyce": 0.792},
+            seg: {"auc": round(auc[seg], 4), "boyce": round(boyce[seg], 4)}
+            for seg in auc
         },
-        "spearman_npp": {
-            "cattle": 0.52, "conservation": 0.46, "sugarcane": 0.45, "solar": 0.40,
-            "soybean": 0.31, "other_crops": 0.11, "pisciculture": -0.32,
-        },
-        "spearman_npp_n_municipalities": 247,
-        "spearman_npp_notes": {"other_crops": "n.s., p=0,09"},
+        "spearman_npp": {seg: round(r, 4) for seg, r in rho_npp.items()},
+        "spearman_npp_n_municipalities": n_of("spearman_mod17", "soybean"),
+        "spearman_npp_notes": notes,
         "within_crop_gpp_gradient": {
-            "soybean": {"rho": 0.417, "n": 14646},
-            "other_crops": {"rho": 0.370, "n": 12117},
-            "sugarcane": {"rho": -0.085, "n": 6678},
+            seg: {"rho": round(r, 4), "n": n_of("within_crop_gpp_rho", seg)}
+            for seg, r in gpp.items()
         },
-        "zone_anova": {"f": 2191.0, "p_approx": 0, "zone_mean_range": [0.47, 0.89]},
+        "zone_anova": {
+            "f": round(float(an.F.iloc[0]), 1),
+            "p_approx": float(an.p.iloc[0]),
+            "zone_mean_range": [round(float(an.mean_npp.min()), 3),
+                                round(float(an.mean_npp.max()), 3)],
+        },
         "rf_kappa": {
-            "soybean": 0.269,
-            "n": 16160,
-            "knowledge_area_pct": 52.8,
-            "rf_area_pct": 21.6,
+            "soybean": round(kappa.get("soybean", float("nan")), 4),
+            "n": n_of("cohen_kappa_rf", "soybean"),
+            "knowledge_area_pct": round(100 * pick("kb_s2plus_share")["soybean"], 1),
+            "rf_area_pct": round(100 * pick("rf_highprob_share")["soybean"], 1),
             "note": "Landis & Koch: concordância razoável, mas não forte",
         },
+        # Block D of tools/extract_present.py prints these and writes no CSV, so they
+        # remain the one hand-maintained entry here. Re-read them from that tool's
+        # stdout after any re-export (run of 2026-10-07).
         "underuse_pct": {
-            "other_crops": 57.3, "sugarcane": 51.6, "soybean": 41.8, "pisciculture": 9.4,
+            "other_crops": 44.3, "soybean": 41.5, "sugarcane": 39.5, "pisciculture": 21.9,
         },
-        "source": "thesis/Chapters/05_results.tex + 07_annex.tex, referente ao rebuild de 2026-09",
+        "source": (f"thesis/Chapters/validation_metrics.csv + validation_zone_anova.csv "
+                   f"(half={SCORECARD_HALF}); underuse_pct de tools/extract_present.py "
+                   f"bloco D, rebuild de 2026-10-07"),
     }
     dest = out / "validation_scorecard.json"
-    dest.write_text(json.dumps(scorecard, indent=2))
-    log(f"wrote {dest}")
+    dest.write_text(json.dumps(scorecard, indent=2, ensure_ascii=False))
+    log(f"wrote {dest}  (half={SCORECARD_HALF})")
 
 
 # =============================================================================

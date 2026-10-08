@@ -468,16 +468,28 @@ Piscicultura           & 22,4\% \\
 
 \subsection{Validação da viabilidade do presente (QP1)}\label{sec:validation-present}
 
-As superfícies baseadas em conhecimento foram submetidas a três verificações independentes.
-A amostragem de cada uma é estratificada espacialmente, o que mitiga parte do otimismo que a
-autocorrelação espacial introduz nas métricas de presença. Não equivale, porém, a uma validação
-cruzada por blocos: treino e teste não ficam separados por distância, e é dessa separação que depende
-a correção do viés descrita em \S\ref{sec:sota-validacao}
-\citep[p.~913]{roberts_crossvalidation_2017}. As métricas aqui reportadas devem, nessa medida, ser
-lidas como limites superiores do desempenho fora da amostra; uma partição por blocos dimensionada pelo
-alcance medido da autocorrelação fica indicada em \S\ref{sec:futurework}.
+As superfícies baseadas em conhecimento foram submetidas a três verificações independentes, e
+\textbf{todas as métricas abaixo são calculadas sobre a metade do território que não participou da
+calibração} (\S\ref{sec:holdout}). A separação por distância de que depende a correção do viés
+descrita em \S\ref{sec:sota-validacao} \citep[p.~913]{roberts_crossvalidation_2017} é dada por
+blocos de aproximadamente 130~km, dimensionados pelo alcance medido da autocorrelação do resíduo e
+não por convenção.
 
-%% TODO: segunda vez que se fala de malha 8x8. Acho que nao esta claro pro leitor a que malha isso se refere
+Duas grades distintas operam aqui, e não devem ser confundidas. A grade \textbf{da partição} é de
+$6 \times 6$ células (blocos de ${\sim}130$~km) e define o que é calibração e o que é validação; a
+grade \textbf{da amostragem} é de $8 \times 8$ células e é apenas o estrato que espalha os pontos
+de avaliação por toda a extensão de GO~e~DF, em vez de os concentrar onde cada cultura é mais densa.
+A primeira separa treino de teste; a segunda apenas evita que a amostra seja geograficamente
+enviesada dentro de cada metade.
+
+O que o desenho entrega, e o que não entrega, está delimitado em \S\ref{sec:holdout}: os limiares
+de pertinência, o poder discriminante que corrige os pesos e os centróides do agrupamento foram
+estimados sem ver a metade em que os números abaixo são reportados. A diferença entre as colunas de
+calibração e de validação, porém, não é uma medida de otimismo --- com exceção da contraprova por
+floresta aleatória, as verificações pontuam a mesma superfície sobre dois conjuntos de pixels, de
+modo que o que as separa é a diferença entre as duas metades do estado. Permanece, além disso, o
+otimismo que o bloco não remove: 130~km fica abaixo do alcance do resíduo das outras culturas
+anuais, e o alcance estimado cresce com a janela de observação (\S\ref{anx:holdout}).
 
 Medidas contra a presença atual de culturas, as
 superfícies ordenam bem a presença acima do fundo para as três culturas avaliadas
@@ -500,15 +512,7 @@ esparsa (26 pontos na amostra de avaliação).
 \caption{Discriminação por presença das superfícies de viabilidade contra a presença atual
 de culturas (AUC e índice de Boyce, amostra estratificada espaço$\times$segmento).}
 \label{tab:presence-auc}
-\begin{tabular}{@{}lrr@{}}
-\toprule
-Segmento & AUC & Índice de Boyce \\
-\midrule
-Soja                 & 0,871 & 0,964 \\
-Cana-de-açúcar       & 0,821 & 0,769 \\
-Outras culturas anuais & 0,698 & 0,792 \\
-\bottomrule
-\end{tabular}
+\input{Chapters/Tables/presence_auc.tex}
 \end{table}
 
 O teste de correlação com o \emph{Proxy} de produtividade se refere ao contexto de uso, e não ao seu rendimento.

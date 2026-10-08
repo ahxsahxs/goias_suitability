@@ -20,17 +20,26 @@ BELOW the presence-optimal value in every segment with a real gradient. Report i
 way: the a priori choice is deliberately conservative, conceding discriminating power
 rather than harvesting it, which is the stronger argument for fixing it in advance.
 
+Scored on the HELD-OUT half by default ($SPLIT_HALF, default 'val'). The AUC here
+is measured against realized presence, so it is one of the genuinely label-leaky
+steps of the pipeline: run on the full territory it is an in-sample curve, and the
+thesis argument built on it ("lambda = 0.5 sits below the presence-optimum") was
+therefore an in-sample argument. Scoring it on the half the weights were NOT
+derived from makes the claim hold out of sample.
+
 Two caveats that belong beside any reported table:
-  * other_crops has 34 presences at AUC ~0.54 -- noise, not evidence. Do not report it.
-  * the ranking is not fully independent of MapBiomas. Seven breakpoints in
-    config/segments.yaml are still anchored to the REALIZED niche (soybean/sugarcane/
-    cattle percentiles, from the 2026-07 recalibration, predating the available-land
-    rule of docs/ahp_literatura.md 2b), so realized use reaches mu, hence sigma(mu),
-    hence w -- and then this tool scores w against that same map.
+  * other_crops has ~34 presences at AUC ~0.54 at CAP=4500 -- noise, not evidence.
+    Do not report it; on half the territory it is ~17. Either raise CAP or restrict
+    the lambda claim to soybean + sugarcane + cattle.
+  * sugarcane's realized footprint is concentrated in southern Goias, so under the
+    ~130 km holdout blocks it lands mostly in the calibration half (362 vs 89 px in
+    a 20k sample). Check the presence count this tool prints before believing its
+    sugarcane row.
 
 Run::
 
     EE_PROJECT=probformer uv run python tools/lambda_diagnostic.py [segment ...]
+    SPLIT_HALF=full EE_PROJECT=probformer uv run python tools/lambda_diagnostic.py
 """
 from __future__ import annotations
 
@@ -73,7 +82,14 @@ def main():
         "rl_": realized,
     }
     grid = zoning.build_strat_band(aoi, n_side=8)
-    d_map = dw.load_discrimination()
+    half = utils.split_half("val")
+    if half == "all":
+        raise SystemExit("SPLIT_HALF=all nao se aplica aqui; use calib|val|full")
+    print(f"# dominio de pontuacao: {half}")
+    # d must come from the SAME half the weights were derived on, otherwise the
+    # curve mixes a calibration-half w with a full-domain d.
+    d_half = "calib" if half == "val" else half
+    d_map = dw.load_discrimination(d_half)
     ahp = dw.yaml.safe_load(open(dw.AHP_YAML, encoding="utf-8"))
 
     rows = []
@@ -85,7 +101,8 @@ def main():
         img = (M.select([f"mem_{f}" for f in fs])
                  .addBands(realized.select("rl_role"))
                  .addBands(grid)
-                 .updateMask(lc.select("mask_available")))
+                 .updateMask(utils.and_split(lc.select("mask_available"),
+                                             project, half)))
         print(f"  -> sampling {seg} ...", flush=True)
         fc = img.stratifiedSample(
             numPoints=CAP // 64, classBand="strat_grid", region=aoi,
@@ -100,8 +117,8 @@ def main():
         for lam in dw.LAMBDA_GRID:
             w = np.array(dw.adapt(res["priority_vector"], d, lam))
             s = np.exp(np.log(Mx) @ w) if spec.get("aggregate") != "arithmetic" else Mx @ w
-            rows.append({"segment": seg, "lambda": lam, "n": len(y),
-                         "presences": int(y.sum()),
+            rows.append({"segment": seg, "half": half, "lambda": lam,
+                         "n": len(y), "presences": int(y.sum()),
                          "auc": round(metrics.auc(y, s)["auc"], 4)})
             print(f"     lambda={lam:<5} AUC={rows[-1]['auc']:.4f}")
 

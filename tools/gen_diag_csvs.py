@@ -69,17 +69,36 @@ def gen_zoning_kselect():
     frac_bands = [f"rl_{r}_frac" for r in
                   ("soybean", "sugarcane", "other_crops", "pasture", "native")]
     bands = zoning.ZONING_BANDS
-    log("zoning: sample + PCA + k-sweep + gap + stability (seed=42) ...")
+    log("zoning: sample + PCA + k-sweep + gap + stability + holdout (seed=42) ...")
+    # The split rides in through `extra`, which build_sample adds to `combo`
+    # BEFORE its closing select(), so no signature change is needed.
+    split = utils.split_image(P).rename("split")
     sample = zoning.build_sample(z, raw, suit_a, AOI, bands, segments=SEGS, seed=42,
-                                 extra=realized.select(frac_bands))
+                                 extra=realized.select(frac_bands).addBands(split))
     df = zoning.fc_to_df(sample)
     X = zoning.cluster_matrix(df, bands)
-    pca = zoning.fit_pca(X, var_keep=0.90)
+    # PCA is fitted on the CALIBRATION rows only and then applied to both halves,
+    # so the held-out rows are scored in a space that was not fitted to them.
+    # Fitting one PCA on everything would leak the held-out covariance into the
+    # representation the holdout columns are measured in.
+    calib = (df["split"].to_numpy() == 0)
+    log(f"  sample n={len(df)}  calib={int(calib.sum())}  val={int((~calib).sum())}")
+    pca = zoning.fit_pca(X[calib], var_keep=0.90)
     S = pca.transform(X)
-    sweep = zoning.kmeans_sweep(S, ks=range(2, 21), seed=42)
-    gap = zoning.gap_statistic(S, ks=range(2, 21), B=10, seed=42)
-    stab = zoning.stability_sweep(S, ks=range(2, 21), B=20, seed=42)
-    swp = sweep.merge(gap, on="k").merge(stab, on="k")
+    log(f"  PCA fitted on calib: {pca.n_components_} components")
+    ks = range(2, 21)
+    sweep = zoning.kmeans_sweep(S[calib], ks=ks, seed=42)
+    gap = zoning.gap_statistic(S[calib], ks=ks, B=10, seed=42)
+    stab = zoning.stability_sweep(S[calib], ks=ks, B=20, seed=42)
+    hold = zoning.holdout_sweep(S, df["split"].to_numpy(), ks=ks, seed=42)
+    # Rename so the CSV itself encodes what each column means: the in-sample
+    # indices are now explicitly "calib", and the resampling ARI is explicitly
+    # "subsample" so it cannot be read as a holdout (see zoning.stability_sweep).
+    sweep = sweep.rename(columns={"silhouette": "silhouette_calib",
+                                  "davies_bouldin": "davies_bouldin_calib"})
+    stab = stab.rename(columns={"ari": "ari_subsample",
+                                "ari_std": "ari_subsample_std"})
+    swp = sweep.merge(gap, on="k").merge(stab, on="k").merge(hold, on="k")
     out = OUT / "zoning_kselect.csv"
     swp.to_csv(out, index=False)
     log(f"  wrote {out}\n" + swp.round(3).to_string(index=False))

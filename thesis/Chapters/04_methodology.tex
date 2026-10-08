@@ -217,15 +217,28 @@ deve ser lida.
 \paragraph{Etapa 2 --- adaptação regional.}
 Um fator pode ser decisivo na literatura e, ainda assim, não separar uma célula da outra na área de
 estudo. Mede-se esse poder discriminante pelo \textbf{desvio-padrão espacial da pertinência},
-$\sigma(\mu_i)$, sobre a terra disponível: adimensional, contido em $[0;\,0{,}5]$ e nulo por
-construção para um fator saturado ou espacialmente constante. A prioridade de literatura é então
+$\sigma(\mu_i)$: adimensional, contido em $[0;\,0{,}5]$ e nulo por construção para um fator
+saturado ou espacialmente constante. A estatística é medida sobre a terra disponível, na
+\textbf{metade de calibração} do \emph{holdout} espacial (\S\ref{sec:holdout}) e sobre a
+\textbf{união do presente com o horizonte} CMIP6 (SSP5-8.5, 2051--2070), não sobre o presente
+isolado. As duas escolhas têm a mesma motivação: medir $\sigma(\mu_i)$ só no presente dá
+$\sigma = 0$ \emph{exatamente} para o fator cuja faixa observada já cabe dentro do próprio platô
+ótimo, o que lhe atribui peso nulo, faz $\mu^0 = 1$ e o remove silenciosamente do produto ---
+levando consigo a sua alavanca climática. Medida sobre o horizonte, a pergunta passa a ser quanto o
+fator gradua ao longo da faixa que ele de fato percorre, de modo que um fator saturado hoje mas
+móvel sob aquecimento ganha peso \emph{por medição, e não por exceção}. A prioridade de literatura é então
 corrigida por $\sigma(\mu_i)^{\lambda}$ e renormalizada. O expoente $\lambda = 0{,}5$ é fixado
 \emph{a priori} e não é calibrado. Uma varredura $\lambda \in \{0;\,0{,}25;\,0{,}5;\,0{,}75;\,1\}$, pontuada por AUC contra
-a presença realizada, mostra AUC crescente com $\lambda$ em todos os segmentos com gradiente
-apreciável --- de 0,675 a 0,729 na soja --- de modo que $\lambda = 0{,}5$ situa-se \emph{abaixo} do
-ótimo empírico. A escolha é, portanto, deliberadamente conservadora: abre mão de parte do ganho
-disponível em vez de colhê-lo, que é precisamente o que se espera de um parâmetro fixado antes de
-ver o resultado.
+a presença realizada \textbf{na metade retida} da partição espacial (\S\ref{sec:holdout}), mostra
+AUC não decrescente com $\lambda$ em todos os segmentos com presença suficiente: na soja vai de
+0,662 a 0,705, na pecuária de 0,557 a 0,567, e na cana-de-açúcar fica plana em 0,885. O argmax é
+$\lambda = 1$ na soja e na pecuária e $\lambda = 0{,}5$ na cana, de modo que $\lambda = 0{,}5$
+situa-se \emph{abaixo} do ótimo empírico em dois dos três segmentos mensuráveis e sobre ele no
+terceiro. A escolha é, portanto, deliberadamente conservadora: abre mão de parte do ganho disponível
+em vez de colhê-lo, que é precisamente o que se espera de um parâmetro fixado antes de ver o
+resultado --- e esse ganho abdicado é agora medido em terreno que a derivação dos pesos não viu. As
+outras culturas anuais ficam fora da varredura: a metade retida contém apenas 27 pixels de presença,
+amostra que não sustenta uma AUC.
 
 O procedimento tem precedente publicado. \citet[p.~155]{alburo_application_2019} identificam a
 profundidade do solo como o critério mais importante da sua própria matriz AHP para a cana e, ainda
@@ -235,21 +248,24 @@ the evaluation''}. A etapa~$\lambda$ generaliza esse julgamento: em vez de aplic
 binária e pontual, gradua-o por uma estatística medida, uniformemente, em todos os fatores de todos
 os segmentos.
 
-\paragraph{Fatores-porta.}
-No limite dessa lógica está o fator que não gradua coisa alguma. Adota-se um critério medido, sobre
-a terra disponível, com \textbf{duas} condições conjuntas:
-$\sigma(\mu) < 0{,}05$ \textbf{e} $\overline{\mu} > 0{,}95$. Um fator que as satisfaça recebe
-\texttt{role: gate}: sai da matriz AHP, não recebe peso, e é aplicado como \textbf{porta
-multiplicativa}, com os limiares ancorados de modo que o valor presente dê $\mu = 1$. Isso remove o
-deflator oculto que uma pertinência quase constante e menor que~1 aplicaria a toda a superfície
---- os cortes da FAO são absolutos, de modo que tal deflator desloca as fatias de classe --- e
-\textbf{preserva a alavanca climática}: se a variável sair do platô sob o CMIP6, a porta morde.
-A segunda condição não é redundante. $\sigma(\mu)$ sozinho também captura o fator quase uniforme num
-$\mu$ \emph{baixo}, que não é um platô, e sim uma penalização real aplicada de modo homogêneo;
-reancorá-lo a $\mu = 1$ converteria essa penalização num no-op e elevaria indevidamente a superfície
-inteira. Todas as portas identificadas em GO~e~DF são climáticas, e nenhum fator de solo, relevo,
-água ou acesso satura --- a forma mais direta do achado central de que, nesta área, o clima
-\emph{habilita} enquanto relevo e solo \emph{graduam}.
+\paragraph{Fatores saturados no presente.}
+No limite dessa lógica está o fator que, hoje, não gradua coisa alguma. Sete fatores --- todos
+climáticos --- têm $\sigma(\mu) = 0$ no presente em GO~e~DF, porque a faixa observada cai
+inteiramente dentro do seu platô ótimo. Uma versão anterior deste método os retirava da matriz AHP
+e os reaplicava como \textbf{portas multiplicativas}, sob um critério de duas
+condições conjuntas ($\sigma(\mu) < 0{,}05$ \textbf{e} $\overline{\mu} > 0{,}95$). Esse
+dispositivo foi \textbf{substituído} pela medição sobre o horizonte descrita acima, por dois
+motivos. Primeiro, a porta exigia arbitrar dois limiares --- exatamente a subjetividade que a
+derivação existe para remover ---, enquanto o horizonte responde à mesma pergunta por medida.
+Segundo, a porta e o peso nulo resolviam o mesmo problema de formas incompatíveis: peso zero mata a
+alavanca climática na projeção CMIP6, e a porta a preservava apenas à custa de um limiar escolhido à
+mão. O resultado prático é o mesmo que a porta buscava --- remove-se o deflator oculto que uma
+pertinência quase constante e menor que~1 aplicaria a toda a superfície (os cortes da FAO são
+absolutos, de modo que tal deflator desloca as fatias de classe) e preserva-se a alavanca climática
+---, mas sem limiar arbitrado. Cinco fatores permanecem em peso exatamente nulo mesmo sob o
+horizonte, por terem $\mu \equiv 1$ no presente \emph{e} em 2051--2070; que sejam todos
+climáticos, e que nenhum fator de solo, relevo, água ou acesso sature, é a forma mais direta do
+achado central de que, nesta área, o clima \emph{habilita} enquanto relevo e solo \emph{graduam}.
 
 \paragraph{Sensibilidade dos pesos.}
 Como os pesos permanecem, em parte, subjetivos, sua influência é limitada por uma perturbação de
@@ -431,6 +447,76 @@ incerteza entre modelos se concentra.
 
 A Fase~B fundamenta o atlas frente ao uso atual da terra e a um indicador indireto (\emph{proxy}) de
 produtividade (NPP do MODIS), respondendo a QP2 e validando QP1.
+
+\subsection{Partição espacial de calibração e validação}\label{sec:holdout}
+
+Toda métrica de validação reportada neste trabalho é calculada sobre uma \textbf{metade do
+território que não participou da calibração}. A necessidade é a que \S\ref{sec:sota-validacao}
+estabelece: sob autocorrelação espacial, treino e teste sorteados do mesmo território compartilham
+informação, e a métrica resultante mede em parte a proximidade entre os pontos, não a capacidade
+preditiva \citep[p.~913]{roberts_crossvalidation_2017}.
+
+\paragraph{Dimensionamento do bloco.} O tamanho do bloco não é escolhido por convenção, e sim
+medido: do semivariograma empírico do \textbf{resíduo} (presença observada menos viabilidade
+ajustada), que é onde reside a dependência espacial capaz de inflar uma métrica fora da amostra
+\citep{roberts_crossvalidation_2017,valavi_blockcv_2019}. Na janela de 400~km o alcance do resíduo
+é de 105~km para soja e cana e de 175~km para outras culturas anuais. O \S\ref{anx:holdout} do
+Anexo registra as três definições de campo que foram estimadas, por que só o resíduo dimensiona o
+bloco, e a dependência do alcance em relação à janela de observação --- que é o limite mais sério
+deste desenho.
+
+\paragraph{Construção da partição.} Sobre a envolvente da área de estudo constrói-se uma grade
+grosseira de $6 \times 6$ células, o que dá blocos de aproximadamente 130~km --- acima do alcance
+medido para soja e cana. Das 36 células, 31 interceptam GO~e~DF. Cada bloco recebe a função de uso
+majoritária observada no seu interior, e os blocos são então distribuídos entre calibração e
+validação de modo a \textbf{equilibrar a área}, e não a contagem de blocos: como a grade é uma
+envolvente retangular, uma célula de borda pode conter apenas uma fração do território, e metades
+com o mesmo número de blocos podem ficar com áreas muito desiguais. A partição resultante atribui
+14 blocos (171.631~km², 49,6\%) à calibração e 17 blocos (174.365~km², 50,4\%) à validação, com a
+soja --- o validador primário --- praticamente equilibrada entre as metades
+(Tabela~\ref{tab:split-balance} do Anexo).
+
+\paragraph{O que é estimado em qual metade.} Na metade de calibração são medidos os percentis que
+ancoram os limiares de pertinência (\S\ref{sec:fuzzy-standard}) e o poder discriminante
+$\sigma(\mu_i)$ que corrige as prioridades de literatura (\S\ref{sec:ahp}); nela são também
+ajustados os centróides do agrupamento (\S\ref{sec:zoning}) e treinado o classificador de floresta
+aleatória usado como contraprova. Na metade retida são calculadas todas as métricas reportadas.
+As \emph{superfícies} --- viabilidade, zonas e projeções --- continuam cobrindo o território
+inteiro: o que se restringe é a estimação dos parâmetros, nunca a extensão do produto.
+
+\paragraph{Correlação municipal.} A correlação com o \emph{proxy} de produtividade é municipal, ao
+passo que a partição é por blocos. Retêm-se \emph{pixels}, não municípios: a média municipal é
+calculada duas vezes, uma só com pixels de calibração e outra só com pixels de validação. Um
+município entra numa metade quando tem ali pixels de terra manejada, de modo que as contagens são
+186 (calibração) e 159 (validação) dos 247 municípios --- as duas somam mais que 247 porque 98
+municípios contribuem para ambas. Neste desenho, restringir pixels e atribuir municípios
+inteiros são procedimentos quase equivalentes: com blocos de 130~km contra um município médio de
+cerca de 37~km de extensão, a maioria dos municípios cai inteiramente dentro de um único bloco. A
+restrição por pixel foi preferida por não exigir uma regra de maioria arbitrária e por permitir que
+os 98 municípios de fronteira informem as duas colunas, e não por recuperar poder estatístico ---
+que a divisão ao meio custa de todo modo. Duas ressalvas acompanham a tabela. A primeira é de sinal
+conhecido: uma média calculada sobre parte dos pixels de um município é estimativa mais ruidosa da
+média verdadeira, e uma medida mais ruidosa só pode \emph{enfraquecer} uma correlação; o viés é
+conservador. A segunda é que as duas metades não são amostras intercambiáveis do mesmo território,
+e por isso a diferença entre as colunas não mede otimismo.
+
+\paragraph{Limite declarado.} O bloco de 130~km fica acima do alcance do resíduo da soja e da cana
+(105~km), mas abaixo do de outras culturas anuais (175~km, razão 1,34). Essa linha conserva,
+portanto, dependência espacial não quebrada pelo bloco --- isto é, otimismo --- e é assim que deve
+ser lida. Reduzir o bloco pioraria a decorrelação;
+aumentá-lo reduziria o número de blocos independentes e desequilibraria as metades. O compromisso é
+irredutível, e a Tabela~\ref{tab:variograma} do Anexo é o registro que permite ao leitor julgá-lo.
+
+\paragraph{Como ler as duas colunas.} A coluna a citar é a da metade retida, porque é a que os
+parâmetros do modelo não viram. A \emph{diferença} entre as colunas não mede otimismo: salvo a
+contraprova por floresta aleatória --- o único componente ajustado a rótulos de pixel, e treinado só
+na metade de calibração ---, todas as verificações pontuam \textbf{a mesma superfície} sobre dois
+conjuntos de pixels, de modo que o que as separa é o território, não o desempenho fora da amostra.
+O que o desenho garante é portanto mais estreito, e mais defensável, do que uma redução de otimismo
+quantificada: limiares, poder discriminante e centróides foram estimados sem ver a metade em que as
+métricas são reportadas.
+
+\subsection{Agregação municipal, uso atual e validação}\label{sec:phaseb-aggr}
 
 A agregação municipal constitui o primeiro eixo: os municípios agregam, por redução zonal, a
 viabilidade atual, o mapa de zonas e as mudanças projetadas. Em seguida, o uso atual da terra é

@@ -46,7 +46,8 @@ def main():
     K = int(sweep.loc[sweep.silhouette.idxmax(), "k"])
     log(f"  chosen K={K} (silhouette={sweep.loc[sweep.silhouette.idxmax(),'silhouette']:.3f})")
 
-    km = zoning.fit_kmeans(S, K, seed=42)
+    km = zoning.fit_kmeans(S, K, seed=42,
+                           order_by=df[zoning.CANONICAL_ORDER_BAND])
     log(f"  zone sizes: {list(map(int, __import__('numpy').bincount(km.labels_)))}")
 
     theme_w = zoning.theme_weight_vector(bands)

@@ -146,12 +146,13 @@ outras são lacunas genuínas para trabalho futuro.
     quantitativamente pelo mapa de magnitude da Figura~\ref{fig:scale-mismatch}
     (\S\ref{sec:atlas-present}). Essa leitura, porém, simplifica demais se aplicada por
     \emph{prefixo de origem do dado} em vez de por \emph{papel temático}: na decomposição por
-    fator agregada por tema (Figura~\ref{fig:factor-variance}), o clima explica em média 0,13 da
-    variância territorial, mas essa média esconde dois extremos --- a irradiância solar
-    (\texttt{clim\_srad}, 0,36) é um sinal climático espacial genuíno, enquanto o fator
-    nominalmente ``climático'' que domina a pecuária (\texttt{clim\_soil\_moist}, 0,58) descreve
-    armazenamento de água no solo, não um gradiente climático; reclassificado pelo papel
-    temático, a parcela de terreno+solo da pecuária sobe de 0,42 para 1,00. A nomenclatura de
+    fator (Figura~\ref{fig:factor-variance}), as bandas de prefixo climático explicam em média 0,24
+    da variância territorial, mas essa média esconde dois extremos --- a irradiância solar
+    (\texttt{clim\_srad}, 0,71 na geração fotovoltaica) é um sinal climático espacial genuíno,
+    enquanto o fator nominalmente ``climático'' que domina a pecuária (\texttt{clim\_soil\_moist},
+    0,97) descreve armazenamento de água no solo, não um gradiente climático. Reclassificada pelo
+    papel temático, a parcela de terreno+solo da pecuária sobe de 0,04 para 1,00, e a média
+    climática entre os sete segmentos cai de 0,24 para 0,10. A nomenclatura de
     origem do dado não deve, portanto, ser confundida com o papel temático da variável: é a
     padronização (\S\ref{sec:fuzzy-standard}) e a agregação por fator que definem o que conta
     como ``clima'', não o catálogo de onde a banda vem.
@@ -161,6 +162,18 @@ outras são lacunas genuínas para trabalho futuro.
     $\kappa=+0{,}269$ para a soja). Separar regra especialista larga de lacuna potencial
     \emph{versus} realizado exigiria, ainda assim, um alvo de calibração ancorado em rendimento,
     que este desenho não usa.
+  \item \textbf{O bloco de validação não remove toda a dependência espacial.} A partição
+    (\S\ref{sec:holdout}) usa blocos de ${\sim}130$~km, dimensionados pelo alcance medido do
+    resíduo, mas três ressalvas limitam o que ela entrega. Primeira: 130~km fica acima do alcance
+    da soja e da cana (105~km) e \emph{abaixo} do das outras culturas anuais (175~km), de modo que
+    essa linha conserva otimismo. Segunda: o alcance estimado cresce com a janela de observação
+    (105$\to$150~km na soja, 175$\to$550~km nas outras culturas entre 400 e 800~km), o que indica
+    uma tendência regional sem alcance finito dentro do próprio território --- nenhum bloco contido
+    em GO~e~DF a remove, e o que a partição quebra é a estrutura de alcance intermediário
+    (\S\ref{anx:holdout}). Terceira: com cerca de quinze blocos por metade, as duas metades não são
+    amostras intercambiáveis do estado --- a cana fica desequilibrada entre elas na razão 4,07 ---,
+    de modo que a diferença entre as colunas de calibração e de validação é territorial e não mede
+    otimismo. Uma validação cruzada por blocos repetida daria um intervalo em vez de um ponto.
   \item \textbf{Validador de produtividade é um substituto.} O NPP/GPP do MODIS mede produção
     primária da vegetação, não rendimento agronômico \citep{turner_evaluation_2006,he_regional_2018}, e a confusão
     entre coberturas limita seu uso a contexto descritivo; AUC e Boyce seguem como validadores
@@ -186,9 +199,17 @@ outras são lacunas genuínas para trabalho futuro.
 Uma primeira frente é substituir as duas variáveis climáticas mantidas estáticas, introduzindo
 radiação solar projetada e um tratamento de umidade do solo por balanço hídrico, para que
 geração fotovoltaica e pecuária passem a carregar sinal climático completo. Outra é reforçar a
-validação: incorporar um validador ancorado em rendimento (estatísticas agrícolas municipais, por
-exemplo) e estender a verificação cruzada com floresta aleatória e blocos espaciais a todos os
-segmentos.
+validação em três pontos que a partição espacial por blocos (\S\ref{sec:holdout}) deixou abertos.
+O primeiro é incorporar um validador ancorado em rendimento --- estatísticas agrícolas municipais,
+por exemplo ---, já que o \emph{proxy} de NPP só sustenta leitura de contexto. O segundo é separar o
+efeito da estimação do efeito do território: como a maior parte das verificações pontua uma única
+superfície sobre duas metades, a diferença entre as colunas é territorial, e isolar o ganho atribuível
+à estimação restrita exigiria rederivar a mesma superfície a partir do domínio completo e repontuá-la
+na metade retida. O terceiro é substituir a partição única 50/50 por validação cruzada por blocos
+repetida, com várias atribuições de blocos às metades: com cerca de quinze blocos por metade, uma
+partição só é sensível ao sorteio, e repeti-la daria um intervalo em vez de um ponto --- o que
+importa sobretudo para a cana-de-açúcar, cuja pegada concentrada no sul do estado fica desequilibrada
+entre as metades sob blocos de 130~km.
 Uma terceira direção é acrescentar uma camada econômica (preços, posse da terra, infraestrutura),
 que converteria parte da lacuna potencial \emph{versus} realizado de resíduo em quantidade modelada.
 Uma quarta é explorar modelos espacialmente explícitos (por exemplo, regressão com defasagem

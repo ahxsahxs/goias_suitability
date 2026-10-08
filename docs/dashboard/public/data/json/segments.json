@@ -15,7 +15,8 @@
   "aggregation": {
     "epsilon": 0.001,
     "sensitivity_delta": 0.2,
-    "lambda_regional": 0.5
+    "lambda_regional": 0.5,
+    "derived_half": "calib"
   },
   "extras_prefixes": {
     "lc_": "feat_landcover",
@@ -29,7 +30,7 @@
       "mask": "available",
       "factors": {
         "terr_slope": {
-          "weight": 0.4028,
+          "weight": 0.42,
           "role": "limiting",
           "type": "decreasing",
           "points": [
@@ -37,10 +38,13 @@
             8
           ],
           "basis": "empirico",
-          "note": "Declividade em graus; limita a mecanizacao e favorece a erosao. Os limiares cobrem a cauda declivosa da terra DISPONIVEL (p5-p95 1,8-8,8 graus; p50 3,4): mu comeca a cair em 4 graus e zera em 8. Sao mais largos que o nicho realizado da soja (p95 5,3 graus) -- nao foram ajustados a ele, e nenhuma informacao de uso realizado entra no valor."
+          "note": "Declividade em graus; limita a mecanizacao e favorece a erosao. Os limiares cobrem a cauda declivosa da terra DISPONIVEL na metade de CALIBRACAO (p5-p95 1,8-8,9 graus; p50 3,6): mu comeca a cair em 4 graus e zera em 8. Sao mais largos que o nicho realizado da soja (p95 4,9 graus) -- nao foram ajustados a ele, e nenhuma informacao de uso realizado entra no valor. O percentil e medido so na metade de calibracao do holdout espacial, de modo que a metade retida nao participa da ancoragem.",
+          "anchor": {
+            "rule": "agronomic"
+          }
         },
         "soil_clay": {
-          "weight": 0.1887,
+          "weight": 0.1853,
           "role": "limiting",
           "type": "range",
           "points": [
@@ -50,10 +54,25 @@
             62
           ],
           "basis": "empirico",
-          "note": "Teor de argila (%); solos arenosos retem menos agua e nutrientes. Ancorado na distribuicao da terra DISPONIVEL: a = 20 (p5 21,1), b = 32 (p50 31,9), c = 45 (p95 45,1), com a cauda superior estendida ate 62 porque os Latossolos argilosos do Cerrado nao sao limitantes para a soja. O ombro c valia 48 -- o p95 do nicho REALIZADO da soja (48,4) --, unico ponto dos sete limiares desta revisao que seguia o uso realizado em vez da terra disponivel; foi realinhado ao p95 disponivel."
+          "note": "Teor de argila (%); solos arenosos retem menos agua e nutrientes. Ancorado na distribuicao da terra DISPONIVEL na metade de CALIBRACAO: a = 20 (p5 22,1), b = 32 (p50 32,1), c = 45 (p95 44,6), com a cauda superior estendida ate 62 porque os Latossolos argilosos do Cerrado nao sao limitantes para a soja. O ombro c valia 48 -- o p95 do nicho REALIZADO da soja (47,9 na metade de calibracao) --, unico ponto dos sete limiares da revisao anterior que seguia o uso realizado em vez da terra disponivel; foi realinhado ao p95 disponivel.",
+          "anchor": {
+            "rule": "percentile",
+            "mask": "available",
+            "points": {
+              "a": "p5",
+              "b": "p50",
+              "c": "p95",
+              "d": null
+            },
+            "anchored_at": {
+              "a": 22.129266486613403,
+              "b": 32.12282442390787,
+              "c": 44.62713734652765
+            }
+          }
         },
         "clim_twarm_q": {
-          "weight": 0.0783,
+          "weight": 0.0645,
           "type": "range",
           "points": [
             18,
@@ -62,7 +81,10 @@
             34
           ],
           "basis": "empirico",
-          "note": "Temperatura media do trimestre mais quente (C); o otimo termico da soja situa-se em torno de 20-30 C. Em GO/DF a distribuicao observada (23,6-27,6 C) cai INTEIRAMENTE dentro do plato otimo, de modo que mu = 1 em toda a area e sigma(mu) = 0 NO PRESENTE: hoje o fator nao distingue celula alguma. Nao e uma limitacao do dado, e um achado -- o clima de GO/DF esta dentro da faixa otima quase em todo lugar, e por isso habilita em vez de graduar. O peso vem de sigma(mu) medido no HORIZONTE (presente U SSP5-8.5 2051-2070), nao no presente: e a gradacao que o fator percorre dentro do horizonte da analise que lhe da peso, por medida e nao por excecao. Aqui a alavanca e o ombro superior (c = 30), que morde sob aquecimento."
+          "note": "Temperatura media do trimestre mais quente (C); o otimo termico da soja situa-se em torno de 20-30 C. Em GO/DF a distribuicao observada (23,6-27,6 C) cai INTEIRAMENTE dentro do plato otimo, de modo que mu = 1 em toda a area e sigma(mu) = 0 NO PRESENTE: hoje o fator nao distingue celula alguma. Nao e uma limitacao do dado, e um achado -- o clima de GO/DF esta dentro da faixa otima quase em todo lugar, e por isso habilita em vez de graduar. O peso vem de sigma(mu) medido no HORIZONTE (presente U SSP5-8.5 2051-2070), nao no presente: e a gradacao que o fator percorre dentro do horizonte da analise que lhe da peso, por medida e nao por excecao. Aqui a alavanca e o ombro superior (c = 30), que morde sob aquecimento.",
+          "anchor": {
+            "rule": "mu_one"
+          }
         },
         "soil_ph": {
           "weight": 0.3302,
@@ -75,7 +97,10 @@
             7.5
           ],
           "basis": "empirico",
-          "note": "pH em agua; solos acidos corrigiveis por calagem ate a faixa neutra."
+          "note": "pH em agua; solos acidos corrigiveis por calagem ate a faixa neutra.",
+          "anchor": {
+            "rule": "agronomic"
+          }
         },
         "clim_pr_annual": {
           "weight": 0.0,
@@ -87,7 +112,10 @@
             2200
           ],
           "basis": "empirico",
-          "note": "Precipitacao anual (mm) como proxy da lamina sazonal. Em GO/DF a distribuicao observada (1375-1637 mm) cai INTEIRAMENTE dentro do plato otimo, de modo que mu = 1 em toda a area e sigma(mu) = 0 NO PRESENTE. O peso vem de sigma(mu) medido no HORIZONTE (presente U SSP5-8.5 2051-2070), nao no presente: e a gradacao que o fator percorre dentro do horizonte da analise que lhe da peso, por medida e nao por excecao. A alavanca e o ombro inferior (b = 1100): se a chuva projetada se aproximar dele, o fator gradua e ganha peso."
+          "note": "Precipitacao anual (mm) como proxy da lamina sazonal. Em GO/DF a distribuicao observada (1375-1637 mm) cai INTEIRAMENTE dentro do plato otimo, de modo que mu = 1 em toda a area e sigma(mu) = 0 NO PRESENTE. O peso vem de sigma(mu) medido no HORIZONTE (presente U SSP5-8.5 2051-2070), nao no presente: e a gradacao que o fator percorre dentro do horizonte da analise que lhe da peso, por medida e nao por excecao. A alavanca e o ombro inferior (b = 1100): se a chuva projetada se aproximar dele, o fator gradua e ganha peso.",
+          "anchor": {
+            "rule": "mu_one"
+          }
         },
         "clim_aridity": {
           "weight": 0.0,
@@ -99,7 +127,10 @@
             1.6
           ],
           "basis": "empirico",
-          "note": "Indice de aridez P/PET; suficiencia hidrica. Em GO/DF o observado sobre a terra disponivel vai de 0,83 a 1,26 e cai quase todo dentro do plato otimo: sigma(mu) = 0,026 e mu medio = 0,992 no presente. O ombro superior foi movido de 1,2 para 1,3 -- acima do maximo observado (1,26) -- para que o valor presente de mu = 1 em toda a area, removendo o deflator residual que um mu quase constante < 1 aplicaria contra os cortes ABSOLUTOS da FAO. O peso vem de sigma(mu) medido no HORIZONTE (presente U SSP5-8.5 2051-2070), nao no presente: e a gradacao que o fator percorre dentro do horizonte da analise que lhe da peso, por medida e nao por excecao. A alavanca fica no ombro INFERIOR (b = 0,7, contra um minimo observado de 0,83): se o Cerrado secar, o fator gradua."
+          "note": "Indice de aridez P/PET; suficiencia hidrica. Em GO/DF o observado sobre a terra disponivel vai de 0,83 a 1,26 e cai quase todo dentro do plato otimo: sigma(mu) = 0,026 e mu medio = 0,992 no presente. O ombro superior foi movido de 1,2 para 1,3 -- acima do maximo observado (1,26) -- para que o valor presente de mu = 1 em toda a area, removendo o deflator residual que um mu quase constante < 1 aplicaria contra os cortes ABSOLUTOS da FAO. O peso vem de sigma(mu) medido no HORIZONTE (presente U SSP5-8.5 2051-2070), nao no presente: e a gradacao que o fator percorre dentro do horizonte da analise que lhe da peso, por medida e nao por excecao. A alavanca fica no ombro INFERIOR (b = 0,7, contra um minimo observado de 0,83): se o Cerrado secar, o fator gradua.",
+          "anchor": {
+            "rule": "mu_one"
+          }
         }
       }
     },
@@ -108,7 +139,7 @@
       "mask": "available",
       "factors": {
         "terr_slope": {
-          "weight": 0.2891,
+          "weight": 0.2887,
           "role": "limiting",
           "type": "decreasing",
           "points": [
@@ -116,10 +147,13 @@
             10
           ],
           "basis": "empirico",
-          "note": "Declividade em graus; a colheita mecanizada da cana exige terreno plano. Limiares (5, 10) mais largos que a terra disponivel (p5-p95 1,8-8,8 graus) e bem mais largos que o nicho realizado da cana (p95 4,8 graus): a forma vem da exigencia de mecanizacao, nao do uso observado."
+          "note": "Declividade em graus; a colheita mecanizada da cana exige terreno plano. Limiares (5, 10) mais largos que a terra disponivel na metade de CALIBRACAO (p5-p95 1,8-8,9 graus) e bem mais largos que o nicho realizado da cana (p95 4,6 graus): a forma vem da exigencia de mecanizacao, nao do uso observado.",
+          "anchor": {
+            "rule": "agronomic"
+          }
         },
         "soil_awc": {
-          "weight": 0.3043,
+          "weight": 0.3039,
           "role": "limiting",
           "type": "increasing",
           "points": [
@@ -127,10 +161,22 @@
             33.6
           ],
           "basis": "empirico",
-          "note": "Agua disponivel no solo (% vol a 33 kPa, 0-30 cm); a cana e exigente em armazenamento hidrico. Limiares no intervalo p5-p95 observado em GO/DF (22,1-33,6): a faixa anterior (5-20) ficava inteiramente ABAIXO da distribuicao real, saturando o fator em mu = 1 em 99,3% da terra disponivel."
+          "note": "Agua disponivel no solo (% vol a 33 kPa, 0-30 cm); a cana e exigente em armazenamento hidrico. Limiares (22,1 e 33,6) dentro do intervalo p5-p95 observado na metade de CALIBRACAO (21,9-33,9): a faixa anterior (5-20) ficava inteiramente ABAIXO da distribuicao real, saturando o fator em mu = 1 em 99,3% da terra disponivel.",
+          "anchor": {
+            "rule": "percentile",
+            "mask": "available",
+            "points": {
+              "a": "p5",
+              "b": "p95"
+            },
+            "anchored_at": {
+              "a": 21.874773558580475,
+              "b": 33.869899501724255
+            }
+          }
         },
         "soil_clay": {
-          "weight": 0.2231,
+          "weight": 0.2118,
           "role": "limiting",
           "type": "range",
           "points": [
@@ -140,7 +186,21 @@
             66
           ],
           "basis": "empirico",
-          "note": "Teor de argila (%); penaliza solos arenosos. Ancorado na terra DISPONIVEL: a = 22 (p5 21,1), b = 32 (p50 31,9); o plato segue ate 52 e a queda ate 66, acima do p95 disponivel (45,1) e do realizado (45,6), porque solo argiloso nao limita a cana. Nenhum limiar segue o nicho realizado."
+          "note": "Teor de argila (%); penaliza solos arenosos. Ancorado na terra DISPONIVEL na metade de CALIBRACAO: a = 22 (p5 22,1), b = 32 (p50 32,1); o plato segue ate 52 e a queda ate 66, acima do p95 disponivel (44,6) e do realizado (44,9), porque solo argiloso nao limita a cana. Nenhum limiar segue o nicho realizado.",
+          "anchor": {
+            "rule": "percentile",
+            "mask": "available",
+            "points": {
+              "a": "p5",
+              "b": "p50",
+              "c": null,
+              "d": null
+            },
+            "anchored_at": {
+              "a": 22.129266486613403,
+              "b": 32.12282442390787
+            }
+          }
         },
         "clim_twarm_q": {
           "weight": 0.0,
@@ -154,10 +214,13 @@
           "basis": "empirico",
           "source": "aparecido_climate_2021",
           "locator": "p. 778",
-          "note": "Temperatura media do trimestre mais quente (C); a cana e uma C4 termofila, com desenvolvimento favorecido em regime tropical quente -- a FORMA intervalar e os limiares 20/32/36 vem de Aparecido et al. Em GO/DF o observado sobre a terra disponivel vai de 23,0 a 28,2 C e cai quase todo dentro do plato: sigma(mu) = 0,039 e mu medio = 0,988 no presente. O ombro inferior foi movido de 24 para 23 -- abaixo do minimo observado -- para que o valor presente de mu = 1; por isso `basis` passa a `empirico`, embora a fonte permaneca registrada. Numa revisao anterior o fator carregava o MAIOR peso do segmento (0,3024) enquanto contribuia ~0,996 para a media geometrica: peso sem poder discriminante, diluindo declive, CAD e argila. O peso vem de sigma(mu) medido no HORIZONTE (presente U SSP5-8.5 2051-2070), nao no presente: e a gradacao que o fator percorre dentro do horizonte da analise que lhe da peso, por medida e nao por excecao. A alavanca e o ombro superior (c = 32), que morde se o trimestre mais quente aquecer cerca de 4 C."
+          "note": "Temperatura media do trimestre mais quente (C); a cana e uma C4 termofila, com desenvolvimento favorecido em regime tropical quente -- a FORMA intervalar e os limiares 20/32/36 vem de Aparecido et al. Em GO/DF o observado sobre a terra disponivel vai de 23,0 a 28,2 C e cai quase todo dentro do plato: sigma(mu) = 0,039 e mu medio = 0,988 no presente. O ombro inferior foi movido de 24 para 23 -- abaixo do minimo observado -- para que o valor presente de mu = 1; por isso `basis` passa a `empirico`, embora a fonte permaneca registrada. Numa revisao anterior o fator carregava o MAIOR peso do segmento (0,3024) enquanto contribuia ~0,996 para a media geometrica: peso sem poder discriminante, diluindo declive, CAD e argila. O peso vem de sigma(mu) medido no HORIZONTE (presente U SSP5-8.5 2051-2070), nao no presente: e a gradacao que o fator percorre dentro do horizonte da analise que lhe da peso, por medida e nao por excecao. A alavanca e o ombro superior (c = 32), que morde se o trimestre mais quente aquecer cerca de 4 C.",
+          "anchor": {
+            "rule": "mu_one"
+          }
         },
         "clim_pr_annual": {
-          "weight": 0.1366,
+          "weight": 0.1457,
           "type": "range",
           "points": [
             900,
@@ -168,10 +231,13 @@
           "basis": "literatura",
           "source": "aparecido_climate_2021",
           "locator": "p. 778",
-          "note": "Precipitacao anual (mm). Aparecido et al. situam 1100-1500 mm bem distribuidos como adequados ao ciclo, e declaram a agua o principal fator limitante do rendimento da cana (p. 777). Em GO/DF a distribuicao observada (1375-1637 mm) cai quase toda dentro do plato otimo: sigma(mu) = 0,014 e mu medio = 0,998 no presente. O peso vem de sigma(mu) medido no HORIZONTE (presente U SSP5-8.5 2051-2070), nao no presente: e a gradacao que o fator percorre dentro do horizonte da analise que lhe da peso, por medida e nao por excecao. A alavanca e o ombro inferior (b = 1300), que esta DENTRO da faixa observada -- este fator ja gradua hoje na borda seca do estado."
+          "note": "Precipitacao anual (mm). Aparecido et al. situam 1100-1500 mm bem distribuidos como adequados ao ciclo, e declaram a agua o principal fator limitante do rendimento da cana (p. 777). Em GO/DF a distribuicao observada (1375-1637 mm) cai quase toda dentro do plato otimo: sigma(mu) = 0,014 e mu medio = 0,998 no presente. O peso vem de sigma(mu) medido no HORIZONTE (presente U SSP5-8.5 2051-2070), nao no presente: e a gradacao que o fator percorre dentro do horizonte da analise que lhe da peso, por medida e nao por excecao. A alavanca e o ombro inferior (b = 1300), que esta DENTRO da faixa observada -- este fator ja gradua hoje na borda seca do estado.",
+          "anchor": {
+            "rule": "agronomic"
+          }
         },
         "clim_dry_months": {
-          "weight": 0.0469,
+          "weight": 0.0499,
           "type": "range",
           "points": [
             3,
@@ -180,7 +246,10 @@
             9
           ],
           "basis": "empirico",
-          "note": "Meses secos por ano. Quase CONSTANTE (=5) em GO/DF, com sigma(mu) = 0,014 no presente. Os limiares estao ancorados de modo que o valor presente de mu = 1, removendo o deflator oculto. O peso vem de sigma(mu) medido no HORIZONTE (presente U SSP5-8.5 2051-2070), nao no presente: e a gradacao que o fator percorre dentro do horizonte da analise que lhe da peso, por medida e nao por excecao. O fator e de otimo intermediario, e por isso responde em QUALQUER direcao: poucos meses secos demais suprimem a janela de maturacao, muitos demais impoem estresse hidrico."
+          "note": "Meses secos por ano. Quase CONSTANTE (=5) em GO/DF, com sigma(mu) = 0,014 no presente. Os limiares estao ancorados de modo que o valor presente de mu = 1, removendo o deflator oculto. O peso vem de sigma(mu) medido no HORIZONTE (presente U SSP5-8.5 2051-2070), nao no presente: e a gradacao que o fator percorre dentro do horizonte da analise que lhe da peso, por medida e nao por excecao. O fator e de otimo intermediario, e por isso responde em QUALQUER direcao: poucos meses secos demais suprimem a janela de maturacao, muitos demais impoem estresse hidrico.",
+          "anchor": {
+            "rule": "mu_one"
+          }
         }
       }
     },
@@ -189,7 +258,7 @@
       "mask": "available",
       "factors": {
         "terr_slope": {
-          "weight": 0.1079,
+          "weight": 0.1119,
           "role": "limiting",
           "type": "decreasing",
           "points": [
@@ -197,10 +266,13 @@
             8
           ],
           "basis": "empirico",
-          "note": "Declividade em graus; limita a mecanizacao. Limiares (4, 8) cobrem a cauda declivosa da terra DISPONIVEL (p5-p95 1,8-8,8 graus), mais largos que o nicho realizado (p95 5,4 graus)."
+          "note": "Declividade em graus; limita a mecanizacao. Limiares (4, 8) cobrem a cauda declivosa da terra DISPONIVEL na metade de CALIBRACAO (p5-p95 1,8-8,9 graus), mais largos que o nicho realizado (p95 5,3 graus).",
+          "anchor": {
+            "rule": "agronomic"
+          }
         },
         "soil_soc": {
-          "weight": 0.4849,
+          "weight": 0.4808,
           "role": "limiting",
           "type": "increasing",
           "points": [
@@ -208,10 +280,13 @@
             20
           ],
           "basis": "empirico",
-          "note": "Carbono organico do solo (g/kg) como proxy de fertilidade."
+          "note": "Carbono organico do solo (g/kg) como proxy de fertilidade.",
+          "anchor": {
+            "rule": "agronomic"
+          }
         },
         "clim_gdd": {
-          "weight": 0.2266,
+          "weight": 0.2265,
           "role": "limiting",
           "type": "range",
           "points": [
@@ -222,10 +297,13 @@
           ],
           "basis": "literatura",
           "source": "mcmaster_growing_1997",
-          "note": "Graus-dia acumulados, base 10 C; soma termica do ciclo."
+          "note": "Graus-dia acumulados, base 10 C; soma termica do ciclo.",
+          "anchor": {
+            "rule": "agronomic"
+          }
         },
         "soil_ph": {
-          "weight": 0.1442,
+          "weight": 0.1435,
           "role": "limiting",
           "type": "range",
           "points": [
@@ -235,7 +313,10 @@
             7.5
           ],
           "basis": "empirico",
-          "note": "pH em agua; janela de disponibilidade de nutrientes."
+          "note": "pH em agua; janela de disponibilidade de nutrientes.",
+          "anchor": {
+            "rule": "agronomic"
+          }
         },
         "clim_pr_annual": {
           "weight": 0.0,
@@ -249,10 +330,13 @@
           "basis": "literatura",
           "source": "amaral_metodologia_2023",
           "locator": "p. 258",
-          "note": "Precipitacao anual (mm) como proxy da lamina sazonal; o ZARC-milho situa o consumo do ciclo em 400-700 mm. Em GO/DF a distribuicao observada (1375-1637 mm) cai INTEIRAMENTE dentro do plato otimo, de modo que mu = 1 em toda a area e sigma(mu) = 0 NO PRESENTE. O peso vem de sigma(mu) medido no HORIZONTE (presente U SSP5-8.5 2051-2070), nao no presente: e a gradacao que o fator percorre dentro do horizonte da analise que lhe da peso, por medida e nao por excecao. A alavanca e o ombro inferior (b = 1000); a safrinha e o uso mais exposto, porque depende do prolongamento da estacao chuvosa, nao do total anual."
+          "note": "Precipitacao anual (mm) como proxy da lamina sazonal; o ZARC-milho situa o consumo do ciclo em 400-700 mm. Em GO/DF a distribuicao observada (1375-1637 mm) cai INTEIRAMENTE dentro do plato otimo, de modo que mu = 1 em toda a area e sigma(mu) = 0 NO PRESENTE. O peso vem de sigma(mu) medido no HORIZONTE (presente U SSP5-8.5 2051-2070), nao no presente: e a gradacao que o fator percorre dentro do horizonte da analise que lhe da peso, por medida e nao por excecao. A alavanca e o ombro inferior (b = 1000); a safrinha e o uso mais exposto, porque depende do prolongamento da estacao chuvosa, nao do total anual.",
+          "anchor": {
+            "rule": "mu_one"
+          }
         },
         "clim_pr_cv": {
-          "weight": 0.0364,
+          "weight": 0.0373,
           "role": "limiting",
           "type": "decreasing",
           "points": [
@@ -260,7 +344,10 @@
             1.3
           ],
           "basis": "empirico",
-          "note": "Coeficiente de variacao da precipitacao; confiabilidade da chuva. Praticamente uniforme em GO/DF (~0,82)."
+          "note": "Coeficiente de variacao da precipitacao; confiabilidade da chuva. Praticamente uniforme em GO/DF (~0,82).",
+          "anchor": {
+            "rule": "agronomic"
+          }
         }
       }
     },
@@ -269,7 +356,7 @@
       "mask": "available",
       "factors": {
         "terr_slope": {
-          "weight": 0.1116,
+          "weight": 0.1127,
           "role": "limiting",
           "type": "decreasing",
           "points": [
@@ -279,10 +366,13 @@
           "basis": "literatura",
           "source": "francisco_classification_2019",
           "locator": "tab. 5, p. 9",
-          "note": "Declividade em graus; viveiros escavados exigem terreno plano. A fonte da 0,4113 para <=2%, 0,3800 para 2-5%, 0,1475 para 5-10% e 0,0611 acima de 10%: a aptidao cai entre 5% e 10%, que e o intervalo adotado (2,86 e 5,71 graus). Assefa (>8% ja inadequado) e o valor rejeitado, por avaliar outro sistema produtivo."
+          "note": "Declividade em graus; viveiros escavados exigem terreno plano. A fonte da 0,4113 para <=2%, 0,3800 para 2-5%, 0,1475 para 5-10% e 0,0611 acima de 10%: a aptidao cai entre 5% e 10%, que e o intervalo adotado (2,86 e 5,71 graus). Assefa (>8% ja inadequado) e o valor rejeitado, por avaliar outro sistema produtivo.",
+          "anchor": {
+            "rule": "agronomic"
+          }
         },
         "soil_clay": {
-          "weight": 0.1414,
+          "weight": 0.1362,
           "role": "limiting",
           "type": "increasing",
           "points": [
@@ -290,10 +380,13 @@
             35
           ],
           "basis": "empirico",
-          "note": "Teor de argila (%); solos argilosos retem a agua do viveiro."
+          "note": "Teor de argila (%); solos argilosos retem a agua do viveiro.",
+          "anchor": {
+            "rule": "agronomic"
+          }
         },
         "sit_water_dist_seas": {
-          "weight": 0.4881,
+          "weight": 0.4936,
           "role": "limiting",
           "type": "decreasing",
           "points": [
@@ -301,10 +394,13 @@
             6000
           ],
           "basis": "empirico",
-          "note": "Distancia (m) a agua semipermanente (ocorrencia GSW > 50%), roteada de feat_siting pelo prefixo sit_. A agua permanente esta a 13,6 km da mediana em GO/DF, longe demais para discriminar; a semipermanente esta a 2,3 km."
+          "note": "Distancia (m) a agua semipermanente (ocorrencia GSW > 50%), roteada de feat_siting pelo prefixo sit_. A agua permanente esta a 13,6 km da mediana em GO/DF, longe demais para discriminar; a semipermanente esta a 2,3 km.",
+          "anchor": {
+            "rule": "agronomic"
+          }
         },
         "water_drain_density": {
-          "weight": 0.0532,
+          "weight": 0.0541,
           "role": "limiting",
           "type": "increasing",
           "points": [
@@ -312,10 +408,22 @@
             0.093
           ],
           "basis": "empirico",
-          "note": "Densidade de drenagem (fracao de celulas de curso d'agua); disponibilidade hidrica local. Banda fortemente zero-inflada a 250 m (p50 = 0, p75 = 0,013, p90 = 0,093): limiares ancorados em p5-p90. VER RESSALVA no relatorio de revisao -- sob a media geometrica um zero estrutural ainda atua como veto, e o zero aqui significa 'sem celula de curso d'agua mapeada nesta resolucao', nao 'sem agua'."
+          "note": "Densidade de drenagem (fracao de celulas de curso d'agua); disponibilidade hidrica local. Banda fortemente zero-inflada a 250 m -- na metade de CALIBRACAO p50 = 0, p75 = 0,017, p90 = 0,095: limiares ancorados em p5-p90. VER RESSALVA no relatorio de revisao -- sob a media geometrica um zero estrutural ainda atua como veto, e o zero aqui significa 'sem celula de curso d'agua mapeada nesta resolucao', nao 'sem agua'.",
+          "anchor": {
+            "rule": "percentile",
+            "mask": "available",
+            "points": {
+              "a": "p5",
+              "b": "p90"
+            },
+            "anchored_at": {
+              "a": 3.0155526450298064e-05,
+              "b": 0.09471391393643662
+            }
+          }
         },
         "clim_twarm_q": {
-          "weight": 0.2057,
+          "weight": 0.2034,
           "role": "limiting",
           "type": "range",
           "points": [
@@ -325,7 +433,10 @@
             36
           ],
           "basis": "empirico",
-          "note": "Temperatura media do trimestre mais quente (C); a tilapia e de agua morna."
+          "note": "Temperatura media do trimestre mais quente (C); a tilapia e de agua morna.",
+          "anchor": {
+            "rule": "agronomic"
+          }
         }
       }
     },
@@ -343,31 +454,49 @@
             2600
           ],
           "basis": "empirico",
-          "note": "Precipitacao anual (mm). Em GO/DF a distribuicao observada (1375-1637 mm) cai INTEIRAMENTE dentro do plato otimo, de modo que mu = 1 em toda a area e sigma(mu) = 0 NO PRESENTE. O peso vem de sigma(mu) medido no HORIZONTE (presente U SSP5-8.5 2051-2070), nao no presente: e a gradacao que o fator percorre dentro do horizonte da analise que lhe da peso, por medida e nao por excecao. Balew et al. dao a chuva o maior peso da coluna do gado (0,3375), usando-a como proxy da umidade do solo, que aqui e medida diretamente -- as duas partilham faixa na matriz."
+          "note": "Precipitacao anual (mm). Em GO/DF a distribuicao observada (1375-1637 mm) cai INTEIRAMENTE dentro do plato otimo, de modo que mu = 1 em toda a area e sigma(mu) = 0 NO PRESENTE. O peso vem de sigma(mu) medido no HORIZONTE (presente U SSP5-8.5 2051-2070), nao no presente: e a gradacao que o fator percorre dentro do horizonte da analise que lhe da peso, por medida e nao por excecao. Balew et al. dao a chuva o maior peso da coluna do gado (0,3375), usando-a como proxy da umidade do solo, que aqui e medida diretamente -- as duas partilham faixa na matriz.",
+          "anchor": {
+            "rule": "mu_one"
+          }
         },
         "clim_dry_months": {
-          "weight": 0.0902,
+          "weight": 0.0927,
           "type": "decreasing",
           "points": [
             5,
             9
           ],
           "basis": "empirico",
-          "note": "Meses secos por ano. Espacialmente CONSTANTE (=5) em GO/DF, com sigma(mu) = 0 no presente e limiares ancorados de modo que o valor presente de mu = 1. O peso vem de sigma(mu) medido no HORIZONTE (presente U SSP5-8.5 2051-2070), nao no presente: e a gradacao que o fator percorre dentro do horizonte da analise que lhe da peso, por medida e nao por excecao. Diferentemente da cana, aqui a direcao e monotona: mais meses secos reduzem a oferta de forragem, e e esse o vazio forrageiro da seca que determina a taxa de lotacao."
+          "note": "Meses secos por ano. Espacialmente CONSTANTE (=5) em GO/DF, com sigma(mu) = 0 no presente e limiares ancorados de modo que o valor presente de mu = 1. O peso vem de sigma(mu) medido no HORIZONTE (presente U SSP5-8.5 2051-2070), nao no presente: e a gradacao que o fator percorre dentro do horizonte da analise que lhe da peso, por medida e nao por excecao. Diferentemente da cana, aqui a direcao e monotona: mais meses secos reduzem a oferta de forragem, e e esse o vazio forrageiro da seca que determina a taxa de lotacao.",
+          "anchor": {
+            "rule": "mu_one"
+          }
         },
         "clim_soil_moist": {
-          "weight": 0.647,
+          "weight": 0.6542,
           "role": "limiting",
           "type": "increasing",
           "points": [
-            55,
+            51,
             120
           ],
           "basis": "empirico",
-          "note": "Umidade do solo (mm); graduador primario de forragem. Limiares (55, 120) praticamente coincidentes com o intervalo p5-p95 da terra DISPONIVEL (50,7-121,3), e nao com a cauda seca do pasto realizado: o uso observado nao entra no valor."
+          "note": "Umidade do solo (mm); graduador primario de forragem. Limiares (51, 120) proximos do intervalo p5-p95 da terra DISPONIVEL na metade de CALIBRACAO (46,8-122,7). O ombro inferior desceu de 55 para 51 ao ser reancorado nessa metade (p5 caiu de 50,7 para 46,8), o unico dos nove fatores ancorados em percentil cujo deslocamento passou de 5% do proprio vao junto com cattle.soil_soc. O p5 do pasto realizado (46,3) e quase identico ao da terra disponivel, de modo que a coincidencia nao e ancoragem no uso observado: o pasto cobre a maior parte do estado.",
+          "anchor": {
+            "rule": "percentile",
+            "mask": "available",
+            "points": {
+              "a": "p5",
+              "b": "p95"
+            },
+            "anchored_at": {
+              "a": 46.75281530722715,
+              "b": 122.74254984702695
+            }
+          }
         },
         "terr_slope": {
-          "weight": 0.1552,
+          "weight": 0.1507,
           "role": "limiting",
           "type": "decreasing",
           "points": [
@@ -375,18 +504,33 @@
             15
           ],
           "basis": "empirico",
-          "note": "Declividade em graus; encostas moderadas ja reduzem a capacidade de suporte."
+          "note": "Declividade em graus; encostas moderadas ja reduzem a capacidade de suporte.",
+          "anchor": {
+            "rule": "agronomic"
+          }
         },
         "soil_soc": {
-          "weight": 0.1076,
+          "weight": 0.1024,
           "role": "limiting",
           "type": "increasing",
           "points": [
             8,
-            18
+            17
           ],
           "basis": "empirico",
-          "note": "Carbono organico do solo (g/kg); graduador primario de fertilidade e forragem. Limiares (8, 18) praticamente coincidentes com o intervalo p5-p95 da terra DISPONIVEL (8,7-18,7); o nicho do pasto realizado (8,6-17,6) e quase identico porque o pasto cobre a maior parte do estado, de modo que a coincidencia nao e ancoragem no uso realizado."
+          "note": "Carbono organico do solo (g/kg); graduador primario de fertilidade e forragem. Limiares (8, 17) praticamente coincidentes com o intervalo p5-p95 da terra DISPONIVEL na metade de CALIBRACAO (8,8-17,7); o ombro superior desceu de 18 para 17 na reancoragem (p95 caiu de 18,7 para 17,7). O nicho do pasto realizado (8,6-17,4) e quase identico porque o pasto cobre a maior parte do estado, de modo que a coincidencia nao e ancoragem no uso realizado.",
+          "anchor": {
+            "rule": "percentile",
+            "mask": "available",
+            "points": {
+              "a": "p5",
+              "b": "p95"
+            },
+            "anchored_at": {
+              "a": 8.755363108626408,
+              "b": 17.74438219722648
+            }
+          }
         }
       }
     },
@@ -396,7 +540,7 @@
       "aggregate": "arithmetic",
       "factors": {
         "cv_pa_dist": {
-          "weight": 0.3433,
+          "weight": 0.3436,
           "role": "limiting",
           "type": "decreasing",
           "points": [
@@ -404,10 +548,13 @@
             40000
           ],
           "basis": "empirico",
-          "note": "Distancia (m) a unidade de conservacao da WDPA, roteada de feat_conservation pelo prefixo cv_; conectividade e consolidacao. A WDPA e camada de governanca, nao de cobertura da terra."
+          "note": "Distancia (m) a unidade de conservacao da WDPA, roteada de feat_conservation pelo prefixo cv_; conectividade e consolidacao. A WDPA e camada de governanca, nao de cobertura da terra.",
+          "anchor": {
+            "rule": "agronomic"
+          }
         },
         "cv_carbon": {
-          "weight": 0.169,
+          "weight": 0.1706,
           "role": "limiting",
           "type": "increasing",
           "points": [
@@ -415,10 +562,13 @@
             20
           ],
           "basis": "empirico",
-          "note": "Estoque de carbono da biomassa; servico de armazenamento. Ressalva registrada: biomassa correlaciona-se com floresta, uma circularidade branda que mantem o peso deste fator abaixo do que sua variancia sugeriria."
+          "note": "Estoque de carbono da biomassa; servico de armazenamento. Ressalva registrada: biomassa correlaciona-se com floresta, uma circularidade branda que mantem o peso deste fator abaixo do que sua variancia sugeriria.",
+          "anchor": {
+            "rule": "agronomic"
+          }
         },
         "cv_ruggedness": {
-          "weight": 0.1652,
+          "weight": 0.1658,
           "role": "limiting",
           "type": "increasing",
           "points": [
@@ -426,10 +576,13 @@
             30
           ],
           "basis": "empirico",
-          "note": "Desvio-padrao da elevacao na vizinhanca (m); heterogeneidade de habitat e baixa aptidao agricola."
+          "note": "Desvio-padrao da elevacao na vizinhanca (m); heterogeneidade de habitat e baixa aptidao agricola.",
+          "anchor": {
+            "rule": "agronomic"
+          }
         },
         "terr_twi": {
-          "weight": 0.069,
+          "weight": 0.0699,
           "role": "limiting",
           "type": "increasing",
           "points": [
@@ -437,10 +590,22 @@
             11.56
           ],
           "basis": "empirico",
-          "note": "Indice topografico de umidade; servico hidrico ripario e de recarga. Limiares no intervalo p10-p90 observado (9,44-11,56). Ancorar na distribuicao observada torna desnecessario o deslocamento manual que a mudanca da celula de captacao do HydroSHEDS exigia: se a escala nominal mudar, basta reexecutar tools/anchor_breakpoints.py."
+          "note": "Indice topografico de umidade; servico hidrico ripario e de recarga. Limiares (9,44 e 11,56) no intervalo p10-p90 observado na metade de CALIBRACAO (9,41-11,59). Ancorar na distribuicao observada torna desnecessario o deslocamento manual que a mudanca da celula de captacao do HydroSHEDS exigia: se a escala nominal mudar, basta reexecutar tools/anchor_breakpoints.py.",
+          "anchor": {
+            "rule": "percentile",
+            "mask": "available",
+            "points": {
+              "a": "p10",
+              "b": "p90"
+            },
+            "anchored_at": {
+              "a": 9.406852794908705,
+              "b": 11.594078573691496
+            }
+          }
         },
         "rl_native_frac": {
-          "weight": 0.0674,
+          "weight": 0.0638,
           "role": "limiting",
           "type": "increasing",
           "points": [
@@ -448,10 +613,13 @@
             0.85
           ],
           "basis": "empirico",
-          "note": "Fracao de vegetacao nativa (papeis nativos do MapBiomas, creditando o Cerrado aberto), roteada pelo prefixo rl_. E a unica entrada de cobertura da terra sancionada em todo o modelo, e entra rebaixada justamente para nao tornar o indice circular."
+          "note": "Fracao de vegetacao nativa (papeis nativos do MapBiomas, creditando o Cerrado aberto), roteada pelo prefixo rl_. E a unica entrada de cobertura da terra sancionada em todo o modelo, e entra rebaixada justamente para nao tornar o indice circular.",
+          "anchor": {
+            "rule": "agronomic"
+          }
         },
         "clim_aridity": {
-          "weight": 0.0659,
+          "weight": 0.0653,
           "role": "limiting",
           "type": "increasing",
           "points": [
@@ -459,10 +627,13 @@
             1.25
           ],
           "basis": "empirico",
-          "note": "Indice de aridez P/PET; viabilidade de balanco hidrico. E a alavanca climatica do segmento: cai sob aquecimento, tornando a conservacao perdedora no CMIP6."
+          "note": "Indice de aridez P/PET; viabilidade de balanco hidrico. E a alavanca climatica do segmento: cai sob aquecimento, tornando a conservacao perdedora no CMIP6.",
+          "anchor": {
+            "rule": "agronomic"
+          }
         },
         "terr_slope": {
-          "weight": 0.0236,
+          "weight": 0.024,
           "role": "limiting",
           "type": "increasing",
           "points": [
@@ -470,10 +641,13 @@
             11.31
           ],
           "basis": "empirico",
-          "note": "Declividade em graus; terreno marginal tem baixo custo de oportunidade para a conservacao."
+          "note": "Declividade em graus; terreno marginal tem baixo custo de oportunidade para a conservacao.",
+          "anchor": {
+            "rule": "agronomic"
+          }
         },
         "clim_twarm_q": {
-          "weight": 0.065,
+          "weight": 0.0648,
           "role": "limiting",
           "type": "decreasing",
           "points": [
@@ -481,10 +655,13 @@
             31
           ],
           "basis": "empirico",
-          "note": "Temperatura media do trimestre mais quente (C); estresse termico e de fogo. Segunda alavanca climatica do segmento."
+          "note": "Temperatura media do trimestre mais quente (C); estresse termico e de fogo. Segunda alavanca climatica do segmento.",
+          "anchor": {
+            "rule": "agronomic"
+          }
         },
         "water_drain_density": {
-          "weight": 0.0316,
+          "weight": 0.0322,
           "role": "limiting",
           "type": "increasing",
           "points": [
@@ -492,7 +669,10 @@
             0.08
           ],
           "basis": "empirico",
-          "note": "Densidade de drenagem; servico hidrico ripario e de recarga."
+          "note": "Densidade de drenagem; servico hidrico ripario e de recarga.",
+          "anchor": {
+            "rule": "agronomic"
+          }
         }
       }
     },
@@ -501,7 +681,7 @@
       "mask": "available",
       "factors": {
         "clim_srad": {
-          "weight": 0.4321,
+          "weight": 0.4361,
           "role": "limiting",
           "type": "increasing",
           "points": [
@@ -509,10 +689,22 @@
             204
           ],
           "basis": "empirico",
-          "note": "Irradiancia (W/m2); fator primario. Homogenea em GO/DF, com limiares no intervalo p10-p90 realmente observado."
+          "note": "Irradiancia (W/m2); fator primario. Homogenea em GO/DF, com limiares no intervalo p10-p90 realmente observado.",
+          "anchor": {
+            "rule": "percentile",
+            "mask": "available",
+            "points": {
+              "a": "p10",
+              "b": "p90"
+            },
+            "anchored_at": {
+              "a": 185.18300836855326,
+              "b": 201.56152181457557
+            }
+          }
         },
         "sit_clearness": {
-          "weight": 0.1573,
+          "weight": 0.1571,
           "role": "limiting",
           "type": "increasing",
           "points": [
@@ -520,10 +712,22 @@
             0.501
           ],
           "basis": "empirico",
-          "note": "Indice de claridade Kt = Rs/Ra, proxy de nebulosidade, roteado de feat_siting pelo prefixo sit_. Limiares no intervalo p10-p90 observado."
+          "note": "Indice de claridade Kt = Rs/Ra, proxy de nebulosidade, roteado de feat_siting pelo prefixo sit_. Limiares no intervalo p10-p90 observado.",
+          "anchor": {
+            "rule": "percentile",
+            "mask": "available",
+            "points": {
+              "a": "p10",
+              "b": "p90"
+            },
+            "anchored_at": {
+              "a": 0.46472299430832126,
+              "b": 0.4959686872250867
+            }
+          }
         },
         "terr_northing": {
-          "weight": 0.0632,
+          "weight": 0.0633,
           "role": "limiting",
           "type": "increasing",
           "points": [
@@ -531,10 +735,13 @@
             0.5
           ],
           "basis": "empirico",
-          "note": "Componente norte da orientacao da encosta, cos(azimute). No hemisferio sul as encostas voltadas ao norte recebem mais radiacao."
+          "note": "Componente norte da orientacao da encosta, cos(azimute). No hemisferio sul as encostas voltadas ao norte recebem mais radiacao.",
+          "anchor": {
+            "rule": "agronomic"
+          }
         },
         "terr_slope": {
-          "weight": 0.0918,
+          "weight": 0.0923,
           "role": "limiting",
           "type": "decreasing",
           "points": [
@@ -542,10 +749,13 @@
             8.53
           ],
           "basis": "empirico",
-          "note": "Declividade em graus; a instalacao de paineis favorece terreno plano."
+          "note": "Declividade em graus; a instalacao de paineis favorece terreno plano.",
+          "anchor": {
+            "rule": "agronomic"
+          }
         },
         "clim_twarm_q": {
-          "weight": 0.2556,
+          "weight": 0.2512,
           "role": "limiting",
           "type": "decreasing",
           "points": [
@@ -553,7 +763,10 @@
             31
           ],
           "basis": "empirico",
-          "note": "Temperatura media do trimestre mais quente (C); a eficiencia do painel fotovoltaico cai com o calor."
+          "note": "Temperatura media do trimestre mais quente (C); a eficiencia do painel fotovoltaico cai com o calor.",
+          "anchor": {
+            "rule": "agronomic"
+          }
         }
       }
     }

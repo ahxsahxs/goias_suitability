@@ -120,6 +120,18 @@ def pct(v, dec=1):
     return f"{num(100 * v, dec)}\\%"
 
 
+def mathnum(v, dec=2):
+    """PT number safe INSIDE math mode: the decimal comma becomes {,}.
+
+    A bare comma in LaTeX math is a list separator and gets extra space after it,
+    so "$p = 0,20$" sets as "0, 20". The hand-typed tables wrote "0{,}001" for
+    exactly this reason; this keeps that correct without hand-typing.
+    """
+    if v is None or (isinstance(v, float) and pd.isna(v)):
+        return "---"
+    return num(v, dec).replace(",", "{,}")
+
+
 def signed(v, dec=3):
     """Aligned +/- for delta columns, as the thesis writes them."""
     if v is None or (isinstance(v, float) and pd.isna(v)):
@@ -380,10 +392,19 @@ def ahp_cr():
 
 
 def validation():
+    """Zone-wise MOD17 means. Reports the HELD-OUT half when the CSV carries one."""
     try:
         a = read_csv("validation_zone_anova.csv")
     except FileNotFoundError:
         print("  !! validation_zone_anova.csv missing -- run tools/run_validation.py first")
+        return
+    if "half" not in a.columns:
+        raise SystemExit(
+            "validation_zone_anova.csv has no 'half' column: it predates the spatial\n"
+            "holdout, so its means are in-sample. Re-run tools/run_validation.py")
+    a = a[a["half"] == "val"]
+    if a.empty:
+        print("  !! validation_zone_anova.csv has no half='val' rows")
         return
     rows = [[f"Z{int(r.zone)}", num(r.mean_npp, 3), num(r.n, 0)]
             for r in a.sort_values("zone").itertuples()]
@@ -391,12 +412,165 @@ def validation():
           tabular("lrr", ["Zona", "NPP média (MOD17)", "$n$"], rows))
 
 
+def _pivot_half(df, metric):
+    """(segment -> {half: value}) for one metric of validation_metrics.csv.
+
+    REFUSES a CSV with no `half` column. Such a file predates the spatial holdout,
+    so every number in it is in-sample over the whole territory. An earlier version
+    assigned half="full" silently, which is how presence_auc.tex and spearman_npp.tex
+    came to carry full-domain in-sample numbers under held-out column headings --
+    a stale CSV is a wrong table, not a missing one.
+    """
+    if "half" not in df.columns:
+        raise SystemExit(
+            "validation_metrics.csv has no 'half' column: it predates the spatial\n"
+            "holdout, so every value in it is in-sample over the FULL territory.\n"
+            "Re-run:  EE_PROJECT=probformer uv run python tools/run_validation.py")
+    d = df[df["metric"] == metric]
+    if d.empty:
+        return None
+    return d.pivot_table(index="segment", columns="half", values="value",
+                         aggfunc="first")
+
+
+def presence_auc():
+    """tab:presence-auc -- AUC/Boyce per crop, calibration vs held-out half.
+
+    Replaces a HAND-TYPED table that had drifted from the CSV (it printed soybean
+    AUC 0,871 against a validation_metrics.csv that said 0,846).
+
+    The Delta column is a BETWEEN-HALVES difference, not an optimism gap: both
+    columns score the same `suit_present` raster, so what separates them is mostly
+    how different the two halves of Goias are. The held-out column is the one to
+    quote, because the model's parameters never saw that half.
+    """
+    v = read_csv("validation_metrics.csv")
+    auc, boy = _pivot_half(v, "auc"), _pivot_half(v, "boyce")
+    if auc is None:
+        print("  !! validation_metrics.csv has no 'auc' rows")
+        return
+    npres = {}
+    for r in v[(v.metric == "auc")].itertuples():
+        if getattr(r, "half", "full") == "val" and isinstance(r.extra, str) \
+                and r.extra.startswith("presences="):
+            npres[r.segment] = r.extra.split("=", 1)[1]
+
+    holdout = "val" in auc.columns and "calib" in auc.columns
+    order = [s for s in SEG_PT if s in auc.index]
+    rows = []
+    for s in order:
+        if holdout:
+            gap = auc.loc[s].get("val") - auc.loc[s].get("calib")
+            rows.append([SEG_PT[s],
+                         num(auc.loc[s].get("calib"), 3), num(auc.loc[s].get("val"), 3),
+                         signed(gap, 3),
+                         num(None if boy is None else boy.loc[s].get("calib"), 3),
+                         num(None if boy is None else boy.loc[s].get("val"), 3),
+                         npres.get(s, "---")])
+        else:
+            rows.append([SEG_PT[s], num(auc.loc[s].get("full"), 3),
+                         num(None if boy is None else boy.loc[s].get("full"), 3)])
+    if holdout:
+        write("presence_auc.tex", tabular(
+            "lrrrrrr",
+            ["Segmento", "AUC calib.", "AUC valid.", "$\\Delta$",
+             "Boyce calib.", "Boyce valid.", "Presenças (valid.)"], rows))
+    else:
+        write("presence_auc.tex", tabular(
+            "lrr", ["Segmento", "AUC", "Índice de Boyce"], rows))
+
+
+def spearman_npp():
+    """tab:spearman-npp -- municipal Spearman rho, per half.
+
+    Also replaces a hand-typed table, and a worse case than presence_auc: it had
+    drifted far enough to INVERT the conclusion on two of seven rows (it printed
+    sugarcane as p<0,001 where the CSV says p=0,20, and other_crops as n.s. where
+    the CSV says p=4e-13).
+    """
+    v = read_csv("validation_metrics.csv")
+    d = v[v["metric"] == "spearman_mod17"]
+    if d.empty:
+        print("  !! validation_metrics.csv has no 'spearman_mod17' rows")
+        return
+    if "half" not in d.columns:
+        d = d.assign(half="full")
+    half = "val" if "val" in set(d["half"]) else "full"
+    d = d[d["half"] == half].set_index("segment")
+    # descending rho, as the annex presents it
+    order = [s for s in d.sort_values("value", ascending=False).index if s in SEG_PT]
+    rows = []
+    for s in order:
+        p = d.loc[s, "p"]
+        sig = ("$p < 0{,}001$" if p < 1e-3 else
+               f"n.s. ($p = {mathnum(p, 2)}$)" if p >= 0.05 else
+               f"$p = {mathnum(p, 3)}$")
+        rows.append([SEG_PT[s], signed(d.loc[s, "value"], 2), sig])
+    write("spearman_npp.tex",
+          tabular("lrl", ["Segmento", "$\\rho$ de Spearman", "Significância"], rows))
+
+
+def variograma():
+    """tab:variograma -- the measured autocorrelation ranges that size the block.
+
+    Three framings per crop, two windows. The RESIDUAL framing is the one that
+    sizes the block; the fitted surface is reported for contrast because its range
+    measures predictor smoothness, not the dependence that inflates optimism.
+    nugget_share is printed beside every range because a range read without it is
+    uninterpretable: as the share approaches 1 the variance is almost all
+    at-support noise and no estimator can recover a structural range.
+    """
+    v = read_csv("variogram_suit.csv")
+    one = (v.drop_duplicates(subset=["field", "window_km"])
+             .sort_values(["crop", "framing", "window_km"]))
+    framing_pt = {"suit": "superfície ajustada", "pres": "presença",
+                  "resid": "resíduo"}
+    crop_pt = {"soybean": "Soja", "sugarcane": "Cana", "other_crops": "Outras c."}
+    rows, seen = [], None
+    for r in one.itertuples():
+        rng = ("---" if pd.isna(r.range_km) else num(r.range_km, 0))
+        rows.append([crop_pt.get(r.crop, r.crop) if r.crop != seen else "",
+                     framing_pt.get(r.framing, r.framing), num(r.window_km, 0),
+                     rng, num(r.nugget_share, 2),
+                     num(r.struct_shared_at_block * 100, 0) + "\\%"])
+        seen = r.crop
+    blk = num(one.block_km.iloc[0], 0)
+    write("variograma.tex", tabular(
+        "llrrrr",
+        ["Cultura", "Enquadramento", "Janela (km)", "Alcance (km)",
+         "Pepita/patamar", f"Compart. em {blk}~km"], rows))
+
+
+def split_balance():
+    """tab:split-balance -- realized-role pixel counts per half of the holdout."""
+    b = read_csv("split_balance.csv")
+    role_pt = {0: "Outros / sem classe", 1: "Soja", 2: "Cana-de-açúcar",
+               3: "Outras culturas anuais", 4: "Piscicultura",
+               5: "Pastagem", 6: "Vegetação nativa"}
+    piv = b.pivot_table(index="rl_role", columns="half", values="n_pixels",
+                        aggfunc="first").fillna(0)
+    rows = []
+    for rl in sorted(piv.index):
+        c = piv.loc[rl].get("calib", 0)
+        v = piv.loc[rl].get("val", 0)
+        ratio = max(c, v) / max(1, min(c, v))
+        rows.append([role_pt.get(int(rl), str(rl)), num(c, 0), num(v, 0),
+                     num(ratio, 2)])
+    rows.append(["\\textbf{Total}", num(piv.get("calib").sum(), 0),
+                 num(piv.get("val").sum(), 0), ""])
+    write("split_balance.tex", tabular(
+        "lrrr", ["Função de uso atual", "Calibração", "Validação", "Razão"],
+        rows, midrules=(len(rows) - 1,)))
+
+
 TABLES = {
     "zone_suit": zone_suit, "zone_means": zone_means, "zone_realized": zone_realized,
     "zone_shift": zone_shift, "shift_mean": shift_mean, "shift_share": shift_share,
     "downgrade": downgrade, "transition": transition,
     "ahp_weights": ahp_weights, "ahp_cr": ahp_cr,
-    "validation": validation,
+    "validation": validation, "presence_auc": presence_auc,
+    "spearman_npp": spearman_npp, "variograma": variograma,
+    "split_balance": split_balance,
 }
 
 

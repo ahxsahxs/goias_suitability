@@ -132,7 +132,8 @@ TR = {
         "fig_4_9.left": "Municipal mean soybean suitability",
         "fig_4_9.right": "Vulnerable municipalities\n(projected other-crops ΔS < −0.05)",
         "fig_4_10.suptitle": "Cluster-validity indices and stability by k  (selected k = {k})",
-        "fig_4_10.panel": ["Silhouette ↑", "Davies–Bouldin ↓", "Gap statistic ↑", "Stability ARI ↑"],
+        "fig_4_10.panel": ["Silhouette, held out ↑", "Davies–Bouldin, held out ↓",
+                           "Gap statistic ↑", "Holdout ARI ↑"],
         "fig_4_10.kline": "selected k ({k})",
         "fig_4_10.xlabel": "k",
         "fig_4_11.suptitle": "Factor share of the spatial variance of each segment's suitability",
@@ -146,6 +147,14 @@ TR = {
         "fig_4_11.legend_note": "x-axis: symmetric-log scale (linear threshold = 0.005)\n"
                                  "so near-zero shares stay visible without\n"
                                  "misrepresenting their true (small) magnitude.",
+        "fig_4_15.suptitle": "Residual autocorrelation and the validation block size",
+        "fig_4_15.xlabel": "lag distance (km)",
+        "fig_4_15.ylabel": "semivariance / sill",
+        "fig_4_15.framing": {"resid": "residual (sizes the block)",
+                             "pres": "realized presence",
+                             "suit": "fitted surface (context)"},
+        "fig_4_15.block": "block ({km:.0f} km)",
+        "fig_4_15.range": "range {km:.0f} km",
         "fig_4_12.suptitle": "Local spatial variability: climate vs. terrain+soil\n"
                               "(z-scored bands, 4.75 km window ≈ TerraClimate's native cell)",
         "fig_4_12.panel": ["Climate (local σ, 14 bands)",
@@ -220,7 +229,8 @@ TR = {
         "fig_4_9.left": "Viabilidade média municipal da soja",
         "fig_4_9.right": "Municípios vulneráveis\n(ΔS projetado de outras culturas < −0,05)",
         "fig_4_10.suptitle": "Índices de validade de agrupamento e estabilidade por k  (k selecionado = {k})",
-        "fig_4_10.panel": ["Silhueta ↑", "Davies–Bouldin ↓", "Estatística de gap ↑", "ARI de estabilidade ↑"],
+        "fig_4_10.panel": ["Silhueta, metade retida ↑", "Davies–Bouldin, metade retida ↓",
+                           "Estatística de gap ↑", "ARI do holdout ↑"],
         "fig_4_10.kline": "k selecionado ({k})",
         "fig_4_10.xlabel": "k",
         "fig_4_11.suptitle": "Parcela de cada fator na variância espacial da viabilidade, por segmento",
@@ -234,6 +244,14 @@ TR = {
         "fig_4_11.legend_note": "eixo x: escala simétrica-log (limiar linear = 0,005)\n"
                                  "para manter parcelas próximas de zero visíveis\n"
                                  "sem exagerar sua magnitude real (pequena).",
+        "fig_4_15.suptitle": "Autocorrelação do resíduo e o tamanho do bloco de validação",
+        "fig_4_15.xlabel": "distância (km)",
+        "fig_4_15.ylabel": "semivariância / patamar",
+        "fig_4_15.framing": {"resid": "resíduo (dimensiona o bloco)",
+                             "pres": "presença realizada",
+                             "suit": "superfície ajustada (contexto)"},
+        "fig_4_15.block": "bloco ({km:.0f} km)",
+        "fig_4_15.range": "alcance {km:.0f} km",
         "fig_4_12.suptitle": "Variabilidade espacial local: clima × terreno+solo\n"
                               "(bandas padronizadas, janela de 4,75 km ≈ célula nativa do TerraClimate)",
         "fig_4_12.panel": ["Clima (σ local, 14 bandas)",
@@ -637,31 +655,21 @@ class Renderer:
         """Present vs. future climate inputs (precipitation, warmest-quarter temperature),
         SSP5-8.5 2051-2070 ensemble mean --- makes concrete what the CMIP6 delta-change
         projection actually moves, ahead of \\S\\ref{sec:shift}'s viability-space reading of it.
-        Same ensemble machinery as the cached agreement_*/delta_* assets, computed live here
-        (climate-only, no membership/suitability recompute) since no future-climate asset is
-        cached; a getThumbURL render of it is cheap (~seconds), unlike a per-point getInfo pull
-        of the full monthly GCM time series (CLAUDE.md \\S11)."""
-        cfg = utils.cfg()["cmip6"]
-        aoi = self.geom
+        Same ensemble machinery as the cached agreement_*/delta_* assets. This used to
+        recompute the future climate LIVE, because no future-climate asset was cached; the
+        2026-10 cascade exports `clim_future_<ssp>_<window>`, so it now reads that asset
+        instead. Under restricted compute quota the live path (5 GCMs x 20 yr of monthly
+        climatologies behind one getThumbURL) exceeds the 180 s read timeout and the figure
+        cannot be rendered at all -- using the cached ensemble image is exactly the remedy
+        CLAUDE.md \\S11 prescribes for a stalled CMIP6 reduction. Reading the asset also
+        drops the vertical-flip correction the live path needed: `future_climate_image()`
+        ends in `utils.to_grid_bilinear(...)`, whose pinned `grid_projection()` affine is
+        inverted relative to the transform `Export.image.toAsset()` builds, and an exported
+        asset is already on that correctly-oriented export grid -- like every other
+        `self.A(...)` image in this file."""
         present = self.A("feat_climate").select(["clim_pr_annual", "clim_twarm_q"])
-        baseline = cmip6.baseline_monthly(aoi)
-        factors = cmip6.ensemble_factors(cfg["models"], "ssp585", cfg["windows"]["2051_2070"], aoi)
-        # future_climate_image() ends in utils.to_grid_bilinear(...), which pins the
-        # image to utils.grid_projection() (ee.Projection(crs()).atScale(scale_m())).
-        # That projection's affine transform is vertically inverted relative to the
-        # crs()+scale_m() transform Export.image.toAsset() builds (verified: a
-        # pixelLonLat() render through to_grid_bilinear() comes out south-up, while
-        # the same render through .reproject(crs(), None, scale_m()) is correctly
-        # north-up). Every other Part is immune because its output goes through an
-        # Export step, which always rebuilds a fresh, correctly-oriented grid from
-        # crs+scale regardless of the source's pinned projection — fig_4_14 is the
-        # only place a to_grid_bilinear-pinned image is thumbnailed directly without
-        # that corrective export, so re-pinning it here to crs()+scale_m() (not a
-        # bare crs with no scale -- that just falls back to ~111 km/pixel) undoes the
-        # flip without touching grid_projection() itself (heavily reused elsewhere,
-        # and harmless there since export always overrides it).
-        future = cmip6.future_climate_image(baseline, factors, aoi).select(
-            ["clim_pr_annual", "clim_twarm_q"]).reproject(crs=utils.crs(), scale=utils.scale_m())
+        future = self.A("clim_future_ssp585_2051_2070").select(
+            ["clim_pr_annual", "clim_twarm_q"])
         pr_rng, temp_rng = (1150, 1700), (23, 32)
         fig, axes = plt.subplots(2, 2, figsize=(12, 11))
         cols = [present, future]
@@ -804,11 +812,28 @@ class Renderer:
         xticks = ks_all if len(ks_all) <= 10 else ks_all[::2]
         fig, axes = plt.subplots(2, 2, figsize=(11, 9))
         titles = t("fig_4_10.panel")
-        cols = ["silhouette", "davies_bouldin", "gap", "ari"]
+        # The panel titles name the HELD-OUT half, so the held-out columns are
+        # REQUIRED, not preferred. An earlier version fell back to the in-sample
+        # columns to keep rendering against a pre-holdout zoning_kselect.csv --
+        # which plotted in-sample silhouette and subsample ARI under the labels
+        # "silhouette, held-out half" and "holdout ARI". A mislabelled figure
+        # inside the thesis is worse than a missing one.
+        need = ["silhouette_val", "davies_bouldin_val", "ari_holdout"]
+        if miss := [c for c in need if c not in df.columns]:
+            raise SystemExit(
+                f"zoning_kselect.csv lacks {miss}: it predates the spatial holdout,\n"
+                "so its indices are in-sample and this figure's titles would lie.\n"
+                "Re-run:  SPLIT_HALF=calib uv run python tools/gen_diag_csvs.py zoning")
+        cols = ["silhouette_val", "davies_bouldin_val", "gap", "ari_holdout"]
+        err_of = {}
         for j, (ax, col) in enumerate(zip(axes.ravel(), cols)):
+            if col is None:
+                ax.set_axis_off()
+                continue
             ax.plot(df["k"], df[col], "-o", color="#2166ac", ms=4)
-            if col == "ari" and "ari_std" in df:
-                ax.fill_between(df["k"], df[col] - df["ari_std"], df[col] + df["ari_std"],
+            e = err_of.get(col)
+            if e and e in df:
+                ax.fill_between(df["k"], df[col] - df[e], df[col] + df[e],
                                 color="#2166ac", alpha=0.15)
             if col == "gap" and "s_k" in df:
                 ax.errorbar(df["k"], df[col], yerr=df["s_k"], fmt="none",
@@ -958,10 +983,64 @@ class Renderer:
         fig.suptitle(t("fig_4_12.suptitle"), fontsize=12)
         self._save(fig, "fig_4_12", tight=False)
 
+    def fig_4_15(self):
+        """Residual semivariograms vs. the validation block size (CSV-only).
+
+        One panel per crop, the three framings overlaid, normalised by each
+        field's own sill so curves with very different variances are comparable.
+        The vertical rule is the adopted block: a block is only defensible where
+        the RESIDUAL curve has already flattened to its left. Reads the 400 km
+        window, which is the one the gate decides on; the 800 km rows in
+        variogram_suit.csv exist to show the range grows with the window, i.e.
+        that a long-range regional trend sits beyond any feasible block.
+        """
+        df = self._read_diag("variogram_suit.csv")
+        df = df[df["window_km"] == df["window_km"].min()]
+        crops = [c for c in ("soybean", "sugarcane", "other_crops")
+                 if c in set(df["crop"])]
+        lbl = t("fig_4_15.framing")
+        colors = {"resid": "#B4431D", "pres": "#2D6A8E", "suit": "#9A9A9A"}
+        blk = float(df["block_km"].iloc[0])
+
+        fig, axes = plt.subplots(1, len(crops), figsize=(4.2 * len(crops), 3.9),
+                                 sharey=True)
+        axes = np.atleast_1d(axes)
+        for ax, crop in zip(axes, crops):
+            sub = df[df["crop"] == crop]
+            for framing in ("suit", "pres", "resid"):
+                g = sub[sub["framing"] == framing].sort_values("lag_km_center")
+                if g.empty:
+                    continue
+                sill = float(g["sill"].iloc[0])
+                if not np.isfinite(sill) or sill <= 0:
+                    continue
+                ax.plot(g["lag_km_center"], g["gamma"] / sill,
+                        color=colors[framing], lw=2.0 if framing == "resid" else 1.2,
+                        label=lbl[framing], zorder=3 if framing == "resid" else 2)
+                if framing == "resid":
+                    r = float(g["range_km"].iloc[0])
+                    if np.isfinite(r):
+                        ax.axvline(r, color=colors["resid"], ls=":", lw=1.2)
+                        ax.annotate(t("fig_4_15.range", km=r), xy=(r, 0.08),
+                                    xytext=(4, 0), textcoords="offset points",
+                                    color=colors["resid"], fontsize=8, rotation=90,
+                                    va="bottom")
+            ax.axvline(blk, color="k", ls="--", lw=1.1)
+            ax.annotate(t("fig_4_15.block", km=blk), xy=(blk, 1.02),
+                        xytext=(3, 0), textcoords="offset points", fontsize=8)
+            ax.set_title(seg_title(crop), fontsize=10)
+            ax.set_xlabel(t("fig_4_15.xlabel"), fontsize=9)
+            ax.set_ylim(0, 1.12)
+            ax.grid(alpha=0.25, lw=0.5)
+        axes[0].set_ylabel(t("fig_4_15.ylabel"), fontsize=9)
+        axes[0].legend(fontsize=8, loc="lower right", framealpha=0.9)
+        fig.suptitle(t("fig_4_15.suptitle"), fontsize=12)
+        self._save(fig, "fig_4_15")
+
 
 PRESENT = ["fig_4_1", "fig_4_2", "fig_4_3", "fig_4_7", "fig_4_8", "fig_4_9", "fig_4_13"]
 FUTURE = ["fig_4_4", "fig_4_5", "fig_4_6", "fig_4_14"]
-DIAG = ["fig_4_10", "fig_4_11", "fig_4_12"]   # CSV-based + spatial diagnostics (k-selection,
+DIAG = ["fig_4_10", "fig_4_11", "fig_4_12", "fig_4_15"]   # CSV-based + spatial diagnostics (k-selection,
                                                # factor variance, climate/terrain-soil roughness)
 
 

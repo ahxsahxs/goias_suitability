@@ -46,9 +46,40 @@ const selectedProfile = computed(() =>
 const { data: kselect } = useCsv<ZoningKselectRow>('csv/zoning_kselect.csv')
 const kselectData = computed<PlotlyDatum[]>(() => {
   const rows = kselect.value ?? []
+  // Prefer the held-out columns; fall back to the legacy pre-holdout names so the
+  // chart still renders against an older zoning_kselect.csv.
+  // null, not undefined: Plotly renders null as a gap in the series, while
+  // undefined is not a valid Datum and fails the type-check.
+  const pick = (r: ZoningKselectRow, ...keys: (keyof ZoningKselectRow)[]): number | null => {
+    for (const key of keys) {
+      const v = r[key]
+      if (typeof v === 'number' && Number.isFinite(v)) return v
+    }
+    return null
+  }
+  const held = rows.some((r) => pick(r, 'silhouette_val') !== null)
   return [
-    { type: 'scatter', mode: 'lines+markers', name: 'silhueta', x: rows.map((r) => r.k), y: rows.map((r) => r.silhouette) },
-    { type: 'scatter', mode: 'lines+markers', name: 'davies_bouldin', x: rows.map((r) => r.k), y: rows.map((r) => r.davies_bouldin), yaxis: 'y2' },
+    {
+      type: 'scatter', mode: 'lines+markers',
+      name: held ? 'silhueta (metade retida)' : 'silhueta',
+      x: rows.map((r) => r.k),
+      y: rows.map((r) => pick(r, 'silhouette_val', 'silhouette_calib', 'silhouette')),
+    },
+    {
+      type: 'scatter', mode: 'lines+markers',
+      name: held ? 'davies_bouldin (metade retida)' : 'davies_bouldin',
+      x: rows.map((r) => r.k),
+      y: rows.map((r) => pick(r, 'davies_bouldin_val', 'davies_bouldin_calib', 'davies_bouldin')),
+      yaxis: 'y2',
+    },
+    ...(held
+      ? [{
+          type: 'scatter' as const, mode: 'lines+markers' as const,
+          name: 'ARI do holdout',
+          x: rows.map((r) => r.k),
+          y: rows.map((r) => pick(r, 'ari_holdout')),
+        }]
+      : []),
   ]
 })
 

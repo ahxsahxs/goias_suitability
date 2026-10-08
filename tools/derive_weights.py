@@ -251,8 +251,15 @@ def derive_segment(name, spec, cr_max, max_rev, verbose=True):
 D_COLUMN = "sigma_mu_horizon"
 
 
-def load_discrimination():
-    """``d = sigma(mu)`` over present U horizon, per (segment, factor)."""
+def load_discrimination(half: str = "full"):
+    """``d = sigma(mu)`` over present U horizon, per (segment, factor).
+
+    ``half`` selects the measurement DOMAIN -- the spatial-holdout half that
+    sigma(mu) was reduced over. It must be present in the CSV's ``half`` column;
+    a silent fallback to the full domain would be the worst possible failure
+    here, because the derivation would then look like it respected the holdout
+    while actually having seen the whole territory.
+    """
     if not os.path.exists(DISCRIM_CSV):
         return None
     df = pd.read_csv(DISCRIM_CSV)
@@ -266,8 +273,42 @@ def load_discrimination():
             "        Usar sigma_mu_available aqui zeraria o peso de todo fator\n"
             "        saturado no presente -- o que a mudanca existe para evitar."
         )
+    if "half" in df.columns:
+        have = sorted(df["half"].dropna().unique())
+        sub = df[df["half"] == half]
+        if sub.empty:
+            raise SystemExit(
+                f"\n[FALHA] {os.path.relpath(DISCRIM_CSV, ROOT)} nao tem linhas "
+                f"com half={half!r} (tem: {have}).\n"
+                "        Rode:  SPLIT_HALF=all EE_PROJECT=probformer uv run python "
+                "tools/anchor_breakpoints.py discrimination"
+            )
+        df = sub
+    elif half != "full":
+        raise SystemExit(
+            f"\n[FALHA] {os.path.relpath(DISCRIM_CSV, ROOT)} nao tem a coluna "
+            f"'half', logo foi medido no dominio completo, mas --half={half} foi "
+            f"pedido.\n"
+            "        Rode:  SPLIT_HALF=all EE_PROJECT=probformer uv run python "
+            "tools/anchor_breakpoints.py discrimination"
+        )
     return {(r.segment, r.factor): float(getattr(r, D_COLUMN))
             for r in df.itertuples()}
+
+
+def _record_derived_half(half: str) -> None:
+    """Stamp the measurement domain into segments.yaml beside lambda_regional.
+
+    This is what lets `--check` default to the right domain instead of assuming
+    the full territory (see main()).
+    """
+    y = YAML(typ="rt")
+    y.width = 4096
+    with open(SEG_YAML, encoding="utf-8") as fh:
+        doc = y.load(fh)
+    doc.setdefault("aggregation", {})["derived_half"] = half
+    with open(SEG_YAML, "w", encoding="utf-8") as fh:
+        y.dump(doc, fh)
 
 
 def adapt(w_lit, d, lam):
@@ -311,8 +352,11 @@ def main():
                     help="verify segments.yaml matches the derivation; write nothing")
     ap.add_argument("--dry-run", action="store_true",
                     help="derive and report; write nothing")
+    ap.add_argument("--half", choices=["full", "calib", "val"], default=None,
+                    help="spatial-holdout half that sigma(mu) was measured over "
+                         "(default: aggregation.derived_half in segments.yaml, "
+                         "else $SPLIT_HALF, else full)")
     args = ap.parse_args()
-
     with open(AHP_YAML, encoding="utf-8") as fh:
         ahp = yaml.safe_load(fh)
     cr_max = ahp["scale"]["cr_threshold"]
@@ -320,7 +364,21 @@ def main():
 
     # R5: in derive mode the current weights are not read at all.
     seg_cfg = yaml.safe_load(open(SEG_YAML, encoding="utf-8"))
-    lam_reg = seg_cfg.get("aggregation", {}).get("lambda_regional")
+    agg = seg_cfg.get("aggregation", {})
+    lam_reg = agg.get("lambda_regional")
+
+    # The domain the CURRENT weights were derived on is recorded in segments.yaml
+    # and is the default. Without it, a bare `--check` would default to "full" and
+    # report false drift against calibration-half weights -- the check would cry
+    # wolf on a correct config, which is worse than not checking at all.
+    if args.half is None:
+        args.half = (agg.get("derived_half")
+                     or os.environ.get("SPLIT_HALF") or "full").strip().lower()
+    if args.half not in ("full", "calib", "val"):
+        raise SystemExit(f"--half must be full|calib|val, got {args.half!r} "
+                         f"(check aggregation.derived_half / $SPLIT_HALF)")
+    print(f"# dominio de medicao de d: {args.half}"
+          + ("" if agg.get("derived_half") else "  (nao registrado em segments.yaml)"))
     current = {s: {f: v.get("weight") for f, v in d["factors"].items()}
                for s, d in seg_cfg["segments"].items()}
 
@@ -346,7 +404,7 @@ def main():
     print(f"overrides = {ovr};  julgamentos 'author judgement' = "
           f"{sum(r['author_judgement_count'] for r in derived.values())}")
 
-    d_map = load_discrimination()
+    d_map = load_discrimination(args.half)
     if d_map is None:
         print(f"\n[parcial] {os.path.relpath(DISCRIM_CSV, ROOT)} ausente — "
               "w_lit derivado, estagio regional nao executado.\n"
@@ -399,6 +457,11 @@ def main():
         print("\n[dry-run] nada escrito.")
         return 0
 
+    # Stamp the domain into both artifacts: a weights table that does not say
+    # which half it was measured on is indistinguishable from the pre-holdout one.
+    wdf.insert(0, "half", args.half)
+    sdf.insert(0, "half", args.half)
+    _record_derived_half(args.half)
     wdf.to_csv(WEIGHTS_CSV, index=False)
     sdf.to_csv(LAMBDA_CSV, index=False)
     write_segments(final)

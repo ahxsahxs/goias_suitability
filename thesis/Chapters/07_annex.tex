@@ -118,17 +118,17 @@ vegetação nativa (peso 0,07) é a única entrada de cobertura da terra, rebaix
 pela salvaguarda contra circularidade. Os outros seis segmentos usam a média geométrica de
 fator limitante.
 
-%% TODO: é mais facil remover estas variaveis do que aumentar a complexidade da analise
-Os fatores marcados como \emph{porta} não entram na matriz AHP e não recebem peso: são os
-fatores cuja pertinência é constante em GO~e~DF (a faixa observada cai inteiramente dentro do
-seu platô ótimo), aplicados multiplicativamente com limiares ancorados de modo que o valor
-presente dê $\mu = 1$ (\S\ref{sec:ahp}). Por isso a soja e a cana-de-açúcar têm três fatores
-ponderados, e não seis, e a pecuária três, e não cinco: os demais foram promovidos a porta,
-não removidos.
+Nenhum fator é retirado da matriz AHP. Sete fatores climáticos têm $\sigma(\mu) = 0$ no
+presente, porque a faixa observada em GO~e~DF cai inteiramente dentro do seu platô ótimo; eles
+permanecem na matriz e recebem peso porque $\sigma(\mu)$ é medido sobre a população do presente
+\emph{reunida} à do horizonte CMIP6 (\S\ref{sec:ahp}), e um fator saturado hoje volta a graduar
+sob aquecimento. Cinco deles ainda saem em peso exatamente nulo, por terem $\mu \equiv 1$ nas
+duas populações. A coluna \emph{Fatores} da Tabela~\ref{tab:ahp-cr} conta portanto todos os
+fatores de cada segmento, inclusive os de peso nulo.
 
 Os pesos de cada segmento são as prioridades de uma matriz Saaty de comparação par a par
-documentada; toda matriz é folgadamente consistente, sendo 0,0462 a maior razão de
-consistência entre os sete segmentos (Tabela~\ref{tab:ahp-cr}), menos da metade do limiar de
+documentada; toda matriz é folgadamente consistente, sendo 0,0335 (cana-de-açúcar) a maior razão
+de consistência entre os sete segmentos (Tabela~\ref{tab:ahp-cr}), um terço do limiar de
 aceitação de 0,10.
 
 \begin{table}[H]
@@ -257,21 +257,12 @@ zona).}
 \begin{table}[H]
 \centering
 \caption{Correlação de Spearman da viabilidade média municipal com o \emph{proxy} de NPP
-anual do MODIS (terra manejada; $n = 247$ municípios).}
+anual do MODIS, sobre terra manejada, na \textbf{metade retida} da partição espacial
+(\S\ref{sec:holdout}). A média municipal usa só os pixels dessa metade, de modo que entram os 159
+dos 247 municípios que ali têm terra manejada; uma média parcial é mais ruidosa, o que atenua
+$\rho$ e torna a estimativa conservadora.}
 \label{tab:spearman-npp}
-\begin{tabular}{@{}lrl@{}}
-\toprule
-Segmento & $\rho$ de Spearman & Significância \\
-\midrule
-Pecuária             & $+0{,}52$ & $p < 0{,}001$ \\
-Conservação          & $+0{,}46$ & $p < 0{,}001$ \\
-Cana-de-açúcar       & $+0{,}45$ & $p < 0{,}001$ \\
-Geração fotovoltaica & $+0{,}40$ & $p < 0{,}001$ \\
-Soja                 & $+0{,}31$ & $p < 0{,}001$ \\
-Outras culturas anuais & $+0{,}11$ & n.s. ($p = 0{,}09$) \\
-Piscicultura         & $-0{,}32$ & $p < 0{,}001$ \\
-\bottomrule
-\end{tabular}
+\input{Chapters/Tables/spearman_npp.tex}
 \end{table}
 
 O \emph{proxy} de NPP anual mede a produtividade primária da vegetação, não o rendimento
@@ -412,3 +403,89 @@ alimenta a Tabela~\ref{tab:scale-mismatch}, e não de uma composição rasteriza
 território. Nessa tabela, o raio de 4.750~m ancora na célula nativa do TerraClimate
 ($\approx$4,64~km); 250~m é a célula nativa da pilha de atributos; e 750~m reutiliza o raio já
 usado para a rugosidade do terreno na conservação (\S\ref{anx:derivations}).
+
+\section{Dimensionamento do bloco de validação}\label{anx:holdout}
+
+Esta seção registra as medidas que dimensionaram a partição espacial de calibração e validação
+descrita em \S\ref{sec:holdout}. A escolha do bloco não é convencional: é a consequência de um
+alcance de autocorrelação medido, e o registro abaixo é o que permite ao leitor julgá-la.
+
+\paragraph{Três enquadramentos, não um.} A Tabela~\ref{tab:variograma} reporta o semivariograma
+empírico sob três definições do campo, para cada cultura e em duas janelas de distância. A
+distinção não é redundante. A \emph{superfície ajustada} é construída a partir de gradientes suaves
+de clima e solo, logo é lisa por construção: o seu alcance mede a suavidade dos preditores, isto é
+uma tendência regional que as próprias covariáveis explicam, e dimensionar um bloco a partir dela
+superestimaria a exigência. A \emph{presença} é a resposta observada. É do \emph{resíduo} ---
+presença menos viabilidade ajustada --- que se dimensiona o bloco, porque é nele que reside a
+dependência espacial que infla o otimismo de uma métrica fora da amostra
+\citep{roberts_crossvalidation_2017,valavi_blockcv_2019}.
+
+\paragraph{A razão pepita/patamar é parte da leitura.} Um alcance lido sozinho é
+ininterpretável. Quando a pepita se aproxima do patamar, a variância é quase toda ruído na escala
+de suporte de 250~m, a curva de máximos acumulados estabiliza nesse piso de ruído e nenhum
+estimador recupera um
+alcance estrutural. É o que ocorre na linha de presença de outras culturas anuais, cuja pegada
+realizada cobre menos de 1\% do território: a razão de 0,87 indica que aquela linha não sustenta
+inferência. O resíduo da mesma cultura, com razão 0,75, já é legível.
+
+\begin{table}[H]
+\centering
+\caption{Semivariograma empírico das superfícies de cultura sob três enquadramentos
+(superfície ajustada, presença realizada e resíduo) e duas janelas de distância. ``Compart.''
+é a fração da variância espacialmente estruturada ainda compartilhada à distância do bloco
+adotado. Subamostra de 6.000 pontos, semente 42.}
+\label{tab:variograma}
+\input{Chapters/Tables/variograma.tex}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{fig_4_15.png}
+\caption{Semivariogramas normalizados pelo respectivo patamar, por cultura, na janela de 400~km.
+A curva grossa é o resíduo, que dimensiona o bloco; a linha tracejada preta marca o bloco adotado
+(130~km) e a pontilhada o alcance estimado do resíduo. A ordenada inicia próxima de 0,75 porque a
+pepita responde por cerca de três quartos do patamar: a maior parte da variância é ruído na escala
+de suporte de 250~m, e só o quarto restante é estrutura espacial passível de ser quebrada por um
+bloco.}
+\label{fig:variograma}
+\end{figure}
+
+\paragraph{Por que 130~km e não 45~km.} Uma versão anterior desta partição usava uma grade de
+$16 \times 16$, com blocos de aproximadamente 45~km. A medida acima mostra que aquele bloco não
+cumpria a sua função: lida na janela de 400~km, a fração da variância estruturada do resíduo ainda
+compartilhada a 45~km era de 47\% (soja), 48\% (cana) e 58\% (outras culturas anuais), de modo que
+treino e teste não ficavam separados por distância em sentido efetivo. Na grade de $6 \times 6$
+adotada, a fração cai para 11\%, 15\% e 30\% respectivamente. O ganho tem um custo: menos blocos
+independentes, e metades mais sujeitas a desequilíbrio na composição do uso atual.
+
+\paragraph{O alcance depende da janela, e isso limita a alegação.} Os números do parágrafo anterior
+são da janela de 400~km. Na janela de 800~km o alcance estimado do resíduo sobe de 105 para 150~km
+na soja, de 105 para 530~km na cana e de 175 para 550~km nas outras culturas, e a fração
+compartilhada a 130~km sobe correspondentemente para 30\%, 46\% e 66\% (Tabela~\ref{tab:variograma}).
+Um alcance que cresce com a janela de observação é o diagnóstico clássico de que não existe alcance
+finito: sob ele há uma tendência regional de longo alcance, e não um patamar que um bloco possa
+colocar do lado de fora. A escolha de ler o dimensionamento na janela de 400~km é defensável ---
+a 800~km os maiores atrasos se aproximam do próprio diâmetro de GO~e~DF, onde o semivariograma é
+sustentado por poucos pares muito distantes e passa a medir a tendência em vez de estrutura local
+--- mas é uma escolha, não uma leitura neutra, e a leitura menos favorável é a que delimita
+honestamente o que a partição entrega. Nenhum bloco contido no território remove uma tendência que
+atravessa o território inteiro; o que a partição de 130~km remove é a estrutura de alcance
+intermediário, e é só isso que ela deve ser lida como removendo.
+
+\paragraph{Equilíbrio das metades.} A Tabela~\ref{tab:split-balance} reporta a composição por
+função de uso atual de cada metade, numa amostra de 20.000 pixels. A soja --- validador primário
+--- fica praticamente equilibrada (razão 1,01), e pastagem, vegetação nativa e outras culturas
+anuais ficam abaixo de 1,4. A cana-de-açúcar é a exceção, com razão 4,07: a sua pegada realizada
+concentra-se no sul de Goiás e, sob blocos de 130~km, cai majoritariamente na metade de
+calibração. Essa é a limitação declarada do desenho, e a linha da cana nas métricas de presença
+deve ser lida à sua luz. Blocos menores equilibrariam melhor a composição e decorrelacionariam
+pior; o compromisso foi resolvido em favor da decorrelação, por ser ela a razão de existir da
+partição.
+
+\begin{table}[H]
+\centering
+\caption{Composição por função de uso atual (MapBiomas) de cada metade da partição espacial,
+em número de pixels de uma amostra de 20.000 pontos (semente 7, 250~m).}
+\label{tab:split-balance}
+\input{Chapters/Tables/split_balance.tex}
+\end{table}

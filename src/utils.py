@@ -145,6 +145,74 @@ def load_aoi(project: str):
         return features.aoi_geometry()
 
 
+# --- calibration / validation spatial holdout --------------------------------
+# The 50/50 split lives in ONE place: the exported `calib_val_split` asset
+# (tools/make_calib_val_split.py), a Byte band `split` with 0 = calibration,
+# 1 = validation, over a 6x6 grid of ~130 km blocks sized from the measured
+# residual autocorrelation range. Every consumer reads that asset
+# rather than recomputing the block grid, because zoning.build_strat_band bins
+# ee.Geometry(AOI).bounds(): if `aoi` were re-exported the bounds would shift and
+# each tool would silently see a different split. Pinning to the asset keeps the
+# two halves bit-identical across every stage of the cascade.
+SPLIT_ASSET = "calib_val_split"
+SPLIT_HALVES = ("calib", "val", "full")
+
+
+def split_half(default: str = "full") -> str:
+    """Resolve $SPLIT_HALF to one of 'calib' | 'val' | 'full' (house env pattern).
+
+    'all' is accepted by the tools that loop over every domain; it is NOT a valid
+    mask selector, so it is returned verbatim for the caller to handle explicitly
+    rather than being silently collapsed to one half.
+    """
+    h = (os.environ.get("SPLIT_HALF") or default).strip().lower()
+    if h not in SPLIT_HALVES + ("all",):
+        raise SystemExit(
+            f"SPLIT_HALF must be one of {list(SPLIT_HALVES) + ['all']}, got {h!r}")
+    return h
+
+
+def split_image(project: str):
+    """The `split` band of the holdout asset (0 = calibration, 1 = validation)."""
+    return ee.Image(asset_id(project, SPLIT_ASSET)).select("split")
+
+
+def split_mask(project: str, half: str | None = None):
+    """Mask for one half of the holdout, or ``None`` for the full domain.
+
+    Returns ``None`` -- not ``ee.Image(1)`` -- for 'full'. Every call site already
+    branches on ``if mask is not None``, so None threads through without new code
+    AND leaves the full-domain graph bit-identical to the pre-holdout one. That
+    bit-identity is what makes the 'full' row of a domain comparison a valid
+    baseline instead of a recomputation, so do not "simplify" it to a constant
+    image.
+
+    Restrict by MASK, never by ``geometry=``: the reduction extent and tiling then
+    stay identical across domains (so the halves are directly comparable), and the
+    guardrail that every exported product covers the whole AOI is untouched.
+    """
+    half = (half or split_half()).strip().lower()
+    if half == "full":
+        return None
+    if half == "calib":
+        return split_image(project).eq(0)
+    if half == "val":
+        return split_image(project).eq(1)
+    raise SystemExit(f"split_mask: half must be 'calib' | 'val' | 'full', got {half!r}")
+
+
+def and_split(mask, project: str, half: str | None = None):
+    """Intersect an existing mask with a half of the holdout.
+
+    ``mask`` may be None (meaning "no restriction yet"), which is why this is a
+    helper rather than an inline ``.And()`` at each site.
+    """
+    sm = split_mask(project, half)
+    if sm is None:
+        return mask
+    return sm if mask is None else ee.Image(mask).And(sm)
+
+
 def range_report(img, region, scale: int = 1000):
     """DataFrame of per-band min/mean/max over the region — the DoD sanity check."""
     import pandas as pd

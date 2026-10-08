@@ -67,7 +67,9 @@ The split is *biophysical potential* (A) vs *realized-use & validation* (B) — 
 
 ## 4. Execution status — project `probformer`
 
-**Phase A + Phase B modelling are structurally complete — Parts 1–15 built & footprint-verified.** The Part-9 weighting layer was re-derived (`tools/derive_weights.py`, §11) and the full Part 9→15 cascade re-run against it on 2026-09-29/30; the zoning moved from K=10 to **K=4**. Parts 1–8 were *not* rebuilt: `tools/diff_vs_backup.py` against `goias_backup_ahp_20260928` found 8 of 9 feature assets bit-identical across all 39 bands, with `feat_terrain` moving only in `terr_tpi`/`terr_twi` at the documented ~0.1% tile-edge level (`terr_slope`, computed without resampling, is bit-identical — confirming the mechanism is export-time resampling, not catalog drift).
+**Phase A + Phase B modelling are structurally complete — Parts 1–15 built & footprint-verified.** The Part-9 weighting layer was re-derived (`tools/derive_weights.py`, §11) and the full Part 9→15 cascade re-run against it on 2026-09-29/30; the zoning moved from K=10 to **K=4**.
+
+**Spatial holdout cascade (2026-10-03, in progress).** σ(μ) and the percentile breakpoints are now measured on the calibration half only (§7), which re-derived the weights and forced Parts 9→15 to be re-exported again. Three pre-committed gates were run in order: **Gate 0** (variogram) FAILED at 45 km blocks and forced the redesign to a 6×6 / ~130 km grid with area balancing; **Gate 1a/1b** (σ(μ) zero-weight check) passed 42/42, max relative weight change 17.7%, inside the ±20% envelope the thesis already publishes; **Gate 2** (breakpoints) moved 2 of 9 percentile anchors (`cattle.clim_soil_moist` 55→51, `cattle.soil_soc` 18→17) with 0 shape violations and 0 broken μ=1. The K panel re-read on held-out columns keeps **k=4** (`ari_holdout` 0.793, the clear max; `silhouette_val` 0.225 vs 0.235 at k=6, near-flat 0.144–0.235 across the whole sweep). Parts 1–8 were *not* rebuilt: `tools/diff_vs_backup.py` against `goias_backup_ahp_20260928` found 8 of 9 feature assets bit-identical across all 39 bands, with `feat_terrain` moving only in `terr_tpi`/`terr_twi` at the documented ~0.1% tile-edge level (`terr_slope`, computed without resampling, is bit-identical — confirming the mechanism is export-time resampling, not catalog drift).
 
 All three RQs are answered and written into the thesis (chapters 01–05), but the numbers there —
 class shares, zone profiles, Δ tables, the annex weight table — were produced under the previous
@@ -82,7 +84,7 @@ longer lists it as future work.
 | Part | State | Notes |
 |---|---|---|
 | 1–8 | **BUILT & footprint-verified** | Ten feature assets incl. `feature_stack_250m(_z)` (34-band stack) + `feat_siting` (solar clearness / seasonal water distance) + `feat_conservation` (WDPA distance / ruggedness / carbon) — the latter two are side-images kept **out** of the stack (routed into suitability via the `sit_`/`cv_` extras prefix). |
-| 9 — suitability | **BUILT (re-derived weights)** | `suit_present` / `suit_present_comp` / `suit_present_sens`: 7 `suit_*` (0–1) + 7 `class_*` (FAO S1/S2/S3/N) + 7 `sens_*` (±20% AHP). Conservation is a value/priority index (arithmetic-mean aggregation — compensatory); the other six segments use the weighted geometric mean. Weights are derived by `tools/derive_weights.py` (see §11); seven constant climate factors were promoted to `role: gate`, so soybean/sugarcane carry 3 weighted factors (not 6), other_crops 5, cattle 3. Worst consistency ratio 0.0462 (soybean), 6 author judgements, 0 overrides. |
+| 9 — suitability | **BUILT (re-derived weights)** | `suit_present` / `suit_present_comp` / `suit_present_sens`: 7 `suit_*` (0–1) + 7 `class_*` (FAO S1/S2/S3/N) + 7 `sens_*` (±20% AHP). Conservation is a value/priority index (arithmetic-mean aggregation — compensatory); the other six segments use the weighted geometric mean. Weights are derived by `tools/derive_weights.py` (see §11): `w = normalize(w_lit · σ(μ)^λ)` with σ(μ) measured over available land in the **calibration half**, pooled over the present and the CMIP6 horizon. `role: gate` is **retired** — no factor leaves the AHP matrix; five climate factors still land at weight exactly 0 because μ ≡ 1 in both populations. Worst consistency ratio **0.0335** (sugarcane), **8** author judgements, 0 overrides. |
 | 10 — zoning | **BUILT — K=4**, offline `k=2..20` sweep | `zones_present`, offline sklearn KMeans on a decorrelated PCA input (`src/zoning.py`), classified server-side by nearest-centroid band math. Zones labelled by `comparative_segment` (argmax of each segment's z-normalized suitability), not raw dominance. `zone_profiles.csv` + `zoning_kselect.csv`. |
 | 11 — CMIP6 shift | **BUILT** | `suit_future_*`, `delta_*`, `agreement_*` assets across SSP2-4.5/SSP5-8.5 × 2031–2050/2051–2070 × 5-GCM ensemble. Delta-change engine validated against an identity change-factor (Δ=0.000). No structurally climate-invariant segment remains — every segment (including conservation and solar) moves under at least one climate lever. |
 | 12–14 — Phase B | **BUILT** | `realized_vs_potential`, `municipal_godf` (IBGE malha municipal aggregation, 247 municipalities), MOD17 productivity validation (municipal Spearman + within-crop GPP gradient), RF presence cross-check (Cohen's κ = +0.269, AUC = 0.871 for soybean), AHP consistency ratios. See `config/ahp_matrices.yaml` and `thesis/Chapters/05_results.tex` / `06_discussion_conclusion.tex` for the full numbers. |
@@ -138,6 +140,13 @@ tools/derive_weights.py       # Part 9: anchors -> Saaty matrix -> principal eig
                                 # -> w = normalize(w_lit * sigma(mu)^lambda) -> config/segments.yaml.
                                 # `--check` fails if segments.yaml drifts. Replaces build_ahp.py
                                 # (removed), which built the matrix FROM the weights.
+tools/make_calib_val_split.py # the 50/50 spatial holdout: builds it, or `--check-only` audits it
+                                # (Gate 0: variogram + balance -> variogram_suit.csv, split_balance.csv)
+tools/diff_sigma_domains.py   # Gate 1: sigma(mu) full vs calib -> sigma_domain_diff.csv; FAILs if
+                                # restriction zeroes a factor (which would kill its CMIP6 lever)
+tools/diff_breakpoints.py     # Gate 2: which breakpoints move / which notes stop being true when
+                                # the percentiles are re-anchored on the calibration half. Writes
+                                # NOTHING to config/ -- prints the edit, a human applies it.
 tools/anchor_breakpoints.py   # `percentiles` = band distributions; `discrimination` = sigma(mu),
                                 # saturated/vetoed fractions -> thesis/Chapters/factor_discrimination.csv
 tools/gen_diag_csvs.py        # regenerates zoning_kselect.csv / factor_variance.csv /
@@ -251,6 +260,18 @@ is deliberately excluded** (guardrail, §7).
   stays full precision. The 2026-09-19/20 rebuild propagated this swap through the full cascade
   (Parts 1–14, `aoi`, `municipal_godf`) and the thesis text (`03_materials.tex`, `07_annex.tex`) —
   GAUL is only mentioned there historically, as the boundary source used in an earlier iteration.
+- **Calibration/validation spatial holdout (2026-10-03).** Every empirically estimated parameter is
+  measured on one half of the territory and every reported validation metric on the other. The split
+  is a 6x6 grid of ~130 km blocks (`data/mart/calib_val_blocks.csv`, 31 blocks, seed 2026), assigned
+  to halves so the two carry **equal AREA** (171,631 km2 / 174,365 km2), not an equal number of
+  blocks -- the grid is a bounding box, so an edge block may hold a sliver of the AOI and equal
+  counts give very unequal territory. **The block size is measured, not conventional:** 130 km comes
+  from the residual autocorrelation range (105 km soybean/sugarcane, 175 km other_crops), and the
+  previous 45 km grid was replaced because it left ~52% of the structured variance shared across the
+  boundary. Read the split through `utils.split_mask(project, half)` / `utils.split_image(project)`,
+  which load the cached `calib_val_split` asset -- **never recompute the block grid in memory**,
+  because it bins `ee.Geometry(aoi).bounds()` and would silently shift if `aoi` were re-exported.
+  `$SPLIT_HALF` (`calib`|`val`|`full`|`all`) selects the domain in the tools that take one.
 - **Small artifacts only leave GEE** (PNG thumbnails, GeoTIFFs, CSV sample/summary tables).
 
 ## 8. Environment & running
@@ -440,12 +461,16 @@ fine-scale variance the figure exists to show. Don't "fix" this back to a thumbn
   `sigma_mu_available` is near 0 is inert, however large its nominal weight — that is how
   `sugarcane.soil_awc` was found sitting entirely below its own distribution (99.3% saturated at
   weight 0.22). `terr_slope` is in **degrees**.
-- **A spatially constant factor is a `gate`, not a low weight.** Seven factors — all climatic — have
-  sigma(mu) = 0 over GO/DF because the observed range sits inside their optimal plateau. They carry
-  `role: gate`: out of the AHP matrix, no weight, applied multiplicatively with breakpoints anchored
-  so the present value gives mu = 1. That removes the hidden global deflator a constant mu < 1
-  applies (the FAO cuts are absolute, so it moves the reported class shares) **and** keeps the factor
-  as a CMIP6 lever. Giving such a factor weight 0 instead would kill the climate signal in Part 11.
+- **`role: gate` is RETIRED — don't reintroduce it.** Seven factors (all climatic) have
+  sigma(mu) = 0 **in the present** because the observed range sits inside their optimal plateau. An
+  earlier method pulled them out of the AHP matrix and re-applied them multiplicatively, gated on two
+  hand-chosen thresholds (sigma < 0.05 **and** mean mu > 0.95) — the exact subjectivity the derivation
+  exists to remove. They are now kept in the matrix and weighted from `sigma_mu_horizon`: sigma(mu)
+  measured over the present population **pooled with** the CMIP6 horizon, so a factor saturated today
+  still earns weight if warming makes it grade. Five land at weight exactly 0 anyway (mu ≡ 1 in both
+  populations). `segments.yaml` now carries `role: limiting` on all 33 factors and zero `gate`. The
+  thing to preserve is the *reason*: weight 0 drops a factor out of the geometric mean **and takes its
+  CMIP6 lever with it**, which is what the horizon pooling prevents.
 - **Conservation is a value/priority index, not a native-cover detector.** It combines WDPA
   distance, ruggedness, and carbon (`feat_conservation`, routed via the `cv_` extras prefix, kept
   out of the stack/zoning like `feat_siting`'s `sit_` prefix) with demoted native-cover and moving
@@ -453,6 +478,62 @@ fine-scale variance the figure exists to show. Don't "fix" this back to a thumbn
   `segments.yaml` → `membership.weighted_arithmetic`), not the geometric mean used by the other six
   segments. Don't revert to a native-cover-dominant, geomean-aggregated surface — that version was
   circular (native cover predicting "where native cover is") and CMIP6-invariant.
+- **`split_mask(..., 'full')` returns `None`, not `ee.Image(1)`.** Every call site branches on
+  `if mask is not None`, so `None` threads through unchanged AND leaves the full-domain graph
+  bit-identical to the pre-holdout one. That bit-identity is the regression test for the whole
+  holdout plumbing: `SPLIT_HALF=full tools/anchor_breakpoints.py discrimination` must reproduce the
+  committed `factor_discrimination.csv` exactly. Don't "simplify" it to a constant image.
+- **Restrict by MASK, never by `geometry=`.** Every reduction keeps `geometry=aoi`, so the two
+  domains stay directly comparable (identical extent and tiling) and the guardrail that every
+  exported product covers the whole AOI is untouched by construction. **Only parameter ESTIMATION is
+  restricted to a half; the suitability/zoning/CMIP6 rasters always cover the full territory.**
+- **`REBUILD_FORCE` must not name `aoi` or `feat_realized` while `$SPLIT_HALF` is set.** Both feed
+  the split (the block grid bins the AOI bounds; the block roles were sampled from `feat_realized`),
+  so re-exporting either would desynchronise the halves from `calib_val_blocks.csv` **without
+  changing `calib_val_split`** -- nothing would error. `run_rebuild_full.py` raises on this.
+- **An optional `half`/`*_val` column plus a stale CSV is a WRONG table, not a missing one.**
+  `gen_thesis_tables._pivot_half`, its ANOVA reader and `make_figures.fig_4_10` used to fall back to
+  the legacy column names so they would still render against a pre-holdout CSV. The result was
+  `presence_auc.tex`, `spearman_npp.tex` and `fig_4_10.png` carrying full-domain **in-sample** numbers
+  under held-out headings and axis labels — silently, with exit code 0. All three now `SystemExit`
+  with the command to re-run. Don't reintroduce a fallback: when the artifact predates the holdout,
+  the only correct output is a refusal.
+- **`diff_breakpoints.py` measures the shift against `anchor.anchored_at`, not against the
+  full-domain percentile.** `anchored_at` records, per point, the percentile VALUE the breakpoint is
+  currently written against. Without it the gate is not idempotent — `delta` stays
+  `pctl_calib − pctl_full` forever, so it keeps proposing an edit that is already in the file, which
+  is how `cattle.clim_soil_moist` and `cattle.soil_soc` read as "never applied" after being applied.
+  Re-stamp `anchored_at` whenever a breakpoint is re-anchored, in the same edit.
+- **The measured autocorrelation range GROWS with the variogram window, so there is no finite
+  range.** Residual range goes 105→150 km (soybean), 105→530 (sugarcane), 175→550 (other crops)
+  between the 400 km and 800 km windows, and the share still coupled at the 130 km block goes
+  11/15/30% → 30/46/66%. The thesis sizes the block from the 400 km window and **says so**
+  (`anx:holdout`): at 800 km the far lags approach GO+DF's own diameter and measure the regional
+  trend, not local structure. No block inside the territory removes a trend that crosses the whole
+  territory. Quote both windows or neither.
+- **(val − calib) is a BETWEEN-HALVES difference, not an optimism gap.** Blocks 1–4 of
+  `run_validation.py` score ONE `suit_present` raster on two pixel sets, so the difference is
+  territorial — which is why val scores *better* almost everywhere (soybean AUC 0.820→0.864, cattle
+  rho 0.088→0.506), something no optimism can produce. Only `rf_kappa` is a genuine train/test
+  contrast. The column is named `half_delta` for this reason; never relabel it "optimism".
+- **`ari_subsample` is NOT `ari_holdout`.** `zoning.stability_sweep` fits each replicate on an 80%
+  subsample and then relabels the FULL sample via `predict`, so it measures label reproducibility
+  under resampling, never out-of-sample validity. `zoning.holdout_sweep` is the real thing: it fits
+  on the calibration half and scores `silhouette_val` / `davies_bouldin_val` / `ari_holdout` on the
+  held-out half. The k claim rests on the holdout columns. The PCA is fitted on the calibration rows
+  only, for the same reason -- fitting it on everything leaks the held-out covariance into the space
+  the holdout indices are measured in.
+- **`derive_weights.py` reads the domain from `aggregation.derived_half` in `segments.yaml`.** The
+  weights currently come from the calibration half, so a `--check` defaulting to `full` would report
+  false drift on a correct config. The field is machine-written beside the weights; `--half`
+  overrides it.
+- **Breakpoints carry an `anchor:` block declaring HOW they were placed** -- `percentile` (9
+  factors; the value IS a percentile of a named mask), `mu_one` (8; the ex-"gate" climate levers,
+  placed so the present value gives mu = 1, so their check is "does mu = 1 still hold on the calib
+  half", not "did a percentile move"), or `agronomic` (25; a physical threshold not drawn from this
+  territory's distribution, hence domain-exempt). Several `agronomic` notes QUOTE percentiles as
+  context -- that is evidence the threshold was checked against the distribution, not set from it.
+  `tools/diff_breakpoints.py` acts only on the `percentile` ones.
 - **Zoning is NOT independent of the AHP weights.** `zoning.build_sample` stratifies on
   `dominant_segment_band(suit, segments)` — the argmax over `suit_present`. New weights therefore
   give new strata, a new zoning sample, and a different k-selection panel even at identical seed.
@@ -467,6 +548,15 @@ fine-scale variance the figure exists to show. Don't "fix" this back to a thumbn
   whole sweep: **the territory has no strong natural cluster structure at any k**, so the
   clustering is a partitioning device, not a discovery of natural groups. Never quote a k claim
   from memory or from the prose — read the CSV.
+- **Zone numbering is CANONICAL: descending mean `terr_elev`, not k-means++ init order.**
+  `zoning.fit_kmeans(..., order_by=df[zoning.CANONICAL_ORDER_BAND])` permutes `cluster_centers_`
+  **and** `labels_` so zone 1 is always the highest ground and zone K the lowest. Without it
+  sklearn's label order is arbitrary and the same four zones come back under different numbers after
+  any change to the sample, the weights or the PCA — which silently invalidates every "Zona N" in the
+  prose while the generated tables renumber themselves, so the text and its own tables describe
+  different zones. That had already happened twice (the committed prose described Zona 1 as the
+  cultivation plateau while the table's Z1 column was the drained lowland). Every tool that exports
+  `zones_present` passes `order_by`; if you add one, pass it too, and never re-sort labels downstream.
 - **Zone ids: the `zones_present` raster is 0-based (0..K-1); everything else is 1-based (1..K).**
   The +1 is applied once, in `zoning.profile_zones`, so `zone_profiles.csv`, the thesis tables and
   prose, the figures and the dashboard all number zones from 1. The extract/validation tools shift

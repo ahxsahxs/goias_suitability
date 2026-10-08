@@ -121,18 +121,15 @@ def under_util():
         print(f"  {b:22s} = {100*a/aoi_area:5.1f}% of territory")
 
 
-# E. complete Table 4.11 — sugarcane + other_crops AUC / Boyce -------------------
-def presence_metrics():
-    for crop in ["sugarcane", "other_crops"]:
-        smp = (suit.select(f"suit_{crop}").addBands(realized.select("rl_role"))
-               .sample(region=AOI, scale=250, numPixels=CAP, seed=11,
-                       dropNulls=True, tileScale=TS).getInfo()["features"])
-        sdf = pd.DataFrame([f["properties"] for f in smp])
-        pres = sdf[sdf.rl_role == external.ROLE_CODES[crop]][f"suit_{crop}"]
-        sdf["is_c"] = (sdf.rl_role == external.ROLE_CODES[crop]).astype(int)
-        b = metrics.continuous_boyce(pres, sdf[f"suit_{crop}"])["boyce"]
-        a = metrics.auc(sdf["is_c"], sdf[f"suit_{crop}"])["auc"]
-        print(f"  {crop:12s} presence={len(pres)}/{len(sdf)}  AUC={a:.3f}  Boyce={b:.3f}")
+# E. REMOVED 2026-10-03 — presence metrics moved to tools/run_validation.py.
+# This block computed sugarcane + other_crops AUC/Boyce from a UNIFORM
+# .sample(numPixels=4500, seed=11), while soybean's row of the same thesis table
+# came from run_validation.py's GRID-stratified n~16k draw. Three rows of one
+# table, three different estimators -- which is how the thesis came to print
+# AUC 0.871 for soybean against a validation_metrics.csv that said 0.846.
+# run_validation.presence_metrics() now draws all three crops once, stratified,
+# at CAP_PRESENCE=60000, and reports each on both halves of the spatial holdout.
+# Do not reintroduce a second presence-metric path here.
 
 
 # F. municipal summary + rankings (Table 4.13) -----------------------------------
@@ -188,7 +185,6 @@ def main():
     block("B. present S1+S2 shares", present_s2)
     block("C. realized-crop mean suitability", realized_crop_suit)
     block("D. under-utilization gaps (Table 4.10)", under_util)
-    block("E. sugarcane/other_crops AUC/Boyce (Table 4.11)", presence_metrics)
     block("F. municipal summary + rankings (Table 4.13)", municipal)
     log("=== extraction complete ===")
 

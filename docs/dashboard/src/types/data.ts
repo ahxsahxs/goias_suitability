@@ -29,9 +29,12 @@ export interface AggregationConfig {
 }
 export type MembershipType = 'increasing' | 'decreasing' | 'range'
 /**
- * `limiting` factors enter the weighted aggregation; `gate` factors are
- * spatially constant over GO/DF, so they carry no weight and multiply the
- * aggregate instead (anchored so the present value gives mu = 1).
+ * Every factor is `limiting`: it enters the weighted aggregation and carries a
+ * derived weight. `gate` is RETIRED (2026-10-02) and no longer appears in
+ * config/segments.yaml -- it is kept in the union only so an archived config
+ * still parses. Factors that are spatially constant today are handled by
+ * measuring sigma(mu) over the present pooled with the CMIP6 horizon, not by an
+ * exemption; five still land at weight exactly 0.
  */
 export type FactorRole = 'limiting' | 'gate'
 export interface FactorConfig {
@@ -103,11 +106,22 @@ export interface AhpMatrices {
 
 // --- csv/ahp_weights.csv ---------------------------------------------------------
 export interface AhpWeightRow {
+  /**
+   * Spatial-holdout half that sigma(mu) was measured over ('calib' since
+   * 2026-10-03). Present so the file says which domain produced it; the file
+   * carries one domain at a time, so views need not filter on it.
+   */
+  half?: 'calib' | 'val' | 'full'
   segment: string
   factor: string
   /** Literature prior (principal eigenvector of the pairwise matrix). */
   w_lit: number
-  /** sigma(mu) over available land — the regional discriminating power. */
+  /**
+   * sigma(mu) — the regional discriminating power. Measured over available land
+   * in the CALIBRATION half, pooled over the present and the CMIP6 horizon
+   * (not the present alone, which would zero any factor already saturated today
+   * and drop it out of the geometric mean together with its climate lever).
+   */
   d: number
   w_final: number
   w_atual: number | null
@@ -155,15 +169,34 @@ export interface ZoneProfileRow {
 }
 
 // --- csv/zoning_kselect.csv ------------------------------------------------------
+// Two families of column, deliberately named apart so they cannot be confused:
+//   *_calib / ari_subsample  measured on the CALIBRATION half. ari_subsample is
+//     reproducibility under resampling -- each replicate relabels the whole
+//     sample -- so it is NOT out-of-sample validity.
+//   *_val / ari_holdout      measured on the HELD-OUT half of the spatial split.
+//     ari_holdout compares the calibration-fitted partition of that half against
+//     one fitted independently on it. The adopted k rests on these.
+// All optional: a CSV written before the holdout existed carries only the legacy
+// `silhouette` / `davies_bouldin` / `ari` names, which readers fall back to.
 export interface ZoningKselectRow {
   k: number
   inertia: number
-  silhouette: number
-  davies_bouldin: number
   gap: number
   s_k: number
-  ari: number
-  ari_std: number
+  /** calibration half */
+  silhouette_calib?: number
+  davies_bouldin_calib?: number
+  ari_subsample?: number
+  ari_subsample_std?: number
+  /** held-out half */
+  silhouette_val?: number
+  davies_bouldin_val?: number
+  ari_holdout?: number
+  /** legacy (pre-holdout) names */
+  silhouette?: number
+  davies_bouldin?: number
+  ari?: number
+  ari_std?: number
 }
 
 // --- csv/factor_variance.csv -----------------------------------------------------
@@ -315,6 +348,9 @@ export interface RfKappa {
   note: string
 }
 export interface ValidationScorecard {
+  /** Which half of the spatial holdout these metrics were scored on. `"val"` is
+   *  the held-out half the thesis quotes; see CLAUDE.md §7. */
+  half: string
   presence_auc_boyce: Record<string, PresenceAucBoyceRow>
   spearman_npp: Record<string, number>
   spearman_npp_n_municipalities: number

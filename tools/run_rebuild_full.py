@@ -68,6 +68,29 @@ def img(name):
 FORCE = {n.strip() for n in os.environ.get("REBUILD_FORCE", "").split(",") if n.strip()}
 FORCE_ALL = "all" in FORCE
 
+# The spatial holdout pins itself to the `calib_val_split` asset, which was built
+# by binning ee.Geometry(aoi).bounds() and by sampling feat_realized's rl_role for
+# each block's modal role. Re-exporting either input therefore silently changes
+# which pixels are "calibration" -- without changing calib_val_split, so every
+# tool would keep reading a split that no longer matches its own provenance, and
+# nothing would error. Refuse instead of discovering it in the results.
+# Rebuild those two deliberately with $SPLIT_HALF unset, then re-run
+# tools/make_calib_val_split.py and re-commit data/mart/calib_val_blocks.csv.
+SPLIT_PINNED = {"aoi", "feat_realized"}
+if os.environ.get("SPLIT_HALF"):
+    clash = SPLIT_PINNED & FORCE
+    if FORCE_ALL or clash:
+        raise SystemExit(
+            f"REBUILD_FORCE={'all' if FORCE_ALL else sorted(clash)} would re-export "
+            f"{sorted(SPLIT_PINNED)}, which the calibration/validation split is "
+            f"derived from, while SPLIT_HALF={os.environ['SPLIT_HALF']!r} is set.\n"
+            f"The split asset would NOT be rebuilt, so the halves would stop "
+            f"matching data/mart/calib_val_blocks.csv and no error would be raised.\n"
+            f"Either unset SPLIT_HALF for this rebuild and regenerate the split "
+            f"afterwards (tools/make_calib_val_split.py), or drop "
+            f"{sorted(SPLIT_PINNED)} from REBUILD_FORCE."
+        )
+
 # REBUILD_UNTIL: stop cleanly after a named stage instead of running to Part 12.
 # Used to gate a from-scratch run: rebuild Parts 1-8, stop, diff the features
 # against the backup (tools/diff_vs_backup.py), and only then let Part 9+ run.
@@ -252,11 +275,17 @@ def main():
         frac_bands = [f"rl_{r}_frac" for r in
                       ("soybean", "sugarcane", "other_crops", "pasture", "native")]
         bands = zoning.ZONING_BANDS
+        split = utils.split_image(PROJECT).rename("split")
         sample = zoning.build_sample(z, stack, suit_a, AOI, bands, segments=SEGS, seed=42,
-                                     extra=realized.select(frac_bands))
+                                     extra=realized.select(frac_bands).addBands(split))
         df = zoning.fc_to_df(sample)
         X = zoning.cluster_matrix(df, bands)
-        pca = zoning.fit_pca(X, var_keep=0.90)
+        # Fit on the calibration half only; project both. See the same comment in
+        # tools/gen_diag_csvs.py -- a PCA fitted on everything would leak the
+        # held-out covariance into the space the holdout columns are measured in.
+        calib = (df["split"].to_numpy() == 0)
+        log(f"  sample n={len(df)}  calib={int(calib.sum())}  val={int((~calib).sum())}")
+        pca = zoning.fit_pca(X[calib], var_keep=0.90)
         S = pca.transform(X)
         # Full validity + stability panel over k = 2..20, identical to
         # tools/gen_diag_csvs.py:gen_zoning_kselect() -- which is the tool that
@@ -265,10 +294,15 @@ def main():
         # the K the thesis justified came from different procedures. One sweep now
         # serves both, and the CSV is written from the same run that exports the asset.
         ks = range(2, 21)
-        sweep = zoning.kmeans_sweep(S, ks=ks, seed=42)
-        gap = zoning.gap_statistic(S, ks=ks, B=10, seed=42)
-        stab = zoning.stability_sweep(S, ks=ks, B=20, seed=42)
-        swp = sweep.merge(gap, on="k").merge(stab, on="k")
+        sweep = zoning.kmeans_sweep(S[calib], ks=ks, seed=42)
+        gap = zoning.gap_statistic(S[calib], ks=ks, B=10, seed=42)
+        stab = zoning.stability_sweep(S[calib], ks=ks, B=20, seed=42)
+        hold = zoning.holdout_sweep(S, df["split"].to_numpy(), ks=ks, seed=42)
+        sweep = sweep.rename(columns={"silhouette": "silhouette_calib",
+                                      "davies_bouldin": "davies_bouldin_calib"})
+        stab = stab.rename(columns={"ari": "ari_subsample",
+                                    "ari_std": "ari_subsample_std"})
+        swp = sweep.merge(gap, on="k").merge(stab, on="k").merge(hold, on="k")
         kcsv = os.path.join(os.path.dirname(__file__), "..", "thesis", "Chapters")
         kcsv = os.path.join(os.environ.get("SCRATCHPAD", os.path.normpath(kcsv)),
                             "zoning_kselect.csv")
@@ -285,14 +319,27 @@ def main():
             log(f"  K = {K} (pinned via ZONE_K)")
         else:
             cand = swp[swp.k >= 3]
-            K = int(cand.loc[cand.silhouette.idxmax(), "k"])
-            log(f"  K = {K} (fallback: argmax silhouette over k>=3, NOT pinned) "
+            # silhouette_val, not silhouette_calib: the fallback has to read the
+            # same column the k claim rests on (CLAUDE.md §11), and the calib
+            # column is the in-sample one by construction.
+            K = int(cand.loc[cand.silhouette_val.idxmax(), "k"])
+            log(f"  K = {K} (fallback: argmax silhouette_val over k>=3, NOT pinned) "
                 f"(PCs={pca.n_components_}); review the panel above")
-        km = zoning.fit_kmeans(S, K, seed=42)
+        # Final centroids from the calibration half; the raster is then produced
+        # for the WHOLE AOI by nearest-centroid band math below -- the product
+        # covers the territory, only the estimation is restricted.
+        # Canonical labels: zones numbered by descending mean elevation, not by
+        # k-means++ init order, so "Zona N" in the thesis keeps meaning the same
+        # zone across re-derivations (zoning.fit_kmeans).
+        km = zoning.fit_kmeans(S[calib], K, seed=42,
+                               order_by=df.loc[calib, zoning.CANONICAL_ORDER_BAND])
         theme_w = zoning.theme_weight_vector(bands)
         pc_img = zoning.pca_project_image(z, bands, theme_w, pca)
         zones = zoning.nearest_centroid_image(pc_img, zoning.pc_names(pca), km.cluster_centers_)
-        prof = zoning.profile_zones(df, km.labels_, bands, SEGS, realized_fracs=frac_bands)
+        # Profile on the full sample, labelled by the calibration-fitted model, so
+        # the zone cards describe the territory the raster actually paints.
+        prof = zoning.profile_zones(df, km.predict(S), bands, SEGS,
+                                    realized_fracs=frac_bands)
         prof.to_csv("zone_profiles.csv", index=False)
         log("  zone profiles:\n" + prof[["zone", "n", "comparative_segment",
             "dominant_segment", "top_features"]].to_string(index=False))

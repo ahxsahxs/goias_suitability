@@ -1,0 +1,53 @@
+segment,factor,rule,point,type,span,value_now,pctl,pctl_full,pctl_calib,delta,delta_over_span,value_proposed,move_breakpoint,rewrite_note,shape_violation,mu_one_holds,detail,delta_rel
+soybean,terr_slope,agronomic,-,decreasing,4.0,,,,,,,,False,False,False,,exempt: threshold not drawn from the distribution,
+soybean,soil_clay,percentile,a,range,42.0,20.0,p5,21.12606350559824,22.129266486613403,1.0032029810151641,0.023885785262265813,20.0,False,True,False,,,0.04533376565472828
+soybean,soil_clay,percentile,b,range,42.0,32.0,p50,31.876934917343597,32.12282442390787,0.245889506564275,0.005854512061054166,32.0,False,True,False,,,0.007654666455209592
+soybean,soil_clay,percentile,c,range,42.0,45.0,p95,45.12292062512465,44.62713734652765,-0.49578327859700266,0.011804363776119112,45.0,False,True,False,,,0.010987393363029526
+soybean,clim_twarm_q,mu_one,-,range,16.0,,p5..p95,23.578637701693637,23.484013575173392,,,,False,False,False,True,"plateau (22, 30), calib p5..p95 = 23.484013575173392..27.10937834416384",
+soybean,soil_ph,agronomic,-,range,3.0,,,,,,,,False,False,False,,exempt: threshold not drawn from the distribution,
+soybean,clim_pr_annual,mu_one,-,range,1400.0,,p5..p95,1375.0092993358735,1351.0329553565073,,,,False,False,False,True,"plateau (1100, 1800), calib p5..p95 = 1351.0329553565073..1644.9819154161694",
+soybean,clim_aridity,mu_one,-,range,1.2000000000000002,,p5..p95,0.9892640981013576,0.9502314396786546,,,,False,False,False,True,"plateau (0.7, 1.3), calib p5..p95 = 0.9502314396786546..1.2060324559072606",
+sugarcane,terr_slope,agronomic,-,decreasing,5.0,,,,,,,,False,False,False,,exempt: threshold not drawn from the distribution,
+sugarcane,soil_awc,percentile,a,increasing,11.5,22.1,p5,22.130439070923384,21.874773558580475,-0.25566551234290813,0.022231783681992013,22.1,False,True,False,,,0.011552663348592142
+sugarcane,soil_awc,percentile,b,increasing,11.5,33.6,p95,33.624059971962694,33.869899501724255,0.24583952976156098,0.02137735041404878,33.6,False,True,False,,,0.007258348367672179
+sugarcane,soil_clay,percentile,a,range,44.0,22.0,p5,21.12606350559824,22.129266486613403,1.0032029810151641,0.02280006775034464,22.0,False,True,False,,,0.04533376565472828
+sugarcane,soil_clay,percentile,b,range,44.0,32.0,p50,31.876934917343597,32.12282442390787,0.245889506564275,0.005588397876460796,32.0,False,True,False,,,0.007654666455209592
+sugarcane,clim_twarm_q,mu_one,-,range,16.0,,p5..p95,23.578637701693637,23.484013575173392,,,,False,False,False,True,"plateau (23, 32), calib p5..p95 = 23.484013575173392..27.10937834416384",
+sugarcane,clim_pr_annual,agronomic,-,range,1700.0,,,,,,,,False,False,False,,exempt: threshold not drawn from the distribution,
+sugarcane,clim_dry_months,mu_one,-,range,6.0,,p5..p95,5.0,5.0,,,,False,False,False,True,"plateau (5, 5), calib p5..p95 = 5.0..5.0",
+other_crops,terr_slope,agronomic,-,decreasing,4.0,,,,,,,,False,False,False,,exempt: threshold not drawn from the distribution,
+other_crops,soil_soc,agronomic,-,increasing,14.0,,,,,,,,False,False,False,,exempt: threshold not drawn from the distribution,
+other_crops,clim_gdd,agronomic,-,range,4500.0,,,,,,,,False,False,False,,exempt: threshold not drawn from the distribution,
+other_crops,soil_ph,agronomic,-,range,3.0,,,,,,,,False,False,False,,exempt: threshold not drawn from the distribution,
+other_crops,clim_pr_annual,mu_one,-,range,1500.0,,p5..p95,1375.0092993358735,1351.0329553565073,,,,False,False,False,True,"plateau (1000, 1700), calib p5..p95 = 1351.0329553565073..1644.9819154161694",
+other_crops,clim_pr_cv,agronomic,-,decreasing,0.7000000000000001,,,,,,,,False,False,False,,exempt: threshold not drawn from the distribution,
+pisciculture,terr_slope,agronomic,-,decreasing,2.85,,,,,,,,False,False,False,,exempt: threshold not drawn from the distribution,
+pisciculture,soil_clay,agronomic,-,increasing,20.0,,,,,,,,False,False,False,,exempt: threshold not drawn from the distribution,
+pisciculture,sit_water_dist_seas,agronomic,-,decreasing,5250.0,,,,,,,,False,False,False,,exempt: threshold not drawn from the distribution,
+pisciculture,water_drain_density,percentile,a,increasing,0.093,0.0,p5,2.89841017491436e-05,3.0155526450298064e-05,1.1714247011544624e-06,1.2595964528542607e-05,0.0,False,True,False,,,0.038846103485713934
+pisciculture,water_drain_density,percentile,b,increasing,0.093,0.093,p90,0.0927877627877496,0.0947139139364366,0.001926151148687008,0.020711302674053852,0.093,False,True,False,,,0.02033651729332679
+pisciculture,clim_twarm_q,agronomic,-,range,14.0,,,,,,,,False,False,False,,exempt: threshold not drawn from the distribution,
+cattle,clim_pr_annual,mu_one,-,range,1900.0,,p5..p95,1375.0092993358735,1351.0329553565073,,,,False,False,False,True,"plateau (1000, 2000), calib p5..p95 = 1351.0329553565073..1644.9819154161694",
+cattle,clim_dry_months,mu_one,-,decreasing,4.0,,p5..p95,5.0,5.0,,,,False,False,False,True,"plateau (5, 9), calib p5..p95 = 5.0..5.0",
+cattle,clim_soil_moist,percentile,a,increasing,69.0,51.0,p5,50.74644376019639,46.75281530722715,-3.99362845296924,0.05787867323143826,47.0,True,True,False,,,0.07869770090375658
+cattle,clim_soil_moist,percentile,b,increasing,69.0,120.0,p95,121.25050825394392,122.74254984702696,1.4920415930830444,0.021623791204102093,120.0,False,True,False,,,0.012155862778983846
+cattle,terr_slope,agronomic,-,decreasing,9.0,,,,,,,,False,False,False,,exempt: threshold not drawn from the distribution,
+cattle,soil_soc,percentile,a,increasing,9.0,8.0,p5,8.747945408822355,8.755363108626408,0.007417699804053157,0.0008241888671170175,8.0,False,False,False,,,0.0008472178380294371
+cattle,soil_soc,percentile,b,increasing,9.0,17.0,p95,18.73608018527785,17.74438219722648,-0.9916979880513708,0.1101886653390412,16.01,True,True,False,,,0.05292985396329655
+conservation,cv_pa_dist,agronomic,-,decreasing,35000.0,,,,,,,,False,False,False,,exempt: threshold not drawn from the distribution,
+conservation,cv_carbon,agronomic,-,increasing,10.0,,,,,,,,False,False,False,,exempt: threshold not drawn from the distribution,
+conservation,cv_ruggedness,agronomic,-,increasing,25.0,,,,,,,,False,False,False,,exempt: threshold not drawn from the distribution,
+conservation,terr_twi,percentile,a,increasing,2.120000000000001,9.44,p10,9.44004129204276,9.406852794908705,-0.033188497134055694,0.01565495147832815,9.44,False,True,False,,,0.003515715250316869
+conservation,terr_twi,percentile,b,increasing,2.120000000000001,11.56,p90,11.560368223476244,11.594078573691496,0.033710350215251594,0.0159011085920998,11.56,False,True,False,,,0.0029075488837676895
+conservation,rl_native_frac,agronomic,-,increasing,0.6,,,,,,,,False,False,False,,exempt: threshold not drawn from the distribution,
+conservation,clim_aridity,agronomic,-,increasing,0.30000000000000004,,,,,,,,False,False,False,,exempt: threshold not drawn from the distribution,
+conservation,terr_slope,agronomic,-,increasing,8.450000000000001,,,,,,,,False,False,False,,exempt: threshold not drawn from the distribution,
+conservation,clim_twarm_q,agronomic,-,decreasing,8.0,,,,,,,,False,False,False,,exempt: threshold not drawn from the distribution,
+conservation,water_drain_density,agronomic,-,increasing,0.07,,,,,,,,False,False,False,,exempt: threshold not drawn from the distribution,
+solar,clim_srad,percentile,a,increasing,18.0,186.0,p10,186.0628097882776,185.1830083685533,-0.8798014197243162,0.0488778566513509,186.0,False,True,False,,,0.0047285184004554675
+solar,clim_srad,percentile,b,increasing,18.0,204.0,p90,201.6863987192073,201.5615218145756,-0.12487690463169088,0.006937605812871716,204.0,False,False,False,,,0.0006191637384806872
+solar,sit_clearness,percentile,a,increasing,0.034999999999999976,0.466,p10,0.4652063803501212,0.4647229943083212,-0.00048338604179998246,0.013811029765713793,0.466,False,True,False,,,0.001039078701878893
+solar,sit_clearness,percentile,b,increasing,0.034999999999999976,0.501,p90,0.4976768600825497,0.4959686872250867,-0.0017081728574629973,0.0488049387846571,0.501,False,True,False,,,0.003432293109186677
+solar,terr_northing,agronomic,-,increasing,0.8,,,,,,,,False,False,False,,exempt: threshold not drawn from the distribution,
+solar,terr_slope,agronomic,-,decreasing,5.67,,,,,,,,False,False,False,,exempt: threshold not drawn from the distribution,
+solar,clim_twarm_q,agronomic,-,decreasing,7.0,,,,,,,,False,False,False,,exempt: threshold not drawn from the distribution,
