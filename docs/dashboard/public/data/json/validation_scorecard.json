@@ -60,5 +60,5 @@
     "sugarcane": 39.5,
     "pisciculture": 21.9
   },
-  "source": "thesis/Chapters/validation_metrics.csv + validation_zone_anova.csv (half=val); underuse_pct de tools/extract_present.py bloco D, rebuild de 2026-10-07"
+  "source": "thesis/Chapters/validation_metrics.csv + validation_zone_anova.csv + realized_gap.csv (half=val)"
 }

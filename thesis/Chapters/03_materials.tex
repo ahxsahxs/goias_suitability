@@ -49,8 +49,8 @@ multicritério por segmento é revista em \S\ref{sec:sota-casos}.
   os critérios e as faixas de classe seguem avaliações GIS-AHP publicadas para cereais de sequeiro
   \citep[pp.~6--8]{tadesse_land_2020}. \\
 4 & \textbf{Piscicultura} & Aquicultura em tanques (açudes) e reservatórios (espécies de água quente,
-  como a tilápia), seguindo critérios de viabilidade local (temperatura --- aqui a do ar, como
-  aproximação da temperatura da água ---, textura do solo, declive, acesso à água) estabelecidos para
+  como a tilápia), seguindo critérios de viabilidade local (temperatura, aqui usando a do ar como aproximação
+  da temperatura da água, textura do solo, declive, acesso à água) estabelecidos para
   aquicultura em viveiros em outras regiões \parencites{ssegane_geospatial_2012}[tab.~1]{assefa_gis_2018}. \\
 5 & \textbf{Pecuária} & Gado de corte em pastagem cultivada, que cobre cerca de 28\% do bioma Cerrado
   \citep[p.~1219]{vieira_classification_2022} e abrange um amplo espectro de estados de intensificação
@@ -104,8 +104,11 @@ Cenários futuros & SSP2-4.5; SSP5-8.5 & Cenários de emissão moderada e alta. 
 
 %% TODO: faltam citações para alguns conjuntos de dados, e.g. Accesibility to Cities, HydroSHEDs, WDPA, carbono de biomassa etc
 %% TODO: corrigir citaçã do Spawn
-Todos os conjuntos de dados vêm do catálogo público da própria plataforma, acessados na resolução nativa e
-convertidos para unidades físicas quando as bandas vêm empacotadas como inteiros. As variáveis
+Com uma única exceção, todos os conjuntos de dados vêm do catálogo público da própria plataforma,
+acessados na resolução nativa e convertidos para unidades físicas quando as bandas vêm empacotadas
+como inteiros. A exceção é a malha municipal do IBGE, distribuída fora do catálogo: ela é lida de
+um arquivo local e convertida em geometria na memória a cada execução, sem nunca ser exportada
+como ativo persistente na plataforma. As variáveis
 \textbf{biofísicas e agroclimáticas} (Tabela~\ref{tab:src-biophys} do Anexo) cobrem temas sobre o
 terreno (SRTM); a hidrografia (HydroSHEDS); o clima e o regime de água
 através do conjunto de dados TerraClimate, mensal, a $\tfrac{1}{24}^\circ$ ($\approx$4~km)
@@ -131,17 +134,16 @@ ACCESS-CM2, EC-Earth3, GFDL-ESM4, MPI-ESM1-2-HR e MRI-ESM2-0 --- é usado como s
 bem-comportado de modelos de circulação geral (GCMs); todos os cinco têm dados para os dois cenários de
 interesse. A projeção cobre os cenários SSP2-4.5 e SSP5-8.5, para as janelas de 2031--2050 e 2051--2070.
 
-Relativamente à base histórica de cada modelo, que cobre 1991--2014, a precipitação entra como fator de
-mudança multiplicativo e a temperatura, como fator aditivo (em kelvin). A especificação completa está na
-Tabela~\ref{tab:cmip6-spec} do Anexo.
-
 
 \section{Ambiente computacional}
 
-A implementação é orientada a configuração: a lógica analítica é modular e todo parâmetro numérico ---
-limiares de pertinência fuzzy, pesos dos fatores, identificadores de conjuntos de dados e fatores de
-conversão de unidades --- é declarado como valor versionado, em vez de embutido no código, de modo que a
-análise possa ser auditada e reexecutada apenas a partir da especificação declarada. O software é
+A implementação é orientada a configuração: a lógica analítica é modular e todo parâmetro numérico
+--- limiares de pertinência fuzzy, identificadores de conjuntos de dados, fatores de conversão de
+unidades, as âncoras ordinais da matriz AHP e o expoente da adaptação regional --- é declarado como
+valor versionado, em vez de embutido no código, de modo que a análise possa ser auditada e
+reexecutada apenas a partir da especificação declarada. Os \emph{pesos} dos fatores são a
+exceção deliberada: eles não são declarados, e sim \textbf{derivados} das âncoras pela cadeia
+descrita em \S\ref{sec:ahp}. O software é
 deliberadamente simples: além da integração com o Google Earth Engine e da orquestração das etapas de
 análise, o código Python usa bibliotecas científicas comuns para as tarefas executadas
 localmente. Nenhuma técnica de aprendizagem profunda é utilizada.

@@ -37,10 +37,9 @@ definições das quatro classes continuam a ser aplicadas nestes termos na liter
 avaliação de terras \citep[tab.~1, p.~5]{haile_assessment_2026}.
 
 A operacionalização global desses princípios é o \emph{Global Agro-Ecological Zones} (GAEZ~v4), que se
-declara explicitamente assente nos fundamentos da avaliação de terras da FAO
+declara explicitamente assentado nos fundamentos da avaliação de terras da FAO
 \citep[p.~1]{fischer_global_2021}. Três características do GAEZ~v4 importam para situar este trabalho,
-e nenhuma delas é um defeito do GAEZ --- são consequências de ele responder a uma pergunta diferente,
-de alcance global. Primeiro, o GAEZ~v4 é um modelo de rendimento potencial acoplado a um procedimento
+e nenhuma. Primeiro, o GAEZ~v4 é um modelo de rendimento potencial acoplado a um procedimento
 de \emph{matching} entre requisitos da cultura e condições da terra, e não uma análise multicritério;
 segundo, sua grade de trabalho a 30 segundos de arco é agregada para entrega a 5 minutos de arco,
 cerca de 9~km; terceiro, ele classifica o território em \emph{seis} classes --- VS, S, MS, mS, vmS e
@@ -71,7 +70,7 @@ e o resultado é expresso em três níveis de probabilidade de perda de rendimen
 A unidade de decisão, porém, não é a célula simulada: é o município. A portaria considera apto ao
 cultivo da soja o município que apresente, em no mínimo 20\% de sua área, risco inferior ao nível
 considerado \citep[\S1.10]{mapa_port_2026}. O produto final é, portanto, uma classificação
-binária --- apto ou inapto, a 20\%, 30\% ou 40\% de risco --- atribuída a polígonos municipais.
+categórica --- apto ou inapto, a 20\%, 30\% ou 40\% de risco --- atribuída a polígonos municipais.
 
 A geração metodológica em curso substitui o balanço hídrico por simulação de processos. O ZarcPro-Milho
 aplica o modelo CSM-CERES-Maize, da plataforma DSSAT, parametrizado sobre ensaios de valor de cultivo e
@@ -121,7 +120,7 @@ aritmética adotada para o segmento de conservação é, pelo mesmo critério, u
 padrão compensatório, apropriado a um índice de valor e não de produtividade.
 
 A ponderação por AHP assenta em comparações par a par expressas numa escala de números inteiros de 1 a
-9, cujo limite superior \citet[pp.~245--246]{saaty_scaling_1977} deriva da constatação psicológica de
+9, cujo limite superior \citep[pp.~245--246]{saaty_scaling_1977} deriva da constatação psicológica de
 que um indivíduo não compara simultaneamente mais do que sete elementos, mais ou menos dois; a tabela
 de intensidades correspondente, de ``importância igual'' a ``importância absoluta'', está em
 \citet[tab.~1, p.~246]{saaty_scaling_1977}, e o vetor de prioridades é o autovetor principal
@@ -208,7 +207,7 @@ tradição metodológica não era, até ali, uma prática estabelecida.
 \section{Validação de modelos espaciais}\label{sec:sota-validacao}
 
 Um modelo de aptidão é uma predição espacial, e a avaliação de predições espaciais tem uma literatura
-própria cuja conclusão central é inconveniente: a validação cruzada aleatória, aplicada a dados com
+própria que aponta para um problema comum: a validação cruzada aleatória, aplicada a dados com
 estrutura espacial, subestima seriamente o erro de predição, porque observações de treino e de teste
 vizinhas não são independentes \citep[p.~913]{roberts_crossvalidation_2017}. O remédio é separar
 treino e teste não ao acaso, mas por blocos --- no espaço, no tempo ou no espaço de preditores ---,
@@ -271,24 +270,24 @@ cartografia de 1:250.000 \citep[p.~2323]{queiroz_o_2022}; o GAEZ~v4 entrega cél
 essas decisões são hoje tomadas, o que é condição para que a divergência entre potencial e uso atual
 seja observável dentro de um mesmo município.
 
-\begin{table}[H]
-\centering\footnotesize\setlength{\tabcolsep}{4pt}
-\caption{Posicionamento deste trabalho frente ao zoneamento institucional, à avaliação de terras global
-e a um estudo de caso multicritério representativo.}\label{tab:estado-arte}
-\begin{tabular}{@{}p{2.1cm}p{2.0cm}p{2.3cm}p{1.9cm}p{2.0cm}p{2.3cm}@{}}
-\toprule
-Eixo & GAEZ~v4 & ZARC & ZEE-GO & \citet{radocaj_optimal_2020} & Este trabalho \\
-\midrule
-Escopo & muitas culturas, global & uma cultura por portaria e estado & zonas de desenvolvimento & uma cultura (soja) & sete segmentos comparáveis \\
-Unidade espacial & 5$'$ ($\approx$9~km) & município & 1:250.000 & condado, 4.155~km\textsuperscript{2} & raster de 250~m \\
-Método & rendimento potencial e \emph{matching} & balanço hídrico (ISNA); DSSAT no ZarcPro & vulnerabilidade $\times$ IDM & fuzzy, AHP e $k$-médias & fuzzy e AHP, média geométrica \\
-Classes & seis (VS--NS) & apto/inapto a 20, 30 ou 40\% de risco & seis zonas & FAO & FAO S1/S2/S3/N \\
-Horizonte & AR5, quatro RCPs & um ano-safra & ano-base 2010 & presente & CMIP6 SSP2-4.5 e SSP5-8.5, duas janelas \\
-Reprodutibi\-lidade & documentado, não reexecutável & portaria anual & carta publicada & sem código publicado & código e catálogo públicos \\
-Validação & --- & ensaios de cultivo e uso & --- & NDVI Sentinel-2 & uso atual e \emph{proxy} de produtividade \\
-\bottomrule
-\end{tabular}
-\end{table}
+%%% \begin{table}[H]
+%%% \centering\footnotesize\setlength{\tabcolsep}{4pt}
+%%% \caption{Posicionamento deste trabalho frente ao zoneamento institucional, à avaliação de terras global
+%%% e a um estudo de caso multicritério representativo.}\label{tab:estado-arte}
+%%% \begin{tabular}{@{}p{2.1cm}p{2.0cm}p{2.3cm}p{1.9cm}p{2.0cm}p{2.3cm}@{}}
+%%% \toprule
+%%% Eixo & GAEZ~v4 & ZARC & ZEE-GO & \citet{radocaj_optimal_2020} & Este trabalho \\
+%%% \midrule
+%%% Escopo & muitas culturas, global & uma cultura por portaria e estado & zonas de desenvolvimento & uma cultura (soja) & sete segmentos comparáveis \\
+%%% Unidade espacial & 5$'$ ($\approx$9~km) & município & 1:250.000 & condado, 4.155~km\textsuperscript{2} & raster de 250~m \\
+%%% Método & rendimento potencial e \emph{matching} & balanço hídrico (ISNA); DSSAT no ZarcPro & vulnerabilidade $\times$ IDM & fuzzy, AHP e $k$-médias & fuzzy e AHP, média geométrica \\
+%%% Classes & seis (VS--NS) & apto/inapto a 20, 30 ou 40\% de risco & seis zonas & FAO & FAO S1/S2/S3/N \\
+%%% Horizonte & AR5, quatro RCPs & um ano-safra & ano-base 2010 & presente & CMIP6 SSP2-4.5 e SSP5-8.5, duas janelas \\
+%%% Reprodutibi\-lidade & documentado, não reexecutável & portaria anual & carta publicada & sem código publicado & código e catálogo públicos \\
+%%% Validação & --- & ensaios de cultivo e uso & --- & NDVI Sentinel-2 & uso atual e \emph{proxy} de produtividade \\
+%%% \bottomrule
+%%% \end{tabular}
+%%% \end{table}
 
 Cabe delimitar o que esse posicionamento não afirma. Este trabalho não produz dados primários novos:
 opera inteiramente sobre produtos públicos já existentes. Não reivindica exatidão superior à do GAEZ~v4

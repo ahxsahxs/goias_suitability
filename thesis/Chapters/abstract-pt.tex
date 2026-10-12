@@ -11,20 +11,24 @@ nos moldes da FAO (pertinência fuzzy e pesos AHP). O zoneamento agroambiental v
 k-means não supervisionado sobre uma representação descorrelacionada das variáveis. E a projeção
 para meados do século aplica o método dos fatores de mudança a um conjunto de cinco modelos
 CMIP6. Todo o processamento é executado no lado do servidor, no Google Earth Engine, \textbf{sem
-upload de dados externos}, com validação contra o uso atual da terra (MapBiomas) e um indicador de
-produtividade (MODIS MOD17). Os resultados respondem às três questões de pesquisa: superfícies de
-viabilidade atual para os sete segmentos e uma partição em \textbf{quatro zonas} com vocações
-comparativas distintas, entre elas uma escarpa íngreme cuja melhor vocação a conservação. As zonas,
-construídas apenas com variáveis biofísicas, reproduzem com fidelidade a geografia observada do uso
-da terra (AUC da soja de 0,871). Elas também revelam um hiato relevante entre
-viabilidade potencial e uso atual, sobretudo em pastagens, apontando para intensificação --- não
-expansão sobre vegetação nativa --- como direção mais provável de mudança do uso da terra na
-região. A mudança climática de meados do século
-é modesta,
-porém direcionalmente robusta (concordância entre modelos $\approx$ 1,0 no teste mais rigoroso):
-atinge sobretudo a
-conservação e, em menor grau, o grupo milho/algodão/sorgo e a geração fotovoltaica, enquanto os
-planaltos nobres de soja e cana permanecem essencialmente estáveis. O método roda inteiramente na
+exportar nenhum ativo externo para a plataforma}, com validação contra o uso atual da terra
+(MapBiomas) e um indicador de produtividade (MODIS MOD17). Os resultados respondem às três questões de pesquisa: superfícies de
+viabilidade atual para os sete segmentos e uma partição em \textbf{quatro zonas}, duas delas com
+vocação comparativa definida --- a escarpa de conservação e a baixada drenada, voltada à
+piscicultura --- e duas em que os dois segmentos melhor colocados são praticamente
+indistinguíveis, somando 74\% do território. As zonas, construídas apenas com variáveis
+biofísicas, separam fortemente a produtividade observada ($F = 1417$ na metade do território
+reservada à validação), e as superfícies de viabilidade reproduzem a geografia atual do cultivo
+(AUC da soja de 0,864 e da cana-de-açúcar de 0,906, também fora da amostra). O trabalho revela
+ainda um hiato relevante entre viabilidade potencial e uso atual --- 44\% do território para as
+outras culturas anuais e 41\% para a soja ---, sobretudo em pastagens, apontando para
+intensificação, não expansão sobre vegetação nativa, como direção mais provável de mudança do uso
+da terra na região. A mudança climática de meados do século
+é modesta em magnitude, porém consistente entre os modelos do conjunto: atinge sobretudo a
+\textbf{geração fotovoltaica}, que perde mais de metade da área viável no cenário mais quente,
+seguida da conservação e do grupo milho/algodão/sorgo, enquanto os planaltos nobres de soja e cana
+permanecem essencialmente estáveis. A \textbf{piscicultura é o único dos sete segmentos que ganha
+área viável}, por alívio da restrição térmica. O método roda inteiramente na
 nuvem a partir de dados públicos, o que o torna reprodutível a custo marginal baixo
 para outros estados do Cerrado.
 

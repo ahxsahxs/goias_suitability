@@ -19,12 +19,12 @@ atlas de viabilidade final.
 \caption{Visão geral do fluxo metodológico, do catálogo público do Google Earth Engine ao atlas de viabilidade multissegmento, ao zoneamento agroambiental e ao ranking municipal.}\label{fig:metodologia}
 \end{figure}
 
-\section{Engenharia de atributos --- o conjunto de 34 bandas}\label{sec:feature-eng}
+\section{Engenharia de atributos --- o conjunto de 29 bandas}\label{sec:feature-eng}
 
 Todas as entradas são harmonizadas para uma grade comum de 250~m no sistema EPSG:4326. Os campos
 climáticos de resolução grossa são reamostrados bilinearmente, enquanto os rasters finos de solo e
 terreno são agregados por média espacial. Seis temas contínuos são concatenados em um único conjunto
-de 34 bandas (Tabela~\ref{tab:stack}). É produzida também uma cópia padronizada do conjunto, em que cada banda $b$ recebe um escore~z com a
+de 29 bandas (Tabela~\ref{tab:stack}). É produzida também uma cópia padronizada do conjunto, em que cada banda $b$ recebe um escore~z com a
 média territorial $\mu_b$ e o desvio padrão $\sigma_b$:
 \begin{equation*}
   z_b(x) = \frac{x_b - \mu_b}{\sigma_b}.
@@ -42,7 +42,7 @@ são resumidos abaixo.
 
 \begin{table}[H]
 \centering
-\caption{Composição do conjunto de 34 bandas.}\label{tab:stack}
+\caption{Composição do conjunto de 29 bandas.}\label{tab:stack}
 \begin{tabular}{@{}lp{10cm}r@{}}
 \toprule
 Tema & Variáveis & Contagem \\
@@ -56,10 +56,8 @@ Terreno & Elevação; declive; componente norte da orientação; componente lest
 Solo (0--30~cm) & Argila; areia; carbono orgânico; pH (H$_2$O); densidade aparente; 
   teor de água disponível para as plantas & 6 \\
 Água & Distância para água permanente; sazonalidade da água de superfície; densidade de drenagem & 3 \\
-Fenologia & NDVI médio; amplitude sazonal; mês de pico; integral anual & 4 \\
-Acessibilidade & Logaritmo do tempo de viagem à cidade mais próxima & 1 \\
 \midrule
-\textbf{Total} & & \textbf{34} \\
+\textbf{Total} & & \textbf{29} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -98,7 +96,8 @@ especificação completa por segmento --- fator, peso, forma e limiares --- est�
 
 Os limiares móveis (não fixados por um padrão técnico, como um limite legal de declive) foram
 ancorados empiricamente antes de fixados: para cada fator candidato, a distribuição percentílica
-($P_5 \text{~e~} P_{95}$) foi extraída sobre a terra \emph{disponível} da AOI e, separadamente, sobre os
+(tipicamente $P_5$ e $P_{95}$; $P_{10}$/$P_{90}$ ou $P_{50}$ onde o ombro o exige) foi extraída
+sobre a terra \emph{disponível} da AOI e, separadamente, sobre os
 pixels realizados de cada segmento no MapBiomas, e o limiar teórico obtido da literatura só foi mantido quando 
 coerente com essa distribuição amostral --- caso contrário, deslocado para dentro do intervalo realmente observado 
 em GO~e~DF, sem abandonar a forma funcional nem a ordenação relativa.
@@ -161,8 +160,6 @@ modelarem intervenções corretivas (\S\ref{sec:sota-fao}).
 %% TODO: foi feito over engineering da AHP.
 %% TODO: neste metodos existem muitas condicionais (se tal parametro tiver tal valor, faça isso, se nao, faça aquilo)
 %% TODO: isto introduz uma grande subjetividade do autor, o que nao é desejavel
-%% TODO: é preciso pensar ainda sobre as variaveis saturadas e de baixa variabilidade. A ponderação por lambda parece adequada, mas os fatores porta talvez sejam um excesso
-%% TODO: por fim, é necessário remover menções ao codiog (e.g. role: gate)
 
 \subsection{Ponderação AHP e adaptação regional}\label{sec:ahp}
 
@@ -195,10 +192,10 @@ elicitação é quantificada pela razão de consistência \citep[p.~171]{saaty_a
    \mathrm{IC} = \frac{\lambda_{\max} - n}{n - 1},
 \end{equation*}
 onde $\mathrm{RI}$ é o índice aleatório esperado para a ordem~$n$. Uma ponderação é aceita quando
-$\mathrm{RC} \le 0{,}10$. A maior razão de consistência entre os sete segmentos é 0,046
+$\mathrm{RC} \le 0{,}10$. A maior razão de consistência entre os sete segmentos é 0,0335
+(cana-de-açúcar), cerca de um terço do limiar de aceitação
 (Tabela~\ref{tab:ahp-cr} do Anexo).
 
-\paragraph{A direção da derivação.}
 Uma matriz de $n$ fatores tem $n(n-1)/2$ células livres. Se o autor pode escolher todas elas tendo
 em mãos um vetor de pesos desejado, a elicitação é apenas uma forma elaborada de reescrever esse
 vetor, e a RC resultante mede o cuidado da reconstrução, não a coerência do julgamento. Para que a
@@ -236,9 +233,10 @@ $\lambda = 1$ na soja e na pecuária e $\lambda = 0{,}5$ na cana, de modo que $\
 situa-se \emph{abaixo} do ótimo empírico em dois dos três segmentos mensuráveis e sobre ele no
 terceiro. A escolha é, portanto, deliberadamente conservadora: abre mão de parte do ganho disponível
 em vez de colhê-lo, que é precisamente o que se espera de um parâmetro fixado antes de ver o
-resultado --- e esse ganho abdicado é agora medido em terreno que a derivação dos pesos não viu. As
-outras culturas anuais ficam fora da varredura: a metade retida contém apenas 27 pixels de presença,
-amostra que não sustenta uma AUC.
+resultado. As
+outras culturas anuais, a piscicultura, a conservação e a geração fotovoltaica ficam fora da
+varredura, por não terem na amostra uma presença realizada que sustente uma AUC: ela cobre a soja
+(483 presenças em 2.662 pontos), a pecuária (1.969) e a cana-de-açúcar (52).
 
 O procedimento tem precedente publicado. \citet[p.~155]{alburo_application_2019} identificam a
 profundidade do solo como o critério mais importante da sua própria matriz AHP para a cana e, ainda
@@ -249,23 +247,24 @@ binária e pontual, gradua-o por uma estatística medida, uniformemente, em todo
 os segmentos.
 
 \paragraph{Fatores saturados no presente.}
-No limite dessa lógica está o fator que, hoje, não gradua coisa alguma. Sete fatores --- todos
+No limite dessa lógica está o fator que, hoje, não gradua nenhuma decisão. Sete fatores --- todos
 climáticos --- têm $\sigma(\mu) = 0$ no presente em GO~e~DF, porque a faixa observada cai
-inteiramente dentro do seu platô ótimo. Uma versão anterior deste método os retirava da matriz AHP
-e os reaplicava como \textbf{portas multiplicativas}, sob um critério de duas
-condições conjuntas ($\sigma(\mu) < 0{,}05$ \textbf{e} $\overline{\mu} > 0{,}95$). Esse
-dispositivo foi \textbf{substituído} pela medição sobre o horizonte descrita acima, por dois
-motivos. Primeiro, a porta exigia arbitrar dois limiares --- exatamente a subjetividade que a
-derivação existe para remover ---, enquanto o horizonte responde à mesma pergunta por medida.
-Segundo, a porta e o peso nulo resolviam o mesmo problema de formas incompatíveis: peso zero mata a
-alavanca climática na projeção CMIP6, e a porta a preservava apenas à custa de um limiar escolhido à
-mão. O resultado prático é o mesmo que a porta buscava --- remove-se o deflator oculto que uma
-pertinência quase constante e menor que~1 aplicaria a toda a superfície (os cortes da FAO são
-absolutos, de modo que tal deflator desloca as fatias de classe) e preserva-se a alavanca climática
----, mas sem limiar arbitrado. Cinco fatores permanecem em peso exatamente nulo mesmo sob o
-horizonte, por terem $\mu \equiv 1$ no presente \emph{e} em 2051--2070; que sejam todos
-climáticos, e que nenhum fator de solo, relevo, água ou acesso sature, é a forma mais direta do
-achado central de que, nesta área, o clima \emph{habilita} enquanto relevo e solo \emph{graduam}.
+inteiramente dentro do seu platô ótimo. É a medição sobre o horizonte descrita acima que decide o
+que fazer com eles, e nenhum fator é retirado da matriz AHP: um fator saturado hoje ainda recebe
+peso se o aquecimento projetado o fizer graduar. A razão de preservá-los é que peso zero não
+apenas anula o fator na média geométrica --- ele leva consigo a alavanca climática na projeção
+CMIP6, de modo que um segmento saturado no presente apareceria, por construção, como
+climaticamente invariante no futuro. O horizonte também remove o deflator oculto que uma
+pertinência quase constante e menor que~1 aplicaria a toda a superfície: como os cortes da FAO são
+absolutos, tal deflator deslocaria as fatias de classe sem discriminar nada.
+
+Cinco fatores permanecem em peso exatamente nulo mesmo sob o horizonte, por terem
+$\mu \equiv 1$ no presente \emph{e} em 2051--2070. Que sejam todos climáticos, e que nenhum fator
+de solo, relevo, água ou acesso sature, sustenta a leitura de que o clima desta área delimita o
+intervalo possível enquanto relevo e solo o graduam --- com a ressalva, registrada em
+\S\ref{sec:atlas-present}, de que isso vale para os três segmentos de cultivo anual e não para a
+pecuária nem para a geração fotovoltaica, em que um fator de prefixo climático carrega a maior
+parte da variância espacial.
 
 \paragraph{Sensibilidade dos pesos.}
 Como os pesos permanecem, em parte, subjetivos, sua influência é limitada por uma perturbação de
@@ -280,22 +279,25 @@ incerteza de cada superfície do presente.
 \section{Zoneamento não supervisionado}\label{sec:zoning}
 
 GO~e~DF são particionados em zonas agroambientais por agrupamento k-means sobre uma representação
-\textbf{descorrelacionada} do conjunto padronizado. Agrupar as 34 bandas brutas resolve apenas três
+\textbf{descorrelacionada} do conjunto padronizado. Agrupar as 29 bandas brutas resolve apenas três
 zonas de baixa expressividade: o território é climaticamente quase uniforme, e as quatorze bandas
 climáticas colineares dominam a geometria euclidiana e puxam a partição para o gradiente climático
-fraco. Três passos descorrelacionam a entrada antes do agrupamento:
+fraco. O procedimento tem seis passos, dos quais os três primeiros descorrelacionam a entrada:
 
 \begin{enumerate}
-  \item do conjunto padronizado de 34 bandas é obtido um subconjunto curado de 15 bandas
+  \item do conjunto padronizado de 29 bandas é obtido um subconjunto curado de 13 bandas
     (descartando bandas colineares ou quase constantes);
   \item no subconjunto curado é feita uma ponderação por bloco temático;
   \item o subconjunto ponderado alimenta uma PCA (retendo $\geq$~90\% da variância); 
-  \item a PCA é utilizado num particionamento k-means fora da plataforma (silhueta $+$ Davies--Bouldin $+$ \emph{gap} $\rightarrow k$);
+  \item a PCA é utilizada num particionamento k-means fora da plataforma, com $k$ escolhido pelo
+    índice de Rand ajustado medido na metade retida da partição espacial;
   \item do particionamento é feita uma classificação pelo centroide mais próximo no espaço de componentes principais;
   \item esta classificação tem como resultado o mapa de zonas agroambientais.
 \end{enumerate}
 
-O \textbf{subconjunto curado de 15 bandas} remove bandas quase duplicadas --- mantendo a aridez em vez
+%% TODO listar as bandas restantes
+
+O \textbf{subconjunto curado de 13 bandas} remove bandas quase duplicadas --- mantendo a aridez em vez
 do par precipitação/evapotranspiração, um índice térmico, e a argila em vez do par
 areia/densidade aparente --- além das bandas quase constantes. A \textbf{ponderação por bloco temático}
 divide cada banda pela raiz quadrada do número de bandas no seu tema, para que a influência de um tema não escale
@@ -318,40 +320,53 @@ e pela estabilidade de subamostras (índice de Rand ajustado, ARI, em \emph{boot
 desses índices está em \citet{ikotun_cluster_2025}.
 
 O primeiro resultado do painel não é a escolha de $k$, mas uma constatação sobre o território:
-\textbf{a silhueta permanece entre 0,158 e 0,210 em todo o intervalo $k = 2,\dots,20$}. Num
+\textbf{a silhueta permanece entre 0,144 e 0,235 em todo o intervalo $k = 2,\dots,20$} (medida na
+metade de validação; na de calibração, entre 0,168 e 0,217). Num
 índice em que valores acima de 0,5 indicam estrutura apreciável e valores abaixo de 0,25 indicam
 estrutura fraca ou ausente, isso significa que GO~e~DF não possuem agrupamentos naturais
 bem separados em nenhum $k$. O agrupamento aqui é, portanto, um dispositivo de
 partição, isto é, um modo de resumir um gradiente biofísico contínuo em unidades de decisão
-interpretáveis, e não a descoberta de grupos latentes. Como nenhum $k$ é privilegiado
-pela geometria dos dados o critério de escolha passa a ser a reprodutibilidade da partição.
+interpretáveis, e não a descoberta de grupos latentes.
 
-Sob essa leitura, dois dos três índices de validade e o critério de estabilidade convergem em
-$k = 4$. A silhueta tem seu máximo exatamente aí (0,210, contra 0,206 em $k=5$ e 0,198 em
-$k=7$). O ARI de subamostragem também é máximo em $k=4$ (0,988), e com
-o menor desvio-padrão entre réplicas ($\pm$0,004, contra
-$\pm$0,096 em $k=5$ e $\pm$0,124 em $k=6$). A partição em quatro zonas é praticamente a mesma a
-cada reamostragem, enquanto as vizinhas oscilam. O Davies--Bouldin é o único índice que aponta
-outro valor, preferindo $k=5$ (1,463, contra 1,574 em $k=4$); a diferença é pequena e não
-compensa a perda de estabilidade de $k=5$, mas é registrada aqui em vez de omitida.
+Como nenhum $k$ é privilegiado pela geometria dos dados, o critério de escolha tem de ser outro, e
+é aqui que a partição espacial (\S\ref{sec:holdout}) muda o que se pode afirmar. Dois índices de
+aparência semelhante respondem a perguntas diferentes. O \textbf{ARI de subamostragem} ajusta cada
+réplica a uma subamostra de 80\% e depois reatribui a amostra inteira, de modo que mede a
+\emph{reprodutibilidade} da partição sob reamostragem --- nunca a sua validade fora da amostra. O
+\textbf{ARI de validação cruzada espacial} (ARI de \emph{holdout}) ajusta na metade de calibração
+e compara, na metade retida, essa partição com uma ajustada independentemente sobre ela; é este o
+índice que sustenta uma afirmação sobre $k$. Por isso a PCA é também ajustada apenas nas linhas de
+calibração: ajustá-la sobre tudo vazaria a covariância da metade retida para dentro do próprio
+espaço em que os índices de validação são medidos.
+
+\textbf{Adota-se $k = 4$ porque é o máximo claro do ARI de \emph{holdout}} (0,793, contra 0,719 em
+$k=6$, 0,728 em $k=2$ e 0,677 em $k=5$). A partição em quatro zonas é, portanto, a que melhor se
+reproduz em território que não participou do ajuste. Convém registrar o que \emph{não} a sustenta:
+a silhueta não elege $k=4$ em nenhuma das duas metades --- o seu máximo está em $k=6$, tanto na
+validação (0,235 contra 0,225) quanto na calibração (0,217 contra 0,213) ---, e o Davies--Bouldin
+tem mínimo em $k=11$ na calibração e em $k=6$ na validação. O ARI de subamostragem também é máximo
+em $k=4$ (0,986, com o menor desvio-padrão entre réplicas do intervalo, $\pm$0,006 contra
+$\pm$0,201 em $k=5$ e $\pm$0,176 em $k=6$), mas essa concordância é corroboração, não fundamento:
+pelas razões acima, ela mede estabilidade e não validade.
 
 A estatística de \emph{gap} não é informativa neste território. Ela cresce de forma quase
-monotônica em todo o intervalo (2,12 em $k=2$ até 2,40 em $k=20$), e o critério do primeiro $k$
-com $\mathrm{gap}(k) \geq \mathrm{gap}(k+1) - s_{k+1}$ só é satisfeito em $k=15$ --- e apenas
-por causa de uma pequena queda entre $k=15$ e $k=16$, não por um patamar real. Em $k=15$ tanto a
-silhueta (0,169) quanto a estabilidade (ARI 0,852) estão perto dos piores valores do intervalo,
-de modo que esse ponto é um artefato do critério, não uma recomendação.
+monotônica em todo o intervalo (2,02 em $k=2$ até 2,37 em $k=20$), e o critério do primeiro $k$
+com $\mathrm{gap}(k) \geq \mathrm{gap}(k+1) - s_{k+1}$ só é satisfeito em $k=14$. 
+Neste ponto, tanto a
+silhueta (0,174 na validação) quanto o ARI de \emph{holdout} (0,543) estão entre os piores valores
+do intervalo, de modo que esse ponto é um artefato do critério, não uma recomendação.
 
-Adota-se $k = 4$: a silhueta mais alta do intervalo, o ARI mais alto e a menor variância entre
-réplicas para todo $k = 2,\dots,20$. As quatro zonas resultantes têm, além disso, quatro vocações
-comparativas distintas (\S\ref{sec:zoning-results}), ao passo que uma análise com maior número de partições
-repetem o mesmo rótulo comparativo em várias zonas de perfil físico oposto, sem ganho de expressividade.
+A escolha de $k=4$ tem um custo que vale declarar: com quatro zonas e sete segmentos, a partição
+não atribui rótulo comparativo primário a três deles, e em duas das quatro zonas a margem entre o
+primeiro e o segundo colocado é pequena o bastante para que o rótulo único seja enganoso
+(\S\ref{sec:zoning-results}). Partições com mais zonas, por outro lado, repetem o mesmo rótulo
+comparativo em várias zonas de perfil físico oposto e pontuam pior no índice fora da amostra.
 
 \textbf{Estimação.} O agrupamento é estimado fora da plataforma sobre uma amostra estratificada por
 grade espacial (uma malha $8\times8$ sobre a extensão de GO~e~DF) cruzada com o segmento
 comparativamente dominante em cada pixel --- garantindo representação tanto espacial quanto de
 nichos estreitos de um único segmento (por exemplo, a faixa ripária da psicultura) --- com alvo de
-$\approx$~40.000 pontos. O raster completo é então projetado nos eixos da PCA por 
+$\approx$~27.000 pontos. O raster completo é então projetado nos eixos da PCA por 
 aritmética de bandas e classificado no servidor pelo centroide mais próximo. 
 A mesma estratificação espacial é aplicada nas etapas de validação (\S\ref{sec:phaseb}).
 
@@ -417,9 +432,10 @@ Duas variáveis são mantidas no valor histórico: radiação solar (fora do con
 precipitação/temperatura) e umidade do solo (exigiria um balanço hídrico completo). Essas ressalvas
 afetam principalmente os segmentos de geração fotovoltaica e pecuária.
 
+%% Acessibilidade nao faz mais parte do modelo, é preciso remover mençoes a ela
+
 \textbf{Viabilidade futura e mudança.} Os atributos futuros passam pela \emph{mesma} derivação
-climática e pelas \emph{mesmas} regras de pertinência da seção \S\ref{sec:suitability} (terreno, solo, água, fenologia e
-acessibilidade são mantidos estáticos; apenas as variáveis climáticas mudam). A mudança projetada é
+climática e pelas \emph{mesmas} regras de pertinência da seção \S\ref{sec:suitability} (terreno, solo e água são mantidos estáticos; apenas as variáveis climáticas mudam). A mudança projetada é
 
 \begin{equation*}
   \Delta S = S^{\text{futuro}} - S^{\text{presente}};
@@ -450,13 +466,13 @@ produtividade (NPP do MODIS), respondendo a QP2 e validando QP1.
 
 \subsection{Partição espacial de calibração e validação}\label{sec:holdout}
 
-Toda métrica de validação reportada neste trabalho é calculada sobre uma \textbf{metade do
-território que não participou da calibração}. A necessidade é a que \S\ref{sec:sota-validacao}
+Toda métrica de validação reportada neste trabalho é calculada sobre uma metade do
+território que não participou da calibração. A necessidade é a que \S\ref{sec:sota-validacao}
 estabelece: sob autocorrelação espacial, treino e teste sorteados do mesmo território compartilham
 informação, e a métrica resultante mede em parte a proximidade entre os pontos, não a capacidade
 preditiva \citep[p.~913]{roberts_crossvalidation_2017}.
 
-\paragraph{Dimensionamento do bloco.} O tamanho do bloco não é escolhido por convenção, e sim
+O tamanho do bloco não é escolhido por convenção, e sim
 medido: do semivariograma empírico do \textbf{resíduo} (presença observada menos viabilidade
 ajustada), que é onde reside a dependência espacial capaz de inflar uma métrica fora da amostra
 \citep{roberts_crossvalidation_2017,valavi_blockcv_2019}. Na janela de 400~km o alcance do resíduo
@@ -465,56 +481,24 @@ Anexo registra as três definições de campo que foram estimadas, por que só o
 bloco, e a dependência do alcance em relação à janela de observação --- que é o limite mais sério
 deste desenho.
 
-\paragraph{Construção da partição.} Sobre a envolvente da área de estudo constrói-se uma grade
+Sobre a área de estudo constrói-se uma grade
 grosseira de $6 \times 6$ células, o que dá blocos de aproximadamente 130~km --- acima do alcance
 medido para soja e cana. Das 36 células, 31 interceptam GO~e~DF. Cada bloco recebe a função de uso
 majoritária observada no seu interior, e os blocos são então distribuídos entre calibração e
 validação de modo a \textbf{equilibrar a área}, e não a contagem de blocos: como a grade é uma
-envolvente retangular, uma célula de borda pode conter apenas uma fração do território, e metades
+retangular, uma célula na borda pode conter apenas uma fração do território, e metades
 com o mesmo número de blocos podem ficar com áreas muito desiguais. A partição resultante atribui
 14 blocos (171.631~km², 49,6\%) à calibração e 17 blocos (174.365~km², 50,4\%) à validação, com a
-soja --- o validador primário --- praticamente equilibrada entre as metades
+soja (o validador primário) praticamente equilibrada entre as metades
 (Tabela~\ref{tab:split-balance} do Anexo).
 
-\paragraph{O que é estimado em qual metade.} Na metade de calibração são medidos os percentis que
+Na metade de calibração são medidos os percentis que
 ancoram os limiares de pertinência (\S\ref{sec:fuzzy-standard}) e o poder discriminante
 $\sigma(\mu_i)$ que corrige as prioridades de literatura (\S\ref{sec:ahp}); nela são também
 ajustados os centróides do agrupamento (\S\ref{sec:zoning}) e treinado o classificador de floresta
-aleatória usado como contraprova. Na metade retida são calculadas todas as métricas reportadas.
-As \emph{superfícies} --- viabilidade, zonas e projeções --- continuam cobrindo o território
+aleatória usado como contraprova.
+As superfícies de viabilidade, zonas e projeções futuras continuam cobrindo o território
 inteiro: o que se restringe é a estimação dos parâmetros, nunca a extensão do produto.
-
-\paragraph{Correlação municipal.} A correlação com o \emph{proxy} de produtividade é municipal, ao
-passo que a partição é por blocos. Retêm-se \emph{pixels}, não municípios: a média municipal é
-calculada duas vezes, uma só com pixels de calibração e outra só com pixels de validação. Um
-município entra numa metade quando tem ali pixels de terra manejada, de modo que as contagens são
-186 (calibração) e 159 (validação) dos 247 municípios --- as duas somam mais que 247 porque 98
-municípios contribuem para ambas. Neste desenho, restringir pixels e atribuir municípios
-inteiros são procedimentos quase equivalentes: com blocos de 130~km contra um município médio de
-cerca de 37~km de extensão, a maioria dos municípios cai inteiramente dentro de um único bloco. A
-restrição por pixel foi preferida por não exigir uma regra de maioria arbitrária e por permitir que
-os 98 municípios de fronteira informem as duas colunas, e não por recuperar poder estatístico ---
-que a divisão ao meio custa de todo modo. Duas ressalvas acompanham a tabela. A primeira é de sinal
-conhecido: uma média calculada sobre parte dos pixels de um município é estimativa mais ruidosa da
-média verdadeira, e uma medida mais ruidosa só pode \emph{enfraquecer} uma correlação; o viés é
-conservador. A segunda é que as duas metades não são amostras intercambiáveis do mesmo território,
-e por isso a diferença entre as colunas não mede otimismo.
-
-\paragraph{Limite declarado.} O bloco de 130~km fica acima do alcance do resíduo da soja e da cana
-(105~km), mas abaixo do de outras culturas anuais (175~km, razão 1,34). Essa linha conserva,
-portanto, dependência espacial não quebrada pelo bloco --- isto é, otimismo --- e é assim que deve
-ser lida. Reduzir o bloco pioraria a decorrelação;
-aumentá-lo reduziria o número de blocos independentes e desequilibraria as metades. O compromisso é
-irredutível, e a Tabela~\ref{tab:variograma} do Anexo é o registro que permite ao leitor julgá-lo.
-
-\paragraph{Como ler as duas colunas.} A coluna a citar é a da metade retida, porque é a que os
-parâmetros do modelo não viram. A \emph{diferença} entre as colunas não mede otimismo: salvo a
-contraprova por floresta aleatória --- o único componente ajustado a rótulos de pixel, e treinado só
-na metade de calibração ---, todas as verificações pontuam \textbf{a mesma superfície} sobre dois
-conjuntos de pixels, de modo que o que as separa é o território, não o desempenho fora da amostra.
-O que o desenho garante é portanto mais estreito, e mais defensável, do que uma redução de otimismo
-quantificada: limiares, poder discriminante e centróides foram estimados sem ver a metade em que as
-métricas são reportadas.
 
 \subsection{Agregação municipal, uso atual e validação}\label{sec:phaseb-aggr}
 
@@ -547,11 +531,11 @@ Por fim, uma verificação cruzada orientada por dados contrasta o modelo basead
 com um classificador treinado diretamente sobre o uso realizado da terra. Os pontos de presença
 são extraídos do MapBiomas (pixels de soja) e contrastados com pontos de fundo amostrados do
 restante do território; as variáveis preditoras, porém, são exatamente o mesmo conjunto
-padronizado de 34 atributos ambientais usado no modelo fuzzy/AHP --- o MapBiomas entra apenas como
+padronizado de 29 bandas descrito em \S\ref{sec:feature-eng} --- o MapBiomas entra apenas como
 rótulo de treino. Um classificador de floresta aleatória (100 árvores) é então treinado sobre uma amostra balanceada, 
 com igual número de pontos de presença e de fundo,
 ao longo do conjunto padronizado de atributos. O balanceamento segue a recomendação de tratar o
-desequilíbrio entre presença e fundo, que degrada a floresta aleatória com parâmetros padrão nesse
+desequilíbrio entre presença e fundo, que degrada a floresta aleatória nesse
 tipo de dado \citep{valavi_modelling_2021}. A superfície resultante, construída inteiramente a
 partir do uso realizado, é binarizada (probabilidade $\geq 0{,}5$) e comparada à superfície baseada
 em conhecimento, também binarizada (classe S2 ou melhor), pelo $\kappa$ de Cohen

@@ -287,7 +287,7 @@ function loadingsLayout(key: VariantKey): Partial<Layout> {
         {{ pca.points.zone.length.toLocaleString('pt-BR') }} pixels da amostra estratificada
         (n = {{ pca.n_sample.toLocaleString('pt-BR') }}, a mesma do zoneamento), projetados
         nos três primeiros componentes de cada espaço, coloridos pela zona final
-        (<code>zones_present</code>). As zonas se separam no espaço de 15 bandas
+        (<code>zones_present</code>). As zonas se separam no espaço de {{ nBands('curated') }} bandas
         (silhueta em PC1–3 = {{ fmtSil(vCurated?.zone_silhouette_pc3) }}) e se sobrepõem no de
         {{ nBands('full') }} (silhueta = {{ fmtSil(vFull?.zone_silhouette_pc3) }}: em média, um pixel fica tão perto de
         outras zonas quanto da sua).

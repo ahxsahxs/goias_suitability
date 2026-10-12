@@ -237,7 +237,7 @@ TR = {
         "fig_4_11.xlabel": "parcela da variância (escala simétrica-log)",
         "fig_4_11.legend_title": "Legenda",
         "fig_4_11.legend_climate": "Clima",
-        "fig_4_11.legend_terrain_soil": "Terreno + solo",
+        "fig_4_11.legend_terrain_soil": "Terreno e solo",
         "fig_4_11.legend_other": "Outros (água, sítio, acesso, extras)",
         "fig_4_11.legend_dominant": "Fator dominante do segmento",
         "fig_4_11.legend_negative": "Contribuição negativa\n(correlacionada com outro fator)",
@@ -252,10 +252,10 @@ TR = {
                              "suit": "superfície ajustada (contexto)"},
         "fig_4_15.block": "bloco ({km:.0f} km)",
         "fig_4_15.range": "alcance {km:.0f} km",
-        "fig_4_12.suptitle": "Variabilidade espacial local: clima × terreno+solo\n"
+        "fig_4_12.suptitle": "Variabilidade espacial local: clima × terreno/solo\n"
                               "(bandas padronizadas, janela de 4,75 km ≈ célula nativa do TerraClimate)",
         "fig_4_12.panel": ["Clima (σ local, 14 bandas)",
-                            "Terreno + solo (σ local, 12 bandas)"],
+                            "Terreno e solo (σ local, 12 bandas)"],
         "fig_4_12.cbar_std": "desvio-padrão local médio (unidades de z-score)",
         "fig_4_14.suptitle": "Entradas climáticas, presente versus futuro (SSP5-8.5, média do conjunto 2051–2070)",
         "fig_4_14.col": ["Presente (linha de base 1991–2020)", "Futuro (SSP5-8.5, 2051–2070)"],

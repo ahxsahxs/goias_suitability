@@ -112,13 +112,57 @@ def realized_crop_suit():
 
 # D. under-utilization gaps (Table 4.10) -----------------------------------------
 def under_util():
+    """Share of territory suitable-but-unused per segment -> realized_gap.csv.
+
+    Until 2026-10-07 this block only printed, so the numbers had no CSV and both
+    the thesis table and build_dashboard_assets.build_validation_scorecard's
+    `underuse_pct` carried them hand-transcribed -- which is how 2026-09 values
+    survived two recalibrations. Sorted descending, because which segment has the
+    LARGEST gap is the claim the prose makes and it has changed (other_crops now
+    leads, not soybean).
+    """
     uu = ee.Image(aid("realized_vs_potential"))
     aoi_area = ee.Image.pixelArea().clip(AOI).reduceRegion(
         ee.Reducer.sum(), AOI, 250, maxPixels=1e10, tileScale=TS).getInfo()["area"]
+    rows = []
     for b in uu.bandNames().getInfo():
         a = uu.select(b).unmask(0).multiply(ee.Image.pixelArea()).reduceRegion(
             ee.Reducer.sum(), AOI, 250, maxPixels=1e10, tileScale=TS).getInfo()[b]
         print(f"  {b:22s} = {100*a/aoi_area:5.1f}% of territory")
+        rows.append({"band": b,
+                     "segment": b.replace("underused_", ""),
+                     "area_km2": a / 1e6,
+                     "share_pct": 100 * a / aoi_area})
+    df = pd.DataFrame(rows).sort_values("share_pct", ascending=False)
+    path = OUT / "realized_gap.csv"
+    df.to_csv(path, index=False)
+    print(f"  wrote {path}")
+
+
+# D2. territorial realized-use composition ---------------------------------------
+def realized_composition():
+    """Territorial mean of each rl_*_frac band -> realized_composition.csv.
+
+    A real reduceRegion over the AOI, NOT an area-weighted reconstruction from
+    zone_profiles.csv: that file's per-zone fracs come from a STRATIFIED sample,
+    so recombining them is the §9 error (its `n` is not an area share). The band
+    roster matches gen_thesis_tables.REALIZED so the two tables agree by
+    construction.
+    """
+    bands = ["rl_soybean_frac", "rl_sugarcane_frac", "rl_other_crops_frac",
+             "rl_pasture_frac", "rl_native_frac"]
+    stats = realized.select(bands).reduceRegion(
+        reducer=ee.Reducer.mean(), geometry=AOI, scale=250,
+        maxPixels=1e10, tileScale=TS).getInfo()
+    rows = []
+    for b in bands:
+        print(f"  {b:22s} = {100*stats[b]:5.1f}% of territory")
+        rows.append({"band": b, "share_pct": 100 * stats[b]})
+    tot = sum(r["share_pct"] for r in rows)
+    print(f"  accounted for: {tot:5.1f}%  (remainder = other MapBiomas classes)")
+    path = OUT / "realized_composition.csv"
+    pd.DataFrame(rows).to_csv(path, index=False)
+    print(f"  wrote {path}")
 
 
 # E. REMOVED 2026-10-03 — presence metrics moved to tools/run_validation.py.
@@ -185,6 +229,7 @@ def main():
     block("B. present S1+S2 shares", present_s2)
     block("C. realized-crop mean suitability", realized_crop_suit)
     block("D. under-utilization gaps (Table 4.10)", under_util)
+    block("D2. realized-use composition", realized_composition)
     block("F. municipal summary + rankings (Table 4.13)", municipal)
     log("=== extraction complete ===")
 

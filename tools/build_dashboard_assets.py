@@ -245,6 +245,10 @@ def build_home_stats() -> None:
 # 5. Sensitivity percentiles (reduceRegion, NOT a raster — used for a histogram)
 # =============================================================================
 def build_sensitivity_json() -> None:
+    """P5..P95 of each `sens_<segment>` band -> json/sensitivity_<segment>.json, read by
+    SuitabilityView. This stage was defined but missing from STAGE_CHOICES/`stages` until
+    2026-10-07, so the shipped JSONs sat at their 2026-09-19 values through two
+    recalibrations with nothing to flag it. Keep it wired."""
     project = utils.init()
     aoi = utils.load_aoi(project)
     sens = ee.Image(utils.asset_id(project, "suit_present_sens"))
@@ -612,6 +616,19 @@ def _scorecard_metrics() -> "pd.DataFrame":
     return df
 
 
+def _underuse_pct() -> dict:
+    """{segment: share_pct} from thesis/Chapters/realized_gap.csv, rounded as the
+    dashboard displays it. Refuses rather than falling back, so a missing CSV is a
+    loud failure instead of a silently stale scorecard."""
+    src = THESIS_DIR / "realized_gap.csv"
+    if not src.exists():
+        raise SystemExit(
+            f"{src} is missing, so the under-utilization shares have no source.\n"
+            f"Re-run: EE_PROJECT=probformer uv run python tools/extract_present.py")
+    df = pd.read_csv(src)
+    return {r.segment: round(float(r.share_pct), 1) for r in df.itertuples()}
+
+
 def build_validation_scorecard() -> None:
     out = DATA_DIR / "json"
     out.mkdir(parents=True, exist_ok=True)
@@ -669,15 +686,12 @@ def build_validation_scorecard() -> None:
             "rf_area_pct": round(100 * pick("rf_highprob_share")["soybean"], 1),
             "note": "Landis & Koch: concordância razoável, mas não forte",
         },
-        # Block D of tools/extract_present.py prints these and writes no CSV, so they
-        # remain the one hand-maintained entry here. Re-read them from that tool's
-        # stdout after any re-export (run of 2026-10-07).
-        "underuse_pct": {
-            "other_crops": 44.3, "soybean": 41.5, "sugarcane": 39.5, "pisciculture": 21.9,
-        },
+        # From realized_gap.csv (extract_present.under_util), which that block started
+        # writing on 2026-10-07. Until then it only printed, so these four numbers were
+        # hand-transcribed here and shipped 2026-09 values through two recalibrations.
+        "underuse_pct": _underuse_pct(),
         "source": (f"thesis/Chapters/validation_metrics.csv + validation_zone_anova.csv "
-                   f"(half={SCORECARD_HALF}); underuse_pct de tools/extract_present.py "
-                   f"bloco D, rebuild de 2026-10-07"),
+                   f"+ realized_gap.csv (half={SCORECARD_HALF})"),
     }
     dest = out / "validation_scorecard.json"
     dest.write_text(json.dumps(scorecard, indent=2, ensure_ascii=False))
@@ -818,9 +832,10 @@ def build_pca_compare(only_band: str | None = None) -> None:
 
 
 STAGE_CHOICES = [
-    "vectors", "config", "municipal", "diagnostics", "rasters", "future_rasters",
-    "realized_rasters", "datasets_catalog", "stack_composition", "band_percentiles",
-    "theme_rasters", "validation_scorecard", "home_stats", "pca_compare",
+    "vectors", "config", "municipal", "diagnostics", "sensitivity", "rasters",
+    "future_rasters", "realized_rasters", "datasets_catalog", "stack_composition",
+    "band_percentiles", "theme_rasters", "validation_scorecard", "home_stats",
+    "pca_compare",
 ]
 
 
@@ -844,6 +859,7 @@ def main() -> None:
         "config": build_config_json,
         "municipal": build_municipal_ranking,
         "diagnostics": build_diagnostics,
+        "sensitivity": build_sensitivity_json,
         "rasters": lambda: build_rasters(args.raster),
         "future_rasters": lambda: build_future_rasters(args.raster),
         "realized_rasters": lambda: build_realized_rasters(args.raster),

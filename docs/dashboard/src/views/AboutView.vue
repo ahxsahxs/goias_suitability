@@ -49,7 +49,7 @@
       <li>
         <strong>O zoneamento roda KMeans do sklearn offline</strong> sobre uma
         entrada PCA descorrelacionada, classificado no servidor por matemática de
-        banda do centróide mais próximo; o agrupamento bruto de 34 bandas colapsa
+        banda do centróide mais próximo; o agrupamento sobre a pilha bruta colapsa
         para poucas zonas de baixa expressividade.
       </li>
       <li>

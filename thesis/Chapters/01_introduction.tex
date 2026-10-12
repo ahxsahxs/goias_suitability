@@ -47,9 +47,11 @@ multicritério em SIG e a modelagem orientada a dados. O Capítulo~\ref{ch:sota}
 e localiza, em \S\ref{sec:sota-lacuna}, a lacuna que esta dissertação ocupa.
 
 
-O enquadramento é deliberadamente restrito. O modelo caracteriza o potencial biofísico e agroclimático
-mais uma representação da acessibilidade de mercado: ele não representa toda a economia do uso da terra,
-que envolve preços, posse da terra, acesso a crédito e logística além do tempo de viagem. O ``potencial''
+O enquadramento é deliberadamente restrito. O modelo caracteriza o potencial \emph{biofísico e
+agroclimático} apenas: ele não representa a economia do uso da terra, que envolve preços, posse
+da terra, acesso a crédito e logística. O tempo de viagem à cidade mais próxima é computado como
+camada de contexto, mas nenhum fator de viabilidade o consome (\S\ref{sec:ahp}), de modo que a
+acessibilidade de mercado está descrita no atlas e ausente do modelo. O ``potencial''''
 é fundamentado, e não simplesmente postulado: é validado contra o uso atual da terra e um indicador
 independente de produtividade, e toda superfície primária é acompanhada de uma medida quantificada de
 incerteza.
@@ -78,22 +80,26 @@ a terceira uma extensão voltada ao futuro.
 %% TODO: Ideia: listar nao somente a vocação primária mas também a secundária.
 
 A análise cobre as três questões. \textbf{QP1:} um agrupamento não supervisionado separa
-GO~e~DF em quatro zonas agroambientais com quatro vocações comparativas distintas, uma por
-zona --- um planalto de cultivo alto e argiloso (cana-de-açúcar), uma baixada drenada
-(piscicultura), uma baixada quente e arenosa (pecuária) e uma escarpa íngreme, com alta
-concentração de carbono, cujo melhor uso é a conservação também em termos absolutos.
+GO~e~DF em quatro zonas agroambientais, cada uma reportada com a sua vocação comparativa
+primária, a secundária e a margem entre as duas --- um planalto de cultivo alto e argiloso
+(outras culturas anuais / cana-de-açúcar), uma escarpa íngreme, com alta concentração de carbono,
+cujo melhor uso é a conservação também em termos absolutos, uma baixada drenada
+(piscicultura / soja) e uma baixada quente e arenosa (geração fotovoltaica / pecuária). Em duas
+dessas zonas a margem é ampla e o rótulo primário descreve a zona; nas outras duas, que somam
+74\% do território, os dois primeiros segmentos são praticamente indistinguíveis e o par é a
+leitura correta. 
 
-\textbf{QP2:} as zonas, construídas apenas com variáveis biofísicas, reproduzem a geografia observada
-do território sem nunca usar a cobertura da terra como entrada. A vegetação nativa alcança 68\% da
-escarpa de conservação. As lavouras, por sua vez, ocupam terras sistematicamente mais viáveis do que a
-média territorial (a viabilidade média da soja é 0,881 nos pixels efetivamente cultivados, contra 0,731 em
-toda a área apta ao cultivo). Persiste um hiato relevante entre potencial e uso atual: cerca de 40,6\% do
-território é viável para soja mas ainda não cultivado com ela, majoritariamente sobre pastagem. Isso
+\textbf{QP2:} as zonas, construídas apenas com variáveis biofísicas, separam fortemente a produtividade observada e acompanham a geografia atual
+do uso. A vegetação nativa alcança 69,7\% da escarpa de conservação, e a soja realizada 23,1\% do
+planalto de cultivo, contra 7,9\% e 5,4\% nas duas baixadas. Persiste um hiato relevante entre
+potencial e uso atual: cerca de 41,5\% do
+território é viável para soja mas ainda não cultivado com ela --- e 44,3\% o é para as outras
+culturas anuais, a maior lacuna dos sete segmentos ---, majoritariamente sobre pastagem. Isso
 aponta para intensificação, e não para abertura de novas áreas --- um achado consistente com o padrão de
 conversão de pastagem em lavoura já documentado nacionalmente \citep{caballero_transformation_2023}. \textbf{QP3:} a
 mudança em direção a meados do século é modesta em magnitude, mas direcionalmente robusta em todo o
 conjunto de modelos. Três segmentos estão expostos: a
-geração fotovoltaica mais do que os demais, com sua área viável (classes S1--S2) caindo quase à
+geração fotovoltaica mais do que os demais, com sua área viável (classes S1--S2) caindo a menos da
 metade no cenário mais quente por perda de desempenho térmico do painel; seguida da conservação e
 do grupo milho--algodão--sorgo. As áreas com vocação primária para soja e cana-de-açúcar
 permanecem essencialmente inalteradas, e a piscicultura é o único segmento que \emph{ganha} área
@@ -106,8 +112,9 @@ O estudo é delimitado da seguinte forma, e estes limites são restrições decl
 %% TODO: ja que a acessibilidade nao entra na amostra descorrelacionada, devemos remove-la por completo da analise?
 \begin{itemize}
   \item \textbf{Espacial.} Goiás e Distrito Federal apenas; a análise é feita em uma grade de 250~m no sistema EPSG:4326.
-  \item \textbf{Temática.} Sete segmentos produtivos, com o potencial expresso por indicadores biofísicos, 
-    agroclimáticos e de acessibilidade ao mercado; não é uma análise econômica do uso da terra.
+  \item \textbf{Temática.} Sete segmentos produtivos, com o potencial expresso por indicadores
+    biofísicos e agroclimáticos; não é uma análise econômica do uso da terra, e a acessibilidade
+    ao mercado não entra em nenhum fator de viabilidade.
   \item \textbf{Temporal.} Normal climatológica atual cobrindo 1991--2020; janelas futuras do CMIP6 para 2031--2050
     e 2051--2070 sob os cenários SSP2-4.5 e SSP5-8.5.
   \item \textbf{Dados.} Exclusivamente produtos públicos de satélite, reanálise, projeção climática e mapas administrativos.
@@ -124,7 +131,7 @@ linhagem FAO/GAEZ da avaliação de terras, a análise multicritério em SIG, a 
 dados e o desenho de validação espacial, e encerra com a lacuna de pesquisa.
 \textbf{Capítulo~\ref{ch:materials} (Materiais)} descreve a área de estudo, os sete segmentos, a
 plataforma de computação e o inventário de dados. \textbf{Capítulo~\ref{ch:method} (Metodologia)}
-formaliza o procedimento: as 34 bandas preditoras a 250~m, a análise de viabilidade baseada em
+formaliza o procedimento: as 29 bandas preditoras a 250~m, a análise de viabilidade baseada em
 conhecimento (fuzzy/AHP), o zoneamento não supervisionado, a projeção CMIP6 por fatores de mudança e o
 delineamento de validação, cada qual com suas equações governantes.
 \textbf{Capítulo~\ref{ch:results} (Resultados)} apresenta as superfícies de viabilidade atuais, o

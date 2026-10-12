@@ -83,7 +83,7 @@ longer lists it as future work.
 
 | Part | State | Notes |
 |---|---|---|
-| 1–8 | **BUILT & footprint-verified** | Ten feature assets incl. `feature_stack_250m(_z)` (34-band stack) + `feat_siting` (solar clearness / seasonal water distance) + `feat_conservation` (WDPA distance / ruggedness / carbon) — the latter two are side-images kept **out** of the stack (routed into suitability via the `sit_`/`cv_` extras prefix). |
+| 1–8 | **BUILT & footprint-verified** | Ten feature assets incl. `feature_stack_250m(_z)` (29-band stack) + `feat_siting` (solar clearness / seasonal water distance) + `feat_conservation` (WDPA distance / ruggedness / carbon) — the latter two are side-images kept **out** of the stack (routed into suitability via the `sit_`/`cv_` extras prefix). |
 | 9 — suitability | **BUILT (re-derived weights)** | `suit_present` / `suit_present_comp` / `suit_present_sens`: 7 `suit_*` (0–1) + 7 `class_*` (FAO S1/S2/S3/N) + 7 `sens_*` (±20% AHP). Conservation is a value/priority index (arithmetic-mean aggregation — compensatory); the other six segments use the weighted geometric mean. Weights are derived by `tools/derive_weights.py` (see §11): `w = normalize(w_lit · σ(μ)^λ)` with σ(μ) measured over available land in the **calibration half**, pooled over the present and the CMIP6 horizon. `role: gate` is **retired** — no factor leaves the AHP matrix; five climate factors still land at weight exactly 0 because μ ≡ 1 in both populations. Worst consistency ratio **0.0335** (sugarcane), **8** author judgements, 0 overrides. |
 | 10 — zoning | **BUILT — K=4**, offline `k=2..20` sweep | `zones_present`, offline sklearn KMeans on a decorrelated PCA input (`src/zoning.py`), classified server-side by nearest-centroid band math. Zones labelled by `comparative_segment` (argmax of each segment's z-normalized suitability), not raw dominance. `zone_profiles.csv` + `zoning_kselect.csv`. |
 | 11 — CMIP6 shift | **BUILT** | `suit_future_*`, `delta_*`, `agreement_*` assets across SSP2-4.5/SSP5-8.5 × 2031–2050/2051–2070 × 5-GCM ensemble. Delta-change engine validated against an identity change-factor (Δ=0.000). No structurally climate-invariant segment remains — every segment (including conservation and solar) moves under at least one climate lever. |
@@ -212,14 +212,16 @@ renamed by an explicit `tools/gen_notebooks.py` run, which would also wipe its s
 | 7b | 07b_landcover_mask | `feat_landcover` | mode class, tree/crop/grass fractions, excluded/available masks |
 | 7c | 07c_siting | `feat_siting` | solar clearness, seasonal water distance (2 bands; kept out of the stack) |
 | 7d | 07d_conservation | `feat_conservation` | WDPA distance, ruggedness, carbon (3 bands; kept out of the stack) |
-| 8 | 08_feature_stack | `feature_stack_250m`, `feature_stack_250m_z` | raw + z-scored 34-band stack (land cover excluded) |
+| 8 | 08_feature_stack | `feature_stack_250m`, `feature_stack_250m_z` | raw + z-scored 29-band stack (land cover excluded) |
 | 9 | 09_suitability_fuzzy_ahp | `suit_present`, `suit_present_sens` | 7 `suit_*` (0–1) + 7 `class_*` (FAO S1/S2/S3/N) + 7 `sens_*` (±20% AHP) |
 | 10 | 10_zoning_kmeans | `zones_present` (+ `zone_profiles.csv`) | biophysical zones (offline KMeans, nearest-centroid classify) + profile cards |
 | 11 | 11_cmip6_shift | `suit_future_*`, `delta_*`, `agreement_*` | future suitability per SSP/window, Δ, GCM ensemble agreement |
 | 12–15 | 12..15 | `municipal_godf`, `feat_realized`, `realized_vs_potential`, … | Phase B (IBGE malha municipal boundaries, MapBiomas realized use, MOD17 validation) |
 
-The 34-band stack = climate 14 + terrain 6 + soil 6 + water 3 + phenology 4 + access 1; **land cover
-is deliberately excluded** (guardrail, §7).
+The 29-band stack = climate 14 + terrain 6 + soil 6 + water 3; **land cover is deliberately
+excluded** (guardrail, §7). `feat_phenology` and `feat_access` are still built as assets but enter
+neither `STACK_THEMES` nor any AHP factor — they are context layers, so the thesis must not claim
+market accessibility or phenology as model inputs (corrected in the text on 2026-10-07).
 
 ---
 
@@ -571,7 +573,7 @@ fine-scale variance the figure exists to show. Don't "fix" this back to a thumbn
   `src/zoning.py` fits sklearn KMeans on a sample, then classifies server-side by **nearest-centroid
   band math** (negative sq-distance → `arrayArgmax`), deterministic and label-identical to sklearn.
   Clustering runs on a **decorrelated** input (curated `ZONING_BANDS` → theme-weight ÷√bands →
-  PCA≥90% var), classified in PC space — raw 34-band clustering collapses to a handful of
+  PCA≥90% var), classified in PC space — raw 29-band clustering collapses to a handful of
   low-expressiveness zones. Don't "fix" it back to weka or raw-band clustering.
 - **Zone label is `comparative_segment`, not `dominant`/`distinctive`.** Zones are labelled by
   argmax of each segment's **z-normalized** suitability (`membership.comparative_present` /

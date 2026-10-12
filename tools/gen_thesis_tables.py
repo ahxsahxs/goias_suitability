@@ -139,10 +139,31 @@ def signed(v, dec=3):
     return ("$+$" if v >= 0 else "$-$") + num(abs(v), dec)
 
 
-def tabular(colspec, header, rows, *, midrules=()):
-    """A complete booktabs tabular. `rows` are lists of already-formatted cells."""
-    out = [f"\\begin{{tabular}}{{@{{}}{colspec}@{{}}}}", "\\toprule",
-           " & ".join(header) + " \\\\", "\\midrule"]
+def tabular(colspec, header, rows, *, midrules=(), tophead=None):
+    """A complete booktabs tabular. `rows` are lists of already-formatted cells.
+
+    `tophead` adds a spanning row above `header`, as [(label, span), ...] covering
+    every column in order; blank labels get no rule. The CMIP6 tables need it: a
+    flat header repeats "SSP2-4.5"/"SSP5-8.5" in full on every column and pushes
+    the table past \\textwidth, which is why the hand-typed versions in the
+    chapter used \\multicolumn.
+    """
+    out = [f"\\begin{{tabular}}{{@{{}}{colspec}@{{}}}}", "\\toprule"]
+    if tophead:
+        cells, rules, col = [], [], 1
+        for label, span in tophead:
+            if label and span > 1:
+                cells.append(f"\\multicolumn{{{span}}}{{c}}{{{label}}}")
+            elif label:
+                cells.append(label)
+            else:
+                cells.extend([""] * span)
+            if label:
+                rules.append(f"\\cmidrule(lr){{{col}-{col + span - 1}}}")
+            col += span
+        out.append(" & ".join(cells) + " \\\\")
+        out.append(" ".join(rules))
+    out += [" & ".join(header) + " \\\\", "\\midrule"]
     for i, r in enumerate(rows):
         if i in midrules:
             out.append("\\midrule")
@@ -161,13 +182,16 @@ def write(name, body):
 
 
 def read_csv(name):
-    """$SCRATCHPAD -> thesis/Chapters -> repo root.
+    """$SCRATCHPAD -> thesis/Chapters -> thesis/Chapters/Figures -> repo root.
 
     The repo-root leg is for zone_profiles.csv, which the Part-10 cascade writes
     beside the code rather than into thesis/Chapters (make_figures.zone_k() does
-    the same dance).
+    the same dance). The Figures leg is for municipal_ranking.csv, which
+    extract_present.municipal() writes next to the figures because that is where
+    make_figures reads it from.
     """
-    for path in (IN / name, CHAPTERS / name, REPO / name):
+    for path in (IN / name, CHAPTERS / name, CHAPTERS / "Figures" / name,
+                 REPO / name):
         if path.exists():
             return pd.read_csv(path)
     raise FileNotFoundError(name)
@@ -260,10 +284,22 @@ def zone_shift():
 
 
 def _combo_cols(d):
-    """Ordered (ssp, window) pairs present in a CMIP6 CSV, with PT header labels."""
+    """Ordered (ssp, window) pairs in a CMIP6 CSV, as a two-level PT header.
+
+    Returns (combos, tophead, subheads): `tophead` groups the columns by SSP for
+    `tabular(..., tophead=...)` and `subheads` carries just the window, so
+    "SSP2-4.5" is typeset once per group instead of once per column.
+    """
     combos = sorted({(r.ssp, r.window) for r in d.itertuples()})
-    heads = [f"{SSP_PT[ssp]} {win.replace('_', '--')}" for ssp, win in combos]
-    return combos, heads
+    subheads = [f"{win.split('_')[0]}--{win.split('_')[1][-2:]}" for _, win in combos]
+    tophead = []
+    for ssp, _ in combos:
+        label = SSP_PT[ssp]
+        if tophead and tophead[-1][0] == label:
+            tophead[-1] = (label, tophead[-1][1] + 1)
+        else:
+            tophead.append((label, 1))
+    return combos, tophead, subheads
 
 
 def shift_mean():
@@ -272,12 +308,13 @@ def shift_mean():
     except FileNotFoundError:
         print("  !! cmip6_shift_mean.csv missing -- run tools/extract_cmip6.py first")
         return
-    combos, heads = _combo_cols(d)
+    combos, tophead, subheads = _combo_cols(d)
     idx = {(r.segment, r.ssp, r.window): r.delta_s for r in d.itertuples()}
     rows = [[SEG_PT[seg]] + [signed(idx.get((seg, ssp, win)), 4) for ssp, win in combos]
             for seg in SEG_PT if any(k[0] == seg for k in idx)]
     write("shift_mean.tex",
-          tabular("l" + "r" * len(combos), ["Segmento"] + heads, rows))
+          tabular("l" + "r" * len(combos), ["Segmento"] + subheads, rows,
+                  tophead=[("", 1)] + tophead))
 
 
 def shift_share():
@@ -286,14 +323,15 @@ def shift_share():
     except FileNotFoundError:
         print("  !! cmip6_shift_share.csv missing -- run tools/extract_cmip6.py first")
         return
-    combos, heads = _combo_cols(d)
+    combos, tophead, subheads = _combo_cols(d)
     fut = {(r.segment, r.ssp, r.window): r.future_share for r in d.itertuples()}
     pres = {r.segment: r.present_share for r in d.itertuples()}
     rows = [[SEG_PT[seg], pct(pres[seg], 1)]
             + [pct(fut.get((seg, ssp, win)), 1) for ssp, win in combos]
             for seg in SEG_PT if seg in pres]
     write("shift_share.tex",
-          tabular("lr" + "r" * len(combos), ["Segmento", "Presente"] + heads, rows))
+          tabular("lr" + "r" * len(combos), ["Segmento", "Presente"] + subheads, rows,
+                  tophead=[("", 2)] + tophead))
 
 
 def downgrade():
@@ -302,12 +340,13 @@ def downgrade():
     except FileNotFoundError:
         print("  !! cmip6_downgrade.csv missing -- run tools/extract_cmip6.py first")
         return
-    combos, heads = _combo_cols(d)
+    combos, tophead, subheads = _combo_cols(d)
     idx = {(r.segment, r.ssp, r.window): r.downgrade_share for r in d.itertuples()}
     rows = [[SEG_PT[seg]] + [pct(idx.get((seg, ssp, win)), 1) for ssp, win in combos]
             for seg in SEG_PT if any(k[0] == seg for k in idx)]
     write("downgrade_share.tex",
-          tabular("l" + "r" * len(combos), ["Segmento"] + heads, rows))
+          tabular("l" + "r" * len(combos), ["Segmento"] + subheads, rows,
+                  tophead=[("", 1)] + tophead))
 
 
 def transition():
@@ -326,7 +365,7 @@ def transition():
     write("transition_othercrops.tex",
           tabular("lrrrrr",
                   ["Presente $\\downarrow$ / futuro $\\rightarrow$"] + order
-                  + ["Total presente"], rows))
+                  + ["Total"], rows))
 
 
 def ahp_weights():
@@ -563,6 +602,71 @@ def split_balance():
         rows, midrules=(len(rows) - 1,)))
 
 
+def realized_composition():
+    """tab:realized-composition -- territorial share of each realized use.
+
+    From realized_composition.csv (extract_present.realized_composition), a real
+    reduceRegion over the AOI. Do NOT area-weight zone_profiles.csv's per-zone
+    fracs instead: those come from a stratified sample and recombining them is
+    the §9 error. The band roster is REALIZED, so this table and zone_realized
+    cannot drift apart.
+    """
+    c = read_csv("realized_composition.csv").set_index("band")["share_pct"]
+    rows = [[lab, num(c[col], 1) + "\\%"] for col, lab in REALIZED if col in c.index]
+    total = sum(c[col] for col, _ in REALIZED if col in c.index)
+    # The five rl_*_frac bands do not exhaust the territory; the remainder is the
+    # classes MapBiomas carries but this study never models (urban, mining, water,
+    # silviculture, perennials, aquaculture). Derived by subtraction rather than
+    # listed one by one, because no regenerated artifact breaks it down -- the
+    # per-class figures the hand-typed table used to print had no source.
+    rows.append(["Outras classes (não modeladas)", num(100 - total, 1) + "\\%"])
+    rows.append(["\\textbf{Total}", "\\textbf{100,0\\%}"])
+    write("realized_composition.tex", tabular(
+        "lr", ["Uso atual", "Parcela do território"], rows,
+        midrules=(len(rows) - 1,)))
+
+
+def pot_real_gap():
+    """tab:pot-real-gap -- suitable-but-unused share per segment.
+
+    From realized_gap.csv (extract_present.under_util), already sorted descending
+    by share: which segment carries the LARGEST gap is the claim the prose makes,
+    and it moved to other_crops at the 2026-10-07 rebuild. Only the four segments
+    that have an `underused_*` band appear -- cattle/conservation/solar have none
+    by construction (external.ROLE_CODES).
+    """
+    g = read_csv("realized_gap.csv").sort_values("share_pct", ascending=False)
+    rows = [[SEG_PT.get(r.segment, r.segment), num(r.area_km2, 0),
+             num(r.share_pct, 1) + "\\%"] for r in g.itertuples()]
+    write("pot_real_gap.tex", tabular(
+        "lrr", ["Segmento", "Área (km²)", "Parcela do território"], rows))
+
+
+def municipal_rank():
+    """tab:municipal-rank -- top-5 opportunity beside top-5 climate vulnerability.
+
+    From Figures/municipal_ranking.csv (extract_present.municipal). `opportunity`
+    is suit_soybean x underused_soybean, as that tool defines it; vulnerability is
+    the most negative delta_other_crops under SSP5-8.5 2051-2070. Both blocks come
+    from one file, so the two halves cannot describe different runs -- which the
+    hand-typed version it replaces could not guarantee. Side-by-side layout, N
+    rows, matching the float the chapter already carries.
+    """
+    m = read_csv("municipal_ranking.csv")
+    if "opportunity" not in m.columns:
+        m["opportunity"] = m["suit_soybean"] * m["underused_soybean"]
+    n = 5
+    opp = m.nlargest(n, "opportunity").itertuples()
+    vul = m.nsmallest(n, "delta_other_crops").itertuples()
+    rows = [[o.NM_MUN, num(o.opportunity, 3), v.NM_MUN, signed(v.delta_other_crops, 3)]
+            for o, v in zip(opp, vul)]
+    write("municipal_rank.tex", tabular(
+        "lr@{\\hspace{1.5cm}}lr",
+        ["Oportunidade (município)", "Escore", "Vulnerabilidade (município)",
+         "$\\Delta S$"],
+        rows))
+
+
 TABLES = {
     "zone_suit": zone_suit, "zone_means": zone_means, "zone_realized": zone_realized,
     "zone_shift": zone_shift, "shift_mean": shift_mean, "shift_share": shift_share,
@@ -571,6 +675,8 @@ TABLES = {
     "validation": validation, "presence_auc": presence_auc,
     "spearman_npp": spearman_npp, "variograma": variograma,
     "split_balance": split_balance,
+    "realized_composition": realized_composition, "pot_real_gap": pot_real_gap,
+    "municipal_rank": municipal_rank,
 }
 
 
