@@ -163,3 +163,14 @@
 % (opcional) Se o corpo NÃO ficar 12pt após compilar, descomente a linha abaixo:
 % \AtBeginDocument{\normalfont\fontsize{12pt}{14pt}\selectfont}
 % ================================================================
+
+% ================== Diagramas TikZ ==================
+% O diagrama de metodologia (Figura~\ref{fig:metodologia}) é desenhado no próprio
+% LaTeX, não importado como PNG: o PNG anterior divergiu do texto em três pontos
+% (temas de entrada, contagem de bandas e k do agrupamento) sem que nada o
+% detectasse. Mantido como código, ele é revisto junto com o capítulo.
+% NOTA: usar a biblioteca `arrows` clássica. Esta instalação (TeX Live 2023/Debian)
+% não traz `tikzlibraryarrows.meta.code.tex`, logo `arrows.meta` falha.
+\usepackage{tikz}
+\usetikzlibrary{positioning, shapes.geometric, fit, calc, arrows}
+% ====================================================

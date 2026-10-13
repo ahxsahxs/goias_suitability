@@ -10,9 +10,9 @@ contraposta à necessidade de preservar a vegetação nativa, os corpos d'água 
 dos quais essa produção depende \citep{spera_agricultural_2017,gomes_agricultural_2019}.
 
 O uso do território é alocado parcela a parcela, em geral mais motivado pelo preço das commodities e
-inércia histórica do que por uma avaliação sistemática e geográfica da capacidade biofísica. 
-Ainda assim essa capacidade --- que se manifesta na forma do regime de chuvas, ciclo da água, composição dos solos,
-acessibilidade e dinâmicas vegetacionais --- varia continuamente e restringe o que cada lugar pode
+inércia histórica do que por uma avaliação sistemática e geográfica da capacidade biofísica.
+Ainda assim essa capacidade --- que se manifesta na forma do regime de chuvas, do ciclo da água, da
+composição dos solos e do relevo --- varia continuamente e restringe o que cada lugar pode
 suportar de forma sustentável. Duas outras pressões incidem sobre um método de decisão espacial. Primeiro,
 parcelas consideráveis do território estão possivelmente mal alocadas: subutilizadas em relação
 a suas capacidades, ou destinadas a uma finalidade que o ambiente local
@@ -49,9 +49,7 @@ e localiza, em \S\ref{sec:sota-lacuna}, a lacuna que esta dissertação ocupa.
 
 O enquadramento é deliberadamente restrito. O modelo caracteriza o potencial \emph{biofísico e
 agroclimático} apenas: ele não representa a economia do uso da terra, que envolve preços, posse
-da terra, acesso a crédito e logística. O tempo de viagem à cidade mais próxima é computado como
-camada de contexto, mas nenhum fator de viabilidade o consome (\S\ref{sec:ahp}), de modo que a
-acessibilidade de mercado está descrita no atlas e ausente do modelo. O ``potencial''''
+da terra, acesso a crédito, logística e acessibilidade de mercado. O ``potencial''
 é fundamentado, e não simplesmente postulado: é validado contra o uso atual da terra e um indicador
 independente de produtividade, e toda superfície primária é acompanhada de uma medida quantificada de
 incerteza.
@@ -73,12 +71,6 @@ a terceira uma extensão voltada ao futuro.
 
 \section{Prévia dos resultados}
 
-%% TODO: as alterações sobre quais variaveis fazem parte da amostra descorrelacionada
-%% TODO: e a mudança na ancoragem dos limiares e pesos AHP reduziu o numero de zonas de 10
-%% TODO: para 4. Embora agora a distinção seja mais poderosa, temos um resultado menos
-%% TODO: interpretável já que ele não cobre todos os 7 segmentos.
-%% TODO: Ideia: listar nao somente a vocação primária mas também a secundária.
-
 A análise cobre as três questões. \textbf{QP1:} um agrupamento não supervisionado separa
 GO~e~DF em quatro zonas agroambientais, cada uma reportada com a sua vocação comparativa
 primária, a secundária e a margem entre as duas --- um planalto de cultivo alto e argiloso
@@ -87,7 +79,7 @@ cujo melhor uso é a conservação também em termos absolutos, uma baixada dren
 (piscicultura / soja) e uma baixada quente e arenosa (geração fotovoltaica / pecuária). Em duas
 dessas zonas a margem é ampla e o rótulo primário descreve a zona; nas outras duas, que somam
 74\% do território, os dois primeiros segmentos são praticamente indistinguíveis e o par é a
-leitura correta. 
+leitura correta.
 
 \textbf{QP2:} as zonas, construídas apenas com variáveis biofísicas, separam fortemente a produtividade observada e acompanham a geografia atual
 do uso. A vegetação nativa alcança 69,7\% da escarpa de conservação, e a soja realizada 23,1\% do
@@ -109,12 +101,11 @@ viável.
 
 O estudo é delimitado da seguinte forma, e estes limites são restrições declaradas, em vez de pressupostos ocultos.
 
-%% TODO: ja que a acessibilidade nao entra na amostra descorrelacionada, devemos remove-la por completo da analise?
 \begin{itemize}
   \item \textbf{Espacial.} Goiás e Distrito Federal apenas; a análise é feita em uma grade de 250~m no sistema EPSG:4326.
   \item \textbf{Temática.} Sete segmentos produtivos, com o potencial expresso por indicadores
-    biofísicos e agroclimáticos; não é uma análise econômica do uso da terra, e a acessibilidade
-    ao mercado não entra em nenhum fator de viabilidade.
+    biofísicos e agroclimáticos; não é uma análise econômica do uso da terra, e nenhuma variável
+    derivada do uso ou da infraestrutura existentes entra em fator de viabilidade.
   \item \textbf{Temporal.} Normal climatológica atual cobrindo 1991--2020; janelas futuras do CMIP6 para 2031--2050
     e 2051--2070 sob os cenários SSP2-4.5 e SSP5-8.5.
   \item \textbf{Dados.} Exclusivamente produtos públicos de satélite, reanálise, projeção climática e mapas administrativos.

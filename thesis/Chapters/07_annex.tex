@@ -24,18 +24,14 @@ Solo (0--30~cm) & Propriedades de solo OpenLandMap & 250~m & Argila, areia, carb
   pH (H$_2$O), densidade aparente, teor de água disponível para as plantas \\
 Água de superfície & JRC Global Surface Water & 30~m & Ocorrência e sazonalidade
   $\rightarrow$ distância à água permanente \\
-Fenologia da vegetação & MODIS NDVI, composições de 16 dias & 250~m & Parâmetros harmônicos
-  (média, amplitude, época de pico, integral) \\
-Acessibilidade ao mercado & Global Accessibility to Cities (2015) & $\approx$1~km & Tempo de
-  viagem à cidade mais próxima (\emph{proxy} de acessibilidade ao mercado) \\
 Cobertura genérica da terra & MapBiomas, coleção~10 (2024) & 30~m & Máscara e frações por classe
   (apenas máscara/contexto) \\
 Áreas protegidas & World Database on Protected Areas (WDPA) & vetor & Distância a reservas
   $\rightarrow$ conectividade de conservação (camada de governança, não de cobertura da
   terra) \\
-Biomassa acima do solo & Densidade global de carbono em biomassa acima do solo (Spawn
-  \emph{et al.}) & $\approx$300~m & Valor do serviço de armazenamento de carbono
-  (conservação) \\
+Biomassa acima do solo & Densidade global de carbono em biomassa acima do solo, ano de
+  referência 2010 \citep[p.~1]{spawn_harmonized_2020} & $\approx$300~m & Valor do serviço de
+  armazenamento de carbono (conservação) \\
 Clima futuro & NASA NEX-GDDP-CMIP6, diário com redução de escala & $\approx$25~km &
   Precipitação, temperatura máxima e mínima $\rightarrow$ fatores de mudança
   (\emph{delta-change}) \\
@@ -164,18 +160,32 @@ sazonalidade da água de superfície é carregada do produto de origem; a densid
 vizinhança circular, com faixa empírica de $\approx$0--0,15 (percentil 90 $\approx$0,095) que
 governa seus limiares de pertinência.
 
-\textbf{Fenologia (4 variáveis).} Os parâmetros fenológicos são extraídos por uma regressão
-harmônica (de Fourier) do ciclo sazonal de NDVI, ajustada à climatologia de NDVI de 12 meses
-em vez das $\sim$460 composições de 16 dias ($\approx$38$\times$ mais barato para as mesmas
-métricas). O modelo mantém um termo constante mais harmônicos anual e semianual,
-\begin{equation*}
-  \mathrm{NDVI}(t) = \beta_0 + \beta_1 \cos(2\pi t) + \gamma_1 \sin(2\pi t)
-   + \beta_2 \cos(4\pi t) + \gamma_2 \sin(4\pi t) + \varepsilon(t),
-\end{equation*}
-com $t$ a fração do ano, fornecendo o NDVI médio ($\beta_0$), a amplitude sazonal
-$A = \sqrt{\beta_1^2 + \gamma_1^2}$, a época de pico (a partir da fase do harmônico anual) e
-uma integral anual (NDVI médio $\times$ 365).
+\textbf{Sítio (2 variáveis; fora do conjunto).} O \emph{índice de claridade} atmosférica é a
+razão entre a radiação solar observada na superfície e a radiação extraterrestre no topo da
+atmosfera, $K_t = R_s/R_a$, truncada a $[0;1]$. $R_a$ é computada analiticamente pela formulação
+FAO-56, como função apenas da latitude e do dia do ano --- declinação solar, ângulo horário do
+poente e distância Terra--Sol inversa, integrados mês a mês e tomados em média anual. A
+normalização é o que importa: $R_s$ isolada é quase uniforme em GO~e~DF, enquanto $K_t$ mede a
+fração da radiação disponível que de fato chega ao solo e, por isso, carrega o sinal espacial de
+nebulosidade. A segunda variável é a distância euclidiana à água superficial
+\textbf{semipermanente} --- ocorrência $>$~50\% no JRC Global Surface Water, ou seja, água
+presente em cerca de seis meses ou mais por ano ---, calculada pela mesma transformada de
+distância usada para a água permanente. Ela existe porque o critério de sítio para aquicultura em
+pequenos reservatórios é governado pela água sazonal, não pela permanente: ancorado na água
+permanente, o fator da piscicultura media distâncias da ordem de 13~km e ficava colado no piso.
 
+\textbf{Conservação (3 variáveis; fora do conjunto).} A \emph{distância a áreas protegidas}
+rasteriza os polígonos do WDPA e aplica a mesma transformada de distância (zero dentro de uma
+reserva, crescendo para fora); entra com pertinência decrescente, de modo que a vizinhança de
+reservas pontua alto --- é um \emph{proxy} de conectividade e consolidação, e o WDPA é uma camada
+de governança, não de cobertura da terra. A \emph{rugosidade do terreno} é o desvio-padrão da
+elevação numa vizinhança circular de 3 pixels ($\approx$750~m) sobre a grade de 250~m, lida como
+heterogeneidade de micro-habitat e, ao mesmo tempo, como baixa arabilidade. O \emph{carbono em
+biomassa acima do solo} é a densidade de carbono em biomassa lenhosa viva
+\citep{spawn_harmonized_2020}, reamostrada bilinearmente para a grade, e representa o valor de
+serviço ecossistêmico de estoque de carbono. As duas últimas têm pertinência crescente. A
+correlação moderada do carbono com a cobertura florestal é uma ressalva declarada, e é por isso
+que ele é mantido em peso modesto (Tabela~\ref{tab:spec-longtable}).
 
 \textbf{Máscara de cobertura da terra (apenas contexto).} O MapBiomas, a 30~m, é
 agregado a 250~m como uma classe majoritária mais frações por classe, produzindo uma máscara de
@@ -199,9 +209,6 @@ nos quatro cenário--janela.}
 \label{tab:zone-shift}
 \input{Chapters/Tables/zone_shift.tex}
 \end{table}
-
-%% TODO: melhorar cabeçalho dessa tabela. Colocar cenario SSP em celulas mescladas na primeira linha e
-%% TODO: janela temporal na segunda linha, de forma a economizar espaço horizontal
 
 \begin{table}[H]
 \centering
@@ -259,10 +266,29 @@ culturas.
 
 \begin{figure}[H]
 \centering
+\includegraphics[width=0.7\textwidth]{fig_4_5.png}
+\caption{Concordância entre os cinco GCMs quanto ao \emph{sinal} da mudança projetada para as
+outras culturas anuais, sob SSP5-8.5, 2051--2070. O valor por célula é a fração do conjunto que
+concorda com o sinal da mudança do conjunto; a média territorial está anotada no mapa. O limite
+inferior da escala de cor é puxado ao percentil 2 dos dados, porque a concordância é próxima de 1
+em quase todo o território e uma escala $[0;1]$ não mostraria contraste algum.}
+\label{fig:agreement}
+\end{figure}
+
+\begin{figure}[H]
+\centering
 \includegraphics[width=0.7\textwidth]{fig_4_6.png}
 \caption{Realocação de melhor cultura --- células em que muda a cultura mais viável entre
 soja, cana-de-açúcar e outras culturas anuais --- sob SSP5-8.5, 2051--2070.}
 \label{fig:best-crop}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{fig_4_7.png}
+\caption{Uso atual da terra de GO~e~DF agregado a 250~m, colorido por função de segmento. É o
+retrato espacial da composição tabulada em \S\ref{sec:realized-composition}.}
+\label{fig:realized-use}
 \end{figure}
 
 \begin{figure}[H]
@@ -296,7 +322,9 @@ Os índices medidos na metade retida da partição espacial são os que sustenta
 (\S\ref{sec:zoning}); os da metade de calibração constam ao lado para comparação. Na metade
 retida a silhueta é quase plana ao longo de todo o intervalo (0,144--0,235), com máximo em $k=6$;
 o Davies--Bouldin tem mínimo em $k=6$ (1,400) e varia pouco a partir de $k=7$; e o \emph{gap}
-cresce quase monotonicamente, satisfazendo o critério de Tibshirani apenas em $k=14$. Nenhum
+cresce quase monotonicamente, satisfazendo apenas em $k=14$ a regra de um erro-padrão de
+\citet[p.~415]{tibshirani_estimating_2001} --- o menor $k$ tal que
+$\mathrm{Gap}(k) \ge \mathrm{Gap}(k+1) - s_{k+1}$. Nenhum
 desses três índices elege $k=4$.
 
 O que elege $k=4$ (linha tracejada) é o \textbf{ARI de validação cruzada espacial}, que ajusta a
@@ -397,31 +425,40 @@ usado para a rugosidade do terreno na conservação (\S\ref{anx:derivations}).
 
 \section{Dimensionamento do bloco de validação}\label{anx:holdout}
 
-%% TODO esta seção precisa ser refatorada, tudo esta muito confuso e nao fica claro ao letior a metodologia adotada
-
 Esta seção registra as medidas que dimensionaram a partição espacial de calibração e validação
 descrita em \S\ref{sec:holdout}. A escolha do bloco não é convencional: é a consequência de um
 alcance de autocorrelação medido, e o registro abaixo é o que permite ao leitor julgá-la.
 
-A Tabela~\ref{tab:variograma} reporta o semivariograma
-empírico sob três definições do campo, para cada cultura e em duas janelas de distância. A
-distinção não é redundante. Para a soja e a cana ela \emph{superestimaria} a exigência (155 e 135~km contra
-105~km do resíduo); para as outras culturas anuais, a mais exigente das três, ela a
-\emph{subestimaria} (155 contra 175~km). Em nenhum dos dois sentidos ela serve de base para o
-dimensionamento. A \emph{presença} é a resposta observada. É do \emph{resíduo} ---
-presença menos viabilidade ajustada --- que se dimensiona o bloco, porque é nele que reside a
-dependência espacial que infla o otimismo de uma métrica fora da amostra
-\citep{roberts_crossvalidation_2017,valavi_blockcv_2019}.
+\paragraph{Três enquadramentos, e só um dimensiona o bloco.}
+O semivariograma empírico (Tabela~\ref{tab:variograma}) é computado sob três definições do campo,
+para cada cultura e em duas janelas de distância:
 
- Um alcance lido sozinho é
-ininterpretável. Quando a pepita se aproxima do patamar, a variância é quase toda ruído na escala
+\begin{enumerate}
+  \item a \textbf{superfície ajustada} --- a própria viabilidade modelada;
+  \item a \textbf{presença realizada} --- a resposta observada no MapBiomas;
+  \item o \textbf{resíduo} --- presença menos viabilidade ajustada.
+\end{enumerate}
+
+É do \textbf{resíduo} que se dimensiona o bloco, e apenas dele, porque é nele que reside a
+dependência espacial que infla o otimismo de uma métrica fora da amostra
+\citep{roberts_crossvalidation_2017,valavi_blockcv_2019}: o que um bloco precisa separar não é a
+suavidade do preditor nem a agregação da cultura, mas aquilo que o modelo \emph{não} explicou e
+que, ainda assim, é compartilhado entre células vizinhas.
+
+Os outros dois enquadramentos entram como contraste, para mostrar que a escolha do campo não é
+indiferente. O alcance da superfície ajustada mede a suavidade dos preditores, não a dependência
+residual, e erraria o dimensionamento nos dois sentidos: para a soja e a cana ele
+\emph{superestimaria} a exigência (155 e 135~km contra os 105~km do resíduo), e para as outras
+culturas anuais, a mais exigente das três, ele a \emph{subestimaria} (155 contra 175~km). Em
+nenhum dos dois casos serve de base.
+
+\paragraph{Um alcance lido sozinho é ininterpretável.}
+Por isso a pepita é reportada ao lado de cada alcance. Quando a pepita se aproxima do patamar, a variância é quase toda ruído na escala
 de suporte de 250~m, a curva de máximos acumulados estabiliza nesse piso de ruído e nenhum
 estimador recupera um
 alcance estrutural. É o que ocorre na linha de presença de outras culturas anuais, cuja pegada
 realizada cobre menos de 1\% do território: a razão de 0,87 indica que aquela linha não sustenta
 inferência. O resíduo da mesma cultura, com razão 0,75, já é legível.
-
-%% TODO: essa tabela esta escapando pra direita, avaliar se ela é de fato necessaria e se for, reduzir sua largura
 
 \begin{table}[H]
 \centering
@@ -430,10 +467,9 @@ inferência. O resíduo da mesma cultura, com razão 0,75, já é legível.
 é a fração da variância espacialmente estruturada ainda compartilhada à distância do bloco
 adotado. Subamostra de 6.000 pontos, semente 42.}
 \label{tab:variograma}
+\small
 \input{Chapters/Tables/variograma.tex}
 \end{table}
-
-%% TODO: estes graficos podem ser alinhados verticalmente, vai proporcionar uma melhor leitura
 
 \begin{figure}[H]
 \centering

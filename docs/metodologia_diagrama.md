@@ -15,11 +15,11 @@ antes de entrar em detalhe.
 
 ```mermaid
 flowchart TD
-    A["Catálogo público GEE<br/>clima · terreno · solo · água · fenologia · acesso"] --> B["Grade comum 250 m<br/>EPSG:4326 — GO + DF (~340.000 km²)"]
-    B --> C["Conjunto de 34 bandas<br/>(6 temas biofísicos, Tabela 3.1)"]
+    A["Catálogo público GEE<br/>clima · terreno · solo · água"] --> B["Grade comum 250 m<br/>EPSG:4326 — GO + DF (~340.000 km²)"]
+    B --> C["Conjunto de 29 bandas<br/>(4 temas biofísicos, Tabela 4.1)"]
 
     C --> D["Viabilidade baseada em conhecimento<br/>pertinência fuzzy + pesos AHP<br/>7 segmentos → classes FAO S1/S2/S3/N"]
-    C --> E["Zoneamento não supervisionado<br/>PCA descorrelacionada + k-means (k=10)"]
+    C --> E["Zoneamento não supervisionado<br/>PCA descorrelacionada + k-means (k=4)"]
 
     D --> F["Projeção climática CMIP6<br/>fatores de mudança · 2031–50 e 2051–70"]
     F --> G["ΔViabilidade + concordância entre modelos"]
@@ -54,14 +54,14 @@ o bloco CMIP6 é a extensão temporal do motor de viabilidade da Fase A.
 flowchart TD
     subgraph FaseA["FASE A — Atlas de potencial biofísico (GEE-only)"]
         direction TB
-        A1["§3.1 Engenharia de atributos<br/>34 bandas @ 250 m<br/>clima(14) · terreno(6) · solo(6) · água(3) · fenologia(4) · acesso(1)"]
+        A1["§4.1 Engenharia de atributos<br/>29 bandas @ 250 m<br/>clima(14) · terreno(6) · solo(6) · água(3)"]
         A2["§3.2.1 Padronização fuzzy<br/>formas crescente / decrescente / intervalar por fator"]
         A5["§3.2.3 Pesos AHP<br/>matriz Saaty por segmento · RC ≤ 0,10<br/>sensibilidade ±20% por peso"]
         A3["§3.2.2 Agregação<br/>média geométrica ponderada (6 segmentos produtivos)<br/>média aritmética ponderada (conservação, compensatória)"]
         A4["Classes FAO<br/>N · S3 · S2 · S1 (limiares 0,25/0,50/0,75)"]
 
-        A6["§3.3 Descorrelação<br/>34 bandas → 15 bandas curadas → peso por bloco temático → PCA (≥90% var.)"]
-        A7["k-means offline (sklearn)<br/>k=2..20 avaliado por silhueta, Davies–Bouldin, gap → k=10"]
+        A6["§4.3 Descorrelação<br/>29 bandas → 13 bandas curadas → peso por bloco temático → PCA (≥90% var.)"]
+        A7["k-means offline (sklearn)<br/>k=2..20 avaliado na metade retida<br/>silhueta · Davies–Bouldin · ARI → k=4"]
         A8["Classificação server-side<br/>centróide mais próximo no espaço de PCs"]
         A9["Perfis de zona<br/>melhor segmento comparativo (argmax do escore-z por segmento)"]
 
@@ -75,7 +75,7 @@ flowchart TD
         C1["NASA NEX-GDDP-CMIP6<br/>5 GCMs × 2 SSPs (2-4.5 / 5-8.5) × 2 janelas (2031–50, 2051–70)"]
         C2["Fatores de mudança mensais<br/>precipitação = razão · temperatura = diferença aditiva"]
         C3["Clima futuro = normal 1991–2020 × fatores<br/>ETP futura por razão de Hargreaves"]
-        C4["Reexecuta §3.2 (mesmas regras)<br/>terreno/solo/água/fenologia/acesso mantidos estáticos"]
+        C4["Reexecuta §4.2 (mesmas regras)<br/>terreno/solo/água mantidos estáticos"]
         C5["ΔS = S_futuro − S_presente<br/>matrizes de transição de classe FAO"]
         C6["Concordância entre modelos<br/>fração de GCMs com o mesmo sinal de ΔS"]
 
@@ -133,7 +133,7 @@ investigação que ele responde.
 
 ```mermaid
 flowchart LR
-    M1["Atlas de viabilidade (7 segmentos)<br/>+ zoneamento agroambiental (k=10)"] --> Q1["QP1 — Como o território se<br/>partição em zonas e qual o<br/>perfil de cada uma?"]
+    M1["Atlas de viabilidade (7 segmentos)<br/>+ zoneamento agroambiental (k=4)"] --> Q1["QP1 — Como o território se<br/>partição em zonas e qual o<br/>perfil de cada uma?"]
     M2["Potencial × uso realizado<br/>(MapBiomas) + validação (MOD17)"] --> Q2["QP2 — Onde a terra está<br/>subutilizada ou desalinhada<br/>com seu melhor uso?"]
     M3["Projeção CMIP6<br/>(fatores de mudança, 2 SSPs, 2 janelas)"] --> Q3["QP3 — Como a viabilidade<br/>e o zoneamento mudam<br/>até 2050?"]
 
@@ -151,7 +151,7 @@ Tabela de apoio para quando um orientador perguntar "isso está implementado ond
 
 | Bloco do diagrama | Secção da tese | Notebook | Módulo `src/` |
 |---|---|---|---|
-| Engenharia de atributos (34 bandas) | §3.1 | `01`–`08` | `src/features.py`, `src/utils.py` |
+| Engenharia de atributos (29 bandas) | §4.1 | `01`–`08` | `src/features.py`, `src/utils.py` |
 | Viabilidade fuzzy + AHP | §3.2 | `09_suitability_fuzzy_ahp.ipynb` | `src/membership.py`, `config/segments.yaml`, `config/ahp_matrices.yaml` |
 | Zoneamento (PCA + k-means) | §3.3 | `10_zoning_kmeans.ipynb` | `src/zoning.py` (`tools/rezone.py`) |
 | Projeção CMIP6 (fatores de mudança) | §3.4 | `11_cmip6_shift.ipynb` | `src/cmip6.py` |

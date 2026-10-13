@@ -179,6 +179,10 @@ DIAG_CSVS = {
     "ahp_weights.csv": REPO_ROOT / "thesis" / "Chapters" / "ahp_weights.csv",
     "lambda_sweep.csv": REPO_ROOT / "thesis" / "Chapters" / "lambda_sweep.csv",
     "factor_discrimination.csv": REPO_ROOT / "thesis" / "Chapters" / "factor_discrimination.csv",
+    # Zone AREA shares via pixelArea() (tools/extract_present.zone_shares). The ONLY
+    # source for "how big is zone N": zone_profiles.csv's `n` is a stratified-sample
+    # count, not an area share (CLAUDE.md §9).
+    "zone_area.csv": REPO_ROOT / "thesis" / "Chapters" / "zone_area.csv",
 }
 
 
@@ -210,7 +214,13 @@ def build_home_stats() -> None:
 
     muni = pd.read_csv(DATA_DIR / "csv" / "municipal_ranking.csv")
     zones = pd.read_csv(DIAG_CSVS["zone_profiles.csv"])
-    top_zone = zones.loc[zones["n"].idxmax()]
+    # The biggest zone and its share come from zone_area.csv (a pixelArea() group
+    # reduce), NOT from zone_profiles.csv's `n`. `n` counts rows of a STRATIFIED
+    # sample: using it reported zone 1 at 37.9% of the territory when its real area
+    # share is 46.4% -- the exact error CLAUDE.md §9 flags, on the Home route of a
+    # dashboard the thesis links to.
+    area = pd.read_csv(DIAG_CSVS["zone_area.csv"])
+    top_zone = area.loc[area["share_pct"].idxmax()]
 
     scorecard_path = out / "validation_scorecard.json"
     scorecard = json.loads(scorecard_path.read_text()) if scorecard_path.exists() else {}
@@ -229,7 +239,7 @@ def build_home_stats() -> None:
         "n_municipalities": len(muni),
         "mean_suit_soybean": round(float(muni["suit_soybean"].mean()), 3),
         "top_zone": int(top_zone["zone"]),
-        "top_zone_share_pct": round(100 * float(top_zone["n"]) / float(zones["n"].sum()), 1),
+        "top_zone_share_pct": round(float(top_zone["share_pct"]), 1),
         "kappa_soybean": scorecard.get("rf_kappa", {}).get("soybean"),
         "auc_soybean": scorecard.get("presence_auc_boyce", {}).get("soybean", {}).get("auc"),
         "boyce_soybean": scorecard.get("presence_auc_boyce", {}).get("soybean", {}).get("boyce"),
@@ -471,8 +481,6 @@ HERO_BANDS = {
     "terrain": "terr_slope",
     "soil": "soil_clay",
     "water": "water_dist",
-    "phenology": "phen_amplitude",
-    "access": "access_logtt",
     "siting": "sit_clearness",
     "conservation": "cv_pa_dist",
 }
@@ -523,12 +531,15 @@ def build_datasets_catalog() -> None:
          "id": ds["soil"]["layers"]["clay"]["id"], "native_res": "250 m", "period": "estático"},
         {"theme": "Água", "source": "JRC Global Surface Water",
          "id": ds["water"]["gsw"], "native_res": "30 m", "period": "1984-2021"},
-        {"theme": "Fenologia", "source": "MODIS MOD13Q1 NDVI",
-         "id": ds["phenology"]["modis"], "native_res": "250 m", "period": "2001-2020"},
-        {"theme": "Acesso a mercados", "source": "Oxford MAP accessibility",
-         "id": ds["access"]["oxford"], "native_res": "~1 km", "period": "2015"},
-        {"theme": "Máscara de cobertura da terra", "source": "ESA WorldCover",
-         "id": ds["landcover"]["worldcover"], "native_res": "10 m", "period": "2021"},
+        # Part 7b. The mask comes from MapBiomas since T10 (2026-09), NOT from ESA
+        # WorldCover: `features.landcover_features_mapbiomas` reads cfg()["mapbiomas"],
+        # and the ESA builder survives only as a documented fallback. This row announced
+        # the retired source until 2026-10-12. Two MapBiomas rows is correct, not a
+        # duplicate -- the mask is built from ONE year, the realized-use analysis from
+        # the series; the periods are what tell them apart.
+        {"theme": "Máscara de cobertura da terra", "source": "MapBiomas coleção 10",
+         "id": ds["mapbiomas"]["asset"], "native_res": "30 m",
+         "period": str(ds["mapbiomas"]["current_year"])},
         {"theme": "Conservação (UCs)", "source": "Áreas protegidas WDPA",
          "id": ds["conservation"]["wdpa"], "native_res": "vetorial", "period": "atual"},
         {"theme": "Conservação (carbono)", "source": "Carbono de biomassa, Spawn et al. 2020",
@@ -550,7 +561,6 @@ def build_stack_composition() -> None:
     out = DATA_DIR / "json"
     out.mkdir(parents=True, exist_ok=True)
     # Static — matches STACK_THEMES in src/features.py / CLAUDE.md's own band breakdown.
-    # Phenology (4) and access (1) left the stack on 2026-10-02: 34 bands -> 29.
     composition = {"climate": 14, "terrain": 6, "soil": 6, "water": 3}
     dest = out / "stack_composition.json"
     dest.write_text(json.dumps({

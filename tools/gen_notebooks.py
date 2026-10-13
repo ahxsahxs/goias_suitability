@@ -88,8 +88,6 @@ write(
             "    'SRTM': ee.Image(ds['terrain']['srtm']),\n"
             "    'HydroSHEDS_ACC': ee.Image(ds['terrain']['hydrosheds_acc']),\n"
             "    'GSW': ee.Image(ds['water']['gsw']),\n"
-            "    'MODIS': ee.ImageCollection(ds['phenology']['modis']).first(),\n"
-            "    'Oxford': ee.Image(ds['access']['oxford']),\n"
             "    'WorldCover': ee.ImageCollection(ds['landcover']['worldcover']).first(),\n"
             "}\n"
             "for k, v in checks.items():\n"
@@ -135,20 +133,6 @@ FEATURE_SPECS = [
         source="`JRC/GSW1_4/GlobalSurfaceWater` + `WWF/HydroSHEDS/15ACC`",
         dod="distance raster continuous; reservoirs present.",
         viz="water_dist", vis="{'min': 0, 'max': 20000, 'palette': ['blue','white','brown']}",
-    ),
-    dict(
-        nb="06_features_phenology.ipynb", part="6", title="Vegetation phenology features",
-        builder="phenology_features", asset="feat_phenology",
-        source="`MODIS/061/MOD13Q1` NDVI, harmonic fit 2001–2020",
-        dod="amplitude high in croplands, low in dense native veg.",
-        viz="phen_amplitude", vis="{'min': 0, 'max': 0.4, 'palette': ['white','green']}",
-    ),
-    dict(
-        nb="07_features_access.ipynb", part="7", title="Market-access feature",
-        builder="access_features", asset="feat_access",
-        source="`Oxford/MAP/accessibility_to_cities_2015_v1_0`",
-        dod="low near cities, high in remote NE Goiás.",
-        viz="access_logtt", vis="{'min': 0, 'max': 7, 'palette': ['green','yellow','red']}",
     ),
     dict(
         nb="07b_landcover_mask.ipynb", part="7b", title="Generic land-cover mask (MapBiomas)",
@@ -220,9 +204,7 @@ write(
             "Concatenate the continuous themes (climate, terrain, soil, water) into one "
             "multiband image; build a **raw** stack (for fuzzy suitability) and a "
             "**z-scored** stack (for clustering). Land cover is excluded — it is a "
-            "mask/context layer, not a clustering feature. Phenology and access left the "
-            "stack on 2026-10-02 (34 bands → 29): both encode the current state of land "
-            "use and infrastructure rather than biophysical potential.\n\n"
+            "mask/context layer, not a clustering feature.\n\n"
             "**Output:** `feature_stack_250m`, `feature_stack_250m_z`. "
             "**DoD:** single multiband asset, gap-free over AOI, documented band list."
         ),
@@ -362,8 +344,7 @@ write(
             "**Decorrelation (2026-07-14):** clustering the raw z-stack (then 34 bands) resolved only 3 "
             "low-expressiveness zones — GO is climatically near-uniform yet the 14 collinear climate "
             "bands each carried full Euclidean weight and swamped the soil/relief/hydrology structure. "
-            "We now cluster on `zoning.ZONING_BANDS` (13 biophysical bands, s2-2026: "
-            "phen/access removed) with **theme-block weighting** "
+            "We now cluster on `zoning.ZONING_BANDS` (13 biophysical bands) with **theme-block weighting** "
             "(÷√bands-in-theme) then **PCA** (≥90% variance), and **re-select k** by "
             "silhouette + Davies–Bouldin + the gap statistic (expect k=4–6).\n\n"
             "**Clustering is offline (scikit-learn)**, not EE weka. We fit KMeans in PC space, then "
@@ -720,10 +701,9 @@ write(
             "**random-forest** cross-check quantified by **Cohen's κ**. Engines: "
             "`src/external.py` + `src/metrics.py`.\n\n"
             "**Caveats:** MOD17 is *vegetation primary productivity, not agronomic yield* "
-            "(coarse surrogate); the NDVI integral is excluded as validator on principle — a "
-            "vegetation index describes the vegetation that is there, so validating a potential "
-            "surface against it is circular. Since 2026-10-02 phenology is also out of the "
-            "feature stack entirely, so MOD17 no longer shares a band with the model.\n\n"
+            "(coarse surrogate). It is an independent product: no vegetation index enters the "
+            "model, so the validator shares no band with it. The residual caveat is MOD17's own "
+            "meteorological drivers, which share signal with the climate theme.\n\n"
             "**Output:** validation tables (κ / ρ / Boyce / AUC / ANOVA). **DoD:** RQ1 validated."
         ),
         code(INIT + "\nimport external, metrics\nimport pandas as pd"),
@@ -755,8 +735,7 @@ write(
             "canopy window) evaluated **only on each crop's own realized pixels**, correlated against "
             "that crop's suitability (`metrics.within_crop_gradient`). This validates *how much* crops "
             "produce; the Boyce/AUC below validate *where*. Sign should be **non-negative** for the "
-            "extensive crops. (Phenology left the stack on 2026-10-02, so the residual shared signal "
-            "with `phen_integral` is gone; an IBGE-yield validator remains the future upgrade.)"
+            "extensive crops. (An IBGE-yield validator remains the future upgrade.)"
         ),
         code(
             "gpp = external.season_gpp(aoi)  # sugarcane: pass months=list(range(1,13))\n"

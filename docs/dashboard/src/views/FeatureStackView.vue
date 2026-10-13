@@ -22,9 +22,8 @@ const { data: profiles } = useCsv<ZoneProfileRow>('csv/zone_profiles.csv')
 // 34 -> 29 bands and ZONING_BANDS 15 -> 13; every count below is read from the data.
 type VariantKey = 'full' | 'curated'
 
-// Band-name prefix -> theme label (same labels as FeatureThemesView). Phenology and
-// access left the stack on 2026-10-02: both encode the current state of land use and
-// infrastructure, the same circularity that keeps land cover out.
+// Band-name prefix -> theme label (same labels as FeatureThemesView). These four are
+// features.STACK_THEMES in full; land cover stays out as a mask/context layer.
 const THEMES: { prefix: string; label: string }[] = [
   { prefix: 'clim', label: 'Clima' },
   { prefix: 'terr', label: 'Relevo' },

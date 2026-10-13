@@ -391,14 +391,20 @@ Matriz única de 10 critérios, tab. 2, p. 5. Bloco único.
 | `clim_srad` | Solar radiation | tab. 2, p. 5 | 27,0 % | 0,3919 |
 | `clim_twarm_q` | Annual Average Temperature | tab. 2, p. 5 | 14,9 % | 0,2163 |
 | `sit_clearness` | Average annual cloudy days | tab. 2, p. 5 | 10,4 % | 0,1509 |
-| `access_logtt` | Distance from Urban | tab. 2, p. 5 | 10,1 % | 0,1466 |
+| ~~`access_logtt`~~ | Distance from Urban | tab. 2, p. 5 | 10,1 % | — **RETIRADO** |
 | `terr_slope` | Slope | tab. 2, p. 5 | 6,5 % | 0,0943 |
 | `terr_northing` | — | — | — | — (faixa) |
 
 **Sem correspondente aqui:** Distance from power transmission lines 10,8 % (não há camada de linhas
 de transmissão para GO/DF no catálogo do Earth Engine — limitação registrada no Capítulo 5),
-Lightning strike flash rate 7,3 %, Elevation 5,1 %, Distance from major roads 4,4 % (parcialmente
-capturado por `access_logtt`, que é tempo de viagem e não distância a estradas), Soil texture 3,5 %.
+Lightning strike flash rate 7,3 %, Elevation 5,1 %, Distance from major roads 4,4 %, Soil texture 3,5 %.
+
+**Retirado em 2026-10-12:** `access_logtt` (tempo de viagem à cidade mais próxima) foi o único
+fator deste trabalho ancorado em "Distance from Urban" de Elboshy. Ele saiu do conjunto de
+atributos em 2026-10-02 e do projeto em 2026-10-12, porque a acessibilidade mede o uso que já
+existe — as estradas foram abertas onde a terra já era usada — e entraria como consequência
+disfarçada de causa. A fotovoltaica passou a carregar cinco fatores. A linha fica registrada
+aqui riscada, e não apagada, porque o critério foi *considerado* e descartado, não ignorado.
 
 `terr_northing` (orientação de encosta) não aparece em Elboshy nem em `rane_gis-based_2024`; é faixa
 de classe C, justificada pela geometria solar do hemisfério sul.
@@ -502,7 +508,7 @@ participam de comparação alguma.
 | fotovoltaica | `clim_srad` | 1 | A | tercil superior de Elboshy tab. 2 |
 | fotovoltaica | `clim_twarm_q` | 2 | A | tercil superior de Elboshy tab. 2 |
 | fotovoltaica | `sit_clearness` | 3 | A | tercil intermediário de Elboshy tab. 2 |
-| fotovoltaica | `access_logtt` | 3 | A | tercil intermediário de Elboshy tab. 2 |
+| ~~fotovoltaica~~ | ~~`access_logtt`~~ | — | — | **RETIRADO em 2026-10-12** (ver §Elboshy) |
 | fotovoltaica | `terr_slope` | 4 | A | tercil inferior de Elboshy tab. 2 |
 | fotovoltaica | `terr_northing` | 4 | C | geometria solar do hemisfério sul favorece encostas voltadas ao norte; ausente em Elboshy e em Rane — `author judgement` |
 

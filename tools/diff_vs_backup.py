@@ -20,8 +20,8 @@ Run::
 
     EE_PROJECT=probformer uv run python tools/diff_vs_backup.py \
         --backup goias_backup_ahp_20260928 \
-        feat_climate feat_terrain feat_soil feat_water feat_phenology \
-        feat_access feat_landcover feat_siting feat_conservation \
+        feat_climate feat_terrain feat_soil feat_water \
+        feat_landcover feat_siting feat_conservation \
         feature_stack_250m feature_stack_250m_z
 
 Exit code is 1 if any band changed, so it can gate a cascade.

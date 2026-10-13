@@ -79,19 +79,11 @@ water:
   stream_acc_threshold: 1000   # flow-accum cells above which a pixel is a "stream"
   drainage_radius_m: 2500      # window for drainage-density (stream fraction)
 
-# --- Part 6: vegetation phenology -------------------------------------------
-phenology:
-  modis: MODIS/061/MOD13Q1
-  period: ["2001-01-01", "2021-01-01"]
-  ndvi_scale: 0.0001
-  qa_band: SummaryQA           # 0 good, 1 marginal, 2 snow/ice, 3 cloudy
-  harmonics: 2                 # annual + semiannual
-
-# --- Part 7: market access ---------------------------------------------------
-access:
-  # non-deprecated successor to Oxford/MAP/accessibility_to_cities_2015_v1_0
-  oxford: projects/malariaatlasproject/assets/accessibility/accessibility_to_cities/2015_v1_0
-  band: accessibility          # minutes of travel to nearest city
+# Parts 6 (vegetation phenology, MOD13Q1) and 7 (market access, Oxford MAP) were
+# removed on 2026-10-12. Neither theme fed the stack, the zoning or any AHP factor;
+# both encoded the current state of land use and infrastructure, which is circular.
+# The part numbers are left vacant on purpose. See thesis/Chapters/04_methodology.tex
+# (§sec:feature-eng) for the argument.
 
 # --- Part 7b: generic land-cover mask (ESA WorldCover) ----------------------
 landcover:

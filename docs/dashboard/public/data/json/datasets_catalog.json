@@ -35,25 +35,11 @@
     "period": "1984-2021"
   },
   {
-    "theme": "Fenologia",
-    "source": "MODIS MOD13Q1 NDVI",
-    "id": "MODIS/061/MOD13Q1",
-    "native_res": "250 m",
-    "period": "2001-2020"
-  },
-  {
-    "theme": "Acesso a mercados",
-    "source": "Oxford MAP accessibility",
-    "id": "projects/malariaatlasproject/assets/accessibility/accessibility_to_cities/2015_v1_0",
-    "native_res": "~1 km",
-    "period": "2015"
-  },
-  {
     "theme": "M\u00e1scara de cobertura da terra",
-    "source": "ESA WorldCover",
-    "id": "ESA/WorldCover/v200",
-    "native_res": "10 m",
-    "period": "2021"
+    "source": "MapBiomas cole\u00e7\u00e3o 10",
+    "id": "projects/mapbiomas-public/assets/brazil/lulc/collection10/mapbiomas_brazil_collection10_integration_v1",
+    "native_res": "30 m",
+    "period": "2024"
   },
   {
     "theme": "Conserva\u00e7\u00e3o (UCs)",

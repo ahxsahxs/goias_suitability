@@ -48,8 +48,9 @@ Z_PREFIX = "z_"
 # --- curated, decorrelated zoning subset (s2-2026) ---------------------------
 # 13 biophysical bands (pure land-surface/climate signal; s2-2026).
 # Near-duplicates dropped (aridity over pr/pet; one thermal index; clay over sand/bdod).
-# phen_amplitude and access_logtt removed: encode current land use / infrastructure,
-# not biophysical potential. Land cover excluded as always. Theme prefix
+# Land cover excluded as always, and so is anything derived from current land use or
+# infrastructure (NDVI phenology and travel time were dropped here on 2026-09-27 and
+# left the project on 2026-10-12 for that reason). Theme prefix
 # (clim/terr/soil/water) drives the √(bands-in-theme) block weighting.
 ZONING_BANDS = [
     # climate (4) — the axes that still carry gradient in an otherwise-uniform territory

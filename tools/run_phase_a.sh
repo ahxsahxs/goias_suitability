@@ -16,8 +16,6 @@ FEATURE_NBS=(
   03_features_terrain
   04_features_soil
   05_features_water
-  06_features_phenology
-  07_features_access
   07b_landcover_mask
 )
 
@@ -33,7 +31,7 @@ for nb in "${FEATURE_NBS[@]}"; do run_nb "$nb"; done
 
 echo "=== waiting for feature exports to complete before assembling the stack ==="
 "$PY/python" tools/wait_for_assets.py \
-  feat_climate feat_terrain feat_soil feat_water feat_phenology feat_access \
+  feat_climate feat_terrain feat_soil feat_water \
   --timeout "${ASSET_WAIT:-7200}"
 
 run_nb 08_feature_stack

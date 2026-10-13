@@ -142,9 +142,18 @@ export interface SensitivitySummary {
 // the remaining raw climate/terrain/soil covariate columns carried in the file.
 export interface ZoneProfileRow {
   zone: number
+  /**
+   * Row count of the STRATIFIED sample behind this zone -- NOT an area share.
+   * Dividing it by the column total understates zone 1 by 8.5 points and
+   * overstates zone 3 by 7.5. Territory shares come from ZoneAreaRow
+   * (csv/zone_area.csv, a pixelArea() group reduce). See CLAUDE.md §9.
+   */
   n: number
   dominant_segment: string
   comparative_segment: string
+  /** Runner-up comparative vocation, and the z-gap from it to the winner. */
+  comparative_segment_2: string
+  comparative_margin: number
   top_features: string
   suit_soybean: number
   suit_sugarcane: number
@@ -166,6 +175,16 @@ export interface ZoneProfileRow {
   rl_pasture_frac: number
   rl_native_frac: number
   [key: string]: string | number
+}
+
+// --- csv/zone_area.csv ----------------------------------------------------------
+// The ONLY source for "how big is zone N": a pixelArea() group reduce written by
+// tools/extract_present.zone_shares. zone_profiles.csv's `n` is a sample count and
+// must never stand in for it (CLAUDE.md §9).
+export interface ZoneAreaRow {
+  zone: number
+  area_km2: number
+  share_pct: number
 }
 
 // --- csv/zoning_kselect.csv ------------------------------------------------------

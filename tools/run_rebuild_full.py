@@ -14,7 +14,7 @@ Combines in one pass:
 DAG (each stage idempotent: skips if its output asset already exists, so a
 crash mid-run resumes cleanly on re-invocation):
 
-  aoi -> feat_climate/terrain/soil/water/phenology/access/landcover/siting/conservation
+  aoi -> feat_climate/terrain/soil/water/landcover/siting/conservation
        -> feature_stack_250m(_z)
        -> feat_realized (Part 13, needed by zoning profiling + suit extras)
        -> suit_present/_comp/_sens (Part 9)
@@ -181,8 +181,6 @@ def main():
         ("feat_terrain", lambda: features.terrain_features(AOI)),
         ("feat_soil", lambda: features.soil_features(AOI)),
         ("feat_water", lambda: features.water_features(AOI)),
-        ("feat_phenology", lambda: features.phenology_features(AOI)),
-        ("feat_access", lambda: features.access_features(AOI)),
         ("feat_landcover", lambda: features.landcover_features_mapbiomas(AOI)),  # T10
         ("feat_siting", lambda: features.siting_features(AOI)),
         ("feat_conservation", lambda: features.conservation_features(AOI)),

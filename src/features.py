@@ -274,84 +274,6 @@ def water_features(aoi) -> "ee.Image":
 
 
 # =============================================================================
-# Part 6 — Vegetation phenology features (MODIS MOD13Q1, harmonic fit)
-# =============================================================================
-def phenology_features(aoi) -> "ee.Image":
-    """Phenometrics from a harmonic fit to the **12-month NDVI climatology**.
-
-    Fitting to a monthly climatology (12 images) instead of every 16-day
-    composite (~460 images) is ~38x cheaper for the same seasonal-cycle
-    metrics (mean / amplitude / peak timing), which keeps the export within
-    Earth Engine's per-task compute budget.
-    """
-    ph = cfg()["phenology"]
-    sc = ph["ndvi_scale"]
-    qa = ph["qa_band"]
-    n_harm = ph["harmonics"]
-
-    coll = (
-        ee.ImageCollection(ph["modis"])
-        .filterDate(ph["period"][0], ph["period"][1])
-        .filterBounds(aoi)
-        .map(lambda img: img.select("NDVI").multiply(sc).rename("NDVI")
-             .updateMask(img.select(qa).lte(1))
-             .copyProperties(img, ["system:time_start"]))
-    )
-
-    months = ee.List.sequence(1, 12)
-
-    def monthly(m):
-        m = ee.Number(m)
-        ndvi = (
-            coll.filter(ee.Filter.calendarRange(m, m, "month")).mean().rename("NDVI")
-        )
-        t = m.subtract(0.5).divide(12)  # fraction of year at month centre
-        regressors = ee.Image.cat(
-            [
-                ee.Image(1).rename("constant"),
-                ee.Image(t.multiply(_TWO_PI)).cos().rename("cos1"),
-                ee.Image(t.multiply(_TWO_PI)).sin().rename("sin1"),
-                ee.Image(t.multiply(2 * _TWO_PI)).cos().rename("cos2"),
-                ee.Image(t.multiply(2 * _TWO_PI)).sin().rename("sin2"),
-            ]
-        )
-        return regressors.addBands(ndvi).set("month", m)
-
-    clim = ee.ImageCollection(months.map(monthly))
-
-    independents = ["constant", "cos1", "sin1"]
-    if n_harm >= 2:
-        independents += ["cos2", "sin2"]
-
-    reg = clim.select(independents + ["NDVI"]).reduce(
-        ee.Reducer.linearRegression(numX=len(independents), numY=1)
-    )
-    coeffs = reg.select("coefficients").arrayProject([0]).arrayFlatten([independents])
-
-    a1, b1 = coeffs.select("cos1"), coeffs.select("sin1")
-    amp = a1.hypot(b1).rename("phen_amplitude")
-    phase = b1.atan2(a1)
-    peak_month = (
-        phase.divide(_TWO_PI).multiply(12).add(12).mod(12).add(1).rename("phen_peak_month")
-    )
-    mean_ndvi = clim.select("NDVI").mean().rename("phen_mean")
-    integral = mean_ndvi.multiply(365).rename("phen_integral")  # NDVI-days proxy
-
-    out = ee.Image.cat([mean_ndvi, amp, peak_month, integral])
-    return to_grid_bilinear(out).clip(aoi)
-
-
-# =============================================================================
-# Part 7 — Market-access feature (Oxford accessibility)
-# =============================================================================
-def access_features(aoi) -> "ee.Image":
-    a = cfg()["access"]
-    acc = ee.Image(a["oxford"]).select(a["band"])
-    log_acc = acc.max(0).add(1).log().rename("access_logtt")
-    return to_grid_bilinear(log_acc).clip(aoi)
-
-
-# =============================================================================
 # Part 7b — Generic land-cover mask  [mask/context only]
 # -----------------------------------------------------------------------------
 # T10 (2026-09 revision cycle, CLAUDE.md §10): `landcover_features_mapbiomas`
@@ -583,19 +505,18 @@ def conservation_features(aoi) -> "ee.Image":
 # Continuous themes that enter the clustering stack (land cover excluded — it is
 # a mask/context layer, never a clustering feature).
 #
-# 29 bands since 2026-10-02 (was 34): `phenology` (4) and `access` (1) left the
-# analysis. Both encode the CURRENT state of land use and infrastructure rather
-# than biophysical potential, which is the same circularity argument that keeps
-# land cover out — NDVI amplitude is high because the land is cropped, and travel
-# time is short because roads were built where the land was already used. They had
-# already been dropped from `zoning.ZONING_BANDS` on 2026-09-27 for exactly that
-# reason; this completes the removal. `access_logtt` was additionally the only
-# in-stack band any segment consumed (solar), and solar now carries 5 factors.
+# 29 bands = climate 14 + terrain 6 + soil 6 + water 3.
 #
-# The builders and the `feat_phenology` / `feat_access` assets are kept: Parts 6
-# and 7 remain part of the documented provenance and the dashboard's theme
-# gallery reads them directly, not through the stack. Nothing downstream of the
-# stack consumes them any more.
+# Two further themes once sat here and are gone from the project entirely as of
+# 2026-10-12: vegetation phenology (4 NDVI harmonic bands, ex-Part 6) and market
+# accessibility (`access_logtt`, ex-Part 7). They left the stack on 2026-10-02 and
+# the builders on 2026-10-12, under the same circularity argument that keeps land
+# cover out — NDVI amplitude is high because the land is cropped, and travel time
+# is short because roads were built where the land was already used. The argument
+# lives in thesis/Chapters/04_methodology.tex (§sec:feature-eng); the orphaned
+# `feat_phenology` / `feat_access` assets were left in place server-side rather
+# than deleted. Parts 6 and 7 are deliberately NOT renumbered: the gap is the
+# record. Don't reintroduce either theme without re-reading that section.
 STACK_THEMES = ("climate", "terrain", "soil", "water")
 
 THEME_BUILDERS = {
@@ -603,8 +524,6 @@ THEME_BUILDERS = {
     "terrain": terrain_features,
     "soil": soil_features,
     "water": water_features,
-    "phenology": phenology_features,
-    "access": access_features,
     "landcover": landcover_features_mapbiomas,  # T10 (2026-09): was landcover_features (ESA)
     "siting": siting_features,        # Part 7c; consumed via membership sit_ routing, not stacked
     "conservation": conservation_features,  # Part 7d; consumed via membership cv_ routing, not stacked
@@ -619,8 +538,6 @@ THEME_ASSETS = {
     "terrain": "feat_terrain",
     "soil": "feat_soil",
     "water": "feat_water",
-    "phenology": "feat_phenology",
-    "access": "feat_access",
     "siting": "feat_siting",
     "conservation": "feat_conservation",   # Part 7d; feeds conservation membership only, never the stack
 }
@@ -683,7 +600,7 @@ def theme_roughness_image(z_img, theme_bands, radii_m, scale=None):
 
     ``theme_bands`` maps group name -> list of z-scored band names (e.g.
     ``{"climate": [...14 clim_* bands], "terrain_soil": [...12 terr_/soil_
-    bands], "water": [...], "phenology": [...], "access": [...]}``). Bands are
+    bands], "water": [...]}``). Bands are
     already z-scored, so the mean local stdDev across a group's bands is
     directly comparable across groups without further normalization — the same
     rationale ``membership.variance_shares`` uses to pool across AHP factors.

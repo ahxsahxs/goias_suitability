@@ -80,17 +80,20 @@ TR = {
             "other_crops": "Other annual crops", "pisciculture": "Pisciculture",
             "cattle": "Cattle", "conservation": "Conservation", "solar": "Solar PV",
         },
+        # Landform descriptors ONLY -- the vocation in parentheses is appended by
+        # zone_labels() from zone_profiles.csv. These are safe as literals because
+        # zone numbering is canonical by descending terr_elev (CLAUDE.md §11), so
+        # zone 1 is always the highest ground; the VOCATION is what drifts.
         "zone": [
-            "Zone 1 — high clayey cropping plateau (sugarcane)",
-            "Zone 2 — drained lowland (pisciculture)",
-            "Zone 3 — hot sandy pasture lowland (cattle)",
-            "Zone 4 — steep conservation escarpment (conservation)",
+            "Zone 1 — high clayey cropping plateau",
+            "Zone 2 — steep conservation escarpment",
+            "Zone 3 — drained lowland",
+            "Zone 4 — hot sandy pasture lowland",
         ],
         "role": ["Other", "Soybean", "Sugarcane", "Other crops",
                  "Pisciculture", "Pasture", "Native"],
         "fao": ["N", "S3", "S2", "S1"],
         "factor": {
-            "access_logtt": "Log travel time",
             "clim_aridity": "Aridity index",
             "clim_dry_months": "Dry-season length",
             "clim_gdd": "Growing degree-days",
@@ -141,7 +144,7 @@ TR = {
         "fig_4_11.legend_title": "Legend",
         "fig_4_11.legend_climate": "Climate",
         "fig_4_11.legend_terrain_soil": "Terrain + soil",
-        "fig_4_11.legend_other": "Other (water, siting, access, extras)",
+        "fig_4_11.legend_other": "Other (water, siting, extras)",
         "fig_4_11.legend_dominant": "Segment's dominant factor",
         "fig_4_11.legend_negative": "Negative contribution\n(correlated with another factor)",
         "fig_4_11.legend_note": "x-axis: symmetric-log scale (linear threshold = 0.005)\n"
@@ -177,17 +180,17 @@ TR = {
             "cattle": "Pecuária", "conservation": "Conservação",
             "solar": "Geração fotovoltaica",
         },
+        # see the en block: landform descriptors only, vocation appended from the CSV
         "zone": [
-            "Zona 1 — planalto de cultivo alto e argiloso (cana-de-açúcar)",
-            "Zona 2 — baixada drenada (piscicultura)",
-            "Zona 3 — baixada quente e arenosa de pastagem (pecuária)",
-            "Zona 4 — escarpa íngreme de conservação (conservação)",
+            "Zona 1 — planalto de cultivo alto e argiloso",
+            "Zona 2 — escarpa íngreme de conservação",
+            "Zona 3 — baixada drenada",
+            "Zona 4 — baixada quente e arenosa de pastagem",
         ],
         "role": ["Outros", "Soja", "Cana-de-açúcar", "Outras culturas",
                  "Piscicultura", "Pastagem", "Vegetação nativa"],
         "fao": ["N", "S3", "S2", "S1"],
         "factor": {
-            "access_logtt": "Log tempo de viagem",
             "clim_aridity": "Índice de aridez",
             "clim_dry_months": "Duração estação seca",
             "clim_gdd": "Graus-dia de crescimento",
@@ -238,7 +241,7 @@ TR = {
         "fig_4_11.legend_title": "Legenda",
         "fig_4_11.legend_climate": "Clima",
         "fig_4_11.legend_terrain_soil": "Terreno e solo",
-        "fig_4_11.legend_other": "Outros (água, sítio, acesso, extras)",
+        "fig_4_11.legend_other": "Outros (água, sítio, extras)",
         "fig_4_11.legend_dominant": "Fator dominante do segmento",
         "fig_4_11.legend_negative": "Contribuição negativa\n(correlacionada com outro fator)",
         "fig_4_11.legend_note": "eixo x: escala simétrica-log (limiar linear = 0,005)\n"
@@ -288,8 +291,50 @@ def seg_title(s):
     return _tr()["seg"].get(s, TR["en"]["seg"].get(s, s))
 
 
+# Below this z-gap between a zone's first and second comparative segment, the
+# legend prints BOTH -- the rule §sec:zoning-results states in prose: "em duas
+# dessas zonas a margem é ampla e o rótulo primário descreve a zona; nas outras
+# duas os dois primeiros segmentos são praticamente indistinguíveis e o par é a
+# leitura correta". Current margins split cleanly: 0.042 / 0.053 vs 0.598 / 1.312.
+ZONE_PAIR_MARGIN = 0.25
+
+
 def zone_labels():
-    return _tr()["zone"]
+    """"Zona N — <landform>" plus the vocation READ FROM zone_profiles.csv.
+
+    The vocation must not be a literal. It was one until 2026-10-12, and it went
+    stale exactly as zone_k()'s docstring warns: after the K=10 -> K=4 re-zoning
+    the hardcoded list still said zone 2 was the drained lowland (pisciculture)
+    and zone 4 the conservation escarpment, when the exported `comparative_segment`
+    had them at zone 3 and zone 2. fig_4_3 shipped mislabelled while the prose,
+    the tables and the abstracts all used the correct order.
+
+    Only the landform descriptor stays editorial: zone numbering is canonical by
+    descending terr_elev (CLAUDE.md §11), so "Zona 1 = highest ground" is stable
+    by construction in a way the vocation is not.
+    """
+    desc = _tr()["zone"]
+    prof = _zone_profiles()
+    if prof is None:                       # CSV unreadable -- descriptor alone, never a stale pair
+        return list(desc)
+    out = []
+    for d, row in zip(desc, prof):
+        voc = seg_title(row["comparative_segment"])
+        if row["comparative_margin"] < ZONE_PAIR_MARGIN:
+            voc += " / " + seg_title(row["comparative_segment_2"])
+        out.append(f"{d} ({voc})")
+    return out
+
+
+def _zone_profiles():
+    """zone_profiles.csv rows as dicts, or None if unreadable. Same lookup as zone_k()."""
+    import pandas as pd
+    path = Path(os.environ.get("SCRATCHPAD", str(FIG_DIR.parent.parent.parent))) / "zone_profiles.csv"
+    if not path.exists():
+        path = FIG_DIR.parent.parent.parent / "zone_profiles.csv"
+    if not path.exists():
+        return None
+    return pd.read_csv(path).to_dict("records")
 
 
 def zone_k():
@@ -501,21 +546,34 @@ class Renderer:
 
     # --- present-day figures --------------------------------------------------
     def fig_4_1(self):
-        """7-panel present suitability surfaces + one shared horizontal colourbar."""
+        """7-panel present suitability surfaces + one shared horizontal colourbar.
+
+        Portrait 4 rows x 2 cols, included at 0.72\\textwidth. GO+DF is ~786 x 789 km,
+        i.e. square, so a 2-column grid has aspect ~0.5 while a full-width float can
+        only go as flat as textwidth/textheight ~ 0.68 before it overruns the page.
+        Filling the width and using 2 columns are therefore mutually exclusive here;
+        the page height is the binding constraint, so the figure gives up the side
+        margins. Axis labels only on the left column and the bottom row -- repeating
+        lon/lat on all seven panels is what forced the wide spacing before.
+        """
         suit = self.A("suit_present")
         panels = [(seg_title(s),
                    self.thumb(suit.select(f"suit_{s}").visualize(min=0, max=1, palette=PAL_SUIT)))
                   for s in SEGMENTS]
-        fig, axes = plt.subplots(2, 4, figsize=(18, 9.5))
+        ncol = 2
+        fig, axes = plt.subplots(4, ncol, figsize=(8.4, 16.2))
         flat = axes.ravel()
         for i, (ax, (title, arr)) in enumerate(zip(flat, panels)):
-            self._imshow_map(ax, arr, left=(i % 4 == 0),
-                             bottom=(i // 4 == 1 or i == 3), labels=True)
+            # x labels on the last panel of EACH column, not just the last row: with
+            # 7 panels in 4 rows the right column ends one row early, and keying on
+            # the row alone left it without a longitude axis.
+            self._imshow_map(ax, arr, left=(i % ncol == 0),
+                             bottom=(i + ncol >= len(panels)), labels=True)
             ax.set_title(title, fontsize=11)
         flat[7].remove()                                    # 8th cell -> colourbar strip
-        fig.subplots_adjust(left=0.06, right=0.985, top=0.95, bottom=0.14,
-                            wspace=0.10, hspace=0.16)
-        cax = fig.add_axes([0.30, 0.06, 0.40, 0.018])
+        fig.subplots_adjust(left=0.11, right=0.99, top=0.965, bottom=0.055,
+                            wspace=0.04, hspace=0.12)
+        cax = fig.add_axes([0.60, 0.085, 0.33, 0.010])
         cb = fig.colorbar(ScalarMappable(Normalize(0, 1), _cmap(PAL_SUIT)),
                           cax=cax, orientation="horizontal")
         cb.set_label(t("cbar.suit"))
@@ -753,8 +811,10 @@ class Renderer:
         cb = fig.colorbar(ScalarMappable(Normalize(lo, 1.0), _cmap(pal)), cax=cax)
         cb.set_label(t("cbar.agreement"))
         if mean_ag is not None:
-            ax.text(0.02, 0.03, t("fig_4_5.mean", val=mean_ag), transform=ax.transAxes,
-                    fontsize=9, va="bottom",
+            # bottom-RIGHT: the scale bar and north arrow that _imshow_map(carto=True)
+            # draws both sit on the left, and the annotation landed on top of the bar.
+            ax.text(0.98, 0.03, t("fig_4_5.mean", val=mean_ag), transform=ax.transAxes,
+                    fontsize=9, va="bottom", ha="right",
                     bbox=dict(fc="white", ec="0.5", alpha=0.85, pad=2))
         self._save(fig, "fig_4_5", tight=False)
 
@@ -1002,8 +1062,12 @@ class Renderer:
         colors = {"resid": "#B4431D", "pres": "#2D6A8E", "suit": "#9A9A9A"}
         blk = float(df["block_km"].iloc[0])
 
-        fig, axes = plt.subplots(1, len(crops), figsize=(4.2 * len(crops), 3.9),
-                                 sharey=True)
+        # Stacked vertically, one crop per row, sharing the x axis: the figure's
+        # whole point is comparing WHERE each residual curve flattens relative to
+        # the same 130 km rule, and a shared lag axis puts those crossings on one
+        # vertical line instead of three separate ones side by side.
+        fig, axes = plt.subplots(len(crops), 1, figsize=(6.6, 2.65 * len(crops)),
+                                 sharex=True, sharey=True)
         axes = np.atleast_1d(axes)
         for ax, crop in zip(axes, crops):
             sub = df[df["crop"] == crop]
@@ -1029,10 +1093,10 @@ class Renderer:
             ax.annotate(t("fig_4_15.block", km=blk), xy=(blk, 1.02),
                         xytext=(3, 0), textcoords="offset points", fontsize=8)
             ax.set_title(seg_title(crop), fontsize=10)
-            ax.set_xlabel(t("fig_4_15.xlabel"), fontsize=9)
             ax.set_ylim(0, 1.12)
             ax.grid(alpha=0.25, lw=0.5)
-        axes[0].set_ylabel(t("fig_4_15.ylabel"), fontsize=9)
+            ax.set_ylabel(t("fig_4_15.ylabel"), fontsize=9)
+        axes[-1].set_xlabel(t("fig_4_15.xlabel"), fontsize=9)
         axes[0].legend(fontsize=8, loc="lower right", framealpha=0.9)
         fig.suptitle(t("fig_4_15.suptitle"), fontsize=12)
         self._save(fig, "fig_4_15")

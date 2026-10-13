@@ -1,6 +1,6 @@
 # Viabilidade Agrícola e Projeção Climática do Cerrado Goiano
 
-Atlas de viabilidade agro-mercado multi-segmento + zoneamento agroambiental + projeção
+Atlas de viabilidade agrícola multissegmento + zoneamento agroambiental + projeção
 climática CMIP6 para **Goiás + Distrito Federal** (~340.000 km², bioma Cerrado), a 250 m,
 construído **inteiramente dentro do Google Earth Engine** (sem GPU, sem upload de dados
 grandes, sem custo de nuvem além do tier gratuito/não-comercial do GEE).

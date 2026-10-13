@@ -13,6 +13,7 @@ import type {
   SegmentsConfig,
   ThemeRoughnessPointRow,
   ThemeRoughnessRow,
+  ZoneAreaRow,
   ZoneProfileRow,
   ZoningKselectRow,
 } from '../types/data'
@@ -27,13 +28,30 @@ const labels = computed<Record<string, string>>(() =>
 
 const { data: profiles } = useCsv<ZoneProfileRow>('csv/zone_profiles.csv')
 const zoneCount = computed(() => profiles.value?.length ?? 0)
-const totalN = computed(() => (profiles.value ?? []).reduce((sum, p) => sum + p.n, 0))
+
+// Territory shares come from pixelArea(), never from zone_profiles.csv's `n`
+// (a stratified-sample row count — CLAUDE.md §9). Keyed by the 1-based zone id.
+const { data: zoneAreas } = useCsv<ZoneAreaRow>('csv/zone_area.csv')
+const areaShareByZone = computed<Record<number, number>>(() =>
+  Object.fromEntries((zoneAreas.value ?? []).map((a) => [a.zone, a.share_pct])),
+)
+
+// Same threshold as ZoneCard.vue and tools/make_figures.py's ZONE_PAIR_MARGIN:
+// below it the two leading segments are practically indistinguishable and the
+// legend names both, as fig_4_3 does in the thesis.
+const ZONE_PAIR_MARGIN = 0.25
+const segLabel = (s: string) => labels.value[s] ?? s
 
 // Keyed by the 0-based palette slot (= the zones_present raster value), while
 // p.zone is the 1-based reported name — hence the -1. See zoneLegend().
 const zoneLabelsByIndex = computed(() =>
   Object.fromEntries(
-    (profiles.value ?? []).map((p) => [p.zone - 1, labels.value[p.comparative_segment] ?? p.comparative_segment]),
+    (profiles.value ?? []).map((p) => [
+      p.zone - 1,
+      p.comparative_margin < ZONE_PAIR_MARGIN
+        ? `${segLabel(p.comparative_segment)} / ${segLabel(p.comparative_segment_2)}`
+        : segLabel(p.comparative_segment),
+    ]),
   ),
 )
 const mapLegend = computed(() => zoneLegend(zoneCount.value, zoneLabelsByIndex.value))
@@ -171,7 +189,7 @@ const hexbinData = computed<PlotlyDatum[]>(() => {
       :profile="selectedProfile"
       :segments="segmentOrder"
       :labels="labels"
-      :total-n="totalN"
+      :area-share="areaShareByZone[selectedProfile.zone] ?? 0"
     />
     <p v-else class="hint">Selecione uma zona acima para ver seu perfil.</p>
 

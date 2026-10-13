@@ -53,8 +53,8 @@ as a Vue Router param (e.g. `/suitability/:segment`) so a specific view is direc
 |---|---|---|---|
 | 0 | `/` (Home) | — | What is this, and what are the 3 RQs? |
 | 1 | `/study-area` | Part 1 | Where is the study area, what datasets feed it? |
-| 2 | `/feature-themes/:theme?` | Parts 2–7d | What does each of the 8 biophysical themes look like? |
-| 3 | `/feature-stack` | Part 8 | How do the 34 bands combine, raw vs. standardized? |
+| 2 | `/feature-themes/:theme?` | Parts 2–7d | What does each of the 6 biophysical themes look like? |
+| 3 | `/feature-stack` | Part 8 | How do the 29 bands combine, raw vs. standardized? |
 | 4 | `/suitability/:segment?` | Part 9 | How is each segment's suitability derived (fuzzy+AHP)? |
 | 5 | `/zoning` | Part 10 | How is GO/DF partitioned into zones? (RQ1) |
 | 6 | `/cmip6/:ssp?/:window?/:segment?` | Part 11 | How does suitability shift by 2050/2070? (RQ3) |

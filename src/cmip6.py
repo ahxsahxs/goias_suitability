@@ -6,7 +6,7 @@ GCM (future window vs. model historical), ensemble-averaged, and applied to the
 **observed TerraClimate 1991-2020 monthly climatology**. The climate feature
 bands are then re-derived with the *same* ``features.derive_climate_bands`` and the
 Part-9 ``membership`` engine is re-run on a future feature stack (terrain / soil /
-water / phenology / access static; only the climate block moves).
+water static; only the climate block moves).
 
 Because the baseline and the future bands share one derivation,
 ``suit_future - suit_present`` is a **pure climate signal** — identity factors

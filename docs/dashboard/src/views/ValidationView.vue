@@ -50,8 +50,19 @@ const kappa = computed(() => scorecard.value?.rf_kappa ?? null)
 
     <h2>Painel de discriminação de presença</h2>
     <DataTable v-if="scorecardRows.length" :columns="scorecardColumns" :rows="scorecardRows" />
+    <p class="note">
+      O Boyce de <em>outras culturas anuais</em> (0,313) não é comparável aos demais: o segmento
+      modela milho, algodão e sorgo, mas a coleção do MapBiomas usada aqui não distingue milho nem
+      sorgo — ambos estão diluídos na classe de mosaico de culturas —, de modo que o uso realizado
+      contra o qual ele é medido agrega algodão, arroz e esse mosaico. É uma incompatibilidade
+      entre o segmento e o seu validador, não um defeito do modelo. Soja e cana-de-açúcar têm
+      classe própria e não são afetadas.
+    </p>
 
-    <h2>Correlação de Spearman vs. NPP anual do MOD17 (municipal, n=247)</h2>
+    <h2>
+      Correlação de Spearman vs. NPP anual do MOD17
+      (municipal, n={{ scorecard?.spearman_npp_n_municipalities ?? '—' }}, metade retida)
+    </h2>
     <PlotlyChart
       :data="spearmanData"
       :layout="{ height: 280, yaxis: { title: { text: 'rho de Spearman' }, range: [-0.5, 0.6] } }"
@@ -59,8 +70,9 @@ const kappa = computed(() => scorecard.value?.rf_kappa ?? null)
     <p class="note">
       O NPP mede produtividade de biomassa em pé, não rendimento agronômico, por
       isso pecuária/conservação pontuam mais alto — reportado como contexto de
-      produtividade, não como validador primário de cultura. Outras culturas anuais
-      não é significativo (p=0,09).
+      produtividade, não como validador primário de cultura. A piscicultura é a única
+      correlação negativa, e é esperada: o NPP mede vegetação terrestre e nada diz
+      sobre aquicultura.
     </p>
 
     <h2>Gradiente de GPP dentro da cultura (janela de dossel na estação de crescimento)</h2>

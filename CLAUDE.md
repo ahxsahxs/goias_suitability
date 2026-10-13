@@ -83,7 +83,7 @@ longer lists it as future work.
 
 | Part | State | Notes |
 |---|---|---|
-| 1–8 | **BUILT & footprint-verified** | Ten feature assets incl. `feature_stack_250m(_z)` (29-band stack) + `feat_siting` (solar clearness / seasonal water distance) + `feat_conservation` (WDPA distance / ruggedness / carbon) — the latter two are side-images kept **out** of the stack (routed into suitability via the `sit_`/`cv_` extras prefix). |
+| 1–8 | **BUILT & footprint-verified** | Eight feature assets incl. `feature_stack_250m(_z)` (29-band stack) + `feat_siting` (solar clearness / seasonal water distance) + `feat_conservation` (WDPA distance / ruggedness / carbon) — the latter two are side-images kept **out** of the stack (routed into suitability via the `sit_`/`cv_` extras prefix). |
 | 9 — suitability | **BUILT (re-derived weights)** | `suit_present` / `suit_present_comp` / `suit_present_sens`: 7 `suit_*` (0–1) + 7 `class_*` (FAO S1/S2/S3/N) + 7 `sens_*` (±20% AHP). Conservation is a value/priority index (arithmetic-mean aggregation — compensatory); the other six segments use the weighted geometric mean. Weights are derived by `tools/derive_weights.py` (see §11): `w = normalize(w_lit · σ(μ)^λ)` with σ(μ) measured over available land in the **calibration half**, pooled over the present and the CMIP6 horizon. `role: gate` is **retired** — no factor leaves the AHP matrix; five climate factors still land at weight exactly 0 because μ ≡ 1 in both populations. Worst consistency ratio **0.0335** (sugarcane), **8** author judgements, 0 overrides. |
 | 10 — zoning | **BUILT — K=4**, offline `k=2..20` sweep | `zones_present`, offline sklearn KMeans on a decorrelated PCA input (`src/zoning.py`), classified server-side by nearest-centroid band math. Zones labelled by `comparative_segment` (argmax of each segment's z-normalized suitability), not raw dominance. `zone_profiles.csv` + `zoning_kselect.csv`. |
 | 11 — CMIP6 shift | **BUILT** | `suit_future_*`, `delta_*`, `agreement_*` assets across SSP2-4.5/SSP5-8.5 × 2031–2050/2051–2070 × 5-GCM ensemble. Delta-change engine validated against an identity change-factor (Δ=0.000). No structurally climate-invariant segment remains — every segment (including conservation and solar) moves under at least one climate lever. |
@@ -179,8 +179,6 @@ lazy (no server call at import), so `src/` is import-/syntax-checkable without E
 03_features_terrain.ipynb     -> Part 3   (src/features.py)
 04_features_soil.ipynb        -> Part 4   (src/features.py)
 05_features_water.ipynb       -> Part 5   (src/features.py)
-06_features_phenology.ipynb   -> Part 6   (src/features.py)
-07_features_access.ipynb      -> Part 7   (src/features.py)
 07b_landcover_mask.ipynb      -> Part 7b  (src/features.py)
 07c_siting.ipynb              -> Part 7c  (src/features.py: siting_features -> feat_siting; NOT stacked)
 07d_conservation.ipynb        -> Part 7d  (src/features.py: conservation_features -> feat_conservation; NOT stacked)
@@ -195,8 +193,12 @@ lazy (no server call at import), so `src/` is import-/syntax-checkable without E
 ```
 
 `12_municipal_gaul.ipynb` keeps its historical filename (reflects the last executed GAUL-based
-run) even though `tools/gen_notebooks.py`'s Part-12 spec now targets the IBGE mesh — it's only
-renamed by an explicit `tools/gen_notebooks.py` run, which would also wipe its saved outputs.
+run) even though `tools/gen_notebooks.py`'s Part-12 spec now targets the IBGE mesh — only an
+explicit rename would change it. **Parts 6 and 7 are vacant**: vegetation phenology and market
+accessibility were removed on 2026-10-12 (see §6), and the remaining parts were deliberately NOT
+renumbered — the gap is the record. Note that no notebook in the repo currently carries saved
+outputs, so `gen_notebooks.py` can be re-run wholesale without losing anything; it does churn
+every cell `id`, so restore the files it touched for no reason.
 
 ## 6. Outputs (EE assets under `projects/<project>/assets/goias/`)
 
@@ -207,8 +209,6 @@ renamed by an explicit `tools/gen_notebooks.py` run, which would also wipe its s
 | 3 | 03_features_terrain | `feat_terrain` | elev, slope, aspect N/E, TPI, TWI (6 bands) |
 | 4 | 04_features_soil | `feat_soil` | clay, sand, SOC, pH, bulk density, AWC (0–30 cm; 6 bands) |
 | 5 | 05_features_water | `feat_water` | distance-to-water, seasonality, drainage density (3 bands) |
-| 6 | 06_features_phenology | `feat_phenology` | NDVI mean, amplitude, peak month, integral (4 bands) |
-| 7 | 07_features_access | `feat_access` | log travel-time to cities (1 band) |
 | 7b | 07b_landcover_mask | `feat_landcover` | mode class, tree/crop/grass fractions, excluded/available masks |
 | 7c | 07c_siting | `feat_siting` | solar clearness, seasonal water distance (2 bands; kept out of the stack) |
 | 7d | 07d_conservation | `feat_conservation` | WDPA distance, ruggedness, carbon (3 bands; kept out of the stack) |
@@ -219,9 +219,20 @@ renamed by an explicit `tools/gen_notebooks.py` run, which would also wipe its s
 | 12–15 | 12..15 | `municipal_godf`, `feat_realized`, `realized_vs_potential`, … | Phase B (IBGE malha municipal boundaries, MapBiomas realized use, MOD17 validation) |
 
 The 29-band stack = climate 14 + terrain 6 + soil 6 + water 3; **land cover is deliberately
-excluded** (guardrail, §7). `feat_phenology` and `feat_access` are still built as assets but enter
-neither `STACK_THEMES` nor any AHP factor — they are context layers, so the thesis must not claim
-market accessibility or phenology as model inputs (corrected in the text on 2026-10-07).
+excluded** (guardrail, §7).
+
+**Vegetation phenology (ex-Part 6) and market accessibility (ex-Part 7) were removed from the
+project on 2026-10-12.** They had left the stack on 2026-10-02 but were still built, exported and
+shown in the dashboard's theme gallery, which is how the thesis came to carry a figure and two
+source-table rows presenting them as model inputs. Neither ever entered `STACK_THEMES`,
+`ZONING_BANDS` or any AHP factor. Gone with them: the two builders, their `config/datasets.yaml`
+blocks, notebooks 06/07, the two `pmtiles`, and the `access_logtt` labels in `make_figures.py` /
+`gen_thesis_tables.py`. The methodological argument (both encode the *current state* of land use
+and infrastructure, the same circularity that keeps land cover out) now lives in the thesis —
+`04_methodology.tex` §`sec:feature-eng` — and the scope limitation in `01_introduction.tex`.
+The orphaned `feat_phenology` / `feat_access` EE assets were **left in place server-side**, not
+deleted: deletion is irreversible and rebuilding would cost quota. Don't reintroduce either theme
+without re-reading that section.
 
 ---
 

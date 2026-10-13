@@ -192,9 +192,8 @@ def gen_factor_variance_theme():
 # --- theme_roughness.csv (Point 5: spatial climate vs. terrain/soil local
 # variability, companion to factor_variance.csv's pooled decomposition) -------
 RADII_M = [250, 750, 4750]   # native cell, cv_ruggedness's own radius, TerraClimate's native cell
-# Groups over the band names of feature_stack_250m_z. Phenology and access left
-# the stack on 2026-10-02 (features.STACK_THEMES), so their groups are gone too —
-# keeping them would just build empty reducers.
+# Groups over the band names of feature_stack_250m_z. Keep in step with
+# features.STACK_THEMES: a group whose prefix no band matches builds an empty reducer.
 THEME_PREFIX = {
     "climate": ("clim_",),
     "terrain_soil": ("terr_", "soil_"),

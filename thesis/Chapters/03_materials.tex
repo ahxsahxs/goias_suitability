@@ -6,7 +6,7 @@ e o inventário de dados. As tabelas completas de fontes de dados estão no Anex
 \section{Área de estudo}
 
 A área de interesse é o estado de Goiás em conjunto com o Distrito Federal (GO~e~DF)
-na região Centro-Oeste do Brasil e situados inteiramente no bioma Cerrado. 
+na região Centro-Oeste do Brasil e situados inteiramente no bioma Cerrado.
 O Cerrado é uma savana tropical com clima fortemente sazonal
 (verão úmido e inverno seco), além de solos profundos, intemperizados, naturalmente ácidos e
 de baixa fertilidade (predominantemente latossolos) que, no
@@ -59,10 +59,10 @@ multicritério por segmento é revista em \S\ref{sec:sota-casos}.
   da água e da biodiversidade, ecoando as compensações entre prioridade de restauração e aptidão agrícola
   mapeadas para o bioma \citep{schuler_spatial_2022}. \\
 7 & \textbf{Geração fotovoltaica} & Geração fotovoltaica em escala de concessionária, com escolha de
-  sítio por irradiância, orientação da vertente, temperatura, declive, cobertura da terra e
-  acessibilidade, em linha com os fatores de análises multicritério em SIG para usinas fotovoltaicas: 
-  irradiância, orientação, temperatura de superfície, uso da terra e distância a estradas;
-  \citealp[tab.~2]{rane_gis-based_2024}. \\
+  sítio por irradiância, índice de claridade, orientação da vertente, temperatura e declive, sobre a
+  máscara de cobertura da terra, em linha com os fatores de análises multicritério em SIG para usinas
+  fotovoltaicas: irradiância, orientação, temperatura de superfície, uso da terra e distância a
+  estradas; \citealp[tab.~2]{rane_gis-based_2024}. \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -87,10 +87,10 @@ amostras de agrupamento e classificação à ordem de $10^5$ pontos.
 \toprule
 Convenção & Valor & Justificativa \\
 \midrule
-Resolução de análise & 250~m & Corresponde à grade de vegetação do MODIS; situa-se entre a resolução fina de solo/terreno e a grossa do clima. \\
+Resolução de análise & 250~m & Corresponde à grade nativa das camadas de solo (OpenLandMap); situa-se entre a resolução fina do terreno e a grossa do clima. \\
 Sistema de referência de coordenadas & EPSG:4326 & A área das células vem da função planimétrica de área de pixel, nunca de um campo armazenado. \\
 Normal climatológica & 1991--2020 & Referência única para os deltas de mudança climática. \\
-Registro da vegetação & 2001--2020 & Fenologia e indicador de produtividade. \\
+Registro da vegetação & 2001--2020 & Indicador de produtividade (MOD17). \\
 Janelas futuras & 2031--2050; 2051--2070 & Duas janelas de projeção. \\
 Cenários futuros & SSP2-4.5; SSP5-8.5 & Cenários de emissão moderada e alta. \\
 \bottomrule
@@ -99,11 +99,6 @@ Cenários futuros & SSP2-4.5; SSP5-8.5 & Cenários de emissão moderada e alta. 
 
 \section{Fontes de dados}
 
-%% TODO: preciso rever essa questao de SEM UPLOAD DE DADOS EXTERNOS
-%% TODO: agora usamos os dados do IBGE para malha municipal
-
-%% TODO: faltam citações para alguns conjuntos de dados, e.g. Accesibility to Cities, HydroSHEDs, WDPA, carbono de biomassa etc
-%% TODO: corrigir citaçã do Spawn
 Com uma única exceção, todos os conjuntos de dados vêm do catálogo público da própria plataforma,
 acessados na resolução nativa e convertidos para unidades físicas quando as bandas vêm empacotadas
 como inteiros. A exceção é a malha municipal do IBGE, distribuída fora do catálogo: ela é lida de
@@ -112,12 +107,12 @@ como ativo persistente na plataforma. As variáveis
 \textbf{biofísicas e agroclimáticas} (Tabela~\ref{tab:src-biophys} do Anexo) cobrem temas sobre o
 terreno (SRTM); a hidrografia (HydroSHEDS); o clima e o regime de água
 através do conjunto de dados TerraClimate, mensal, a $\tfrac{1}{24}^\circ$ ($\approx$4~km)
-\citep{abatzoglou_terraclimate_2018}. Cobrem também solos com as camadas OpenLandMap v0.2 a 250~m
-(média das profundidades de 0, 10 e 30~cm), % TODO(Zotero): citar Hengl (2018), camadas OpenLandMap SOL v02 a 250 m, quando o PDF/registro estiver no Zotero
-água superficial (JRC Global Surface Water) \citep{pekel_high-resolution_2016}, fenologia através do produto MODIS NDVI e
-acessibilidade ao mercado (Global Accessibility to Cities). Completam o conjunto a cobertura genérica da terra
+\citep{abatzoglou_terraclimate_2018}. Cobrem também solos com as camadas
+OpenLandMap SOL v0.2 a 250~m (média das profundidades de 0, 10 e 30~cm) e
+água superficial (JRC Global Surface Water) \citep{pekel_high-resolution_2016}. Completam o conjunto a cobertura genérica da terra
 do MapBiomas (coleção~10), as áreas protegidas (WDPA), o carbono de biomassa acima do
-solo (Spawn \emph{et al.}) e o clima futuro (NASA NEX-GDDP-CMIP6, \citealp{thrasher_nasa_2022}).
+solo \citep[p.~1]{spawn_harmonized_2020} e o clima futuro (NASA NEX-GDDP-CMIP6,
+\citealp{thrasher_nasa_2022}).
 
 As entradas de \textbf{uso atual e validação} (Tabela~\ref{tab:src-realized} do Anexo) são as 247
 unidades municipais da Malha Municipal Digital do IBGE (edição 2025), as classificações anuais de uso da

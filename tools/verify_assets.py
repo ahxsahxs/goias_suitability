@@ -24,8 +24,7 @@ EXP_SCALE_DEG = 250 / 111320.0  # ~0.002246 deg ~ 250 m at the equator
 ASSETS = [
     "aoi",
     "feat_climate", "feat_terrain", "feat_soil", "feat_water",
-    "feat_phenology", "feat_access", "feat_landcover", "feat_siting",
-    "feat_conservation",
+    "feat_landcover", "feat_siting", "feat_conservation",
     "feature_stack_250m", "feature_stack_250m_z",
     "suit_present", "suit_present_comp", "suit_present_sens", "zones_present",
     # Phase B (Parts 12–14)

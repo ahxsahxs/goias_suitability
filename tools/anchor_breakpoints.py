@@ -94,10 +94,9 @@ HALF = utils.split_half("full")
 
 # Stack factors (present in feature_stack_250m) whose breakpoints/weights are
 # reviewed this iteration.
-# `access_logtt` was here until 2026-10-02, for solar. It left the 29-band stack
-# together with phenology (both encode the current state of land use/infrastructure),
-# and `stack.select()` raises on a band the stack no longer carries -- so leaving it
-# listed breaks BOTH subcommands against a rebuilt stack, not just the solar rows.
+# Every name here must be a band the stack actually carries: `stack.select()` raises
+# on a missing one, which breaks BOTH subcommands, not just the affected segment's rows.
+# (That is how `access_logtt` had to be dropped when it left the stack on 2026-10-02.)
 TARGET_BANDS = [
     # solar
     "clim_srad", "terr_northing",

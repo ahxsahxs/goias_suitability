@@ -139,8 +139,10 @@ Cada ponto tem um `% TODO(Zotero)` no `.tex`; até a inclusão, a frase fica sem
 - ~~**Tibshirani, Walther & Hastie (2001)**, estatística de gap.~~ **✅ Adicionado em 27/09:**
   `tibshirani_estimating_2001` está no Zotero e no `bibliography.bib`. Falta colocar o `\cite`
   no ponto marcado com `% TODO(Zotero)` em `03_methodology.tex:222`.
-- Opcional: uma referência metodológica clássica de regressão harmônica da fenologia (por exemplo
-  Jakubauskas et al., 2001), já que LeVine & Crews é um estudo de caso com um único harmônico.
+- ~~Opcional: uma referência metodológica clássica de regressão harmônica da fenologia.~~
+  **Sem objeto desde 2026-10-12:** a fenologia saiu do projeto, a derivação harmônica saiu do
+  anexo e `levine_time_2019` deixou de ser citado (fica no `.bib` sem citação, o que o biblatex
+  simplesmente não imprime).
 
 ### 5.2 Correções de metadados no Zotero
 
@@ -177,8 +179,9 @@ marcados com `%% TODO` ou `% TODO(Zotero)`:
 | `spawn_harmonized_2020` | `02_materials.tex` | :110 — "Spawn et al." sem `\cite` | q3 |
 | `spawn_harmonized_2020` | `06_annex.tex` | tabela de fontes (carbono de biomassa) | q3 |
 
-Faltam ainda `\cite` para Accessibility to Cities, HydroSHEDS e WDPA (há um `%% TODO` em
-`02_materials.tex:99`), mas essas fontes não estão no Zotero.
+Faltam ainda `\cite` para HydroSHEDS e WDPA, mas essas fontes não estão no Zotero.
+A lacuna do Accessibility to Cities resolveu-se por remoção: a camada saiu do projeto em
+2026-10-12 e já não é citada em lugar nenhum.
 
 - **Localizadores nas citações já OK:** a maioria ainda não tem página/eq./tab. (regra §12). As
   páginas sugeridas estão nos registros locais.

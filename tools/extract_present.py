@@ -146,11 +146,13 @@ def realized_composition():
     A real reduceRegion over the AOI, NOT an area-weighted reconstruction from
     zone_profiles.csv: that file's per-zone fracs come from a STRATIFIED sample,
     so recombining them is the §9 error (its `n` is not an area share). The band
-    roster matches gen_thesis_tables.REALIZED so the two tables agree by
-    construction.
+    roster matches gen_thesis_tables.COMPOSITION so the two tables agree by
+    construction. `rl_pisciculture_frac` is in the roster on purpose: the thesis
+    used to ASSERT aquaculture was an immeasurable share of the territory, when in
+    fact the band exists and was simply never extracted.
     """
     bands = ["rl_soybean_frac", "rl_sugarcane_frac", "rl_other_crops_frac",
-             "rl_pasture_frac", "rl_native_frac"]
+             "rl_pisciculture_frac", "rl_pasture_frac", "rl_native_frac"]
     stats = realized.select(bands).reduceRegion(
         reducer=ee.Reducer.mean(), geometry=AOI, scale=250,
         maxPixels=1e10, tileScale=TS).getInfo()

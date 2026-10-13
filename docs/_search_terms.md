@@ -20,7 +20,7 @@ Keyed by chapter § / section.
   process land suitability; random forest species/land distribution model; CMIP6 ensemble agreement;
   open science geospatial toolkit.
 - **§1.5 Scope** — study area delimitation; scope land suitability biophysical economic; circularity
-  guardrail land-use modelling; accessibility proxy market potential.
+  guardrail land-use modelling.
 - **§1.6 Structure** — master thesis structure geography; agro-environmental zoning methodology; land
   evaluation case study Brazil.
 
@@ -35,8 +35,8 @@ Keyed by chapter § / section.
   WMO climatological normal 1991-2020; analysis-ready data 250 m grid; pixel area projection Earth
   Engine.
 - **§2.4 Data sources** — TerraClimate dataset water balance; CHIRPS precipitation; SRTM digital
-  elevation model; OpenLandMap soil properties; JRC Global Surface Water; MODIS MOD13Q1 NDVI;
-  accessibility to cities travel time; ESA WorldCover; NASA NEX-GDDP-CMIP6 downscaled projections;
+  elevation model; OpenLandMap soil properties; JRC Global Surface Water;
+  ESA WorldCover; NASA NEX-GDDP-CMIP6 downscaled projections;
   MapBiomas land cover Brazil; MODIS MOD17 NPP GPP productivity.
 - **§2.5 CMIP6 ensemble** — NEX-GDDP-CMIP6 model ensemble; SSP2-4.5 SSP5-8.5 scenarios; GCM
   selection ensemble subset; downscaled daily climate projections Brazil.
@@ -47,7 +47,7 @@ Keyed by chapter § / section.
 
 - **§3 intro** — FAO framework for land evaluation; multi-criteria decision analysis land
   suitability; Earth Engine land evaluation pipeline; agro-environmental zoning methodology.
-- **§3.1 Feature stack** — harmonic regression phenology NDVI; growing degree days computation;
+- **§3.1 Feature stack** — growing degree days computation;
   topographic wetness index DEM; distance transform surface water; feature standardization z-score
   clustering; TerraClimate water balance variables.
 - **§3.2 Suitability** — fuzzy membership function land suitability; weighted geometric mean limiting

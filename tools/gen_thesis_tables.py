@@ -53,7 +53,6 @@ SEG_SHORT = {                      # for the narrow "melhor comparativo" row
     "solar": "solar",
 }
 FACTOR_PT = {
-    "access_logtt": "Log do tempo de viagem à cidade",
     "clim_aridity": "Índice de aridez (P/ETP)",
     "clim_dry_months": "Meses secos (n)",
     "clim_gdd": "Graus-dia de crescimento",
@@ -104,6 +103,12 @@ REALIZED = [
     ("rl_pasture_frac", "Pastagem"),
     ("rl_native_frac", "Vegetação nativa"),
 ]
+# Territorial composition carries one role REALIZED cannot: aquaculture. It has an
+# `rl_pisciculture_frac` band in `feat_realized` but NO per-zone column in
+# zone_profiles.csv, so adding it to REALIZED would break zone_realized(). The
+# thesis needs the measured number because §sec:limitations used to ASSERT the
+# share was immeasurable while the band was simply never extracted.
+COMPOSITION = REALIZED[:3] + [("rl_pisciculture_frac", "Aquicultura")] + REALIZED[3:]
 SSP_PT = {"ssp245": "SSP2-4.5", "ssp585": "SSP5-8.5"}
 
 
@@ -263,24 +268,24 @@ def zone_shift():
         print("  !! cmip6_zone_shift.csv missing -- run tools/extract_cmip6.py first")
         return
     zs = zones_of(d)
-    rows, midrules, prev = [], set(), None
-    for seg in [s for s in SEG_PT if s in set(d["segment"])]:
-        for ssp in ["ssp245", "ssp585"]:
-            for win in sorted(d["window"].unique()):
-                sub = d[(d.segment == seg) & (d.ssp == ssp) & (d.window == win)]
-                if sub.empty:
-                    continue
-                if prev is not None and seg != prev:
-                    midrules.add(len(rows))
-                prev = seg
-                byz = dict(zip(sub["zone"], sub["delta_s"]))
-                label = f"{SSP_PT[ssp]} {win.replace('_', '--')}"
-                rows.append([SEG_PT[seg], label]
-                            + [signed(byz.get(z), 3) for z in zs])
+    # Scenario-window goes in the COLUMNS with a spanning SSP header, like
+    # shift_mean/shift_share/downgrade_share already do via _combo_cols. The old
+    # layout spent a whole column on the string "SSP2-4.5 2031--2050", repeated on
+    # all twelve rows, which is what pushed the table wide.
+    combos, tophead, subheads = _combo_cols(d)
+    idx = {(r.segment, r.zone, r.ssp, r.window): r.delta_s for r in d.itertuples()}
+    rows, midrules, first = [], set(), True
+    for seg in [x for x in SEG_PT if x in set(d["segment"])]:
+        if not first:
+            midrules.add(len(rows))
+        first = False
+        for z in zs:
+            rows.append([SEG_PT[seg], f"Z{z}"]
+                        + [signed(idx.get((seg, z, ssp, win)), 3) for ssp, win in combos])
     write("zone_shift.tex",
-          tabular("ll" + "r" * len(zs),
-                  ["Segmento", "Cenário--janela"] + [f"Z{z}" for z in zs],
-                  rows, midrules=midrules))
+          tabular("ll" + "r" * len(combos),
+                  ["Segmento", "Zona"] + subheads, rows,
+                  midrules=midrules, tophead=[("", 1), ("", 1)] + tophead))
 
 
 def _combo_cols(d):
@@ -574,10 +579,14 @@ def variograma():
                      num(r.struct_shared_at_block * 100, 0) + "\\%"])
         seen = r.crop
     blk = num(one.block_km.iloc[0], 0)
+    # Two-line \makecell headers: the flat version ran past \textwidth because the
+    # four numeric headers are far wider than the numbers under them.
     write("variograma.tex", tabular(
         "llrrrr",
-        ["Cultura", "Enquadramento", "Janela (km)", "Alcance (km)",
-         "Pepita/patamar", f"Compart. em {blk}~km"], rows))
+        ["Cultura", "Enquadramento",
+         "\\makecell[r]{Janela\\\\(km)}", "\\makecell[r]{Alcance\\\\(km)}",
+         "\\makecell[r]{Pepita/\\\\patamar}",
+         f"\\makecell[r]{{Compart.\\\\em {blk}~km}}"], rows))
 
 
 def split_balance():
@@ -612,11 +621,11 @@ def realized_composition():
     cannot drift apart.
     """
     c = read_csv("realized_composition.csv").set_index("band")["share_pct"]
-    rows = [[lab, num(c[col], 1) + "\\%"] for col, lab in REALIZED if col in c.index]
-    total = sum(c[col] for col, _ in REALIZED if col in c.index)
+    rows = [[lab, num(c[col], 1) + "\\%"] for col, lab in COMPOSITION if col in c.index]
+    total = sum(c[col] for col, _ in COMPOSITION if col in c.index)
     # The five rl_*_frac bands do not exhaust the territory; the remainder is the
     # classes MapBiomas carries but this study never models (urban, mining, water,
-    # silviculture, perennials, aquaculture). Derived by subtraction rather than
+    # silviculture, perennials). Derived by subtraction rather than
     # listed one by one, because no regenerated artifact breaks it down -- the
     # per-class figures the hand-typed table used to print had no source.
     rows.append(["Outras classes (não modeladas)", num(100 - total, 1) + "\\%"])
