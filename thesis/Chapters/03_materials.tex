@@ -52,9 +52,9 @@ multicritério por segmento é revista em \S\ref{sec:sota-casos}.
   como a tilápia), seguindo critérios de viabilidade local (temperatura, aqui usando a do ar como aproximação
   da temperatura da água, textura do solo, declive, acesso à água) estabelecidos para
   aquicultura em viveiros em outras regiões \parencites{ssegane_geospatial_2012}[tab.~1]{assefa_gis_2018}. \\
-5 & \textbf{Pecuária} & Gado de corte em pastagem cultivada, que cobre cerca de 28\% do bioma Cerrado
-  \citep[p.~1219]{vieira_classification_2022} e abrange um amplo espectro de estados de intensificação
-  e degradação \citep{vieira_classification_2022,molossi_improve_2020}. \\
+5 & \textbf{Pecuária} & Gado de corte em pastagem cultivada, que cobre cerca de 28\% do bioma Cerrado e abrange um
+  amplo espectro de estados de intensificação e degradação
+  \parencites[p.~1219]{vieira_classification_2022}{molossi_improve_2020}. \\
 6 & \textbf{Conservação} & Conservação de floresta e Cerrado --- valor de serviços da vegetação nativa,
   da água e da biodiversidade, ecoando as compensações entre prioridade de restauração e aptidão agrícola
   mapeadas para o bioma \citep{schuler_spatial_2022}. \\
@@ -99,9 +99,9 @@ Cenários futuros & SSP2-4.5; SSP5-8.5 & Cenários de emissão moderada e alta. 
 
 \section{Fontes de dados}
 
-Com uma única exceção, todos os conjuntos de dados vêm do catálogo público da própria plataforma,
-acessados na resolução nativa e convertidos para unidades físicas quando as bandas vêm empacotadas
-como inteiros. A exceção é a malha municipal do IBGE, distribuída fora do catálogo: ela é lida de
+Com uma única exceção, todos os conjuntos de dados vêm do catálogo público da própria
+plataforma; o Anexo~\ref{anx:data} registra, fonte a fonte, a resolução nativa e os fatores de
+conversão para unidades físicas. A exceção é a malha municipal do IBGE, distribuída fora do catálogo: ela é lida de
 um arquivo local e convertida em geometria na memória a cada execução, sem nunca ser exportada
 como ativo persistente na plataforma. As variáveis
 \textbf{biofísicas e agroclimáticas} (Tabela~\ref{tab:src-biophys} do Anexo) cobrem temas sobre o
@@ -127,7 +127,7 @@ A projeção usa o conjunto NEX-GDDP-CMIP6 da NASA, de resolução temporal diá
 precipitação e de temperatura máxima e mínima do ar próximo à superfície. Um conjunto de cinco modelos ---
 ACCESS-CM2, EC-Earth3, GFDL-ESM4, MPI-ESM1-2-HR e MRI-ESM2-0 --- é usado como subconjunto padrão e
 bem-comportado de modelos de circulação geral (GCMs); todos os cinco têm dados para os dois cenários de
-interesse. A projeção cobre os cenários SSP2-4.5 e SSP5-8.5, para as janelas de 2031--2050 e 2051--2070.
+interesse.
 
 
 \section{Ambiente computacional}

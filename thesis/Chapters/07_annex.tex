@@ -91,18 +91,15 @@ vegetação nativa (peso 0,06) é a única entrada de cobertura da terra, rebaix
 pela salvaguarda contra circularidade. Os outros seis segmentos usam a média geométrica de
 fator limitante.
 
-Nenhum fator é retirado da matriz AHP. Sete fatores climáticos têm $\sigma(\mu) = 0$ no
-presente, porque a faixa observada em GO~e~DF cai inteiramente dentro do seu platô ótimo; eles
-permanecem na matriz e recebem peso porque $\sigma(\mu)$ é medido sobre a população do presente
-\emph{reunida} à do horizonte CMIP6 (\S\ref{sec:ahp}), e um fator saturado hoje volta a graduar
-sob aquecimento. Cinco deles ainda saem em peso exatamente nulo, por terem $\mu \equiv 1$ nas
+Nenhum fator é retirado da matriz AHP: sete fatores climáticos têm $\sigma(\mu) = 0$ no
+presente e nela permanecem, pelo mecanismo de ponderação sobre o horizonte CMIP6 descrito em
+\S\ref{sec:ahp}; cinco deles ainda saem em peso exatamente nulo, por terem $\mu \equiv 1$ nas
 duas populações. A coluna \emph{Fatores} da Tabela~\ref{tab:ahp-cr} conta portanto todos os
 fatores de cada segmento, inclusive os de peso nulo.
 
 Os pesos de cada segmento são as prioridades de uma matriz Saaty de comparação par a par
-documentada; toda matriz é folgadamente consistente, sendo 0,0335 (cana-de-açúcar) a maior razão
-de consistência entre os sete segmentos (Tabela~\ref{tab:ahp-cr}), um terço do limiar de
-aceitação de 0,10.
+documentada, e toda matriz é folgadamente consistente, nos termos apurados em \S\ref{sec:ahp}
+(Tabela~\ref{tab:ahp-cr}).
 
 \begin{table}[H]
 \centering
@@ -132,10 +129,7 @@ temperatura base $T_{\text{base}} = 10\,^\circ\mathrm{C}$,
 \end{equation*}
 onde $\bar{T}_m$ é a temperatura média do mês $m$ e $N_m = 30{,}4$ dias, a duração média do mês. É o
 Método~1 de \citet[p.~292]{mcmaster_growing_1997} aplicado a médias mensais, o que tende a
-subestimar o GDD em meses próximos da temperatura base. Toda a
-derivação climática é encapsulada em uma única transformação determinística reutilizada sem
-alteração para o clima futuro do CMIP6 (\S\ref{sec:cmip6}), o que é o que torna a mudança
-projetada um sinal puramente climático.
+subestimar o GDD em meses próximos da temperatura base.
 
 \textbf{Terreno (6 variáveis).} A elevação e o declive vêm do MDE de 30~m; a orientação é
 decomposta em uma componente norte ($\cos$) e leste ($\sin$), para que a variável circular
@@ -247,11 +241,9 @@ $\rho$ e torna a estimativa conservadora.}
 \input{Chapters/Tables/spearman_npp.tex}
 \end{table}
 
-O \emph{proxy} de NPP anual mede a produtividade primária da vegetação, não o rendimento
-agronômico, de modo que os segmentos de biomassa em pé (pecuária, conservação) pontuam mais
-alto. Por isso ele é relatado apenas como \emph{contexto} de produtividade; as métricas de
-discriminação por presença (Tabela~\ref{tab:presence-auc}) são os validadores primários das
-culturas.
+O \emph{proxy} de NPP anual é lido apenas como \emph{contexto} de produtividade, pelas razões
+dadas em \S\ref{sec:validation-present}; os validadores primários das culturas são as métricas
+de discriminação por presença (Tabela~\ref{tab:presence-auc}).
 
 \chapter{Figuras de diagnóstico}\label{anx:figures}
 
@@ -327,19 +319,17 @@ cresce quase monotonicamente, satisfazendo apenas em $k=14$ a regra de um erro-p
 $\mathrm{Gap}(k) \ge \mathrm{Gap}(k+1) - s_{k+1}$. Nenhum
 desses três índices elege $k=4$.
 
-O que elege $k=4$ (linha tracejada) é o \textbf{ARI de validação cruzada espacial}, que ajusta a
-partição na metade de calibração e a compara, na metade retida, com uma ajustada
-independentemente sobre ela: aí $k=4$ é o máximo claro de todo o intervalo, com 0,793, contra
+O que elege $k=4$ (linha tracejada) é o \textbf{ARI de validação cruzada espacial} definido em
+\S\ref{sec:zoning}: aí $k=4$ é o máximo claro de todo o intervalo, com 0,793, contra
 0,728 em $k=2$, 0,719 em $k=6$ e 0,677 em $k=5$. O ARI de subamostragem concorda: $k=4$ marca
 0,986, com o menor desvio-padrão entre réplicas de todo o intervalo ($\pm$0,006; a título de
 comparação, $\pm$0,201 em $k=5$ e $\pm$0,176 em $k=6$). Contudo, esse índice mede reprodutibilidade
 sob reamostragem e não validade fora da amostra, pelo que entra como corroboração e não como
 fundamento.
 
-O painel inteiro varia pouco: com a silhueta entre 0,144 e 0,235 em $k = 2,\dots,20$, não há
-estrutura de agrupamento forte em nenhum $k$, e é por isso que a escolha se apoia na
-reprodutibilidade da partição em território não visto, e não num ótimo de geometria. O painel
-cobre $k$ até 20, confirmando que a escolha não é um artefato de faixa truncada.
+O painel inteiro varia pouco, e é por isso que a escolha se apoia na reprodutibilidade da
+partição em território não visto, e não num ótimo de geometria; cobre $k$ até 20, o que
+confirma que a escolha não é um artefato de faixa truncada.
 
 \section{Decomposição por fator}\label{sec:factor-variance-annex}
 

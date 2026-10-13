@@ -147,7 +147,9 @@ Para a \textbf{soja}, \citet[p.~1]{radocaj_optimal_2020} combinam pertinência f
 agrupamento por $k$-médias e classificação nas classes da FAO sobre um condado de 4.155~km\textsuperscript{2},
 validando o resultado contra o NDVI do Sentinel-2 ($R^2 = 0{,}8438$) e identificando 14,5\% da área,
 ou 602~km\textsuperscript{2}, como muito apta. É o análogo metodológico mais próximo deste trabalho em
-toda a literatura revista, e por isso serve de termo de comparação na Tabela~\ref{tab:estado-arte}.
+toda a literatura revista, servindo portanto de termo de comparação: aplica o mesmo
+encadeamento de pertinência fuzzy, pesos AHP, $k$-médias e classes da FAO, mas a um único segmento,
+sobre uma área quase duas ordens de grandeza menor e sob o clima presente.
 Para a \textbf{cana-de-açúcar}, \citet[pp.~2, 4--5]{haile_assessment_2026} avaliam aptidão e requisitos
 hídricos de cana irrigada sobre rasters a 30~m, reportando os resultados nas classes S1--N. Para o grupo
 de \textbf{outras culturas anuais}, \citet[pp.~6--8]{tadesse_land_2020} constroem uma avaliação GIS-AHP
@@ -210,7 +212,7 @@ tradição metodológica não era, até ali, uma prática estabelecida.
 Um modelo de aptidão é uma predição espacial, e a avaliação de predições espaciais tem uma literatura
 própria que aponta para um problema comum: a validação cruzada aleatória, aplicada a dados com
 estrutura espacial, subestima seriamente o erro de predição, porque observações de treino e de teste
-vizinhas não são independentes \citep[p.~913]{roberts_crossvalidation_2017}. O remédio é separar
+vizinhas não são independentes. O remédio é separar
 treino e teste não ao acaso, mas por blocos --- no espaço, no tempo ou no espaço de preditores ---,
 estratégia que aqueles autores consideram preferível à alternativa aleatória em todos os casos que
 testaram, com a ressalva de que a blocagem pode induzir extrapolação ao restringir as combinações de
@@ -230,7 +232,7 @@ nesta dissertação são as de \citet[p.~165]{landis_measurement_1977}: valores 
 correspondem a concordância \emph{ligeira}, entre 0,21 e 0,40 a \emph{razoável}, entre 0,41 e 0,60 a
 \emph{moderada}, entre 0,61 e 0,80 a \emph{substancial} e acima de 0,81 a \emph{quase perfeita}. Os
 próprios autores advertem que essas divisões são arbitrárias e valem como referências para a discussão,
-não como critérios de decisão \citep[p.~165]{landis_measurement_1977}.
+não como critérios de decisão.
 
 \section{Síntese e lacuna de pesquisa}\label{sec:sota-lacuna}
 

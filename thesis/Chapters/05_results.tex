@@ -29,10 +29,9 @@ fertilidade (S2+ 45,1\%). A pecuária é graduada pela produtividade de forragem
 pastagens genuinamente ruins caem para S3/N: sua parcela viável ou superior é de 76,0\%, mas
 sua viabilidade média territorial fica \emph{abaixo} das culturas na terra boa.
 
-A piscicultura tem 22,0\% do território em classe S2+. Ancorar seu fator de proximidade
-à água superficial \textbf{semipermanente}, em vez da água permanente, eleva a superfície acima
-do piso: é a água semipermanente, e não a permanente, que de fato governa a escolha de sítio para
-aquicultura em pequenos reservatórios.
+A piscicultura tem 22,0\% do território em classe S2+. Esta superfície  só se descola do piso
+porque o seu fator de proximidade está ancorado na água superficial \textbf{semipermanente}, e
+não na permanente (Anexo~\ref{anx:derivations}).
 
 A superfície de valor de conservação é genuinamente informativa (S2+ 38,5\%).
 Ela agrega, de forma compensatória, a conectividade a áreas protegidas, a
@@ -47,34 +46,23 @@ de claridade, mas penalizadas por uma redução de desempenho por calor no trime
 
 GO~e~DF é climaticamente quase uniforme, por isso as pertinências climáticas saturam, e a
 discriminação real entre terra boa e ruim vem do \textbf{solo e do terreno}.
-Uma decomposição da variância por fator torna essa leitura quantitativa
-(Figura~\ref{fig:factor-variance} do Anexo): decompondo a
-variância espacial da viabilidade de cada segmento em parcelas por fator, quatro das sete
-superfícies repousam quase inteiramente sobre solo e terreno. Para a soja, o declive responde por
-0,93 da variância e a argila por 0,07, com o clima $\approx$ 0. Na cana-de-açúcar a discriminação
-é de solo: a água disponível domina (0,47), seguida da argila (0,35), com o declive em 0,18. Nas
-outras culturas anuais quem domina é o carbono orgânico do solo (0,66), com o declive em 0,32. A
-piscicultura concentra-se de forma quase total na distância à água sazonal (0,91), com declive em
-0,06 e densidade de drenagem em 0,02.
+Uma decomposição da variância espacial da viabilidade por fator torna essa leitura
+quantitativa (\S\ref{sec:factor-variance-annex} do Anexo): quatro das sete superfícies --- soja,
+cana-de-açúcar, outras culturas anuais e piscicultura --- repousam quase inteiramente sobre solo,
+terreno e hidrografia, com o clima próximo de zero, ainda que o fator dominante seja diferente em
+cada uma (na soja, o declive responde sozinho por 0,93 da variância). Os outros três não seguem
+esse padrão, e vale registrar a exceção em vez de generalizar: a pecuária e a geração
+fotovoltaica são governadas por fatores de origem climática --- umidade do solo e irradiância
+---, de modo que a conclusão anterior sobre o clima não vale para esses dois; e a conservação é o
+segmento \emph{mais concentrado} dos sete, na conectividade a áreas protegidas.
 
-Os outros três segmentos não seguem esse padrão, e vale registrar a exceção em vez de
-generalizar: a pecuária é governada pela umidade do solo (0,97) e a geração fotovoltaica pela
-irradiância (0,71, com o índice de claridade em 0,27) --- dois fatores climáticos, de
-modo que a conclusão anterior sobre o clima não vale para esses dois segmentos. 
-A conservação, por fim, é o segmento \emph{mais concentrado} dos
-sete: a conectividade a áreas protegidas responde sozinha por 0,68 da variância, contra 0,15 da
-rugosidade do terreno, 0,10 do serviço de carbono e 0,08 da fração de vegetação nativa.
-
-Essa concentração em um ou dois fatores por segmento não decorre de peso AHP enviesado a favor
-deles. Pelo contrário: uma revisão de pesos (\S\ref{sec:ahp}) deslocou peso
-deliberadamente \emph{para} os fatores de maior poder discriminante em cada segmento, exatamente
-o oposto de um viés que infla artificialmente sua concentração de variância.
-Cinco segmentos carregam
-ainda um ou dois fatores de peso exatamente zero, cuja pertinência é constante em GO~e~DF no
-presente (\S\ref{sec:ahp}). Nos três segmentos de
-cultivo anual, portanto, os fatores climáticos delimitam o intervalo possível de viabilidade mas
-não desenham a estrutura espacial fina do atlas, que repousa sobre solo e terreno, sendo essa dependência
-retomada como limitação na seção \S\ref{sec:limitations}.
+Essa concentração não decorre de peso AHP enviesado a favor dos fatores dominantes. Pelo
+contrário: a derivação dos pesos (\S\ref{sec:ahp}) desloca peso deliberadamente \emph{para} os
+fatores de maior poder discriminante em cada segmento, exatamente o oposto de um viés que
+inflaria artificialmente a sua concentração de variância. Nos três segmentos de cultivo anual,
+portanto, os fatores climáticos delimitam o intervalo possível de viabilidade mas não desenham a
+estrutura espacial fina do atlas, que repousa sobre solo e terreno. Esta dependência retomada como
+limitação em \S\ref{sec:limitations}.
 
 A decomposição por fator é agregada por pixel amostrado. Ela mostra \emph{quanto} cada fator
 contribui em média, mas não \emph{onde} nem em qual escala espacial essa contribuição se
@@ -295,9 +283,7 @@ que o amorteça: à medida que as planícies quentes cruzam o limiar de calor, a
 A conservação é o segundo mais exposto, com $\Delta S$ de $-0{,}033$ a $-0{,}058$ e a
 área viável ou superior caindo de 38,5\% para 27,3\%. A vegetação nativa é o uso da terra menos
 amortecido pelo clima: os fatores climáticos dos segmentos de produção situam-se sobre um amplo
-platô ótimo, pois o manejo os mantém próximos de seu ótimo térmico. De fato, vários destes fatores
-tem pertinência constante em GO~e~DF no presente e por isso recebem peso nulo na derivação
-(\S\ref{sec:ahp}).
+platô ótimo, pois o manejo os mantém próximos de seu ótimo térmico.
 Já os fatores da conservação situam-se sobre a rampa ativa, de modo que o sinal de aquecimento e
 ressecamento se transmite diretamente em perda de terra de alto valor de conservação.
 
@@ -403,15 +389,13 @@ classes não modeladas agregam usos que o MapBiomas distingue mas este estudo n�
 
 \subsection{Potencial \emph{versus} realizado (QP2)}\label{sec:pot-vs-real}
 
-O zoneamento aprendido separa o uso atual da terra de forma condizente.
-Caracterizando a composição atual dentro de cada zona biofísica
-(Tabela~\ref{tab:zone-realized} do Anexo), o planalto de cultivo (Zona~1) carrega a maior
-parcela realizada de soja de qualquer zona (23,1\%, contra 7,9\% e 5,4\% nas duas baixadas) e a
-maior parcela de cana-de-açúcar (3,5\%). Já a vegetação nativa sobe para 69,7\% da escarpa
-íngreme de conservação (Zona~2), justamente a zona cujo melhor uso modelado, comparativo e
-absoluto, é a conservação. A baixada quente e arenosa
-(Zona~4), identificada como marginal para culturas, é dominada por pastagem (66,5\%, a maior
-parcela de qualquer zona), com soja residual (5,4\%). A validação
+O zoneamento aprendido separa o uso atual da terra de forma condizente. A composição
+realizada dentro de cada zona biofísica (Tabela~\ref{tab:zone-realized} do Anexo, comentada zona
+a zona em \S\ref{sec:zoning-results}) concentra soja e cana-de-açúcar no planalto de cultivo
+(Zona~1), leva a vegetação nativa a quase 70\% da escarpa íngreme de conservação (Zona~2) 
+(justamente a zona cujo melhor uso modelado, comparativo e absoluto, é a conservação)  e deixa
+a baixada quente e arenosa (Zona~4), identificada como marginal para culturas, dominada por
+pastagem. A validação
 cruzada mais forte disponível para a QP1 é justamente esta: uma partição não supervisionada de
 variáveis biofísicas reproduz a geografia observada de cultivo, pastejo e vegetação remanescente,
 e a zona de conservação é precisamente onde o Cerrado nativo de fato persiste.
@@ -439,8 +423,8 @@ todas as métricas abaixo são calculadas sobre a metade do território que não
 calibração (\S\ref{sec:holdout}).
 
 Duas grades distintas operam aqui, e não devem ser confundidas. A grade da partição é de
-$6 \times 6$ células formando blocos de ${\sim}130$~km, como descrito em \S\ref{sec:sota-validacao} \citep[p.~913]{roberts_crossvalidation_2017})
-e define o que é calibração e o que é validação; a
+$6 \times 6$ células formando blocos de ${\sim}130$~km, dimensionados como descreve
+\S\ref{sec:holdout}, e define o que é calibração e o que é validação; a
 grade da amostragem é de $8 \times 8$ células e é apenas o estrato que espalha os pontos
 de avaliação por toda a extensão de GO~e~DF, em vez de os concentrar onde cada cultura é mais densa.
 A primeira separa treino de teste; a segunda apenas evita que a amostra seja geograficamente
@@ -451,11 +435,9 @@ superfícies ordenam bem a presença acima do fundo para duas das três culturas
 (Tabela~\ref{tab:presence-auc}). A mais fortemente validada por AUC é a \textbf{cana-de-açúcar}
 (0,906), seguida da soja (0,864); pelo índice de Boyce a ordem se inverte, com a soja em 0,976
 contra 0,967 da cana. As duas culturas são, em qualquer das duas métricas, bem discriminadas.
-A amostra usada nessa e nas demais checagens de presença é estratificada por segmento e espacialmente
-(\S\ref{sec:zoning}), distribuída por uma malha $8\times8$ sobre toda a extensão de
-GO~e~DF em vez de concentrada onde cada cultura é mais densa, o que já mitiga, na própria
-amostragem, parte do otimismo por autocorrelação espacial a que métricas de presença sobre
-amostras uniformes estão sujeitas.
+A amostra usada nessa e nas demais checagens de presença é a estratificada por segmento e por
+espaço de \S\ref{sec:zoning}, o que já mitiga, na própria amostragem, parte do otimismo por
+autocorrelação espacial a que métricas de presença sobre amostras uniformes estão sujeitas.
 
 O caso da cana-de-açúcar merece uma ressalva de leitura, e não de desconto: sua pegada atual
 permanece concentrada em poucos municípios (\S\ref{sec:realized-composition}) e desequilibrada
@@ -516,14 +498,12 @@ $n = 2.071$) --- magnitude que não se pode descartar como ruído, e que aponta 
 gradientes são significativos, e o que distingue os casos é o sinal e a magnitude, não o nível
 descritivo.
 
-Os três testes acima  (correlação municipal com NPP, explicação da mistura de sinais e
-gradiente intracultura de GPP) continuam sendo lidos como verificações \emph{secundárias},
-não como tentativas independentes de validar rendimento. A conclusão que os três sustentam, em
-conjunto, é favorável ao modelo com uma exceção declarada: a soja e as outras culturas anuais
-corroboram-no positivamente dentro da própria cultura, mas a cana-de-açúcar o \emph{contradiz}:
-seu gradiente intracultura é negativo ($-0{,}234$) justamente no segmento de melhor
-discriminação por presença (AUC 0,906). As duas medições respondem a perguntas diferentes --- uma
-distingue cana de não-cana, a outra ordena a produtividade entre canaviais ---, e nada obriga a
+Essas verificações de produtividade são \emph{secundárias}, e não tentativas independentes de
+validar rendimento. A conclusão que sustentam em conjunto é favorável ao modelo com uma exceção
+declarada: a soja e as outras culturas anuais corroboram-no dentro da própria cultura, mas a
+cana-de-açúcar o \emph{contradiz} justamente no segmento de melhor discriminação por presença.
+As duas medições respondem a perguntas diferentes --- uma
+distingue cana de não-cana, a outra modela a produtividade entre canaviais ---, e nada obriga a
 segunda a acompanhar a primeira; mas a divergência é real e não se resolve com os dados desta
 tese. O mais provável é que seja um artefato do validador: a GPP do MODIS subestima a eficiência
 de uso da luz em lavouras intensamente manejadas (parágrafo anterior), e a cana é a cultura mais
@@ -554,8 +534,9 @@ recorte espacial. ANOVA de um fator: $F = 1417{,}3$, $p \approx 0$.}
 presença atual de soja, sobre o mesmo conjunto padronizado de atributos e sobre uma amostra
 estratificada espacialmente e por segmento, treinada na metade de calibração e avaliada na
 metade retida ($n = 8.376$), e comparada célula a célula com a classificação baseada em
-conhecimento. A concordância é razoável, não forte, na escala de
-Landis \& Koch \citep[p.~165]{landis_measurement_1977} ($\kappa$ de Cohen $= +0{,}292$): o mapa de conhecimento declara 45,4\% do
+conhecimento. A concordância é razoável, não forte, nas faixas de
+Landis \& Koch recolhidas em \S\ref{sec:sota-validacao} ($\kappa$ de Cohen $= +0{,}292$): o mapa
+de conhecimento declara 45,4\% do
 território como viável ou superior, contra 18,3\% a que o classificador orientado por dados
 atribui alta probabilidade de presença. Esta é a única das verificações desta seção em que a
 diferença entre as duas metades é um contraste genuíno de treino e teste, e não territorial: o
@@ -568,8 +549,8 @@ O $\kappa$ de Cohen é definido como
 em que $p_o$ é a proporção observada de concordância célula a célula entre as duas
 classificações (conhecimento \emph{versus} floresta aleatória) e $p_e$ é a proporção de
 concordância esperada apenas ao acaso, dada a prevalência marginal de cada classe em cada mapa.
-Quando as duas classificações marcam áreas de tamanhos muito diferentes --- aqui, 45,4\% \emph{
-versus} 18,3\% do território como viável ---, a própria diferença entre as marginais impõe um teto
+Quando as duas classificações marcam áreas de tamanhos muito diferentes, como as duas
+marginais acima, a própria diferença entre elas impõe um teto
 ao $\kappa$: mesmo com a maior concordância compatível com essas áreas, ele não passaria de
 $\kappa_M \approx 0{,}42$, de modo que o valor observado corresponde a cerca de 69\% do máximo
 permitido \citep[pp.~42--43]{cohen_coefficient_1960}. Isso por si só já explica por que ele fica

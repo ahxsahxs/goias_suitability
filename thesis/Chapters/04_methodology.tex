@@ -104,11 +104,9 @@ ao mercado. A amplitude do NDVI é alta porque a terra já é cultivada, e o tem
 resultado do uso, não a capacidade do lugar, e uma delas entraria exatamente onde o modelo
 precisa ser independente do uso para poder ser confrontado com ele (\S\ref{sec:phaseb}).
 Nenhuma das duas é construída, nem entra no agrupamento ou em qualquer fator de viabilidade
-(\S\ref{sec:ahp}). As fórmulas de derivação por variável
-(agregação climática; graus-dia de crescimento pelo Método~1 de \citet[p.~292]{mcmaster_growing_1997},
-aqui aplicado a médias mensais; índice de umidade topográfica
-\citep[p.~48, eq.~8]{beven_physically_1979}) estão no Anexo~\ref{anx:derivations}; os temas
-são resumidos abaixo.
+(\S\ref{sec:ahp}). As fórmulas de derivação por variável --- agregação
+climática, graus-dia de crescimento e índice de umidade topográfica, cada uma com a sua fonte ---
+estão no Anexo~\ref{anx:derivations}; os temas são resumidos abaixo.
 
 \begin{table}[H]
 \centering
@@ -164,8 +162,7 @@ cobertura), o sinal de uso atual da terra.
 
 Para cada segmento, a viabilidade é um agregado ponderado de pertinências fuzzy dos fatores. Ela é
 mascarada pela cobertura da terra e classificada nas classes da FAO, seguindo a extensão fuzzy/AHP
-do arcabouço de avaliação de terras da FAO \citep{nisar_ahamed_gis-based_2000,yaghmaeian_mahabadi_land_2012}
-(\S\ref{sec:sota-mcda}). A
+do arcabouço de avaliação de terras da FAO revista em \S\ref{sec:sota-mcda}. A
 especificação completa por segmento --- fator, peso, forma e limiares --- está na Tabela~\ref{tab:spec-longtable} do Anexo.
 
 Os limiares móveis (não fixados por um padrão técnico, como um limite legal de declive) foram
@@ -224,11 +221,9 @@ $0{,}50$ e $0{,}75$:
 \end{cases}
 \end{equation*}
 onde $\mathrm{N}$ é \emph{não viável} e $\mathrm{S3}$, $\mathrm{S2}$, $\mathrm{S1}$ são,
-respectivamente, \emph{marginalmente}, \emph{moderadamente} e \emph{altamente} viável. As ordens e
-classes seguem a avaliação de terras da FAO, em que limitações nulas ou ligeiras definem S1,
-moderadas S2 e severas S3 \citep[p.~62]{sys_land_1991}; as classes N1 e N2 daquele esquema, que
-distinguem a inaptidão corrigível da não corrigível, são aqui fundidas numa única ordem N, por não se
-modelarem intervenções corretivas (\S\ref{sec:sota-fao}).
+respectivamente, \emph{marginalmente}, \emph{moderadamente} e \emph{altamente} viável. As ordens, as
+classes e a fusão de N1 e N2 numa única ordem N seguem o esquema da avaliação de terras da FAO nos
+termos estabelecidos em \S\ref{sec:sota-fao}.
 
 \subsection{Ponderação AHP e adaptação regional}\label{sec:ahp}
 
@@ -292,8 +287,7 @@ O expoente $\lambda = 0{,}5$ é fixado \emph{a priori} e não é calibrado. Uma 
 $\lambda \in \{0;\,0{,}25;\,0{,}5;\,0{,}75;\,1\}$, pontuada fora da amostra, mostra que
 $\lambda = 0{,}5$ situa-se \emph{abaixo} do ótimo empírico em dois dos três segmentos mensuráveis e
 sobre ele no terceiro: a escolha abre mão de parte do ganho disponível em vez de aproveitá-lo, que é o
-que se espera de um parâmetro pré-fixado. A varredura completa está no
-Anexo~\ref{anx:ahp-audit}.
+que se espera de um parâmetro pré-fixado.
 
 
 
@@ -354,8 +348,7 @@ e pela estabilidade de subamostras (índice de Rand ajustado, ARI, em \emph{boot
 desses índices está em \citet{ikotun_cluster_2025}.
 
 O primeiro resultado do painel não é a escolha de $k$, mas uma constatação sobre o território:
-\textbf{a silhueta permanece entre 0,144 e 0,235 em todo o intervalo $k = 2,\dots,20$} (medida na
-metade de validação; na de calibração, entre 0,168 e 0,217). Num
+\textbf{a silhueta permanece entre 0,144 e 0,235 em todo o intervalo $k = 2,\dots,20$}. Num
 índice em que valores acima de 0,5 indicam estrutura apreciável e valores abaixo de 0,25 indicam
 estrutura fraca ou ausente, isso significa que GO~e~DF não possuem agrupamentos naturais
 bem separados em nenhum $k$. O agrupamento aqui é, portanto, um dispositivo de
@@ -373,22 +366,12 @@ e compara, na metade retida, essa partição com uma ajustada independentemente 
 calibração: ajustá-la sobre tudo vazaria a covariância da metade retida para dentro do próprio
 espaço em que os índices de validação são medidos.
 
-\textbf{Adota-se $k = 4$ porque é o máximo claro do ARI de \emph{holdout}} (0,793, contra 0,719 em
-$k=6$, 0,728 em $k=2$ e 0,677 em $k=5$). A partição em quatro zonas é, portanto, a que melhor se
-reproduz em território que não participou do ajuste. Convém registrar o que \emph{não} a sustenta:
-a silhueta não elege $k=4$ em nenhuma das duas metades --- o seu máximo está em $k=6$, tanto na
-validação (0,235 contra 0,225) quanto na calibração (0,217 contra 0,213) ---, e o Davies--Bouldin
-tem mínimo em $k=11$ na calibração e em $k=6$ na validação. O ARI de subamostragem também é máximo
-em $k=4$ (0,986, com o menor desvio-padrão entre réplicas do intervalo, $\pm$0,006 contra
-$\pm$0,201 em $k=5$ e $\pm$0,176 em $k=6$), mas essa concordância é corroboração, não fundamento:
-pelas razões acima, ela mede estabilidade e não validade.
-
-A estatística de \emph{gap} não é informativa neste território. Ela cresce de forma quase
-monotônica em todo o intervalo (2,02 em $k=2$ até 2,37 em $k=20$), e o critério do primeiro $k$
-com $\mathrm{gap}(k) \geq \mathrm{gap}(k+1) - s_{k+1}$ só é satisfeito em $k=14$.
-Neste ponto, tanto a
-silhueta (0,174 na validação) quanto o ARI de \emph{holdout} (0,543) estão entre os piores valores
-do intervalo, de modo que esse ponto é um artefato do critério, não uma recomendação.
+\textbf{Adota-se $k = 4$ porque é o máximo claro do ARI de \emph{holdout}} (0,793): a partição em
+quatro zonas é a que melhor se reproduz em território que não participou do ajuste. Convém
+registrar que nenhum dos três índices de geometria --- silhueta, Davies--Bouldin e estatística de
+\emph{gap} --- elege $k=4$, e que o ARI de subamostragem, que também o elege, entra como
+corroboração e não como fundamento, pela razão acima. O painel completo, índice por índice e nas
+duas metades, está em \S\ref{sec:k-selection-annex} do Anexo.
 
 A escolha de $k=4$ tem um custo que vale declarar: com quatro zonas e sete segmentos, a partição
 não atribui rótulo comparativo primário a três deles, e em duas das quatro zonas a margem entre o
@@ -484,9 +467,8 @@ fração de GCMs cujo sinal de mudança coincide com o sinal da média,
 \end{equation*}
 com $A > 0{,}5$ indicando a concordância da maioria.
 
-Na prática, essa concordância é alta: para outras culturas anuais sob SSP5-8.5 2051--2070 (o
-segmento e a combinação mais expostos ao clima (\S\ref{sec:shift}) e por isso o teste mais
-rigoroso) a concordância média territorial é $0{,}999$. O corolário é que a
+Na prática essa concordância é alta em todo o território, inclusive no segmento e na
+combinação mais expostos ao clima (\S\ref{sec:shift}), com um corolário que vale antecipar: a
 \emph{superfície} de concordância tem, em si, pouco contraste espacial para revelar: ela
 documenta que o sinal do CMIP6 é robusto ao GCM escolhido, mais do que localiza \emph{onde} a
 incerteza entre modelos se concentra.
@@ -502,12 +484,13 @@ Toda métrica de validação reportada neste trabalho é calculada sobre uma met
 território que não participou da calibração. A necessidade é a que \S\ref{sec:sota-validacao}
 estabelece: sob autocorrelação espacial, treino e teste sorteados do mesmo território compartilham
 informação, e a métrica resultante mede em parte a proximidade entre os pontos, não a capacidade
-preditiva \citep[p.~913]{roberts_crossvalidation_2017}.
+preditiva.
 
 O tamanho do bloco não é escolhido por convenção, e sim
 medido: do semivariograma empírico do \textbf{resíduo} (presença observada menos viabilidade
 ajustada), que é onde reside a dependência espacial capaz de inflar uma métrica fora da amostra
-\citep{roberts_crossvalidation_2017,valavi_blockcv_2019}. Na janela de 400~km o alcance do resíduo
+(\S\ref{sec:sota-validacao}), e cujo alcance se mede com os instrumentos de
+\citet[p.~225]{valavi_blockcv_2019}. Na janela de 400~km o alcance do resíduo
 é de 105~km para soja e cana e de 175~km para outras culturas anuais. O \S\ref{anx:holdout} do
 Anexo registra as três definições de campo que foram estimadas, por que só o resíduo dimensiona o
 bloco, e a dependência do alcance em relação à janela de observação --- que é o limite mais sério
@@ -576,6 +559,7 @@ mesmo fenômeno (uma orientada por conhecimento difuso/AHP e outra orientada
 pelos dados de uso realizado) convergem espacialmente: concordância reforça a confiança no
 modelo; discordâncias são reportadas como achados de discussão.
 
-Duas ressalvas são registradas. Os \emph{proxies} MODIS medem a produtividade primária da vegetação,
-não o rendimento agronômico, e confundem cultivo duplo com manejo, configurando um substituto
-grosseiro.
+Fica registrada uma ressalva de desenho, retomada com os números em
+\S\ref{sec:validation-present}: os \emph{proxies} MODIS medem a produtividade primária da
+vegetação, não o rendimento agronômico, e confundem cultivo duplo com manejo, configurando um
+substituto grosseiro.
