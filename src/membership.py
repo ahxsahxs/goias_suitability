@@ -22,12 +22,19 @@ from __future__ import annotations
 import ee
 
 # Factor bands whose name carries one of these prefixes are sourced from a side
-# image rather than the feature stack (keeps solar/pisci siting bands and the
-# conservation native-veg factor OUT of the clustering/suitability stack while
-# still consumable by the membership engine). ``lc_`` -> feat_landcover always;
-# ``sit_``/``rl_`` -> the images passed in ``extras`` (siting / realized-use).
-# Guardrail: only conservation's sanctioned native/tree factor and the two
-# siting segments use side images; nothing enters the stack or clusterer.
+# image rather than the feature stack. ``lc_`` -> feat_landcover always;
+# ``sit_``/``cv_``/``rl_`` -> the images passed in ``extras`` (siting /
+# conservation-value / realized-use).
+#
+# These bands are NOT outside the model -- they are outside the 29-band
+# concatenation, which only gathers the four themes every consumer shares. Each
+# arm takes the subset its method requires: suitability selects factor by factor
+# (here), zoning uses a curated 13-band subset (``zoning.ZONING_BANDS``), which
+# already excludes 16 of the 29 stacked bands. The band-by-band argument for
+# which side bands could be a zoning axis is in thesis/Chapters/
+# 04_methodology.tex (sec:zoning) and measured by tools/probe_zoning_candidates.py.
+# Guardrail: of the side bands only conservation's sanctioned, demoted
+# ``rl_native_frac`` is land cover; ``sit_``/``cv_`` are biophysical/governance.
 _LC_PREFIX = "lc_"
 
 
@@ -148,9 +155,10 @@ def classify_fao(suit, breaks):
 def _factor_images(stack, lc, factors, extras=None):
     """Membership image + weight for each *weighted* factor of a segment.
 
-    ``extras`` optionally maps a band-name prefix (e.g. ``"sit_"``, ``"rl_"``) to
-    a side image so siting / realized-use factors can be sourced without entering
-    the feature stack (see ``_source_image``).
+    ``extras`` optionally maps a band-name prefix (``"sit_"``, ``"cv_"``,
+    ``"rl_"``) to a side image so siting / conservation-value / realized-use
+    factors can be sourced without entering the feature stack (see
+    ``_source_image``).
 
     EVERY factor of the segment enters here. Until 2026-10-02 a factor could carry
     ``role: gate`` and be pulled out of the weighted aggregation, to be re-applied
@@ -228,9 +236,10 @@ def suit_present(stack, lc, cfg, extras=None):
     """7-segment suitability image: `suit_<seg>` (0-1) + `class_<seg>` (FAO code).
 
     ``extras`` (dict prefix->image) supplies side-image factors — pass
-    ``{"sit_": siting_img, "rl_": realized_img}`` for the rescaled solar/pisci
-    siting factors and conservation's native-veg factor. ``None`` reproduces the
-    original stack+lc behavior exactly.
+    ``{"sit_": siting_img, "cv_": conservation_img, "rl_": realized_img}`` for
+    the solar/pisciculture siting factors, conservation's three value factors
+    and its native-veg factor. ``None`` reproduces the original stack+lc
+    behavior exactly.
     """
     validate_extras(cfg, extras)
     breaks = cfg["fao_classes"]["breaks"]

@@ -17,7 +17,7 @@ full z-stack (then 34 bands) resolved only 3 low-expressiveness zones: GO/DF is 
 near-uniform (annual precip 1373–1635 mm, dry-months a spatial constant), yet the
 14 collinear climate bands each carried a full unit of Euclidean weight and
 swamped the soil/relief/hydrology structure that actually separates the land. The
-iteration clusters on a **curated subset** (``ZONING_BANDS``, ~15 bands, near-
+iteration clusters on a **curated subset** (``ZONING_BANDS``, 13 bands, near-
 duplicates dropped) with **theme-block weighting** (each band's z divided by
 √bands-in-theme so climate cannot outvote water/access) followed by **PCA**
 (≥ ``var_keep`` variance) so KMeans runs on orthogonal PCs. k is re-selected on

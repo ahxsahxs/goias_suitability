@@ -83,11 +83,11 @@ longer lists it as future work.
 
 | Part | State | Notes |
 |---|---|---|
-| 1–8 | **BUILT & footprint-verified** | Eight feature assets incl. `feature_stack_250m(_z)` (29-band stack) + `feat_siting` (solar clearness / seasonal water distance) + `feat_conservation` (WDPA distance / ruggedness / carbon) — the latter two are side-images kept **out** of the stack (routed into suitability via the `sit_`/`cv_` extras prefix). |
+| 1–8 | **BUILT & footprint-verified** | Eight feature assets incl. `feature_stack_250m(_z)` (29-band stack) + `feat_siting` (solar clearness / seasonal water distance) + `feat_conservation` (WDPA distance / ruggedness / carbon) — the latter two are side-images kept **out** of the concatenation and routed into suitability via the `sit_`/`cv_` extras prefix — one catalogue, four consumer policies (§7). |
 | 9 — suitability | **BUILT (re-derived weights)** | `suit_present` / `suit_present_comp` / `suit_present_sens`: 7 `suit_*` (0–1) + 7 `class_*` (FAO S1/S2/S3/N) + 7 `sens_*` (±20% AHP). Conservation is a value/priority index (arithmetic-mean aggregation — compensatory); the other six segments use the weighted geometric mean. Weights are derived by `tools/derive_weights.py` (see §11): `w = normalize(w_lit · σ(μ)^λ)` with σ(μ) measured over available land in the **calibration half**, pooled over the present and the CMIP6 horizon. `role: gate` is **retired** — no factor leaves the AHP matrix; five climate factors still land at weight exactly 0 because μ ≡ 1 in both populations. Worst consistency ratio **0.0335** (sugarcane), **8** author judgements, 0 overrides. |
 | 10 — zoning | **BUILT — K=4**, offline `k=2..20` sweep | `zones_present`, offline sklearn KMeans on a decorrelated PCA input (`src/zoning.py`), classified server-side by nearest-centroid band math. Zones labelled by `comparative_segment` (argmax of each segment's z-normalized suitability), not raw dominance. `zone_profiles.csv` + `zoning_kselect.csv`. |
 | 11 — CMIP6 shift | **BUILT** | `suit_future_*`, `delta_*`, `agreement_*` assets across SSP2-4.5/SSP5-8.5 × 2031–2050/2051–2070 × 5-GCM ensemble. Delta-change engine validated against an identity change-factor (Δ=0.000). No structurally climate-invariant segment remains — every segment (including conservation and solar) moves under at least one climate lever. |
-| 12–14 — Phase B | **BUILT** | `realized_vs_potential`, `municipal_godf` (IBGE malha municipal aggregation, 247 municipalities), MOD17 productivity validation (municipal Spearman + within-crop GPP gradient), RF presence cross-check (Cohen's κ = +0.269, AUC = 0.871 for soybean), AHP consistency ratios. See `config/ahp_matrices.yaml` and `thesis/Chapters/05_results.tex` / `06_discussion_conclusion.tex` for the full numbers. |
+| 12–14 — Phase B | **BUILT** | `realized_vs_potential`, `municipal_godf` (IBGE malha municipal aggregation, 247 municipalities), MOD17 productivity validation (municipal Spearman + within-crop GPP gradient), RF presence cross-check (soybean Cohen's κ = +0.292 val / +0.220 calib, suitability AUC = 0.864 — the pre-holdout κ = +0.269 / AUC = 0.871 are superseded), AHP consistency ratios. See `config/ahp_matrices.yaml` and `thesis/Chapters/05_results.tex` / `06_discussion_conclusion.tex` for the full numbers. |
 | 15 — synthesis | **BUILT & live** | `docs/dashboard/` (Vue 3 + TS + Vite SPA): 11 routes covering every Part, built via `tools/build_dashboard_assets.py` from the assets in this table + config YAML. CI (`.github/workflows/deploy-dashboard.yml`) builds/type-checks/deploys successfully to GitHub Pages at <https://ahxsahxs.github.io/goias_suitability>, i18n and image trim done, and it's linked from `03_materials.tex`. See `docs/dashboard_ux_plan.md` for the architecture. |
 
 - **Asset backups:** pre-recalibration and pre-reconceptualization snapshots were copied server-side
@@ -151,6 +151,11 @@ tools/anchor_breakpoints.py   # `percentiles` = band distributions; `discriminat
                                 # saturated/vetoed fractions -> thesis/Chapters/factor_discrimination.csv
 tools/gen_diag_csvs.py        # regenerates zoning_kselect.csv / factor_variance.csv /
                                 # theme_roughness(_points).csv diagnostics
+tools/probe_zoning_candidates.py # read-only: should any sit_/cv_ band be a ZONING axis?
+                                # 4 pre-committed gates (admissibility -> redundancy ->
+                                # new dimension -> partition impact) on ONE shared sample;
+                                # caches the sample, so a re-run costs no EE quota.
+                                # Answer (2026-10-13): no, all 5 rejected -> zoning_candidates.csv
 tools/sync_zotero_bib.py      # Zotero export -> thesis/Bibliography/bibliography.bib (strips file/abstract/…,
                                 # checks every \cite key exists, reports entries without a local PDF) — see §12
 notebooks/01..15               # thin: import src/, build, range-report, view, export — one per Part
@@ -219,7 +224,8 @@ every cell `id`, so restore the files it touched for no reason.
 | 12–15 | 12..15 | `municipal_godf`, `feat_realized`, `realized_vs_potential`, … | Phase B (IBGE malha municipal boundaries, MapBiomas realized use, MOD17 validation) |
 
 The 29-band stack = climate 14 + terrain 6 + soil 6 + water 3; **land cover is deliberately
-excluded** (guardrail, §7).
+excluded** (guardrail, §7). The stack is a *concatenation of the four themes every consumer
+shares*, not "the model" — see the four band policies in §7.
 
 **Vegetation phenology (ex-Part 6) and market accessibility (ex-Part 7) were removed from the
 project on 2026-10-12.** They had left the stack on 2026-10-02 but were still built, exported and
@@ -245,6 +251,34 @@ without re-reading that section.
 - **Asset root & naming:** `projects/<project>/assets/goias/<name>`. Every cached output is an EE
   asset (`utils.asset_id`). Naming: `feat_<theme>`, `feature_stack_250m[_z]`, `suit_present`,
   `zones_present`, `suit_future_<ssp>_<window>`, `delta_*`, `agreement_*`.
+- **One input catalogue, FOUR band policies — `feature_stack_250m` is not "the model".**
+  The stack concatenates only the four themes every consumer shares; each arm then takes the
+  subset its method requires, by a stated criterion: **suitability** selects factor by factor via
+  name prefix (`membership._source_image`, any theme incl. the `sit_`/`cv_`/`rl_`/`lc_` side
+  images); **zoning** uses the curated `ZONING_BANDS` (13 of the 29 — so 16 stacked bands are
+  *also* absent from zoning); the **RF cross-check** and the dashboard's "full" PCA consume
+  `z.bandNames()` wholesale (`run_validation.py`, `run_ws_analysis.py`,
+  `build_dashboard_assets.py`). So "in the stack" never meant "in the zoning arm", and
+  `feat_siting`/`feat_conservation` are outside the *concatenation*, not outside the model.
+  Two consequences worth keeping visible: (a) adding a theme to `STACK_THEMES` silently widens the
+  RF predictor set, which would put `cv_carbon` (biomass — high exactly where soybean is absent)
+  and `cv_pa_dist` into a classifier the thesis presents as independent of realized use; (b) the
+  band-by-band case for which side band could be a *zoning axis* is measured by
+  `tools/probe_zoning_candidates.py` and argued in `04_methodology.tex` §`sec:zoning`, not asserted.
+- **All five `sit_`/`cv_` bands were MEASURED and rejected as zoning axes (2026-10-13) — don't
+  re-litigate without reading `thesis/Chapters/zoning_candidates*.csv`.** `cv_carbon` (vegetation
+  state) and `cv_pa_dist` (governance) fail admissibility, and the gate order is what saves them
+  from being admitted: they are the *least* redundant of the five (|r| 0.67 / 0.25 vs the curated
+  13), so a purely numerical curation would have taken both. `cv_ruggedness` (|r| 0.84 vs
+  `terr_slope`) and `sit_clearness` (0.76 vs `clim_aridity`, R² 0.97 against all 13, adds no PC)
+  fail redundancy — note this kills the plausible-sounding claim that the radiation axis is missing
+  from zoning because `clim_srad` is not in the 13; the 13 already span it. `sit_water_dist_seas` is
+  the only band that is both admissible (|r| 0.50, R² 0.36) and adds a PC (8→9), and it fails on
+  PARTITION: admitting it drops `ari_holdout` at k=4 from 0.793 to 0.563 and moves the argmax to
+  k=2 (0.718, below what the 13 reach), i.e. it adds a variance axis that is not partition
+  structure. **`ZONING_BANDS` stands at 13 by measurement.** The probe's `incumbent_13` panel
+  reproduces the published `zoning_kselect.csv` (k=4 `ari_holdout` 0.793, `silhouette_val` 0.225 vs
+  0.235 at k=6), which is the regression test that its sample/PCA/sweep wiring is the production one.
 - **Land cover is mask/context only — never a clustering or suitability input.** Avoids
   categorical-in-kmeans and the circularity of using land use to predict land use. Hard guardrail
   throughout; `STACK_THEMES` in `features.py` deliberately excludes it. **One sanctioned exception:**

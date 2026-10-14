@@ -143,8 +143,11 @@ com água no ano) do mesmo produto e a densidade de drenagem derivada da acumula
 HydroSHEDS (uma fração de células de canal, com faixa empírica $\approx$~0--0,15, que governa seus
 limiares de pertinência).
 
-Duas imagens laterais completam as entradas do modelo. Elas ficam fora do conjunto de 29
-bandas utilizadas para agrupamento, mas são consumidas pelo motor de viabilidade.
+Duas imagens laterais completam o catálogo de entrada, fora do conjunto de 29 bandas. Cada braço
+da análise seleciona do conjunto o subconjunto que o seu método exige: a viabilidade opera fator a
+fator (\S\ref{sec:ahp}) e o agrupamento, sobre um subconjunto curado de treze bandas
+(\S\ref{sec:zoning}). As imagens laterais alimentam apenas a viabilidade, e o critério que as
+exclui do agrupamento é o mesmo que descarta as demais bandas não curadas (\S\ref{sec:zoning}).
 A primeira, de sítio (2 variáveis), traz o índice de claridade
 atmosférica e a distância à água superficial semipermanente; a segunda, de
 conservação (3 variáveis), traz a distância a áreas protegidas, a rugosidade do terreno e
@@ -331,6 +334,19 @@ distância à água e densidade de drenagem. A \textbf{ponderação por bloco te
 divide cada banda pela raiz quadrada do número de bandas no seu tema, para que a influência de um tema não escale
 com o número de bandas. E a \textbf{PCA} rotaciona o subconjunto ponderado para seus eixos principais,
 retendo o menor número de componentes que expliquem $\geq$~90\% da variância.
+
+O mesmo critério exclui do agrupamento as cinco bandas das imagens laterais
+(\S\ref{sec:feature-eng}). O carbono em biomassa e a distância a áreas protegidas são
+inadmissíveis por natureza: o primeiro mede o estado da vegetação, pelo mesmo argumento que exclui
+a fenologia do NDVI, e a segunda é camada de governança, não de superfície. Que o carbono entre
+como fator de conservação, com peso modesto e ressalva declarada (Anexo~\ref{anx:derivations}), não
+o qualifica como eixo de partição. A rugosidade do
+terreno e o índice de claridade atmosférica são quase duplicatas de bandas retidas --- o declive e
+o índice de aridez, respectivamente, com $|r| \geq 0{,}76$ ---, e o segundo não acrescenta
+componente à PCA. A distância à água semipermanente, única simultaneamente admissível e não
+redundante, reduz o índice de Rand ajustado da metade retida em $k = 4$ de 0,79 para 0,56 e desloca
+o seu máximo para $k = 2$: acrescenta variância sem acrescentar estrutura de partição. O
+subconjunto curado permanece, portanto, com treze bandas.
 
 Os componentes principais são a solução contínua (relaxada) dos indicadores de pertencimento do k-means,
 de modo que agrupar no subespaço dos primeiros componentes aproxima a partição k-means do espaço
