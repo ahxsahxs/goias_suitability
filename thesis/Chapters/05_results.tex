@@ -29,7 +29,7 @@ fertilidade (S2+ 45,1\%). A pecuária é graduada pela produtividade de forragem
 pastagens genuinamente ruins caem para S3/N: sua parcela viável ou superior é de 76,0\%, mas
 sua viabilidade média territorial fica \emph{abaixo} das culturas na terra boa.
 
-A piscicultura tem 22,0\% do território em classe S2+. Esta superfície  só se descola do piso
+A piscicultura tem 22,0\% da sua terra avaliada em classe S2+. Esta superfície  só se descola do piso
 porque o seu fator de proximidade está ancorado na água superficial \textbf{semipermanente}, e
 não na permanente (Anexo~\ref{anx:derivations}).
 
@@ -53,8 +53,10 @@ terreno e hidrografia, com o clima próximo de zero, ainda que o fator dominante
 cada uma (na soja, o declive responde sozinho por 0,93 da variância). Os outros três não seguem
 esse padrão, e vale registrar a exceção em vez de generalizar: a pecuária e a geração
 fotovoltaica são governadas por fatores de origem climática --- umidade do solo e irradiância
----, de modo que a conclusão anterior sobre o clima não vale para esses dois; e a conservação é o
-segmento \emph{mais concentrado} dos sete, na conectividade a áreas protegidas.
+---, de modo que a conclusão anterior sobre o clima não vale para esses dois; e a conservação, o
+segmento com mais fatores dos sete, concentra ainda assim dois terços da sua variância num só
+deles, a conectividade a áreas protegidas --- o único fator dominante do conjunto que não é uma
+variável de superfície, mas uma camada de governança.
 
 Essa concentração não decorre de peso AHP enviesado a favor dos fatores dominantes. Pelo
 contrário: a derivação dos pesos (\S\ref{sec:ahp}) desloca peso deliberadamente \emph{para} os
@@ -159,7 +161,8 @@ substantiva.
     normalizada à frente da cana-de-açúcar:
     não há, nesta zona, um segmento comparativamente dominante, e a leitura honesta é que o
     planalto é bom para o cultivo anual em geral. A soja tem aqui viabilidade absoluta de 0,58
-    --- alta, mas não a maior do território, que fica na baixada quente (0,59).
+    --- alta, mas não a maior do território: as duas baixadas chegam a 0,59, com vantagem de
+    milésimos para a baixada quente (0,591, contra 0,588 da drenada).
   \item \textbf{Zona 2 --- escarpa íngreme de conservação (10,4\%), vocação conservação
     (margem 1,31).} A menor das quatro zonas é a única com vocação comparativa inequívoca --- a
     margem é mais de trinta vezes a do planalto --- e também a única em que a conservação é o
@@ -235,10 +238,14 @@ resilientes, a cerca de nove centésimos, na geração fotovoltaica sob a trajet
 (Tabela~\ref{tab:shift-mean}).
 A projeção identifica
 três segmentos expostos, nesta ordem: a geração fotovoltaica, a conservação e as
-outras culturas anuais. A ordenação é a mesma nas três medidas disponíveis --- $\Delta S$ médio
-($-0{,}091$, $-0{,}058$, $-0{,}052$), parcela de células rebaixadas de classe FAO ($32{,}9\%$,
-$25{,}4\%$, $21{,}8\%$) e perda de área viável ($-15{,}8\%$, $-11{,}1\%$ e $-13{,}0\%$) ---,
-o que torna a leitura robusta à escolha de indicador. Nos quatro segmentos restantes o sinal é
+outras culturas anuais. A ordenação é a mesma em duas das três medidas disponíveis --- o
+$\Delta S$ médio ($-0{,}091$, $-0{,}058$, $-0{,}052$) e a parcela de células rebaixadas de classe
+FAO ($32{,}9\%$, $25{,}4\%$, $21{,}8\%$). Na terceira, a perda de área viável em pontos
+percentuais, a geração fotovoltaica continua destacada ($-15{,}8$), mas as outras culturas anuais
+($-13{,}0$) passam à frente da conservação ($-11{,}1$); medida a perda em termos relativos à área
+viável de partida, as três voltam à ordem original ($-58{,}7\%$, $-28{,}9\%$, $-28{,}7\%$). Qual é
+o segmento mais exposto é, portanto, robusto à escolha de indicador; a ordem entre o segundo e o
+terceiro não é. Nos quatro segmentos restantes o sinal é
 pequeno: soja, cana-de-açúcar e pecuária ficam no piso de arredondamento
 ($|\Delta S| \le 0{,}0014$ no pior cenário--janela) e a piscicultura melhora. A superfície de
 conservação carrega dois fatores climáticos
@@ -289,8 +296,9 @@ ressecamento se transmite diretamente em perda de terra de alto valor de conserv
 
 As outras culturas anuais (milho, algodão, sorgo) são a cultura mais exposta. Sua
 mudança se agrava monotonicamente de $-0{,}0117$ para $-0{,}0519$, com a área viável ou
-superior contraindo-se de 45,1\% para 32,1\%. Em pontos percentuais, esta é a maior perda absoluta de
-área viável de qualquer segmento. Suas pertinências premiam a confiabilidade da
+superior contraindo-se de 45,1\% para 32,1\% --- 13,0 pontos percentuais, a maior perda de área
+viável entre as culturas, ainda que abaixo dos 15,8 pontos da geração fotovoltaica. Suas
+pertinências premiam a confiabilidade da
 chuva e uma janela térmica limitada, ambas erodidas pela temperatura crescente e pelos
 graus-dia de crescimento acumulados. Estes resultados são coerentes com as tendências observadas
 de aquecimento e ressecamento na fronteira agrícola da transição entre a Amazônia oriental e o
@@ -535,10 +543,11 @@ presença atual de soja, sobre o mesmo conjunto padronizado de atributos e sobre
 estratificada espacialmente e por segmento, treinada na metade de calibração e avaliada na
 metade retida ($n = 8.376$), e comparada célula a célula com a classificação baseada em
 conhecimento. A concordância é razoável, não forte, nas faixas de
-Landis \& Koch recolhidas em \S\ref{sec:sota-validacao} ($\kappa$ de Cohen $= +0{,}292$): o mapa
-de conhecimento declara 45,4\% do
-território como viável ou superior, contra 18,3\% a que o classificador orientado por dados
-atribui alta probabilidade de presença. Esta é a única das verificações desta seção em que a
+Landis \& Koch recolhidas em \S\ref{sec:sota-validacao} ($\kappa$ de Cohen $= +0{,}292$): sobre a
+metade retida, o mapa de conhecimento declara 45,4\% dos pixels avaliados como viáveis ou
+superiores, contra 18,3\% a que o classificador orientado por dados
+atribui alta probabilidade de presença. As duas parcelas referem-se a essa metade, e não ao
+domínio completo a que se refere a parcela S2+ de \S\ref{sec:atlas-present}. Esta é a única das verificações desta seção em que a
 diferença entre as duas metades é um contraste genuíno de treino e teste, e não territorial: o
 $\kappa$ sobe de 0,220 na metade de calibração para 0,292 na de validação.
 
@@ -599,8 +608,9 @@ municípios alcançam uma média de nível S1 ($\ge 0{,}75$), e 134 dos 247 são
 ou superiores. Sobrepondo a projeção de meados do século, identificam-se os municípios
 vulneráveis: \textbf{137 dos 247} enfrentam um declínio projetado das
 outras culturas mais acentuado que $-0{,}05$ (com média $-0{,}082$, e no pior caso
-$-0{,}202$). Esses municípios concentram-se na baixada quente e arenosa (Zona~4), sendo os cinco
-mais expostos todos localizado nela. Este achado responde à QP3, indicando que o
+$-0{,}202$). É na baixada quente e arenosa (Zona~4) que eles são proporcionalmente mais
+frequentes --- 39 dos seus 45 municípios estão sinalizados ---, e os cinco mais expostos estão
+todos localizados nela. Este achado responde à QP3, indicando que o
 nicho de milho--algodão--sorgo se erode mais rápido no terreno mais baixo e já marginal. Que o
 número de municípios afetados seja majoritário, e não marginal, é o que separa este resultado de
 uma curiosidade cartográfica.

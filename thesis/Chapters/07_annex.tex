@@ -365,9 +365,11 @@ No caso da pecuária, a umidade do solo descreve armazenamento de água no perfi
 não um gradiente climático: reclassificada por papel temático, a parcela de terreno/solo do
 segmento vai de 0,04 a 1,00, e a média climática entre os sete segmentos cai de 0,24 para 0,10.
 Na geração fotovoltaica, por outro lado, a irradiância \emph{é} um sinal climático espacial
-genuíno, e a concentração é real. A conservação, por fim, é o segmento \emph{mais concentrado} do
-conjunto: a conectividade a áreas protegidas responde sozinha por 0,68 da variância, contra 0,15
-da rugosidade do terreno, 0,10 do serviço de carbono e 0,08 da fração de vegetação nativa.
+genuíno, e a concentração é real. A conservação, por fim, é o segmento com mais fatores do
+conjunto --- nove --- e ainda assim a conectividade a áreas protegidas responde sozinha por 0,68
+da variância, contra 0,15 da rugosidade do terreno, 0,10 do serviço de carbono e 0,08 da fração de
+vegetação nativa. É também o único dos sete cujo fator dominante não é uma variável de superfície,
+e sim uma camada de governança.
 
 Essa concentração não decorre de viés de ponderação AHP. Nos quatro segmentos dominados por solo e
 terreno ela reflete saturação geográfica genuína das pertinências climáticas, confirmada de forma
@@ -416,39 +418,24 @@ usado para a rugosidade do terreno na conservação (\S\ref{anx:derivations}).
 \section{Dimensionamento do bloco de validação}\label{anx:holdout}
 
 Esta seção registra as medidas que dimensionaram a partição espacial de calibração e validação
-descrita em \S\ref{sec:holdout}. A escolha do bloco não é convencional: é a consequência de um
-alcance de autocorrelação medido, e o registro abaixo é o que permite ao leitor julgá-la.
+descrita em \S\ref{sec:holdout}.
 
-\paragraph{Três enquadramentos, e só um dimensiona o bloco.}
-O semivariograma empírico (Tabela~\ref{tab:variograma}) é computado sob três definições do campo,
-para cada cultura e em duas janelas de distância:
-
-\begin{enumerate}
-  \item a \textbf{superfície ajustada} --- a própria viabilidade modelada;
-  \item a \textbf{presença realizada} --- a resposta observada no MapBiomas;
-  \item o \textbf{resíduo} --- presença menos viabilidade ajustada.
-\end{enumerate}
-
-É do \textbf{resíduo} que se dimensiona o bloco, e apenas dele, porque é nele que reside a
-dependência espacial que infla o otimismo de uma métrica fora da amostra
+O semivariograma empírico (Tabela~\ref{tab:variograma}) foi estimado, para cada cultura e em duas
+janelas de distância, sob três definições do campo: a superfície de viabilidade ajustada, a
+presença realizada no MapBiomas e o resíduo entre ambas. O bloco é dimensionado pelo resíduo,
+porque é nele que reside a dependência espacial capaz de inflar uma métrica fora da amostra
 \citep{roberts_crossvalidation_2017,valavi_blockcv_2019}: o que um bloco precisa separar não é a
-suavidade do preditor nem a agregação da cultura, mas aquilo que o modelo \emph{não} explicou e
-que, ainda assim, é compartilhado entre células vizinhas.
+suavidade do preditor nem a agregação da cultura, mas a parcela não explicada pelo modelo que
+ainda assim é compartilhada entre células vizinhas. As outras duas definições são reportadas como
+contraste, pois conduziriam a dimensionamentos distintos: o alcance da superfície ajustada
+superestima a exigência para soja e cana (155 e 135~km, contra 105~km do resíduo) e a subestima
+para as outras culturas anuais (155 contra 175~km).
 
-Os outros dois enquadramentos entram como contraste, para mostrar que a escolha do campo não é
-indiferente. O alcance da superfície ajustada mede a suavidade dos preditores, não a dependência
-residual, e erraria o dimensionamento nos dois sentidos: para a soja e a cana ele
-\emph{superestimaria} a exigência (155 e 135~km contra os 105~km do resíduo), e para as outras
-culturas anuais, a mais exigente das três, ele a \emph{subestimaria} (155 contra 175~km). Em
-nenhum dos dois casos serve de base.
-
-\paragraph{Um alcance lido sozinho é ininterpretável.}
-Por isso a pepita é reportada ao lado de cada alcance. Quando a pepita se aproxima do patamar, a variância é quase toda ruído na escala
-de suporte de 250~m, a curva de máximos acumulados estabiliza nesse piso de ruído e nenhum
-estimador recupera um
-alcance estrutural. É o que ocorre na linha de presença de outras culturas anuais, cuja pegada
-realizada cobre menos de 1\% do território: a razão de 0,87 indica que aquela linha não sustenta
-inferência. O resíduo da mesma cultura, com razão 0,75, já é legível.
+A pepita é reportada ao lado de cada alcance porque delimita a sua interpretação. Quando a pepita
+se aproxima do patamar, a variância é quase toda ruído na escala de suporte de 250~m e nenhum
+estimador recupera um alcance estrutural. É o caso da presença de outras culturas anuais, cuja
+pegada realizada cobre menos de 1\% do território: a razão de 0,87 indica que essa linha não
+sustenta inferência, ao contrário do resíduo da mesma cultura, com razão 0,75.
 
 \begin{table}[H]
 \centering
@@ -473,29 +460,25 @@ bloco.}
 \label{fig:variograma}
 \end{figure}
 
-\paragraph{O alcance depende da janela, e isso limita a alegação.} Os números do parágrafo anterior
-são da janela de 400~km. Na janela de 800~km o alcance estimado do resíduo sobe de 105 para 150~km
-na soja, de 105 para 530~km na cana e de 175 para 550~km nas outras culturas, e a fração
-compartilhada a 130~km sobe correspondentemente para 30\%, 47\% e 66\% (Tabela~\ref{tab:variograma}).
-Um alcance que cresce com a janela de observação é o diagnóstico clássico de que não existe alcance
-finito: sob ele há uma tendência regional de longo alcance, e não um patamar que um bloco possa
-colocar do lado de fora. A escolha de ler o dimensionamento na janela de 400~km é defensável ---
-a 800~km os maiores atrasos se aproximam do próprio diâmetro de GO~e~DF, onde o semivariograma é
-sustentado por poucos pares muito distantes e passa a medir a tendência em vez de estrutura local
---- mas é uma escolha, não uma leitura neutra, e a leitura menos favorável é a que delimita
-honestamente o que a partição entrega. Nenhum bloco contido no território remove uma tendência que
-atravessa o território inteiro; o que a partição de 130~km remove é a estrutura de alcance
-intermediário, e é só isso que ela deve ser lida como removendo.
+Os alcances citados acima são da janela de 400~km. Na janela de 800~km o alcance estimado do
+resíduo sobe de 105 para 150~km na soja, de 105 para 530~km na cana e de 175 para 550~km nas
+outras culturas anuais, e a fração compartilhada à distância de 130~km sobe para 30\%, 47\% e
+66\%, respectivamente (Tabela~\ref{tab:variograma}). Um alcance que cresce com a janela de
+observação indica que não há alcance finito, mas uma tendência regional de longo alcance. O
+dimensionamento foi lido na janela de 400~km porque, a 800~km, os maiores atrasos se aproximam do
+diâmetro de GO~e~DF e o semivariograma, sustentado por poucos pares muito distantes, passa a medir
+essa tendência em vez de estrutura local. Trata-se, ainda assim, de uma escolha: nenhum bloco
+contido no território remove uma tendência que o atravessa por inteiro, e o que a partição de
+130~km remove é a estrutura de alcance intermediário.
 
-\paragraph{Equilíbrio das metades.} A Tabela~\ref{tab:split-balance} reporta a composição por
-função de uso atual de cada metade, numa amostra de 20.000 pixels. A soja --- validador primário
---- fica praticamente equilibrada (razão 1,01), e pastagem, vegetação nativa e outras culturas
-anuais ficam abaixo de 1,4. A cana-de-açúcar é a exceção, com razão 4,07: a sua pegada realizada
-concentra-se no sul de Goiás e, sob blocos de 130~km, cai majoritariamente na metade de
-calibração. Essa é a limitação declarada do desenho, e a linha da cana nas métricas de presença
-deve ser lida à sua luz. Blocos menores equilibrariam melhor a composição e decorrelacionariam
-pior; o compromisso foi resolvido em favor da decorrelação, por ser ela a razão de existir da
-partição.
+A Tabela~\ref{tab:split-balance} reporta a composição por função de uso atual de cada metade, numa
+amostra de 20.000 pixels. A soja, validador primário, fica praticamente equilibrada (razão 1,01),
+e pastagem, vegetação nativa e outras culturas anuais ficam abaixo de 1,4. A cana-de-açúcar é a
+exceção, com razão 4,07: a sua pegada realizada concentra-se no sul de Goiás e, sob blocos de
+130~km, cai majoritariamente na metade de calibração, pelo que a linha da cana nas métricas de
+presença deve ser lida à luz dessa limitação. Blocos menores equilibrariam melhor a composição e
+decorrelacionariam pior; o compromisso foi resolvido em favor da decorrelação, que é a finalidade
+da partição.
 
 \begin{table}[H]
 \centering
