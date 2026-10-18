@@ -269,7 +269,7 @@ def load_discrimination(half: str = "full"):
             f"\n[FALHA] {os.path.relpath(DISCRIM_CSV, ROOT)} nao tem a coluna "
             f"{D_COLUMN!r}.\n"
             "        O CSV e anterior a remocao dos fatores-porta (2026-10-02).\n"
-            "        Rode:  EE_PROJECT=probformer uv run python "
+            "        Rode:  EE_PROJECT=<your-project> uv run python "
             "tools/anchor_breakpoints.py discrimination\n"
             "        Usar sigma_mu_available aqui zeraria o peso de todo fator\n"
             "        saturado no presente -- o que a mudanca existe para evitar."
@@ -281,7 +281,7 @@ def load_discrimination(half: str = "full"):
             raise SystemExit(
                 f"\n[FALHA] {os.path.relpath(DISCRIM_CSV, ROOT)} nao tem linhas "
                 f"com half={half!r} (tem: {have}).\n"
-                "        Rode:  SPLIT_HALF=all EE_PROJECT=probformer uv run python "
+                "        Rode:  SPLIT_HALF=all EE_PROJECT=<your-project> uv run python "
                 "tools/anchor_breakpoints.py discrimination"
             )
         df = sub
@@ -290,7 +290,7 @@ def load_discrimination(half: str = "full"):
             f"\n[FALHA] {os.path.relpath(DISCRIM_CSV, ROOT)} nao tem a coluna "
             f"'half', logo foi medido no dominio completo, mas --half={half} foi "
             f"pedido.\n"
-            "        Rode:  SPLIT_HALF=all EE_PROJECT=probformer uv run python "
+            "        Rode:  SPLIT_HALF=all EE_PROJECT=<your-project> uv run python "
             "tools/anchor_breakpoints.py discrimination"
         )
     return {(r.segment, r.factor): float(getattr(r, D_COLUMN))

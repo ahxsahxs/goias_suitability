@@ -6,7 +6,7 @@ present col), realized-crop mean suitability, under-utilization gaps (4.10), the
 sugarcane/other_crops presence metrics that complete Table 4.11, and the municipal
 summary + rankings (4.13). Per-block try/except; cached assets; tileScale.
 
-Run:  EE_PROJECT=probformer ../.venv/bin/python tools/extract_present.py
+Run:  EE_PROJECT=<your-project> uv run python tools/extract_present.py
 """
 from __future__ import annotations
 

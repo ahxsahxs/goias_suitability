@@ -1,39 +1,18 @@
 """Part 10 — unsupervised biophysical zoning + zone profiling.
 
-Cluster the **z-scored** feature stack (``feature_stack_250m_z``) into biophysical
-zones, then profile each zone (mean of every feature + the comparative best-fit
-segment, ranked from ``suit_present``).
+Pipeline: curated ``ZONING_BANDS`` (13 z-scored bands) -> theme-block weighting
+(each band / sqrt(bands in its theme), so the collinear climate block cannot
+outvote the others) -> PCA (>= 90% variance, fitted on the calibration half) ->
+sklearn KMeans on a stratified sample -> the full image is classified
+server-side by nearest-centroid band math (label-identical to sklearn).
 
-Clustering is done **offline with scikit-learn** rather than EE's weka clusterer:
-weka ``SimpleKMeans`` collapses to a single cluster on this stack, highly
-collinear stack (fails for >~4 inputs regardless of the ``init`` mode), whereas
-sklearn KMeans is robust and is already needed for the elbow/silhouette/gap
-k-selection the plan calls for. We fit centroids offline on a sample, then
-classify the **full image server-side by nearest-centroid band math** — fully
-deterministic and label-identical to sklearn (Euclidean metric, same centroids).
+Clustering is offline on purpose: ``ee.Clusterer.wekaKMeans`` collapses to a
+single cluster on this collinear stack, and raw 29-band clustering yields a few
+low-expressiveness zones. Don't revert either.
 
-**Decorrelated zoning (2026-07-14 robustness iteration).** Clustering the raw
-full z-stack (then 34 bands) resolved only 3 low-expressiveness zones: GO/DF is climatically
-near-uniform (annual precip 1373–1635 mm, dry-months a spatial constant), yet the
-14 collinear climate bands each carried a full unit of Euclidean weight and
-swamped the soil/relief/hydrology structure that actually separates the land. The
-iteration clusters on a **curated subset** (``ZONING_BANDS``, 13 bands, near-
-duplicates dropped) with **theme-block weighting** (each band's z divided by
-√bands-in-theme so climate cannot outvote water/access) followed by **PCA**
-(≥ ``var_keep`` variance) so KMeans runs on orthogonal PCs. k is re-selected on
-the decorrelated space by silhouette + Davies–Bouldin + the gap statistic. The
-server-side path is unchanged: PCA projection is linear band-math, so we build a
-PC-score image and reuse the same nearest-centroid classify. **Do NOT** revert to
-``ee.Clusterer.wekaKMeans`` (CLAUDE.md §11).
-
-GUARDRAIL: only the biophysical z-features feed the clusterer. The raw stack,
-``suit_present`` bands and (optional) realized-use fractions ride along in the
-sample **for profiling only** — land cover and suitability are never clustering
-inputs (see CLAUDE.md Conventions).
-
-EE-side builders are lazy (no server call at import), so the module is import-/
-syntax-checkable without Earth Engine auth; sklearn/pandas/numpy are imported
-inside the offline helpers so EE-only callers don't need them.
+GUARDRAIL: only biophysical z-features are clustered. Raw bands, ``suit_*`` and
+realized-use fractions ride along in the sample for stratification/profiling only.
+sklearn/pandas/numpy are imported inside the offline helpers.
 """
 from __future__ import annotations
 
@@ -45,13 +24,11 @@ import ee
 # collide with the same-named raw bands carried for profiling.
 Z_PREFIX = "z_"
 
-# --- curated, decorrelated zoning subset (s2-2026) ---------------------------
-# 13 biophysical bands (pure land-surface/climate signal; s2-2026).
-# Near-duplicates dropped (aridity over pr/pet; one thermal index; clay over sand/bdod).
-# Land cover excluded as always, and so is anything derived from current land use or
-# infrastructure (NDVI phenology and travel time were dropped here on 2026-09-27 and
-# left the project on 2026-10-12 for that reason). Theme prefix
-# (clim/terr/soil/water) drives the √(bands-in-theme) block weighting.
+# --- curated zoning subset ---------------------------------------------------
+# Near-duplicates dropped (aridity over pr/pet; one thermal index; clay over
+# sand/bdod); nothing derived from land use or infrastructure. The five side bands
+# (sit_/cv_) were measured and rejected as axes (tools/probe_zoning_candidates.py).
+# The theme prefix (clim/terr/soil/water) drives the block weighting.
 ZONING_BANDS = [
     # climate (4) — the axes that still carry gradient in an otherwise-uniform territory
     "clim_aridity", "clim_soil_moist", "clim_twarm_q", "clim_def_annual",
@@ -79,7 +56,7 @@ def theme_weight_vector(band_names):
 
     Divides each theme's contribution to the Euclidean distance by the number of
     bands it contributes, so a large near-collinear block (climate) cannot outvote
-    a small one (water, access). Returns a plain list (offline + server-side use).
+    a small one (water). Returns a plain list (offline + server-side use).
     """
     from collections import Counter
 
@@ -94,7 +71,7 @@ def build_strat_band(region, n_side=8, name="strat_grid"):
     Stratification-only band (never a clustering input): one small ``getInfo`` on
     the bounding box, then per-pixel bin math. Used so a training/validation
     sample is spread across the territory instead of wherever a uniform draw
-    happens to land (T8, 2026-09 — CLAUDE.md §10 revision cycle).
+    happens to land.
     """
     coords = ee.Geometry(region).bounds().coordinates().get(0).getInfo()
     lons = [c[0] for c in coords]
@@ -116,7 +93,7 @@ def dominant_segment_band(suit, segments, name="strat_segment"):
     sample keeps proportional representation of every segment's high-suitability
     niche (e.g. pisciculture's narrow riparian band) instead of being swamped by
     whichever segment's suitable area is largest. Never an input to the
-    clusterer itself — only to the sampling stratum (T8, 2026-09).
+    clusterer itself — only to the sampling stratum.
     """
     stacked = ee.Image.cat([suit.select(f"suit_{s}") for s in segments]).rename(segments)
     return stacked.toArray().arrayArgmax().arrayGet([0]).rename(name)
@@ -132,7 +109,7 @@ def build_sample(z, raw, suit, region, band_names, segments=None,
     ``extra`` (an ``ee.Image``, e.g. realized-use fractions) is given, its bands
     ride along for descriptive zone composition — profiling only, never clustered.
 
-    **Stratified by default (T8, 2026-09 revision).** With ``stratify=True``
+    **Stratified by default.** With ``stratify=True``
     (default), draws via ``ee.Image.stratifiedSample`` on a combined stratum =
     coarse spatial-grid cell (``build_strat_band``, ``n_grid`` x ``n_grid`` over
     ``region``) x dominant comparative segment (``dominant_segment_band``, when
@@ -480,12 +457,9 @@ def fit_kmeans(X, k, seed=42, order_by=None):
     """Fit the final sklearn KMeans; returns the model (``.cluster_centers_``).
 
     ``order_by`` makes the LABELS CANONICAL. sklearn's cluster order comes from
-    k-means++ initialisation, so it is arbitrary: the same four zones come back
-    under different numbers after any change to the sample, the weights or the
-    PCA. That churn is not cosmetic -- it silently invalidates every "Zona N"
-    in the thesis prose while the generated tables renumber themselves, so the
-    text and its own tables end up describing different zones. It had already
-    happened twice before this guard existed.
+    k-means++ initialisation, so it is arbitrary: the same zones come back under
+    different numbers after any change to the sample, the weights or the PCA,
+    silently invalidating every "Zona N" in the prose.
 
     Pass a 1-D array aligned with ``X``'s rows (in practice the sample's
     ``terr_elev``, i.e. ``CANONICAL_ORDER_BAND``) and the clusters are
@@ -538,8 +512,7 @@ def profile_zones(df, labels, band_names, segments, realized_fracs=None):
       permissive segment tends to win, so it is rarely discriminative).
     - ``comparative_segment`` — argmax of zone-mean **z-normalized** suitability
       (see ``comparative_suitability``): the segment a zone is *comparatively* best
-      suited to, on common footing. This replaces the earlier ad-hoc
-      "distinctive_segment" (zone-mean − AOI-mean) and is the zone's headline label.
+      suited to, on common footing. The zone's headline label.
     - ``comparative_segment_2`` / ``comparative_margin`` — the SECOND-ranked
       comparative segment and the z-gap to the first. With K below the number of
       segments, a single label leaves segments unrepresented by any zone; the

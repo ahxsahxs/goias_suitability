@@ -4,7 +4,7 @@ Copies every asset under projects/<project>/assets/goias to a sibling
 `goias_backup_<YYYYMMDD>` folder via ee.data.copyAsset (fast, server-side, no
 download). Idempotent: re-running overwrites the backup copies.
 
-Run:  EE_PROJECT=probformer ../.venv/bin/python tools/backup_assets.py [suffix]
+Run:  EE_PROJECT=<your-project> uv run python tools/backup_assets.py [suffix]
 """
 from __future__ import annotations
 

@@ -36,15 +36,15 @@ data/mart/calib_val_blocks.csv   (build mode only)
     Columns: block_id (int, 0..N_SIDE^2-1), dom_role (int 0–6),
     strat (= dom_role), split (0=calibration, 1=validation).  Committed to git.
 
-EE image asset: projects/probformer/assets/goias/calib_val_split   (build mode only)
+EE image asset: projects/<project>/assets/<subfolder>/calib_val_split   (build mode only)
     Single band "split" (Byte), 250 m, value 0/1.  Submitted async; prints task_id.
 
 thesis/Chapters/{variogram_suit,split_balance}.csv   (both modes; $SCRATCHPAD overrides)
 
 Run:
-    EE_PROJECT=probformer uv run python tools/make_calib_val_split.py --check-only
-    EE_PROJECT=probformer uv run python tools/make_calib_val_split.py   # rebuilds!
-    SPLIT_NSIDE=8 EE_PROJECT=probformer uv run python tools/make_calib_val_split.py
+    EE_PROJECT=<your-project> uv run python tools/make_calib_val_split.py --check-only
+    EE_PROJECT=<your-project> uv run python tools/make_calib_val_split.py   # rebuilds!
+    SPLIT_NSIDE=8 EE_PROJECT=<your-project> uv run python tools/make_calib_val_split.py
 """
 from __future__ import annotations
 
@@ -505,7 +505,7 @@ def build() -> None:
 
     log("=== make_calib_val_split done ===")
     log("Next: git add data/mart/calib_val_blocks.csv && git commit")
-    log("Monitor export: EE_PROJECT=probformer uv run earthengine task list")
+    log("Monitor export: EE_PROJECT=<your-project> uv run earthengine task list")
 
 
 if __name__ == "__main__":

@@ -12,7 +12,7 @@ The scenario/window pair must match ``anchor_breakpoints.HORIZON_SCENARIO`` /
 ``HORIZON_WINDOW``; they are imported from there rather than retyped, so the two can
 never drift apart.
 
-Run:  EE_PROJECT=probformer uv run python tools/export_horizon_climate.py [--wait]
+Run:  EE_PROJECT=<your-project> uv run python tools/export_horizon_climate.py [--wait]
 """
 from __future__ import annotations
 

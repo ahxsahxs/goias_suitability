@@ -26,24 +26,11 @@
 #
 # Per-factor fields:
 #   weight   machine-written (above)
-#   role     `limiting` -> the only role there is. EVERY factor enters the AHP
-#                        matrix and the weighted aggregation. The former `gate`
-#                        role -- a factor pulled out of the matrix by the test
-#                        sigma(mu) < 0.05 AND mean(mu) > 0.95 and re-applied as a
-#                        multiplicative gate -- was removed on 2026-10-02. The
-#                        single regional rule covers that case on its own, by
-#                        measuring sigma(mu) over the PRESENT union the FUTURE
-#                        (SSP5-8.5, 2051-2070) instead of the present alone: a
-#                        factor saturated today but moving under warming earns a
-#                        weight from measured gradation, not from an author
-#                        exemption. Breakpoints are still anchored so the present
-#                        value gives mu = 1, which is what removes the hidden
-#                        deflator a constant mu < 1 would apply against the
-#                        ABSOLUTE FAO cuts. Full argument in the header of
-#                        config/ahp_matrices.yaml.
+#   role     `limiting` (the only role: every factor enters the AHP matrix; a
+#            factor saturated today is weighted by sigma(mu) over present+CMIP6)
 #   basis    `literatura` or `empirico`: how the BREAKPOINTS were set.
 #            `empirico` means anchored to the percentile distribution actually
-#            observed in GO/DF; see thesis/Chapters/breakpoint_anchoring.csv.
+#            observed in the territory; see thesis/Chapters/breakpoint_anchoring.csv.
 #   source   bib key backing the breakpoints, when basis is `literatura`
 #   locator  table/page inside that source
 #   note     atemporal justification of the shape and its thresholds
@@ -67,11 +54,10 @@ aggregation:
   epsilon: 0.001                  # membership floor -> finite log; strong (not fatal) limiting penalty
   sensitivity_delta: 0.20         # +/-20% one-at-a-time AHP weight perturbation (robustness band)
   lambda_regional: 0.5            # w = normalize(w_lit * sigma(mu)^lambda); fixed a priori, NOT tuned
+  derived_half: calib             # machine-written: holdout half sigma(mu) was measured on
 
 # Band-name prefixes routed to a side image instead of feature_stack_250m
-# (src/membership._source_image). Declared here as config rather than asserted
-# in prose; membership.suit_present validates that each prefix has an image.
-  derived_half: calib
+# (src/membership._source_image); membership.suit_present validates each has an image.
 extras_prefixes:
   lc_: feat_landcover             # masks + descriptive fractions
   sit_: feat_siting               # solar clearness / pisciculture seasonal-water distance

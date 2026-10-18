@@ -12,9 +12,9 @@ render into the same ``thesis/Chapters/Figures/`` directory (``FIG_COPY_LATEX``
 is a no-op today since pt/en share one figure tree; kept for compatibility).
 
 Usage:
-    EE_PROJECT=probformer ../.venv/bin/python tools/make_figures.py [present|future|diag|all]
-    ../.venv/bin/python tools/make_figures.py --check-i18n        # offline audit
-    FIG_LANG=en ../.venv/bin/python tools/make_figures.py all     # English article
+    EE_PROJECT=<your-project> uv run python tools/make_figures.py [present|future|diag|all]
+    uv run python tools/make_figures.py --check-i18n        # offline audit
+    FIG_LANG=en uv run python tools/make_figures.py all     # English article
 """
 from __future__ import annotations
 

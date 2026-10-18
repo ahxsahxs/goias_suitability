@@ -2,14 +2,8 @@
 MapBiomas realized-use masks/fractions, and the MODIS MOD17 productivity proxy.
 
 Guardrail: land cover / productivity are **mask + validation + descriptive
-profiling only** — never a suitability or clustering input (circularity). The
-realized-use masks may *replace* the coarse Part-7b WorldCover mask for a
-higher-fidelity re-run of the Part-9 membership, but MapBiomas never enters the
-feature stack or the clusterer.
-
-Builders are lazy (no server call until a value is pulled), so this module is
-import-/syntax-checkable without Earth Engine authentication — mirroring
-``src/features.py``.
+profiling only** — never a suitability or clustering input (circularity).
+Builders are lazy, so the module imports without Earth Engine authentication.
 """
 from __future__ import annotations
 
@@ -42,8 +36,7 @@ GROWING_MONTHS = list(territory()["growing_months"])
 # Part 12 — municipal units (IBGE malha municipal)
 # =============================================================================
 def municipal_fc() -> "ee.FeatureCollection":
-    """GO+DF municipalities from the IBGE 2025 malha municipal mesh (247
-    features: 246 Goiás municipalities + Distrito Federal)."""
+    """Territory municipalities from the IBGE malha municipal mesh."""
     import ibge_mesh
 
     return ibge_mesh.municipal_ee_fc()
@@ -70,12 +63,6 @@ def municipal_means(fc, img, scale: int = 250):
 def _mapbiomas_band(year: int | None = None) -> str:
     mb = cfg()["mapbiomas"]
     return mb["band_pattern"].format(year=year or mb["current_year"])
-
-
-def mapbiomas_year(aoi, year: int | None = None) -> "ee.Image":
-    """The raw (30 m) MapBiomas class band for ``year``, clipped to AOI."""
-    mb = cfg()["mapbiomas"]
-    return ee.Image(mb["asset"]).select(_mapbiomas_band(year)).clip(aoi)
 
 
 def realized_features(aoi, year: int | None = None) -> "ee.Image":

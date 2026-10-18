@@ -49,7 +49,7 @@ validation_zone_anova.csv as well as printed, so the thesis tables and the
 dashboard scorecard read the numbers instead of re-typing them. Zone ids are
 reported 1-based (the zones_present raster is 0-based).
 
-Run:  EE_PROJECT=probformer uv run python tools/run_validation.py
+Run:  EE_PROJECT=<your-project> uv run python tools/run_validation.py
 """
 from __future__ import annotations
 

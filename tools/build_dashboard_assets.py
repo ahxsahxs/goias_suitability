@@ -32,7 +32,7 @@ every human-readable LABEL comes from config/dashboard.yaml via manifest.json.
 `--only offline` runs every stage that needs no Earth Engine compute.
 
 Run:
-  EE_PROJECT=probformer uv run python tools/build_dashboard_assets.py [--only <stage>]
+  EE_PROJECT=<your-project> uv run python tools/build_dashboard_assets.py [--only <stage>]
   (see --help for the full --only stage list)
 """
 from __future__ import annotations
@@ -562,7 +562,8 @@ def build_datasets_catalog() -> None:
 
     rows = [
         {"theme": "Malha municipal", "source": "IBGE Malha Municipal Digital 2025",
-         "id": ds["municipal_mesh"]["path"], "native_res": "vetorial", "period": "2025"},
+         "id": ds["municipal_mesh"]["path"], "native_res": "vetorial",
+         "period": str(utils.territory()["ibge_year"])},
         {"theme": "Clima", "source": "TerraClimate",
          "id": ds["climate"]["terraclimate"]["id"], "native_res": "~4,6 km",
          "period": f"normal climatológica {span(clim_start, clim_end)}"},
@@ -678,13 +679,13 @@ SCORECARD_HALF = "val"
 def _scorecard_metrics() -> "pd.DataFrame":
     src = THESIS_DIR / "validation_metrics.csv"
     if not src.exists():
-        raise SystemExit(f"missing {src}\nRe-run: EE_PROJECT=probformer uv run "
+        raise SystemExit(f"missing {src}\nRe-run: EE_PROJECT=<your-project> uv run "
                          f"python tools/run_validation.py")
     df = pd.read_csv(src)
     if "half" not in df.columns:
         raise SystemExit(
             f"{src} has no `half` column, so it predates the spatial holdout and every "
-            f"value in it is in-sample.\nRe-run: EE_PROJECT=probformer uv run python "
+            f"value in it is in-sample.\nRe-run: EE_PROJECT=<your-project> uv run python "
             f"tools/run_validation.py")
     return df
 
@@ -697,7 +698,7 @@ def _underuse_pct() -> dict:
     if not src.exists():
         raise SystemExit(
             f"{src} is missing, so the under-utilization shares have no source.\n"
-            f"Re-run: EE_PROJECT=probformer uv run python tools/extract_present.py")
+            f"Re-run: EE_PROJECT=<your-project> uv run python tools/extract_present.py")
     df = pd.read_csv(src)
     return {r.segment: round(float(r.share_pct), 1) for r in df.itertuples()}
 

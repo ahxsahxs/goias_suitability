@@ -43,8 +43,8 @@ comparing an augmented sweep against the production 13-band panel sampled
 separately would confound an admission effect with a sample-composition effect.
 
 Run:
-    EE_PROJECT=probformer uv run python tools/probe_zoning_candidates.py
-    EE_PROJECT=probformer uv run python tools/probe_zoning_candidates.py --no-gd
+    EE_PROJECT=<your-project> uv run python tools/probe_zoning_candidates.py
+    EE_PROJECT=<your-project> uv run python tools/probe_zoning_candidates.py --no-gd
 """
 from __future__ import annotations
 

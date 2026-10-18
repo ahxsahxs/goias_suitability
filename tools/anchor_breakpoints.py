@@ -49,8 +49,8 @@ only falls back to building the graph live, saying which it used.
 
 Run::
 
-    EE_PROJECT=probformer uv run python tools/anchor_breakpoints.py percentiles
-    EE_PROJECT=probformer uv run python tools/anchor_breakpoints.py discrimination
+    EE_PROJECT=<your-project> uv run python tools/anchor_breakpoints.py percentiles
+    EE_PROJECT=<your-project> uv run python tools/anchor_breakpoints.py discrimination
 
 Percentiles go to ``data/scratch/anchor_breakpoints.csv`` (``$SCRATCHPAD`` overrides);
 the discrimination tables go to the territory ``output_dir``.

@@ -9,7 +9,7 @@ suit_present asset — so the export-reprojection offset cancels. ΔS means come
 straight from the delta_* assets. Per-block try/except; tileScale; one reduceRegion
 per combo where possible.
 
-Run:  EE_PROJECT=probformer ../.venv/bin/python tools/extract_cmip6.py
+Run:  EE_PROJECT=<your-project> uv run python tools/extract_cmip6.py
 """
 from __future__ import annotations
 

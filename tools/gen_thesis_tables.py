@@ -486,7 +486,7 @@ def _pivot_half(df, metric):
         raise SystemExit(
             "validation_metrics.csv has no 'half' column: it predates the spatial\n"
             "holdout, so every value in it is in-sample over the FULL territory.\n"
-            "Re-run:  EE_PROJECT=probformer uv run python tools/run_validation.py")
+            "Re-run:  EE_PROJECT=<your-project> uv run python tools/run_validation.py")
     d = df[df["metric"] == metric]
     if d.empty:
         return None

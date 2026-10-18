@@ -18,7 +18,7 @@ the max |delta|, so a genuine catalog shift still shows up.
 
 Run::
 
-    EE_PROJECT=probformer uv run python tools/diff_vs_backup.py \
+    EE_PROJECT=<your-project> uv run python tools/diff_vs_backup.py \
         --backup goias_backup_ahp_20260928 \
         feat_climate feat_terrain feat_soil feat_water \
         feat_landcover feat_siting feat_conservation \

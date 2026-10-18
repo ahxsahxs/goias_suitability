@@ -24,30 +24,11 @@
 #   band 1 = most important ... 4 = least. An anchored factor's band must sit in
 #   the tercile of its own r within the source's criterion set.
 #
-# `factors:` lists EVERY factor of the segment. There is no exempt category: the
-# `role: gate` mechanism — a two-condition test (sigma(mu) < 0.05 AND mean(mu) >
-# 0.95) that pulled a near-constant factor out of the matrix and re-applied it as
-# a multiplicative gate — was removed on 2026-10-02. It bought a correct result
-# (no hidden global deflator, CMIP6 lever preserved) at the price of an author
-# conditional in the middle of a derivation whose whole point is not to have one.
-# The single regional rule now does that work alone, with one caveat:
-#
-#   d = sigma_mu_horizon, measured over the PRESENT union the FUTURE
-#       (SSP5-8.5, 2051–2070) rather than over the present alone.
-#
-# Measured over the present alone, the seven climate factors whose observed range
-# sits inside their own optimal plateau have d = 0 EXACTLY, so w = w_lit * 0^lambda
-# = 0, mu^0 = 1, and the factor leaves the product — worse than the gate, since it
-# kills the deflator AND the CMIP6 lever. Over the horizon the question becomes
-# "how much does this factor grade across the range it actually traverses within
-# the analysis horizon", so a factor that is saturated today but moves under
-# warming earns a weight instead of vanishing. Still one measured rule, still no
-# author conditional.
-#
-# The alternative considered and declined: a floor sigma_min = epsilon on the
-# present. Simpler to state, but it arbitrates an epsilon — exactly the
-# subjectivity this change removes — and hands the full constant mu < 1 global
-# deflator back to the FAO cuts, which are absolute.
+# `factors:` lists EVERY factor of the segment (no exempt category). The regional
+# discrimination d = sigma_mu_horizon is measured over the PRESENT union the FUTURE
+# (SSP5-8.5, 2051-2070): a factor saturated today (d = 0 in the present, which
+# would zero its weight and its CMIP6 lever) earns a weight if warming makes it
+# grade. One measured rule, no author threshold (rationale: thesis ch. 4).
 #
 # Everything under `derived:` is written by tools/derive_weights.py. Do not edit
 # it by hand; `derive_weights.py --check` fails if it drifts.

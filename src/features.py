@@ -1,4 +1,4 @@
-"""Feature builders for Phase-A Parts 1-8.
+"""Feature builders for Parts 1-8.
 
 Every builder returns an ``ee.Image`` already harmonized to the 250 m grid and
 clipped to the AOI. Builders are lazy (no server call until a value is pulled),
@@ -26,14 +26,14 @@ _DEG2RAD = math.pi / 180.0
 # Part 1 — AOI
 # =============================================================================
 def aoi_fc() -> "ee.FeatureCollection":
-    """Goiás + DF municipalities from the IBGE 2025 malha municipal mesh."""
+    """Territory municipalities from the IBGE malha municipal mesh."""
     import ibge_mesh
 
     return ibge_mesh.municipal_ee_fc()
 
 
 def aoi_geometry() -> "ee.Geometry":
-    """Dissolved GO+DF outer boundary — see ibge_mesh.aoi_ee_geometry."""
+    """Dissolved territory boundary — see ibge_mesh.aoi_ee_geometry."""
     import ibge_mesh
 
     return ibge_mesh.aoi_ee_geometry()
@@ -212,8 +212,7 @@ def terrain_features(aoi) -> "ee.Image":
 
     # TWI = ln( specific-catchment-area / tan(slope) ) using HydroSHEDS flow accum.
     # Specific catchment area a = (n+1)·Δx with Δx the HydroSHEDS cell (15″ ≈ 464 m),
-    # not the 250 m analysis step: the cell count n is in HydroSHEDS cells. (Until
-    # 2026-09-26 this used scale_m(), a constant −ln(464/250) ≈ −0.62 offset.)
+    # not the 250 m analysis step: the cell count n is in HydroSHEDS cells.
     acc_img = ee.Image(t["hydrosheds_acc"])
     acc = acc_img.select(0)
     cell_m = acc_img.projection().nominalScale()
@@ -274,28 +273,14 @@ def water_features(aoi) -> "ee.Image":
 
 
 # =============================================================================
-# Part 7b — Generic land-cover mask  [mask/context only]
+# Part 7b — Land-cover mask (MapBiomas)  [mask/context only]
 # -----------------------------------------------------------------------------
-# T10 (2026-09 revision cycle, CLAUDE.md §10): `landcover_features_mapbiomas`
-# below is now the source for the `feat_landcover` asset, replacing the ESA
-# WorldCover builder (`landcover_features`, kept for reference/fallback and
-# still import-safe/callable). Motivation: ESA WorldCover is a global 10 m
-# product with no Brazil-specific calibration, while MapBiomas (already Phase
-# B's realized-use source, Part 13) is purpose-built for Brazilian land cover.
-# Using it for BOTH the Phase-A generic mask and the Phase-B realized-use signal
-# does not make `realized_vs_potential` (QP2) circular: this builder only reads
-# generic cover-TYPE groupings (tree/savanna/forest-plantation, cropland,
-# grassland/pasture — `config/mapbiomas_classes.yaml::landcover_groups`), never
-# a per-crop role. It is computed independently from
-# `external.realized_features` (no Phase-A -> Phase-B dependency, so the
-# Parts 1-8 -> 9-11 -> 12-14 build order is unchanged) and produces exactly the
-# same band set as the ESA builder (`lc_mode`/`lc_tree_frac`/`lc_crop_frac`/
-# `lc_grass_frac`/`mask_excluded`/`mask_available`), so no downstream code
-# (`src/membership.py`'s `apply_mask`) needs to change. See the non-circularity
-# paragraph in `thesis/Chapters/04_methodology.tex` §Uso atual da terra.
+# Only generic cover-TYPE groupings (config/mapbiomas_classes.yaml
+# ::landcover_groups), never a per-crop role, so using MapBiomas here and for the
+# realized-use signal (Part 13) does not make realized_vs_potential circular.
 # =============================================================================
 def landcover_features_mapbiomas(aoi, year: "int | None" = None) -> "ee.Image":
-    """Generic land-cover mask/context sourced from MapBiomas (supersedes ESA)."""
+    """Land-cover mask/context: lc_mode, tree/crop/grass fractions, excluded/available masks."""
     mb = cfg()["mapbiomas"]
     mbcls = cfg("mapbiomas_classes")
     band = mb["band_pattern"].format(year=year or mb["current_year"])
@@ -332,53 +317,11 @@ def landcover_features_mapbiomas(aoi, year: "int | None" = None) -> "ee.Image":
     return ee.Image.cat([mode, tree, crop, grass, excluded, available]).clip(aoi)
 
 
-def landcover_features(aoi) -> "ee.Image":
-    """ESA WorldCover builder — superseded by `landcover_features_mapbiomas` (T10,
-    2026-09) as the `feat_landcover` source. Kept for reference/fallback; same
-    band set, so either can drive `src/membership.py` unchanged."""
-    lc = cfg()["landcover"]
-    cls = lc["classes"]
-    coll = ee.ImageCollection(lc["worldcover"])
-    native = coll.first().projection()  # 10 m; mosaic() drops the default projection
-    wc = coll.mosaic().select(lc["band"]).setDefaultProjection(native)
-    proj = grid_projection()
-
-    mode = (
-        wc.reduceResolution(ee.Reducer.mode(), maxPixels=1024)
-        .reproject(proj)
-        .rename("lc_mode")
-    )
-
-    def frac(code, name):
-        return (
-            wc.eq(code)
-            .reduceResolution(ee.Reducer.mean(), maxPixels=1024)
-            .reproject(proj)
-            .rename(name)
-        )
-
-    tree = frac(cls["tree"], "lc_tree_frac")
-    crop = frac(cls["crop"], "lc_crop_frac")
-    grass = frac(cls["grass"], "lc_grass_frac")
-
-    excluded = mode.remap(lc["excluded"], [1] * len(lc["excluded"]), 0).rename(
-        "mask_excluded"
-    )
-    available = mode.remap(lc["available"], [1] * len(lc["available"]), 0).rename(
-        "mask_available"
-    )
-
-    return ee.Image.cat([mode, tree, crop, grass, excluded, available]).clip(aoi)
-
-
 # =============================================================================
-# Part 7c — Siting features (solar/pisciculture; NOT in the stack) [2026-07-14]
+# Part 7c — Siting features (solar/pisciculture; NOT in the stack)
 # =============================================================================
-# Catalog-only biophysical bands that give the two low-variance segments real
-# discriminating structure. Deliberately kept OUT of STACK_THEMES so the 29-band
-# feature stack and the zoning are unchanged; consumed by the membership engine
-# via the `sit_` band-routing (see src/membership._source_image). Guardrail: these
-# are biophysical/irradiance/hydrology fields, never land use.
+# Biophysical bands consumed only by suitability via the `sit_` prefix
+# (membership._source_image); kept out of STACK_THEMES and the zoning.
 
 def _extraterrestrial_radiation(aoi) -> "ee.Image":
     """Annual-mean top-of-atmosphere shortwave Ra (W/m²), FAO-56 (Allen 1998).
@@ -415,8 +358,7 @@ def siting_features(aoi) -> "ee.Image":
     - ``sit_clearness``       clearness index Kt = surface srad / extraterrestrial Ra
                               (0-1; higher = clearer sky = better PV yield).
     - ``sit_water_dist_seas`` distance (m) to **semi-permanent** water (GSW occurrence
-                              > ``seasonal_occurrence_threshold``); un-floors pisciculture,
-                              whose old factor keyed on 13-km-distant permanent water.
+                              > ``seasonal_occurrence_threshold``) for pisciculture.
     """
     proj = grid_projection()
 
@@ -440,17 +382,12 @@ def siting_features(aoi) -> "ee.Image":
 
 
 # =============================================================================
-# Part 7d — Conservation-value side bands (feat_conservation; NOT in the stack) [2026-07-25]
+# Part 7d — Conservation-value side bands (feat_conservation; NOT in the stack)
 # =============================================================================
-# Catalog-only conservation-VALUE / priority factors that ground conservation in
-# systematic-conservation-planning criteria (connectivity, habitat heterogeneity,
-# carbon service) rather than "where native vegetation currently is". Deliberately
-# kept OUT of STACK_THEMES so the 29-band stack and the zoning are unchanged;
-# consumed by the membership engine via the ``cv_`` band-routing (see
-# src/membership._source_image). Guardrail: WDPA is a *governance* layer, not land
-# cover; ruggedness is terrain; biomass carbon is an ecosystem-service value — none
-# is a land-use class. Conservation's remaining land-cover input is the DEMOTED
-# ``rl_native_frac`` (the single sanctioned exception), routed separately via ``rl_``.
+# Systematic-conservation-planning criteria (connectivity, habitat heterogeneity,
+# carbon service), consumed by conservation suitability via the ``cv_`` prefix.
+# None is a land-use class: WDPA is governance, ruggedness is terrain, carbon is an
+# ecosystem service.
 
 def conservation_features(aoi) -> "ee.Image":
     """``feat_conservation`` — conservation-value side bands on the 250 m grid.
@@ -502,44 +439,20 @@ def conservation_features(aoi) -> "ee.Image":
 # =============================================================================
 # Part 8 — Feature-stack assembly (250 m): raw + z-scored
 # =============================================================================
-# Continuous themes that enter the clustering stack (land cover excluded — it is
-# a mask/context layer, never a clustering feature).
-#
-# 29 bands = climate 14 + terrain 6 + soil 6 + water 3.
-#
-# Two further themes once sat here and are gone from the project entirely as of
-# 2026-10-12: vegetation phenology (4 NDVI harmonic bands, ex-Part 6) and market
-# accessibility (`access_logtt`, ex-Part 7). They left the stack on 2026-10-02 and
-# the builders on 2026-10-12, under the same circularity argument that keeps land
-# cover out — NDVI amplitude is high because the land is cropped, and travel time
-# is short because roads were built where the land was already used. The argument
-# lives in thesis/Chapters/04_methodology.tex (§sec:feature-eng); the orphaned
-# `feat_phenology` / `feat_access` assets were left in place server-side rather
-# than deleted. Parts 6 and 7 are deliberately NOT renumbered: the gap is the
-# record. Don't reintroduce either theme without re-reading that section.
+# The stack concatenates the continuous themes every consumer shares: 29 bands =
+# climate 14 + terrain 6 + soil 6 + water 3. Land cover is excluded (mask/context
+# only). Phenology and market access (ex-Parts 6/7) were removed because both
+# encode current land use (thesis §sec:feature-eng); don't reintroduce them.
 STACK_THEMES = ("climate", "terrain", "soil", "water")
 
-THEME_BUILDERS = {
-    "climate": climate_features,
-    "terrain": terrain_features,
-    "soil": soil_features,
-    "water": water_features,
-    "landcover": landcover_features_mapbiomas,  # T10 (2026-09): was landcover_features (ESA)
-    "siting": siting_features,        # Part 7c; consumed via membership sit_ routing, not stacked
-    "conservation": conservation_features,  # Part 7d; consumed via membership cv_ routing, not stacked
-}
-
-# Cached per-theme asset names (Part 8 loads these rather than recomputing —
-# keeps the stack export cheap and matches the plan's caching intent).
-# NOTE: `siting` is a cached feat_* asset but is deliberately absent from
-# STACK_THEMES — it feeds solar/pisciculture membership only, never the stack.
+# Cached per-theme assets. siting/conservation are cached but never stacked.
 THEME_ASSETS = {
     "climate": "feat_climate",
     "terrain": "feat_terrain",
     "soil": "feat_soil",
     "water": "feat_water",
     "siting": "feat_siting",
-    "conservation": "feat_conservation",   # Part 7d; feeds conservation membership only, never the stack
+    "conservation": "feat_conservation",
 }
 
 
@@ -576,25 +489,8 @@ def assemble_stack(images: dict, aoi, stats_scale: int | None = None):
 
 
 # =============================================================================
-# Revision point 5 — spatial magnitude of climate vs. terrain/soil local
-# variability (companion to membership.variance_shares' pooled decomposition).
+# Local roughness of climate vs. terrain/soil (the scale-mismatch annex figure)
 # =============================================================================
-def local_std(z_img, bands, radius_px, proj=None):
-    """Neighbourhood stdDev of each band in ``bands`` of a z-scored image.
-
-    Generalizes the ``cv_ruggedness`` idiom (this module, conservation_features)
-    from a single band (elevation) to an arbitrary band list. One output band
-    per input band, named ``<band>_std``.
-    """
-    proj = proj or grid_projection()
-    return (
-        z_img.select(bands)
-        .reduceNeighborhood(ee.Reducer.stdDev(), ee.Kernel.circle(radius_px, "pixels"))
-        .reproject(proj)
-        .rename([f"{b}_std" for b in bands])
-    )
-
-
 def theme_roughness_image(z_img, theme_bands, radii_m, scale=None):
     """Per-theme-group local roughness at multiple window radii.
 

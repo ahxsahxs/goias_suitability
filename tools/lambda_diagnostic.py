@@ -38,8 +38,8 @@ Two caveats that belong beside any reported table:
 
 Run::
 
-    EE_PROJECT=probformer uv run python tools/lambda_diagnostic.py [segment ...]
-    SPLIT_HALF=full EE_PROJECT=probformer uv run python tools/lambda_diagnostic.py
+    EE_PROJECT=<your-project> uv run python tools/lambda_diagnostic.py [segment ...]
+    SPLIT_HALF=full EE_PROJECT=<your-project> uv run python tools/lambda_diagnostic.py
 """
 from __future__ import annotations
 

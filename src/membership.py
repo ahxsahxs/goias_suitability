@@ -1,40 +1,18 @@
 """Part 9 — knowledge-based suitability engine (FAO land evaluation + AHP).
 
-Standardize each factor of `feature_stack_250m` to a [0,1] fuzzy membership,
-combine per segment with a **weighted geometric mean** (AHP weights; limiting-
-factor behavior), mask with the Part-7b land-cover masks, and classify into FAO
-**S1/S2/S3/N**. Everything is config-driven from ``config/segments.yaml`` and
-returns an ``ee.Image`` already on the 250 m grid.
-
-Builders are lazy (no server call until a value is pulled), so this module is
-import-/syntax-checkable without Earth Engine authentication. Pass the segments
-config in (``utils.cfg('segments')``) — this keeps the module decoupled.
-
-Asset inputs: raw stack ``feature_stack_250m`` (Part 8) + ``feat_landcover``
-(Part 7b masks, ``lc_`` prefix). Land cover feeds suitability only via
-conservation's sanctioned ``rl_native_frac`` supportive factor, sourced from the
-Phase-B realized-use image via the ``rl_`` extras prefix (see segments.yaml
-guardrail note) — ``feat_landcover``'s own ``lc_tree_frac``/``lc_crop_frac``/
-``lc_grass_frac`` are descriptive/profiling bands, not consumed by any segment.
+Each factor -> [0,1] fuzzy membership; per segment a weighted geometric mean
+(limiting factor; conservation uses the compensatory arithmetic mean), the
+land-cover mask, and FAO S1/S2/S3/N classes. Driven by config/segments.yaml
+(pass ``utils.cfg('segments')``); lazy, import-safe without EE auth.
 """
 from __future__ import annotations
 
 import ee
 
-# Factor bands whose name carries one of these prefixes are sourced from a side
-# image rather than the feature stack. ``lc_`` -> feat_landcover always;
-# ``sit_``/``cv_``/``rl_`` -> the images passed in ``extras`` (siting /
-# conservation-value / realized-use).
-#
-# These bands are NOT outside the model -- they are outside the 29-band
-# concatenation, which only gathers the four themes every consumer shares. Each
-# arm takes the subset its method requires: suitability selects factor by factor
-# (here), zoning uses a curated 13-band subset (``zoning.ZONING_BANDS``), which
-# already excludes 16 of the 29 stacked bands. The band-by-band argument for
-# which side bands could be a zoning axis is in thesis/Chapters/
-# 04_methodology.tex (sec:zoning) and measured by tools/probe_zoning_candidates.py.
-# Guardrail: of the side bands only conservation's sanctioned, demoted
-# ``rl_native_frac`` is land cover; ``sit_``/``cv_`` are biophysical/governance.
+# A factor band with one of these prefixes is read from a side image instead of the
+# feature stack: ``lc_`` -> feat_landcover; ``sit_``/``cv_``/``rl_`` -> the images in
+# ``extras`` (siting / conservation value / realized use). Of these, only
+# conservation's demoted ``rl_native_frac`` is land cover (the sanctioned exception).
 _LC_PREFIX = "lc_"
 
 
@@ -157,16 +135,9 @@ def _factor_images(stack, lc, factors, extras=None):
 
     ``extras`` optionally maps a band-name prefix (``"sit_"``, ``"cv_"``,
     ``"rl_"``) to a side image so siting / conservation-value / realized-use
-    factors can be sourced without entering the feature stack (see
-    ``_source_image``).
-
-    EVERY factor of the segment enters here. Until 2026-10-02 a factor could carry
-    ``role: gate`` and be pulled out of the weighted aggregation, to be re-applied
-    multiplicatively; that exemption is gone, and with it ``_gate_images``. The
-    regional stage of ``tools/derive_weights.py`` handles the same case by measuring
-    sigma(mu) over the present-union-future horizon, so a factor that is saturated
-    today but moves under CMIP6 gets a small measured weight instead of an author
-    exemption. See the header of ``config/ahp_matrices.yaml``.
+    factors can be sourced without entering the feature stack (``_source_image``).
+    Every factor enters the aggregation; a factor saturated today still earns a
+    weight from sigma(mu) over the present+CMIP6 horizon (tools/derive_weights.py).
     """
     images, weights = [], []
     for band, spec in factors.items():
@@ -190,8 +161,7 @@ def _aggregate(images, weights, seg_spec, cfg):
         fn = _AGGREGATORS[key]
     except KeyError:
         raise ValueError(
-            f"unknown aggregate {key!r}; expected one of {sorted(_AGGREGATORS)}. "
-            "A misspelling used to fall through to the geometric mean in silence."
+            f"unknown aggregate {key!r}; expected one of {sorted(_AGGREGATORS)}."
         ) from None
     if fn is weighted_geomean:
         return fn(images, weights, cfg["aggregation"]["epsilon"])
@@ -238,8 +208,7 @@ def suit_present(stack, lc, cfg, extras=None):
     ``extras`` (dict prefix->image) supplies side-image factors — pass
     ``{"sit_": siting_img, "cv_": conservation_img, "rl_": realized_img}`` for
     the solar/pisciculture siting factors, conservation's three value factors
-    and its native-veg factor. ``None`` reproduces the original stack+lc
-    behavior exactly.
+    and its native-veg factor.
     """
     validate_extras(cfg, extras)
     breaks = cfg["fao_classes"]["breaks"]
@@ -334,15 +303,6 @@ def segment_spatial_std(suit, region, segments, scale=1000):
     return s.reduceRegion(
         reducer=ee.Reducer.stdDev(), geometry=region, scale=scale,
         maxPixels=int(1e13), bestEffort=True, tileScale=16)
-
-
-def feasibility_screen(suit_band, cut=0.5):
-    """Near-binary siting screen: 1 where suitable-or-better (>= ``cut``), else 0.
-
-    The honest rendering for an irradiance-homogeneous (solar) or point/reservoir-
-    sited (pisciculture) use whose graded surface has near-zero spatial variance —
-    low variance is then reported as a finding, not hidden."""
-    return suit_band.gte(cut)
 
 
 # --- weight-sensitivity (robustness) ----------------------------------------

@@ -57,25 +57,7 @@ water:
 # Parts 6 and 7 are intentionally vacant (vegetation phenology and market access were
 # removed: both encode current land use, see thesis §sec:feature-eng).
 
-# --- Part 7b: ESA WorldCover classes (legacy generic mask; the pipeline's
-# feat_landcover now comes from MapBiomas, see `mapbiomas:` below) ------------
-landcover:
-  worldcover: ESA/WorldCover/v200
-  band: Map
-  classes:
-    tree: 10
-    shrub: 20
-    grass: 30
-    crop: 40
-    built: 50
-    bare: 60
-    snow: 70
-    water: 80
-    herb_wetland: 90
-    mangrove: 95
-    moss: 100
-  excluded: [50, 80, 90]       # never eligible: built-up, water, herbaceous wetland
-  available: [20, 30, 40, 60]  # generic convertible: shrub, grass, crop, bare
+# Part 7b (land-cover mask) is built from MapBiomas, see `mapbiomas:` below.
 
 # --- Part 7d: conservation-value side bands (feat_conservation; NOT stacked) --
 conservation:

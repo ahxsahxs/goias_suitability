@@ -85,7 +85,7 @@ def main() -> int:
     if "half" not in df.columns:
         raise SystemExit(
             f"[FALHA] {os.path.relpath(DISCRIM, ROOT)} nao tem coluna 'half'.\n"
-            "        Rode: SPLIT_HALF=all EE_PROJECT=probformer uv run python "
+            "        Rode: SPLIT_HALF=all EE_PROJECT=<your-project> uv run python "
             "tools/anchor_breakpoints.py discrimination")
     have = sorted(df["half"].dropna().unique())
     for need in ("full", args.half):
