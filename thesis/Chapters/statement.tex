@@ -1,0 +1,32 @@
+%!TEX root = ../template.tex
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% statement.tex
+%% NOVA thesis document file
+%%
+%% Statement of integrity (NOVA IMS). Text taken from
+%% NOVAthesisFiles/Schools/nova/ims/nova-ims-pt-statement.tex; only the
+%% heading language and the date (always the submission date; the
+%% template's exam branch reads \thentdocdate((exam),year) and breaks) differ.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\typeout{NT FILE statement.tex}%
+
+\begingroup
+\setlength{\parskip}{1ex plus 1pt minus 1pt}
+\setlength{\parindent}{0cm}
+\begin{center}
+  \textbf{DECLARAÇÃO DE INTEGRIDADE}
+\end{center}
+
+Eu, \thedocauthor(name,short), declaro ter realizado o presente trabalho académico com integridade.
+Confirmo que não recorri à prática de plágio ou de qualquer outra forma de utilização indevida de informação ou de falsificação de resultados durante o processo de elaboração deste trabalho.
+Declaro ainda que tenho conhecimento das Regras de Conduta e do Código de Honra da NOVA Information Management School.
+
+\bigskip
+
+Ceres, Goiás, Brasil
+\babeladjust{autoload.bcp47 = on, autoload.bcp47.options = import}%
+\selectlanguage{pt}%
+\localedate{\thentdocdate(submission,year)}{\thentdocdate(submission,month)}{\thentdocdate(submission,day)}
+\endgroup
+\clearforchapter

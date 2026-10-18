@@ -1,22 +1,21 @@
 \chapter{Fontes de dados}\label{anx:data}
 
-Todos os conjuntos de dados provêm do catálogo público da plataforma de computação, acessados
-em resolução nativa e reescalados para unidades físicas quando o provedor armazena bandas
-empacotadas em inteiros; cada fonte foi verificada contra o catálogo ativo no momento do
-processamento.
+Todos os conjuntos de dados provêm do catálogo público da plataforma de computação. Eles são acessados
+em resolução nativa e reescalonados para unidades físicas quando o provedor armazena as bandas como
+inteiros; cada fonte foi conferida com o catálogo ativo no momento do processamento.
 
-\begin{table}[H]
+\begin{table}[htbp]
 \centering
 \caption{Fontes de dados biofísicos e agroclimáticos.}
 \label{tab:src-biophys}
-\begin{tabular}{@{}p{2.7cm}p{3.6cm}p{2cm}p{5.5cm}@{}}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{2.7cm}>{\raggedright\arraybackslash}p{3.6cm}>{\raggedright\arraybackslash}p{2cm}>{\raggedright\arraybackslash}p{5.5cm}@{}}
 \toprule
 Tema & Conjunto de dados (provedor) & Resolução nativa & Variáveis utilizadas \\
 \midrule
-Clima e balanço hídrico & TerraClimate, mensal & $\approx$4~km & Precipitação,
+Clima e balanço hídrico & TerraClimate, mensal & $\approx$4,6~km & Precipitação,
   evapotranspiração potencial e real, déficit hídrico climático, umidade do solo, déficit de
-  pressão de vapor, radiação solar, temperatura máxima/mínima \\
-Terreno & Modelo digital de elevação SRTM & 30~m & Elevação, declive, orientação, posição
+  pressão de vapor, radiação solar, temperatura máxima e mínima \\
+Terreno & Modelo digital de elevação SRTM & 30~m & Elevação, declividade, orientação, posição
   topográfica \\
 Hidrografia & Acumulação de fluxo HydroSHEDS & 15 segundos de arco & Índice de umidade
   topográfica, densidade de drenagem \\
@@ -24,54 +23,54 @@ Solo (0--30~cm) & Propriedades de solo OpenLandMap & 250~m & Argila, areia, carb
   pH (H$_2$O), densidade aparente, teor de água disponível para as plantas \\
 Água de superfície & JRC Global Surface Water & 30~m & Ocorrência e sazonalidade
   $\rightarrow$ distância à água permanente \\
-Cobertura genérica da terra & MapBiomas, coleção~10 (2024) & 30~m & Máscara e frações por classe
-  (apenas máscara/contexto) \\
+Cobertura da terra & MapBiomas, Coleção~10 (2024) & 30~m & Máscara e frações por classe
+  (apenas máscara e contexto) \\
 Áreas protegidas & World Database on Protected Areas (WDPA) & vetor & Distância a reservas
-  $\rightarrow$ conectividade de conservação (camada de governança, não de cobertura da
+  $\rightarrow$ conectividade de conservação (camada de governança, e não de cobertura da
   terra) \\
-Biomassa acima do solo & Densidade global de carbono em biomassa acima do solo, ano de
+Biomassa aérea & Densidade global de carbono na biomassa aérea, ano de
   referência 2010 \citep[p.~1]{spawn_harmonized_2020} & $\approx$300~m & Valor do serviço de
   armazenamento de carbono (conservação) \\
-Clima futuro & NASA NEX-GDDP-CMIP6, diário com redução de escala & $\approx$25~km &
-  Precipitação, temperatura máxima e mínima $\rightarrow$ fatores de mudança
+Clima futuro & NASA NEX-GDDP-CMIP6, diário, com redução estatística de escala (\emph{downscaling}) &
+  $\approx$25~km & Precipitação, temperatura máxima e mínima $\rightarrow$ fatores de mudança
   (\emph{delta-change}) \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-As bandas de solo são a média dos horizontes de 0, 10 e 30~cm. Conversões de
-unidade verificadas: carbono orgânico do solo $\times 5$ (média territorial $\approx$
-13~g~kg$^{-1}$), pH $\times 0{,}1$ ($\approx$4,7--7,3) e densidade aparente $\times 10$
-($\approx$1259~kg~m$^{-3}$); argila, areia e teor de água não requerem reescalonamento.
+As bandas de solo são a média dos horizontes de 0, 10 e 30~cm. As conversões de unidade verificadas
+são: carbono orgânico do solo $\times 5$ (média territorial de $\approx$13~g~kg$^{-1}$), pH
+$\times 0{,}1$ ($\approx$4,7 a 7,3) e densidade aparente $\times 10$ ($\approx$1.259~kg~m$^{-3}$);
+argila, areia e teor de água não requerem reescalonamento.
 
-\begin{table}[H]
+\begin{table}[htbp]
 \centering
 \caption{Fontes de dados de uso atual e validação.}
 \label{tab:src-realized}
-\begin{tabular}{@{}p{5cm}p{2.7cm}p{6cm}@{}}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{5cm}>{\raggedright\arraybackslash}p{2.7cm}>{\raggedright\arraybackslash}p{6cm}@{}}
 \toprule
 Fonte (provedor) & Resolução nativa & Finalidade \\
 \midrule
-Malha Municipal Digital do IBGE (2025) & $\approx$111~m (simplificado, em memória) & Agregação e
-  relato municipais (247 municípios; sem \emph{upload}) \\
-Uso e cobertura da terra anual MapBiomas Brasil & 30~m & Máscaras, análise potencial
-  \emph{versus} realizado, caracterização descritiva da composição \\
+Malha Municipal Digital do IBGE (2025) & $\approx$111~m (geometria simplificada) & Agregação e
+  apresentação de resultados por município (247 municípios; sem \emph{upload}) \\
+Uso e cobertura da terra anual MapBiomas Brasil & 30~m & Máscaras, análise de potencial
+  \emph{versus} uso atual, caracterização descritiva da composição \\
 Produtividade primária líquida (anual) e bruta (8 dias) do MODIS & 500~m & Validação da
-  viabilidade (substituto de rendimento) \\
+  aptidão (substituto de rendimento) \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\chapter{Especificação completa de viabilidade e pesos AHP}\label{anx:spec}
+\chapter{Especificação completa de aptidão e pesos AHP}\label{anx:spec}
 
-A Tabela~\ref{tab:spec-longtable} reproduz a especificação completa por segmento subjacente à
-\S\ref{sec:suitability}. O declive está em graus. Os limiares são valores de primeira
-aproximação ancorados na literatura e reconciliados com a faixa realizada de cada variável
-sobre GO~e~DF pela recalibração empírica; os pesos, por sua vez, são reconciliados com o poder
-discriminante amostral de cada fator (\S\ref{sec:ahp}), de modo que um fator quase constante em
-GO~e~DF --- por mais importante que a literatura o considere --- carrega um peso baixo.
+A Tabela~\ref{tab:spec-longtable} reproduz a especificação completa por segmento que fundamenta a
+Seção~\ref{sec:suitability}. A declividade está em graus. Os limiares são valores de primeira
+aproximação ancorados na literatura e ajustados, pela recalibração empírica, à faixa observada de cada
+variável em GO~e~DF. Os pesos, por sua vez, são ajustados ao poder discriminante amostral de cada
+fator (Seção~\ref{sec:ahp}). Assim, um fator quase constante em GO~e~DF recebe peso baixo, por mais
+importante que a literatura o considere.
 
-\begin{longtable}{@{}p{2.6cm}p{3.6cm}p{1cm}p{1.7cm}p{3.3cm}@{}}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{2.6cm}>{\raggedright\arraybackslash}p{3.6cm}p{0.9cm}>{\raggedright\arraybackslash}p{1.9cm}>{\raggedright\arraybackslash}p{3.2cm}@{}}
 \caption{Fatores, pesos, formas de pertinência e limiares por segmento.}\label{tab:spec-longtable} \\
 \toprule
 Segmento & Fator & Peso & Forma & Limiares \\
@@ -84,24 +83,24 @@ Segmento & Fator & Peso & Forma & Limiares \\
 \input{Chapters/Tables/ahp_weights.tex}   % the fragment ends with \bottomrule
 \end{longtable}
 
-A conservação ($\dagger$) carrega dois fatores climáticos \textbf{móveis} (aridez e
-temperatura do trimestre mais quente), que a tornam responsiva ao CMIP6; é agregada pela
-média aritmética ponderada \textbf{compensatória} (\S\ref{sec:aggregation}), e sua fração de
-vegetação nativa (peso 0,06) é a única entrada de cobertura da terra, rebaixada, sancionada
-pela salvaguarda contra circularidade. Os outros seis segmentos usam a média geométrica de
+A conservação ($\dagger$) inclui dois fatores climáticos \textbf{sensíveis} (aridez e
+temperatura do trimestre mais quente), que a tornam responsiva ao CMIP6, e é agregada pela
+média aritmética ponderada \textbf{compensatória} (Seção~\ref{sec:aggregation}). Sua fração de
+vegetação nativa (peso 0,06) é a única entrada de cobertura da terra. Ela recebe peso reduzido e é
+admitida pela salvaguarda contra circularidade. Os outros seis segmentos usam a média geométrica de
 fator limitante.
 
-Nenhum fator é retirado da matriz AHP: sete fatores climáticos têm $\sigma(\mu) = 0$ no
-presente e nela permanecem, pelo mecanismo de ponderação sobre o horizonte CMIP6 descrito em
-\S\ref{sec:ahp}; cinco deles ainda saem em peso exatamente nulo, por terem $\mu \equiv 1$ nas
-duas populações. A coluna \emph{Fatores} da Tabela~\ref{tab:ahp-cr} conta portanto todos os
-fatores de cada segmento, inclusive os de peso nulo.
+Nenhum fator é retirado da matriz AHP. Sete fatores climáticos têm $\sigma(\mu) = 0$ no presente e
+permanecem na matriz graças à ponderação sobre o horizonte CMIP6 descrita na Seção~\ref{sec:ahp};
+cinco deles ainda recebem peso exatamente nulo, por terem $\mu \equiv 1$ nas duas populações. A coluna
+\emph{Fatores} da Tabela~\ref{tab:ahp-cr} conta, portanto, todos os fatores de cada segmento,
+inclusive os de peso nulo.
 
-Os pesos de cada segmento são as prioridades de uma matriz Saaty de comparação par a par
-documentada, e toda matriz é folgadamente consistente, nos termos apurados em \S\ref{sec:ahp}
-(Tabela~\ref{tab:ahp-cr}).
+Os pesos de cada segmento são as prioridades de uma matriz de Saaty de comparação par a par
+documentada, e todas as matrizes são amplamente consistentes, nos termos definidos na
+Seção~\ref{sec:ahp} (Tabela~\ref{tab:ahp-cr}).
 
-\begin{table}[H]
+\begin{table}[htbp]
 \centering
 \caption{Razão de consistência AHP por segmento.}
 \label{tab:ahp-cr}
@@ -110,110 +109,116 @@ documentada, e toda matriz é folgadamente consistente, nos termos apurados em \
 
 \chapter{Derivação dos atributos}\label{anx:derivations}
 
-\textbf{Clima e balanço hídrico (14 variáveis).} Uma climatologia de 12 meses é computada
+\textbf{Clima e balanço hídrico (14 variáveis).} Calcula-se uma climatologia de doze meses
 para cada banda climática sobre o registro de 1991--2020 (a média climatológica de cada mês
 do calendário); os agregados anuais são a soma das doze médias mensais. As variáveis
 derivadas do balanço hídrico são a precipitação anual, a evapotranspiração potencial anual, o
 déficit hídrico climático, a evapotranspiração real e o índice de aridez (precipitação anual
-$\div$ evapotranspiração potencial anual). As variáveis de sazonalidade são a sazonalidade da
-precipitação (o coeficiente de variação das doze médias mensais), a duração da estação seca
-(meses com precipitação média abaixo de 60~mm) e a precipitação da estação chuvosa (a soma
-sobre os meses mais úmidos que a média mensal geral). Completam o conjunto a umidade média do
-solo, o déficit de pressão de vapor e a radiação solar médios, os graus-dia de crescimento, e
-a temperatura média do trimestre mais quente e do mais frio (o máximo e o mínimo das doze
-médias móveis de três meses). Os graus-dia de
-crescimento são acumulados a partir da climatologia mensal de temperatura média com uma
-temperatura base $T_{\text{base}} = 10\,^\circ\mathrm{C}$,
+$\div$ evapotranspiração potencial anual). As variáveis de sazonalidade são:
+\begin{itemize}
+  \item a sazonalidade da precipitação (o coeficiente de variação das doze médias mensais);
+  \item a duração da estação seca (meses com precipitação média abaixo de 60~mm);
+  \item a precipitação da estação chuvosa (a soma sobre os meses mais úmidos que a média mensal geral).
+\end{itemize}
+Completam o conjunto: a umidade média do solo; o déficit de pressão de vapor e a radiação solar
+médios; os graus-dia de crescimento; e a temperatura média do trimestre mais quente e do mais frio (o
+máximo e o mínimo das doze médias móveis de três meses). Os graus-dia de crescimento são acumulados a
+partir da climatologia mensal de temperatura média, com temperatura base
+$T_{\text{base}} = 10\,^\circ\mathrm{C}$:
 \begin{equation*}
   \mathrm{GDD} = \sum_{m=1}^{12} \max\!\left(\bar{T}_m - T_{\text{base}},\, 0\right)\, N_m,
 \end{equation*}
-onde $\bar{T}_m$ é a temperatura média do mês $m$ e $N_m = 30{,}4$ dias, a duração média do mês. É o
+em que $\bar{T}_m$ é a temperatura média do mês $m$ e $N_m = 30{,}4$ dias é a duração média do mês. É o
 Método~1 de \citet[p.~292]{mcmaster_growing_1997} aplicado a médias mensais, o que tende a
 subestimar o GDD em meses próximos da temperatura base.
 
-\textbf{Terreno (6 variáveis).} A elevação e o declive vêm do MDE de 30~m; a orientação é
-decomposta em uma componente norte ($\cos$) e leste ($\sin$), para que a variável circular
-seja utilizável em aritmética de pixels. O índice de posição topográfica é a diferença entre
+\textbf{Terreno (6 variáveis).} A elevação e a declividade vêm do MDE de 30~m. A orientação é
+decomposta em uma componente norte ($\cos$) e uma leste ($\sin$), para que a variável circular
+possa ser usada em aritmética de pixels. O índice de posição topográfica é a diferença entre
 a elevação $z_0$ de uma célula e a elevação média de sua vizinhança circular,
 $\mathrm{TPI} = z_0 - \overline{z}_{\text{focal}}$ (positivo em cristas, negativo em vales). O
 índice de umidade topográfica é $\mathrm{TWI} = \ln(\alpha / \tan\beta)$
-\citep[p.~48, eq.~8]{beven_physically_1979}, com $\beta$ o declive local e $\alpha$ a área de
-contribuição específica, aproximada por $(n+1)\,\Delta x$, em que $n$ é a acumulação de fluxo do
-HydroSHEDS em número de células e $\Delta x \approx 464$~m a largura da sua célula de 15 segundos de
-arco.
+\citep[p.~48, eq.~8]{beven_physically_1979}, em que $\beta$ é a declividade local e $\alpha$, a área
+de contribuição específica. Essa área é aproximada por $(n+1)\,\Delta x$, em que $n$ é a acumulação
+de fluxo do HydroSHEDS em número de células e $\Delta x \approx 464$~m é a largura da sua célula de
+15 segundos de arco.
 
-\textbf{Solo (6 variáveis).} A média de 0--30~cm dos horizontes de 0, 10 e 30~cm para argila,
+\textbf{Solo (6 variáveis).} Usa-se a média de 0--30~cm (horizontes de 0, 10 e 30~cm) para argila,
 areia, carbono orgânico, pH (H$_2$O), densidade aparente e teor de água disponível para as
-plantas, cada um reescalado para unidades físicas pelo seu fator de conversão verificado
+plantas, cada um reescalonado para unidades físicas pelo seu fator de conversão verificado
 (Anexo~\ref{anx:data}).
 
 \textbf{Água (3 variáveis).} Uma máscara de água permanente (ocorrência de água superficial
-$>$ 80\%) produz uma superfície de distância euclidiana à água na grade de 250~m; a
-sazonalidade da água de superfície é carregada do produto de origem; a densidade de drenagem
-é a fração de células de canal (acumulação de fluxo acima de um limiar fixo) em uma
-vizinhança circular, com faixa empírica de $\approx$0--0,15 (percentil 90 $\approx$0,095) que
-governa seus limiares de pertinência.
+$>$~80\%) produz uma superfície de distância euclidiana à água na grade de 250~m. A sazonalidade da
+água de superfície é obtida diretamente do produto de origem. A densidade de drenagem é a fração de
+células de canal (acumulação de fluxo acima de um limiar fixo) em uma vizinhança circular; sua faixa
+empírica, de $\approx$0--0,15 (percentil 90 $\approx$ 0,095), define seus limiares de pertinência.
 
-\textbf{Sítio (2 variáveis; fora da concatenação --- \S\ref{sec:zoning}).} O \emph{índice de claridade} atmosférica é a
-razão entre a radiação solar observada na superfície e a radiação extraterrestre no topo da
-atmosfera, $K_t = R_s/R_a$, truncada a $[0;1]$. $R_a$ é computada analiticamente pela formulação
-FAO-56, como função apenas da latitude e do dia do ano --- declinação solar, ângulo horário do
-poente e distância Terra--Sol inversa, integrados mês a mês e tomados em média anual. A
-normalização é o que importa: $R_s$ isolada é quase uniforme em GO~e~DF, enquanto $K_t$ mede a
-fração da radiação disponível que de fato chega ao solo e, por isso, carrega o sinal espacial de
-nebulosidade. A segunda variável é a distância euclidiana à água superficial
-\textbf{semipermanente} --- ocorrência $>$~50\% no JRC Global Surface Water, ou seja, água
-presente em cerca de seis meses ou mais por ano ---, calculada pela mesma transformada de
-distância usada para a água permanente. Ela existe porque o critério de sítio para aquicultura em
-pequenos reservatórios é governado pela água sazonal, não pela permanente: ancorado na água
-permanente, o fator da piscicultura media distâncias da ordem de 13~km e ficava colado no piso.
+\textbf{Local (2 variáveis; fora da concatenação, ver Seção~\ref{sec:zoning}).} O \emph{índice de
+claridade} atmosférica é a razão entre a radiação solar observada na superfície e a radiação
+extraterrestre no topo da atmosfera, $K_t = R_s/R_a$, truncada a $[0;1]$. $R_a$ é calculada
+analiticamente pela formulação FAO-56, apenas como função da latitude e do dia do ano (declinação
+solar, ângulo horário do pôr do sol e inverso da distância relativa Terra--Sol), integrada mês a mês
+e tomada em média anual. A normalização é o que importa: $R_s$ isolada é quase uniforme em GO~e~DF,
+enquanto $K_t$ mede a fração da radiação disponível que de fato chega ao solo e, por isso, carrega o
+sinal espacial de nebulosidade. A segunda variável é a distância euclidiana à água superficial
+\textbf{semipermanente} (ocorrência $>$~50\% no JRC Global Surface Water, isto é, água presente cerca
+de seis meses ou mais por ano), calculada pela mesma transformada de distância usada para a água
+permanente. Ela existe porque o critério de local para aquicultura em pequenos reservatórios depende da
+água sazonal, e não da permanente. Quando ancorado na água permanente, o fator de piscicultura
+apresentava distâncias médias de cerca de 13~km e permanecia no valor mínimo de pertinência.
 
-\textbf{Conservação (3 variáveis; fora da concatenação --- \S\ref{sec:zoning}).} A \emph{distância a áreas protegidas}
-rasteriza os polígonos do WDPA e aplica a mesma transformada de distância (zero dentro de uma
-reserva, crescendo para fora); entra com pertinência decrescente, de modo que a vizinhança de
-reservas pontua alto --- é um \emph{proxy} de conectividade e consolidação, e o WDPA é uma camada
-de governança, não de cobertura da terra. A \emph{rugosidade do terreno} é o desvio-padrão da
-elevação numa vizinhança circular de 3 pixels ($\approx$750~m) sobre a grade de 250~m, lida como
-heterogeneidade de micro-habitat e, ao mesmo tempo, como baixa arabilidade. O \emph{carbono em
-biomassa acima do solo} é a densidade de carbono em biomassa lenhosa viva
-\citep{spawn_harmonized_2020}, reamostrada bilinearmente para a grade, e representa o valor de
-serviço ecossistêmico de estoque de carbono. As duas últimas têm pertinência crescente. A
-correlação moderada do carbono com a cobertura florestal é uma ressalva declarada, e é por isso
-que ele é mantido em peso modesto (Tabela~\ref{tab:spec-longtable}).
+\textbf{Conservação (3 variáveis; fora da concatenação, ver Seção~\ref{sec:zoning}).} A
+\emph{distância a áreas protegidas} rasteriza os polígonos do WDPA e aplica a mesma transformada de
+distância (zero dentro de uma reserva, crescendo para fora). Ela entra com pertinência decrescente,
+de modo que a vizinhança de reservas recebe pontuação alta. Trata-se de um \emph{proxy} de
+conectividade e consolidação; o WDPA é uma camada de governança, e não de cobertura da terra. A
+\emph{rugosidade do terreno} é o desvio-padrão da elevação em uma vizinhança circular de 3 pixels
+($\approx$750~m) sobre a grade de 250~m, lida como heterogeneidade de micro-hábitat e, ao mesmo tempo,
+como baixa aptidão ao cultivo mecanizado. O \emph{carbono da biomassa aérea} é a densidade de carbono
+na biomassa lenhosa viva \citep{spawn_harmonized_2020}, reamostrada bilinearmente para a grade, e
+representa o valor do serviço ecossistêmico de estoque de carbono. As duas últimas têm pertinência
+crescente. A correlação moderada do carbono com a cobertura florestal é uma ressalva declarada, e é
+por isso que ele recebe peso modesto (Tabela~\ref{tab:spec-longtable}).
 
 \textbf{Máscara de cobertura da terra (apenas contexto).} O MapBiomas, a 30~m, é
-agregado a 250~m como uma classe majoritária mais frações por classe, produzindo uma máscara de
+agregado a 250~m como uma classe majoritária e frações por classe. Disso resultam uma máscara de
 áreas \emph{excluídas} (urbano, água permanente, área úmida herbácea), uma máscara de áreas
 \emph{disponíveis} (lavoura, campo, vegetação arbustiva, solo exposto) e frações de
-árvore/lavoura/campo para contexto.
+árvore, lavoura e campo para contexto.
 
 \chapter{Tabelas de resultados suplementares}\label{anx:tables}
 
-\begin{table}[H]
+Este anexo reúne as tabelas de resultados citadas no Capítulo~\ref{ch:results}. Na
+Tabela~\ref{tab:spearman-npp}, o \emph{proxy} de NPP anual é lido apenas como \emph{contexto} de
+produtividade, pelas razões dadas na Seção~\ref{sec:validation-present}; os validadores primários das
+culturas são as métricas de discriminação por presença (Tabela~\ref{tab:presence-auc}).
+
+\begin{table}[htbp]
 \centering
 \caption{Médias biofísicas discriminantes por zona.}
 \label{tab:zone-means}
 \input{Chapters/Tables/zone_means.tex}
 \end{table}
 
-\begin{table}[H]
+\begin{table}[htbp]
 \centering
-\caption{Mudança média projetada $\Delta S$ por zona para as três culturas sensíveis ao clima,
-nos quatro cenário--janela.}
+\caption{Mudança média projetada, $\Delta S$, por zona para as três culturas sensíveis ao clima,
+nas quatro combinações de cenário e janela.}
 \label{tab:zone-shift}
 \input{Chapters/Tables/zone_shift.tex}
 \end{table}
 
-\begin{table}[H]
+\begin{table}[htbp]
 \centering
 \caption{Parcela da terra avaliada de cada segmento rebaixada em pelo menos uma classe da
-FAO, presente $\rightarrow$ futuro (promoções desprezíveis e omitidas).}
+FAO, presente $\rightarrow$ futuro (as promoções, desprezíveis, foram omitidas).}
 \label{tab:downgrade-share}
 \small
 \input{Chapters/Tables/downgrade_share.tex}
 \end{table}
 
-\begin{table}[H]
+\begin{table}[htbp]
 \centering
 \caption{Matriz de transição de classes da FAO, presente $\rightarrow$ futuro, para as
 outras culturas anuais sob SSP5-8.5, 2051--2070 (área como percentual da terra avaliada do
@@ -222,7 +227,7 @@ segmento).}
 \input{Chapters/Tables/transition_othercrops.tex}
 \end{table}
 
-\begin{table}[H]
+\begin{table}[htbp]
 \centering
 \caption{Composição do uso atual da terra dentro de cada zona biofísica (parcela da área da
 zona).}
@@ -230,168 +235,154 @@ zona).}
 \input{Chapters/Tables/zone_realized.tex}
 \end{table}
 
-\begin{table}[H]
+\begin{table}[htbp]
 \centering
-\caption{Correlação de Spearman da viabilidade média municipal com o \emph{proxy} de NPP
-anual do MODIS, sobre terra manejada, na \textbf{metade retida} da partição espacial
-(\S\ref{sec:holdout}). A média municipal usa só os pixels dessa metade, de modo que entram os 159
-dos 247 municípios que ali têm terra manejada; uma média parcial é mais ruidosa, o que atenua
+\caption{Correlação de Spearman da aptidão média municipal com o \emph{proxy} de NPP
+anual do MODIS, sobre terra manejada, na \textbf{metade de validação} da partição espacial
+(Seção~\ref{sec:holdout}). A média municipal usa apenas os pixels dessa metade; entram, assim, os 159
+dos 247 municípios que nela têm terra manejada. Uma média parcial é mais ruidosa, o que atenua
 $\rho$ e torna a estimativa conservadora.}
 \label{tab:spearman-npp}
 \input{Chapters/Tables/spearman_npp.tex}
 \end{table}
 
-O \emph{proxy} de NPP anual é lido apenas como \emph{contexto} de produtividade, pelas razões
-dadas em \S\ref{sec:validation-present}; os validadores primários das culturas são as métricas
-de discriminação por presença (Tabela~\ref{tab:presence-auc}).
-
 \chapter{Figuras de diagnóstico}\label{anx:figures}
 
+Este anexo reúne as figuras de diagnóstico citadas nos Capítulos~\ref{ch:results}
+e~\ref{ch:discussion}.
 
-\begin{figure}[H]
+\begin{figure}[!hbp]
 \centering
-\includegraphics[width=0.85\textwidth]{fig_4_2.png}
-\caption{Classes de viabilidade da FAO (N / S3 / S2 / S1) para segmentos representativos
+\includegraphics[width=0.85\textwidth,height=0.58\textheight,keepaspectratio]{fig_4_2.png}
+\caption{Classes de aptidão da FAO (N, S3, S2 e S1) para segmentos representativos
 (soja e conservação).}
 \label{fig:fao-classes}
 \end{figure}
 
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.7\textwidth]{fig_4_5.png}
-\caption{Concordância entre os cinco GCMs quanto ao \emph{sinal} da mudança projetada para as
-outras culturas anuais, sob SSP5-8.5, 2051--2070. O valor por célula é a fração do conjunto que
-concorda com o sinal da mudança do conjunto; a média territorial está anotada no mapa. O limite
-inferior da escala de cor é puxado ao percentil 2 dos dados, porque a concordância é próxima de 1
-em quase todo o território e uma escala $[0;1]$ não mostraria contraste algum.}
-\label{fig:agreement}
-\end{figure}
-
-\begin{figure}[H]
+\begin{figure}[htbp]
 \centering
 \includegraphics[width=0.7\textwidth]{fig_4_6.png}
-\caption{Realocação de melhor cultura --- células em que muda a cultura mais viável entre
-soja, cana-de-açúcar e outras culturas anuais --- sob SSP5-8.5, 2051--2070.}
+\caption{Realocação da cultura mais apta sob SSP5-8.5, 2051--2070: células em que muda a cultura de
+maior aptidão entre soja, cana-de-açúcar e outras culturas anuais.}
 \label{fig:best-crop}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[htbp]
 \centering
 \includegraphics[width=0.7\textwidth]{fig_4_7.png}
 \caption{Uso atual da terra de GO~e~DF agregado a 250~m, colorido por função de segmento. É o
-retrato espacial da composição tabulada em \S\ref{sec:realized-composition}.}
+retrato espacial da composição tabulada na Seção~\ref{sec:realized-composition}.}
 \label{fig:realized-use}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[htbp]
 \centering
 \includegraphics[width=0.7\textwidth]{fig_4_8.png}
-\caption{Subutilização potencial \emph{versus} realizado para a soja --- células viáveis ou
-superiores mas não atualmente sob soja.}
+\caption{Subutilização da soja (potencial \emph{versus} uso atual): células aptas (S2+), mas
+atualmente não ocupadas por soja.}
 \label{fig:underused-soy}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{fig_4_13.png}
-\caption{Viabilidade média municipal para os sete segmentos --- o equivalente municipal da Figura~\ref{fig:atlas-present},
-agregado por redução zonal sobre os municípios; complemento da Figura~\ref{fig:municipal}, que só detalha soja e outras culturas.}
+\caption{Aptidão média municipal para os sete segmentos. Equivalente municipal da
+Figura~\ref{fig:atlas-present}, agregado por redução zonal; complementa a Figura~\ref{fig:municipal},
+que detalha apenas soja e outras culturas anuais.}
 \label{fig:all-segment-suit}
 \end{figure}
 
-\section{Seleção do número de zonas (k)}\label{sec:k-selection-annex}
+\section{Seleção do número de zonas ($k$)}\label{sec:k-selection-annex}
 
-\begin{figure}[H]
+\begin{figure}[htbp]
 \centering
 \includegraphics[width=0.9\textwidth]{fig_4_10.png}
-\caption{Índices de validade de agrupamento (silhueta, Davies--Bouldin, estatística de
-\emph{gap}) e estabilidade em subamostras (índice de Rand ajustado) ao longo de
-$k = 2\dots20$ no espaço de componentes principais descorrelacionado.}
+\caption{Índices de validade de agrupamento (silhueta, Davies--Bouldin e estatística de
+\emph{gap}) e estabilidade em subamostras (índice de Rand ajustado) para $k$ de 2 a 20, no espaço de
+componentes principais descorrelacionado.}
 \label{fig:cluster-validity}
 \end{figure}
 
-Os índices medidos na metade retida da partição espacial são os que sustentam a escolha de $k$
-(\S\ref{sec:zoning}); os da metade de calibração constam ao lado para comparação. Na metade
-retida a silhueta é quase plana ao longo de todo o intervalo (0,144--0,235), com máximo em $k=6$;
-o Davies--Bouldin tem mínimo em $k=6$ (1,400) e varia pouco a partir de $k=7$; e o \emph{gap}
-cresce quase monotonicamente, satisfazendo apenas em $k=14$ a regra de um erro-padrão de
-\citet[p.~415]{tibshirani_estimating_2001} --- o menor $k$ tal que
-$\mathrm{Gap}(k) \ge \mathrm{Gap}(k+1) - s_{k+1}$. Nenhum
-desses três índices elege $k=4$.
+Os índices medidos na metade de validação da partição espacial são os que sustentam a escolha de $k$
+(Seção~\ref{sec:zoning}); os da metade de calibração constam ao lado para comparação. Na metade de
+validação, a silhueta é quase plana ao longo de todo o intervalo (0,144--0,235), com máximo em
+$k=6$; o Davies--Bouldin tem mínimo em $k=6$ (1,400) e varia pouco a partir de $k=7$; e o \emph{gap}
+cresce quase monotonicamente e só satisfaz em $k=14$ a regra de um erro-padrão de
+\citet[p.~415]{tibshirani_estimating_2001}, segundo a qual se escolhe o menor $k$ tal que
+$\mathrm{Gap}(k) \ge \mathrm{Gap}(k+1) - s_{k+1}$. Nenhum desses três índices elege $k=4$.
 
-O que elege $k=4$ (linha tracejada) é o \textbf{ARI de validação cruzada espacial} definido em
-\S\ref{sec:zoning}: aí $k=4$ é o máximo claro de todo o intervalo, com 0,793, contra
+O que elege $k=4$ (linha tracejada) é o \textbf{ARI de validação cruzada espacial} definido na
+Seção~\ref{sec:zoning}: nele, $k=4$ é o máximo claro de todo o intervalo, com 0,793, contra
 0,728 em $k=2$, 0,719 em $k=6$ e 0,677 em $k=5$. O ARI de subamostragem concorda: $k=4$ marca
 0,986, com o menor desvio-padrão entre réplicas de todo o intervalo ($\pm$0,006; a título de
-comparação, $\pm$0,201 em $k=5$ e $\pm$0,176 em $k=6$). Contudo, esse índice mede reprodutibilidade
-sob reamostragem e não validade fora da amostra, pelo que entra como corroboração e não como
+comparação, $\pm$0,201 em $k=5$ e $\pm$0,176 em $k=6$). Esse índice, porém, mede reprodutibilidade
+sob reamostragem, e não validade fora da amostra. Por isso, serve como corroboração, e não como
 fundamento.
 
 O painel inteiro varia pouco, e é por isso que a escolha se apoia na reprodutibilidade da
-partição em território não visto, e não num ótimo de geometria; cobre $k$ até 20, o que
-confirma que a escolha não é um artefato de faixa truncada.
+partição em território não usado no ajuste, e não em um ótimo de geometria. O painel cobre $k$ até
+20, o que confirma que a escolha não é um artefato de uma faixa truncada.
 
 \section{Decomposição por fator}\label{sec:factor-variance-annex}
 
-\begin{sidewaysfigure}[htp]
+\begin{sidewaysfigure}[p]
 \centering
 \includegraphics[width=0.95\textheight]{fig_4_11.png}
-\caption{Parcela de cada fator na variância espacial da viabilidade de cada segmento, por
+\caption{Parcela de cada fator na variância espacial da aptidão de cada segmento, por
 decomposição exata de covariância entre cada fator ponderado e o agregado (as parcelas somam
-exatamente~1 por construção). Eixo horizontal em escala simétrica-log; a cor indica o grupo
-temático do fator (clima, laranja; terreno/solo, verde; outros, azul); contorno preto grosso marca o fator dominante de cada segmento; hachura
-indica contribuição negativa.}
+exatamente~1 por construção). O eixo horizontal está em escala logarítmica simétrica; a cor indica o
+grupo temático do fator (clima, laranja; terreno/solo, verde; outros, azul); um contorno preto grosso
+marca o fator dominante de cada segmento; a hachura indica contribuição negativa.}
 \label{fig:factor-variance}
 \end{sidewaysfigure}
 
 A decomposição é feita sobre log-pertinências para os seis segmentos de média geométrica e sobre
-pertinências brutas para a conservação, de média aritmética; o eixo horizontal usa uma escala
-simétrica-log (limiar linear~$=0{,}005$) para manter visíveis as parcelas próximas de zero sem
-exagerar sua magnitude real, e a contribuição negativa indicada por hachura é um efeito residual
-esperado de uma decomposição linear de covariância entre fatores correlacionados, não um erro.
+pertinências brutas para a conservação, de média aritmética. O eixo horizontal usa uma escala
+logarítmica simétrica (limiar linear de $0{,}005$) para manter visíveis as parcelas próximas de zero
+sem exagerar sua magnitude real. As contribuições negativas, indicadas por hachura, são um efeito
+residual esperado de uma decomposição linear de covariância entre fatores correlacionados, e não um erro.
 
-Terreno e solo dominam as culturas, mas o fator vencedor não é o mesmo em nenhuma delas: na soja
-o declive responde por 0,93 da variância (argila, 0,07); nas outras culturas anuais quem domina é
-o carbono orgânico do solo (0,66, contra 0,32 do declive); e na cana-de-açúcar é a água disponível
-no solo (0,47), seguida da argila (0,35) e do declive (0,18). A piscicultura concentra-se de forma
+Terreno e solo dominam as culturas, mas o fator vencedor não é o mesmo em nenhuma delas. Na soja,
+a declividade explica 0,93 da variância (argila, 0,07); nas outras culturas anuais, domina o carbono
+orgânico do solo (0,66, contra 0,32 da declividade); e na cana-de-açúcar, a água disponível
+no solo (0,47), seguida da argila (0,35) e da declividade (0,18). A piscicultura se concentra de forma
 quase total na distância à água sazonal (0,91). Nesses quatro segmentos, portanto, a discriminação
-espacial é de solo e terreno, mas reparte-se de maneira própria em cada um, e não há um fator
+espacial é de solo e terreno, mas se reparte de maneira própria em cada um, e não há um fator
 único que explique o conjunto.
 
 Os três segmentos restantes não seguem esse padrão. A pecuária é governada pela umidade do solo
-(0,97) e a geração fotovoltaica pela radiação solar (0,71, com o índice de claridade em 0,27) ---
-ambos fatores de origem climática, distoando dos demais segmentos.
-No caso da pecuária, a umidade do solo descreve armazenamento de água no perfil e
-não um gradiente climático: reclassificada por papel temático, a parcela de terreno/solo do
-segmento vai de 0,04 a 1,00, e a média climática entre os sete segmentos cai de 0,24 para 0,10.
-Na geração fotovoltaica, por outro lado, a irradiância \emph{é} um sinal climático espacial
-genuíno, e a concentração é real. A conservação, por fim, é o segmento com mais fatores do
-conjunto --- nove --- e ainda assim a conectividade a áreas protegidas responde sozinha por 0,68
-da variância, contra 0,15 da rugosidade do terreno, 0,10 do serviço de carbono e 0,08 da fração de
-vegetação nativa. É também o único dos sete cujo fator dominante não é uma variável de superfície,
-e sim uma camada de governança.
+(0,97), e a geração fotovoltaica, pela radiação solar (0,71, com o índice de claridade em 0,27). Ambos
+são fatores de origem climática, o que distingue esses dois segmentos dos demais. No caso da pecuária,
+a umidade do solo descreve o armazenamento de água no perfil, e não um gradiente climático. Se essa
+variável for reclassificada como terreno/solo, a parcela desse grupo na pecuária passa de 0,04 para
+1,00, e a média climática dos sete segmentos cai de 0,24 para 0,10. Na geração fotovoltaica, por outro
+lado, a irradiância \emph{é} um sinal climático espacial real, e a concentração também. A conservação,
+por fim, é o segmento com mais fatores do conjunto (nove) e, ainda assim, a conectividade a áreas
+protegidas explica sozinha 0,68 da variância, contra 0,15 da rugosidade do terreno, 0,10 do serviço
+de carbono e 0,08 da fração de vegetação nativa. É também o único dos sete cujo fator dominante não é
+uma variável de superfície, e sim uma camada de governança.
 
 Essa concentração não decorre de viés de ponderação AHP. Nos quatro segmentos dominados por solo e
-terreno ela reflete saturação geográfica genuína das pertinências climáticas, confirmada de forma
+terreno, ela reflete a saturação geográfica real das pertinências climáticas, confirmada de forma
 independente pelo mapa de magnitude espacial da Figura~\ref{fig:scale-mismatch} (argumento
-completo em \S\ref{sec:atlas-present}); nos três restantes, reflete a estrutura do próprio
+completo na Seção~\ref{sec:atlas-present}). Nos três restantes, reflete a estrutura do próprio
 conjunto de fatores de cada segmento.
 
-\section{Descompasso de escala clima--terreno}\label{sec:scale-mismatch-annex}
+\section{Descompasso de escala entre clima e terreno}\label{sec:scale-mismatch-annex}
 
-\begin{figure}[H]
+\begin{figure}[htbp]
 \centering
 \includegraphics[width=0.95\textwidth]{fig_4_12.png}
 \caption{Variabilidade espacial local (desvio-padrão em janela móvel, bandas padronizadas)
-do clima \emph{versus} terreno/solo, num raio de 4.750~m --- aproximadamente o tamanho da
-célula nativa do TerraClimate ($\tfrac{1}{24}^\circ \approx 4{,}64$~km).}
+do clima \emph{versus} terreno/solo, em um raio de 4.750~m (aproximadamente o tamanho da
+célula nativa do TerraClimate, $\tfrac{1}{24}^\circ \approx 4{,}6$~km).}
 \label{fig:scale-mismatch}
 \end{figure}
 
-\begin{table}[H]
+\begin{table}[htbp]
 \centering
 \caption{Desvio-padrão local médio (bandas padronizadas) do clima \emph{versus}
-terreno/solo, por raio de janela móvel, e razão terreno/solo/clima correspondente.}
+terreno/solo, por raio de janela móvel, e razão (terreno/solo)/clima correspondente.}
 \label{tab:scale-mismatch}
 \begin{tabular}{@{}rrrrr@{}}
 \toprule
@@ -404,83 +395,81 @@ Raio (m) & $\sigma$ clima & $\sigma$ terreno/solo & Razão & $\log_2$(razão) \\
 \end{tabular}
 \end{table}
 
-O painel do clima (Figura~\ref{fig:scale-mismatch}) é quase uniformemente plano (variação local
-desprezível em toda a extensão do território); o painel de terreno/solo mostra estrutura
-espacial genuína, mais acentuada no norte/nordeste (transição de relevo do planalto); a razão log$_2$ entre os dois painéis
-é quase uniformemente positivo, confirmando que terreno/solo domina a estrutura
-espacial fina mesmo na própria escala nativa do clima. O mapa é construído a partir da mesma
-amostra limitada por orçamento computacional (4.475 pontos por raio, \S\ref{anx:data}) que
-alimenta a Tabela~\ref{tab:scale-mismatch}, e não de uma composição rasterizada completa do
-território. Nessa tabela, o raio de 4.750~m ancora na célula nativa do TerraClimate
-($\approx$4,64~km); 250~m é a célula nativa da pilha de atributos; e 750~m reutiliza o raio já
-usado para a rugosidade do terreno na conservação (\S\ref{anx:derivations}).
+O painel do clima (Figura~\ref{fig:scale-mismatch}) é quase uniformemente plano, com variação local
+desprezível em toda a extensão do território. O painel de terreno/solo mostra estrutura espacial real,
+mais acentuada no norte e no nordeste (transição de relevo do planalto). A razão $\log_2$ entre os dois
+painéis é quase uniformemente positiva, o que confirma que terreno e solo dominam a estrutura espacial
+fina mesmo na própria escala nativa do clima. O mapa é construído a partir da mesma amostra, limitada
+por orçamento computacional (4.475 pontos por raio), que alimenta a Tabela~\ref{tab:scale-mismatch}, e
+não de uma composição matricial completa do território. Nessa tabela, o raio de 4.750~m corresponde à
+célula nativa do TerraClimate ($\approx$4,6~km); 250~m é a célula nativa do conjunto de atributos; e
+750~m reutiliza o raio já usado para a rugosidade do terreno na conservação (Anexo~\ref{anx:derivations}).
 
 \section{Dimensionamento do bloco de validação}\label{anx:holdout}
 
 Esta seção registra as medidas que dimensionaram a partição espacial de calibração e validação
-descrita em \S\ref{sec:holdout}.
+descrita na Seção~\ref{sec:holdout}.
 
-O semivariograma empírico (Tabela~\ref{tab:variograma}) foi estimado, para cada cultura e em duas
-janelas de distância, sob três definições do campo: a superfície de viabilidade ajustada, a
-presença realizada no MapBiomas e o resíduo entre ambas. O bloco é dimensionado pelo resíduo,
+O semivariograma empírico (Tabela~\ref{tab:variograma}) foi estimado para cada cultura, em duas
+janelas de distância, sob três definições do campo: a superfície de aptidão ajustada, a presença
+observada no MapBiomas e o resíduo entre ambas. O bloco é dimensionado pelo resíduo,
 porque é nele que reside a dependência espacial capaz de inflar uma métrica fora da amostra
-\citep{roberts_crossvalidation_2017,valavi_blockcv_2019}: o que um bloco precisa separar não é a
-suavidade do preditor nem a agregação da cultura, mas a parcela não explicada pelo modelo que
-ainda assim é compartilhada entre células vizinhas. As outras duas definições são reportadas como
-contraste, pois conduziriam a dimensionamentos distintos: o alcance da superfície ajustada
-superestima a exigência para soja e cana (155 e 135~km, contra 105~km do resíduo) e a subestima
-para as outras culturas anuais (155 contra 175~km).
+\citep{roberts_crossvalidation_2017,valavi_blockcv_2019}. O que um bloco precisa separar não é a
+suavidade do preditor nem a agregação da cultura, mas a parcela não explicada pelo modelo que,
+ainda assim, é compartilhada entre células vizinhas. As outras duas definições são apresentadas como
+contraste, pois levariam a dimensionamentos distintos: o alcance da superfície ajustada superestima a
+exigência para soja e cana-de-açúcar (155 e 135~km, contra 105~km do resíduo) e a subestima para as
+outras culturas anuais (155 contra 175~km).
 
-A pepita é reportada ao lado de cada alcance porque delimita a sua interpretação. Quando a pepita
-se aproxima do patamar, a variância é quase toda ruído na escala de suporte de 250~m e nenhum
+A pepita é apresentada ao lado de cada alcance porque delimita a sua interpretação. Quando a pepita
+se aproxima do patamar, a variância é quase toda ruído na escala de suporte de 250~m, e nenhum
 estimador recupera um alcance estrutural. É o caso da presença de outras culturas anuais, cuja
-pegada realizada cobre menos de 1\% do território: a razão de 0,87 indica que essa linha não
-sustenta inferência, ao contrário do resíduo da mesma cultura, com razão 0,75.
+área cultivada cobre menos de 1\% do território: a razão de 0,87 indica que essa linha não
+sustenta inferência, ao contrário do resíduo da mesma cultura, com razão de 0,75.
 
-\begin{table}[H]
+\begin{table}[htbp]
 \centering
 \caption{Semivariograma empírico das superfícies de cultura sob três enquadramentos
-(superfície ajustada, presença realizada e resíduo) e duas janelas de distância. ``Compart.''
+(superfície ajustada, presença observada e resíduo) e duas janelas de distância. ``Compart.''
 é a fração da variância espacialmente estruturada ainda compartilhada à distância do bloco
-adotado. Subamostra de 6.000 pontos, semente 42.}
+adotado; ``---'' indica alcance não estimável. Subamostra de 6.000 pontos, semente 42.}
 \label{tab:variograma}
 \small
 \input{Chapters/Tables/variograma.tex}
 \end{table}
 
-\begin{figure}[H]
+\begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{fig_4_15.png}
 \caption{Semivariogramas normalizados pelo respectivo patamar, por cultura, na janela de 400~km.
 A curva grossa é o resíduo, que dimensiona o bloco; a linha tracejada preta marca o bloco adotado
-(130~km) e a pontilhada o alcance estimado do resíduo. A ordenada inicia próxima de 0,75 porque a
+(130~km), e a pontilhada, o alcance estimado do resíduo. A ordenada inicia próxima de 0,75 porque a
 pepita responde por cerca de três quartos do patamar: a maior parte da variância é ruído na escala
-de suporte de 250~m, e só o quarto restante é estrutura espacial passível de ser quebrada por um
-bloco.}
+de suporte de 250~m, e só o quarto restante é estrutura espacial que um bloco pode separar.}
 \label{fig:variograma}
 \end{figure}
 
-Os alcances citados acima são da janela de 400~km. Na janela de 800~km o alcance estimado do
-resíduo sobe de 105 para 150~km na soja, de 105 para 530~km na cana e de 175 para 550~km nas
+Os alcances citados acima são da janela de 400~km. Na janela de 800~km, o alcance estimado do
+resíduo sobe de 105 para 150~km na soja, de 105 para 530~km na cana-de-açúcar e de 175 para 550~km nas
 outras culturas anuais, e a fração compartilhada à distância de 130~km sobe para 30\%, 47\% e
 66\%, respectivamente (Tabela~\ref{tab:variograma}). Um alcance que cresce com a janela de
-observação indica que não há alcance finito, mas uma tendência regional de longo alcance. O
-dimensionamento foi lido na janela de 400~km porque, a 800~km, os maiores atrasos se aproximam do
-diâmetro de GO~e~DF e o semivariograma, sustentado por poucos pares muito distantes, passa a medir
-essa tendência em vez de estrutura local. Trata-se, ainda assim, de uma escolha: nenhum bloco
-contido no território remove uma tendência que o atravessa por inteiro, e o que a partição de
+observação indica que não há alcance finito, e sim uma tendência regional de longo alcance. O
+dimensionamento foi feito na janela de 400~km porque, a 800~km, as maiores distâncias de defasagem se
+aproximam do diâmetro de GO~e~DF. O semivariograma, sustentado então por poucos pares muito distantes,
+passa a medir essa tendência, e não a estrutura local. Trata-se, ainda assim, de uma escolha: nenhum
+bloco contido no território remove uma tendência que o atravessa por inteiro, e o que a partição de
 130~km remove é a estrutura de alcance intermediário.
 
-A Tabela~\ref{tab:split-balance} reporta a composição por função de uso atual de cada metade, numa
-amostra de 20.000 pixels. A soja, validador primário, fica praticamente equilibrada (razão 1,01),
+A Tabela~\ref{tab:split-balance} apresenta a composição por função de uso atual de cada metade, em
+uma amostra de 20.000 pixels. A soja, validador primário, fica praticamente equilibrada (razão de 1,01),
 e pastagem, vegetação nativa e outras culturas anuais ficam abaixo de 1,4. A cana-de-açúcar é a
-exceção, com razão 4,07: a sua pegada realizada concentra-se no sul de Goiás e, sob blocos de
-130~km, cai majoritariamente na metade de calibração, pelo que a linha da cana nas métricas de
-presença deve ser lida à luz dessa limitação. Blocos menores equilibrariam melhor a composição e
-decorrelacionariam pior; o compromisso foi resolvido em favor da decorrelação, que é a finalidade
-da partição.
+exceção, com razão de 4,07: sua área cultivada se concentra no sul de Goiás e, com blocos de
+130~km, cai majoritariamente na metade de calibração. Por isso, a linha da cana-de-açúcar nas métricas
+de presença deve ser lida à luz dessa limitação. Blocos menores equilibrariam melhor a composição, mas
+reduziriam menos a correlação espacial; o compromisso foi resolvido em favor da redução da correlação,
+que é a finalidade da partição.
 
-\begin{table}[H]
+\begin{table}[htbp]
 \centering
 \caption{Composição por função de uso atual (MapBiomas) de cada metade da partição espacial,
 em número de pixels de uma amostra de 20.000 pontos (semente 7, 250~m).}

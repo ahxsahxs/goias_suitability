@@ -5,89 +5,87 @@ e o inventário de dados. As tabelas completas de fontes de dados estão no Anex
 
 \section{Área de estudo}
 
-A área de interesse é o estado de Goiás em conjunto com o Distrito Federal (GO~e~DF)
-na região Centro-Oeste do Brasil e situados inteiramente no bioma Cerrado.
-O Cerrado é uma savana tropical com clima fortemente sazonal
-(verão úmido e inverno seco), além de solos profundos, intemperizados, naturalmente ácidos e
-de baixa fertilidade (predominantemente latossolos) que, no
-entanto, podem se tornar altamente produtivos uma vez feitas a calagem e a correção de fósforo,
-potássio, enxofre e micronutrientes \citep[p.~617]{yamada_cerrado_2005}. Nas últimas décadas, o bioma tornou-se um dos principais territórios de grãos,
-fibra e pecuária do Brasil --- precisamente o que torna a questão do potencial \emph{versus} uso
-atual (QP2) relevante aqui.
+A área de interesse compreende o estado de Goiás e o Distrito Federal (GO~e~DF), na região Centro-Oeste
+do Brasil, inteiramente inseridos no bioma Cerrado. O Cerrado é uma savana tropical de clima fortemente
+sazonal (verão úmido e inverno seco). Seus solos, predominantemente Latossolos, são profundos,
+intemperizados, naturalmente ácidos e de baixa fertilidade, mas podem se tornar altamente produtivos
+após a calagem e a correção de fósforo, potássio, enxofre e micronutrientes
+\citep[p.~617]{yamada_cerrado_2005}. Nas últimas décadas, o bioma se tornou uma das principais regiões
+produtoras de grãos, fibras e carne do Brasil. É precisamente isso que torna relevante a questão do
+potencial \emph{versus} uso atual (QP2).
 
 A geometria da área de interesse é derivada da Malha Municipal Digital oficial do IBGE (edição 2025,
 SIRGAS~2000/EPSG:4674, 246 municípios de Goiás mais o Distrito Federal), dissolvida em um polígono único
 que se estende aproximadamente da longitude $-53{,}25^\circ$ a $-45{,}90^\circ$ e da latitude
-$-19{,}50^\circ$ a $-12{,}39^\circ$. Para a fase de uso atual da terra, as próprias 247
-unidades municipais dessa mesma malha alimentam a agregação e o relato municipal.
+$-19{,}50^\circ$ a $-12{,}39^\circ$. Na fase de uso atual da terra, as 247 unidades municipais dessa
+malha servem de base para a agregação e a apresentação dos resultados por município.
 
 \section{Os sete segmentos de uso da terra}
 
-O atlas avalia sete segmentos, escolhidos de forma a cobrir produção agrícola, fibra, proteína animal, energia e
-conservação, de modo que a análise possa expressar genuínas compensações (\emph{trade-offs}) entre segmentos.
-A tabela abaixo caracteriza cada segmento em termos agronômicos; a literatura de mapeamento
-multicritério por segmento é revista em \S\ref{sec:sota-casos}.
+O atlas avalia sete segmentos, escolhidos de forma a cobrir produção agrícola, fibras, proteína animal,
+energia e conservação, para que a análise possa expressar compensações reais (\emph{trade-offs}) entre
+segmentos. A Tabela~\ref{tab:segments} caracteriza cada segmento em termos agronômicos; a literatura de
+mapeamento multicritério por segmento é revisada na Seção~\ref{sec:sota-casos}.
 
-\begin{table}[H]
+\begin{table}[htbp]
 \centering
 \caption{Os sete segmentos de uso da terra.}\label{tab:segments}
-\begin{tabular}{@{}clp{9.5cm}@{}}
+\begin{tabular}{@{}cl>{\raggedright\arraybackslash}p{9.5cm}@{}}
 \toprule
-\# & Segmento & Definição / escopo \\
+\# & Segmento & Definição e escopo \\
 \midrule
-1 & \textbf{Soja} & Soja mecanizada de sequeiro --- a principal cultura comercial da região,
-  cujo desempenho responde fortemente a covariáveis edafoclimáticas como disponibilidade hídrica do
-  solo, temperatura e fotoperíodo, como mostram ensaios multiambiente em Mato Grosso
-  \citep[pp.~1--3]{corbellini_geographical_2024}, e que já se altera sob as projeções de mudança
-  climática: no Arco Norte, a área de soja projetada para 2041--2060 recua em Goiás entre 12,6\% e
-  34,8\% \citep[p.~11]{souza_climate-driven_2026}. \\
-2 & \textbf{Cana-de-açúcar} & Cana-de-açúcar mecanizada para açúcar e etanol, com janela de maturação
-  seca; as faixas de temperatura e precipitação partem do zoneamento de aptidão climática da cultura no
+1 & \textbf{Soja} & Soja mecanizada de sequeiro, principal cultura comercial da região. Seu desempenho
+  responde fortemente a covariáveis edafoclimáticas, como disponibilidade hídrica do solo, temperatura
+  e fotoperíodo, como mostram ensaios multiambiente em Mato Grosso
+  \citep[pp.~1--3]{corbellini_geographical_2024}. Projeções para a área de influência do Arco Norte
+  indicam recuo de 12,6\% a 34,8\% da área de soja em Goiás em 2041--2060
+  \citep[p.~11]{souza_climate-driven_2026}. \\
+2 & \textbf{Cana-de-açúcar} & Cana-de-açúcar mecanizada para açúcar e etanol, com maturação na estação
+  seca. As faixas de temperatura e precipitação partem do zoneamento de aptidão climática da cultura no
   Brasil \citep[p.~782]{aparecido_climate_2021} e foram recalibradas às distribuições observadas em
-  GO/DF (Anexo~\ref{anx:spec}). \\
-3 & \textbf{Outras culturas anuais} & Milho, algodão e sorgo, incluindo a safrinha (segunda-safra);
-  os critérios e as faixas de classe seguem avaliações GIS-AHP publicadas para cereais de sequeiro
+  GO~e~DF (Anexo~\ref{anx:spec}). \\
+3 & \textbf{Outras culturas anuais} & Milho, algodão e sorgo, incluindo a safrinha (segunda safra).
+  Os critérios e as faixas de classe seguem avaliações SIG-AHP publicadas para cereais de sequeiro
   \citep[pp.~6--8]{tadesse_land_2020}. \\
-4 & \textbf{Piscicultura} & Aquicultura em tanques (açudes) e reservatórios (espécies de água quente,
-  como a tilápia), seguindo critérios de viabilidade local (temperatura, aqui usando a do ar como aproximação
-  da temperatura da água, textura do solo, declive, acesso à água) estabelecidos para
-  aquicultura em viveiros em outras regiões \parencites{ssegane_geospatial_2012}[tab.~1]{assefa_gis_2018}. \\
-5 & \textbf{Pecuária} & Gado de corte em pastagem cultivada, que cobre cerca de 28\% do bioma Cerrado e abrange um
-  amplo espectro de estados de intensificação e degradação
+4 & \textbf{Piscicultura} & Aquicultura em viveiros escavados e reservatórios, com espécies de água quente,
+  como a tilápia. Os critérios (temperatura, textura do solo, declividade e acesso à água) seguem estudos
+  de aquicultura em viveiros em outras regiões
+  \parencites{ssegane_geospatial_2012}[Tabela~1]{assefa_gis_2018}; a temperatura do ar é usada como
+  aproximação da temperatura da água. \\
+5 & \textbf{Pecuária} & Gado de corte em pastagem cultivada, que cobre cerca de 28\% do bioma Cerrado e
+  abrange um amplo espectro de estados de intensificação e degradação
   \parencites[p.~1219]{vieira_classification_2022}{molossi_improve_2020}. \\
-6 & \textbf{Conservação} & Conservação de floresta e Cerrado --- valor de serviços da vegetação nativa,
-  da água e da biodiversidade, ecoando as compensações entre prioridade de restauração e aptidão agrícola
-  mapeadas para o bioma \citep{schuler_spatial_2022}. \\
-7 & \textbf{Geração fotovoltaica} & Geração fotovoltaica em escala de concessionária, com escolha de
-  sítio por irradiância, índice de claridade, orientação da vertente, temperatura e declive, sobre a
-  máscara de cobertura da terra, em linha com os fatores de análises multicritério em SIG para usinas
-  fotovoltaicas: irradiância, orientação, temperatura de superfície, uso da terra e distância a
-  estradas; \citealp[tab.~2]{rane_gis-based_2024}. \\
+6 & \textbf{Conservação} & Conservação de floresta e Cerrado: valor dos serviços da vegetação nativa,
+  da água e da biodiversidade, em consonância com as compensações entre prioridade de restauração e
+  aptidão agrícola mapeadas para o bioma \citep{schuler_spatial_2022}. \\
+7 & \textbf{Geração fotovoltaica} & Geração fotovoltaica centralizada, de grande porte. A escolha do local
+  considera irradiância, índice de claridade, orientação da vertente, temperatura e declividade, sobre a
+  máscara de cobertura da terra, em linha com os fatores usuais em análises multicritério para usinas
+  fotovoltaicas \citep[Tabela~2]{rane_gis-based_2024}. \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 \section{Plataforma de computação e filosofia de custo}\label{sec:cost}
 
-A análise é executada inteiramente no lado do servidor no Google Earth Engine, plataforma em nuvem que
+A análise é executada inteiramente no servidor do Google Earth Engine, plataforma em nuvem que
 integra um catálogo de dados de observação da Terra a um serviço de computação paralela
-\citep[pp.~18--19]{gorelick_google_2017}, utilizada aqui na modalidade gratuita de uso não comercial e
-de pesquisa.
-O objetivo desta abordagem é a reprodutibilidade com custo marginal baixo: sem \emph{hardware}
-dedicado e sem armazenamento local de imagens de satélite. A máquina local é utilizada apenas para
-desenho de gráficos, junção de tabelas e operações simples. Os produtos intermediários são
-armazenados na plataforma como imagens raster persistentes, para que etapas subsequentes não
-recalculem os grafos anteriores. O processamento permanece dentro da cota de uso, limitando as
-amostras de agrupamento e classificação à ordem de $10^5$ pontos.
+\citep[pp.~18--19]{gorelick_google_2017}. Utiliza-se aqui a modalidade gratuita, para uso não comercial e
+de pesquisa. O objetivo dessa abordagem é a reprodutibilidade com baixo custo marginal: sem
+\emph{hardware} dedicado e sem armazenamento local de imagens de satélite. A máquina local é usada apenas
+para geração de gráficos, junção de tabelas e operações simples. Os produtos intermediários são
+armazenados na plataforma como ativos (\emph{assets}) matriciais persistentes, para que as etapas
+seguintes não recalculem os grafos anteriores. Para que o processamento permaneça dentro da cota de
+uso, as amostras de agrupamento e classificação são limitadas à ordem de $10^5$ pontos.
 
-\begin{table}[H]
+\begin{table}[htbp]
 \centering
-\caption{Matriz de análise e períodos de referência.}\label{tab:grid-periods}
-\begin{tabular}{@{}p{3.2cm}p{3.8cm}p{6.3cm}@{}}
+\caption{Grade de análise e períodos de referência.}\label{tab:grid-periods}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{3.2cm}>{\raggedright\arraybackslash}p{3.8cm}>{\raggedright\arraybackslash}p{6.3cm}@{}}
 \toprule
 Convenção & Valor & Justificativa \\
 \midrule
-Resolução de análise & 250~m & Corresponde à grade nativa das camadas de solo (OpenLandMap); situa-se entre a resolução fina do terreno e a grossa do clima. \\
+Resolução de análise & 250~m & Corresponde à grade nativa das camadas de solo (OpenLandMap); situa-se entre a resolução fina do terreno e a resolução mais baixa do clima. \\
 Sistema de referência de coordenadas & EPSG:4326 & A área das células vem da função planimétrica de área de pixel, nunca de um campo armazenado. \\
 Normal climatológica & 1991--2020 & Referência única para os deltas de mudança climática. \\
 Registro da vegetação & 2001--2020 & Indicador de produtividade (MOD17). \\
@@ -101,49 +99,47 @@ Cenários futuros & SSP2-4.5; SSP5-8.5 & Cenários de emissão moderada e alta. 
 
 Com uma única exceção, todos os conjuntos de dados vêm do catálogo público da própria
 plataforma; o Anexo~\ref{anx:data} registra, fonte a fonte, a resolução nativa e os fatores de
-conversão para unidades físicas. A exceção é a malha municipal do IBGE, distribuída fora do catálogo: ela é lida de
-um arquivo local e convertida em geometria na memória a cada execução, sem nunca ser exportada
-como ativo persistente na plataforma. As variáveis
-\textbf{biofísicas e agroclimáticas} (Tabela~\ref{tab:src-biophys} do Anexo) cobrem temas sobre o
-terreno (SRTM); a hidrografia (HydroSHEDS); o clima e o regime de água
-através do conjunto de dados TerraClimate, mensal, a $\tfrac{1}{24}^\circ$ ($\approx$4~km)
-\citep{abatzoglou_terraclimate_2018}. Cobrem também solos com as camadas
-OpenLandMap SOL v0.2 a 250~m (média das profundidades de 0, 10 e 30~cm) e
-água superficial (JRC Global Surface Water) \citep{pekel_high-resolution_2016}. Completam o conjunto a cobertura genérica da terra
-do MapBiomas (coleção~10), as áreas protegidas (WDPA), o carbono de biomassa acima do
-solo \citep[p.~1]{spawn_harmonized_2020} e o clima futuro (NASA NEX-GDDP-CMIP6,
-\citealp{thrasher_nasa_2022}).
+conversão para unidades físicas. A exceção é a malha municipal do IBGE, distribuída fora do catálogo:
+ela é lida de um arquivo local e convertida em geometria na memória a cada execução, sem nunca ser
+exportada como ativo persistente na plataforma.
+
+As variáveis \textbf{biofísicas e agroclimáticas} (Tabela~\ref{tab:src-biophys} do Anexo) abrangem:
+o relevo (SRTM); a hidrografia (HydroSHEDS); o clima e o regime hídrico, pelo conjunto TerraClimate
+(mensal, $\tfrac{1}{24}^\circ$, $\approx$4,6~km) \citep{abatzoglou_terraclimate_2018}; os solos, pelas
+camadas OpenLandMap SOL v0.2 a 250~m (média das profundidades de 0, 10 e 30~cm); e a água superficial
+(JRC Global Surface Water) \citep{pekel_high-resolution_2016}. Completam o conjunto a cobertura da terra
+do MapBiomas (Coleção~10), usada apenas como máscara; as áreas protegidas (WDPA); o carbono da biomassa
+aérea \citep[p.~1]{spawn_harmonized_2020}; e o clima futuro do conjunto NASA NEX-GDDP-CMIP6
+\citep{thrasher_nasa_2022}.
 
 As entradas de \textbf{uso atual e validação} (Tabela~\ref{tab:src-realized} do Anexo) são as 247
 unidades municipais da Malha Municipal Digital do IBGE (edição 2025), as classificações anuais de uso da
-terra do MapBiomas \citep{souza_reconstructing_2020} e os produtos de
-produtividade NPP/GPP do MODIS MOD17 \citep{zhao_improvements_2005}. O uso atual da terra e o indicador de produtividade
-servem estritamente para mascaramento, validação e caracterização descritiva; nunca entram no cálculo da
-viabilidade ou do agrupamento.
+terra do MapBiomas \citep{souza_reconstructing_2020} e os produtos de produtividade primária líquida e
+bruta (NPP e GPP, do inglês \emph{net} e \emph{gross primary productivity}) do MODIS MOD17
+\citep{zhao_improvements_2005}. O uso atual da terra e o indicador de produtividade servem estritamente
+para mascaramento, validação e caracterização descritiva; nunca entram no cálculo da aptidão nem do
+agrupamento.
 
 \section{Cenários futuros do clima (CMIP6)}
 
 A projeção usa o conjunto NEX-GDDP-CMIP6 da NASA, de resolução temporal diária, em particular os campos de
-precipitação e de temperatura máxima e mínima do ar próximo à superfície. Um conjunto de cinco modelos ---
-ACCESS-CM2, EC-Earth3, GFDL-ESM4, MPI-ESM1-2-HR e MRI-ESM2-0 --- é usado como subconjunto padrão e
-bem-comportado de modelos de circulação geral (GCMs); todos os cinco têm dados para os dois cenários de
-interesse.
-
+precipitação e de temperatura máxima e mínima do ar próximo à superfície. Usa-se um conjunto de cinco
+modelos de circulação geral (GCM, do inglês \emph{general circulation models}): ACCESS-CM2, EC-Earth3,
+GFDL-ESM4, MPI-ESM1-2-HR e MRI-ESM2-0. Esse subconjunto é de uso corrente, e todos os cinco modelos
+têm dados para os dois cenários de interesse.
 
 \section{Ambiente computacional}
 
-A implementação é orientada a configuração: a lógica analítica é modular e todo parâmetro numérico
---- limiares de pertinência fuzzy, identificadores de conjuntos de dados, fatores de conversão de
-unidades, as âncoras ordinais da matriz AHP e o expoente da adaptação regional --- é declarado como
-valor versionado, em vez de embutido no código, de modo que a análise possa ser auditada e
-reexecutada apenas a partir da especificação declarada. Os \emph{pesos} dos fatores são a
-exceção deliberada: eles não são declarados, e sim \textbf{derivados} das âncoras pela cadeia
-descrita em \S\ref{sec:ahp}. O software é
-deliberadamente simples: além da integração com o Google Earth Engine e da orquestração das etapas de
-análise, o código Python usa bibliotecas científicas comuns para as tarefas executadas
-localmente. Nenhuma técnica de aprendizagem profunda é utilizada.
+A implementação é orientada a configuração. A lógica analítica é modular, e todo parâmetro (limiares de
+pertinência \emph{fuzzy}, identificadores de conjuntos de dados, fatores de conversão de unidades, âncoras
+ordinais da matriz AHP e o expoente da adaptação regional) é declarado como valor versionado, e não
+embutido no código. Assim, a análise pode ser auditada e reexecutada apenas a partir da especificação
+declarada. Os \emph{pesos} dos fatores são a exceção deliberada: eles não são declarados, e sim
+\textbf{derivados} das âncoras pela cadeia descrita na Seção~\ref{sec:ahp}. Além da integração com o
+Google Earth Engine e da orquestração das etapas de análise, o código Python usa apenas bibliotecas
+científicas comuns nas tarefas locais. Nenhuma técnica de aprendizado profundo é utilizada.
 
-O código-fonte completo --- configurações, módulos de análise e ferramentas de exportação
---- está disponibilizado publicamente no repositório \texttt{goias\_suitability}
-\citep{da_silva_goias_suitability_2026}. O atlas interativo construído a partir destes resultados está publicado em
+O código-fonte completo (configurações, módulos de análise e ferramentas de exportação) está disponível
+publicamente no repositório \texttt{goias\_suitability} \citep{da_silva_goias_suitability_2026}. O atlas
+interativo construído a partir desses resultados está publicado em
 \url{https://ahxsahxs.github.io/goias_suitability}.

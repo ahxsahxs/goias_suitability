@@ -1,31 +1,28 @@
-
-
-Goiás e o Distrito Federal (\textasciitilde340.000~km\textsuperscript{2} do bioma Cerrado)
-concentram a tensão central do uso da terra nos trópicos: expandir a produção sem comprometer
-os ecossistemas e os recursos hídricos de que ela depende. Esta
-dissertação constrói, para GO~e~DF a 250~m, um \textbf{atlas aberto de viabilidade agrícola
-multissegmento com zoneamento e projeção climática}, para sete segmentos: soja, cana-de-açúcar,
-outras culturas anuais, piscicultura, pecuária, conservação e geração fotovoltaica. A viabilidade
-atual vem de avaliação multicritério nos moldes da FAO (pertinência fuzzy e pesos AHP); o
-zoneamento, de agrupamento k-means sobre uma representação descorrelacionada das variáveis; e a
-projeção para meados do século, de fatores de mudança sobre cinco modelos CMIP6. Tudo corre no
-servidor, no Google Earth Engine, a partir de dados públicos e \textbf{sem exportar nenhum ativo
-externo para a plataforma}, com validação contra o uso atual da terra (MapBiomas) e um indicador de
-produtividade (MODIS MOD17). O território parte-se em \textbf{quatro zonas}: duas de vocação
-definida --- a escarpa de conservação e a baixada drenada, de piscicultura --- e duas, com 74\% da
-área, em que os dois primeiros segmentos são indistinguíveis. Construídas só com variáveis
-biofísicas, as zonas separam fortemente a produtividade observada ($F = 1417$ na metade retida), e
-as superfícies reproduzem a geografia atual do cultivo (AUC de 0,864 para a soja e 0,906 para a
-cana-de-açúcar, fora da amostra). O hiato entre viabilidade e uso atual é grande --- 44\% do
-território para as outras culturas anuais e 41\% para a soja ---, sobretudo em pastagens, apontando
-para intensificação, e não expansão sobre vegetação nativa. A mudança projetada é modesta em
-magnitude, porém consistente entre os modelos: atinge sobretudo a \textbf{geração fotovoltaica},
-que perde mais de metade da área viável no cenário mais quente, seguida da conservação e do grupo
-milho/algodão/sorgo, enquanto os planaltos de soja e cana permanecem estáveis; a
-\textbf{piscicultura é o único segmento que ganha área viável}, por alívio da restrição térmica. O método é
-reprodutível a custo marginal baixo em outros estados do Cerrado.
+Goiás e o Distrito Federal (cerca de 346.000~km\textsuperscript{2} do bioma Cerrado)
+concentram a tensão central do uso da terra nos trópicos: expandir e intensificar a produção sem
+comprometer os ecossistemas e a água de que ela depende. Esta dissertação constrói um
+\textbf{atlas aberto de aptidão agrícola multissegmento, com zoneamento e projeção climática}, para
+GO~e~DF a 250~m, em sete segmentos: soja, cana-de-açúcar, outras culturas anuais, piscicultura,
+pecuária, conservação e geração fotovoltaica. A aptidão atual resulta de uma avaliação multicritério
+nos moldes da FAO (pertinência \emph{fuzzy} e pesos AHP); o zoneamento, de um agrupamento $k$-médias
+sobre variáveis descorrelacionadas; e a projeção para meados do século, de fatores de mudança de cinco
+modelos do CMIP6. Todo o processamento é executado no Google Earth Engine, com dados públicos e
+\textbf{sem exportar nenhum ativo externo para a plataforma}, e os resultados são comparados com o uso
+atual da terra (MapBiomas) e com um indicador de produtividade (MODIS MOD17). O território se divide em
+\textbf{quatro zonas}: duas de vocação definida (a escarpa, voltada à conservação, e a baixada drenada,
+voltada à piscicultura) e duas, com 74\% da área, em que os dois segmentos mais bem classificados são
+praticamente indistinguíveis. Construídas apenas com variáveis biofísicas, as zonas separam fortemente
+a produtividade observada ($F = 1.417$ na metade de validação), e as superfícies reproduzem a geografia
+atual do cultivo (AUC de 0,864 para a soja e de 0,906 para a cana-de-açúcar, fora da amostra). O hiato
+entre aptidão e uso atual é grande (44\% do território para as outras culturas anuais e 41\% para a
+soja), sobretudo em pastagens, o que aponta para a intensificação, e não para a expansão sobre
+vegetação nativa. A mudança projetada é modesta, mas consistente entre os modelos. Ela atinge sobretudo
+a \textbf{geração fotovoltaica}, que perde mais da metade da área apta no cenário mais quente, seguida
+da conservação e do grupo de milho, algodão e sorgo. A soja e a cana-de-açúcar permanecem estáveis, e a
+\textbf{piscicultura é o único segmento que ganha área apta}. O método pode ser reproduzido em outros
+estados do Cerrado a baixo custo marginal.
 
 \vspace{0.4em}
-\noindent\textbf{Palavras-chave:} viabilidade agrícola de terras; avaliação de terras (FAO);
+\noindent\textbf{Palavras-chave:} aptidão agrícola das terras; avaliação de terras (FAO);
 processo analítico hierárquico (AHP); zoneamento agroambiental; Cerrado; Google Earth Engine;
-projeção climática CMIP6; análise multicritério de decisão.
+projeção climática CMIP6; análise de decisão multicritério.

@@ -1,35 +1,29 @@
-Goiás and the Federal District ($\sim$340,000~km\textsuperscript{2} of the Cerrado biome)
-concentrate the central tension of land-use planning in the tropics: expanding and intensifying
-production without compromising the ecosystems and water resources it depends on. This
-dissertation builds, for GO~and~DF at 250~m, an \textbf{open multi-segment agricultural
-suitability atlas with zoning and climate projection}, covering seven land-use segments:
-soybean, sugarcane, other annual crops, aquaculture, livestock, forest/Cerrado
-conservation, and photovoltaic generation. Current suitability results from an FAO-style
-multicriteria evaluation (fuzzy membership and AHP weights). Agro-environmental zoning comes from
-unsupervised k-means clustering over a decorrelated representation of the variables. And the
-mid-century projection applies the change-factor method to an ensemble of five
-CMIP6 models. All processing runs server-side, on Google Earth Engine, \textbf{without exporting
-any external asset to the platform}, validated against current land use (MapBiomas) and a
-productivity indicator (MODIS MOD17). The results answer the three research questions: current
-suitability surfaces for the seven segments and a partition into \textbf{four zones}, two of them
-with a defined comparative vocation --- the conservation escarpment and the drained lowland,
-suited to aquaculture --- and two in which the two best-placed segments are practically
-indistinguishable, together covering 74\% of the territory. The zones, built solely from
-biophysical variables, separate observed productivity sharply ($F = 1417$ on the half of the
-territory held out for validation), and the suitability surfaces reproduce the current geography
-of cropping (soybean AUC of 0.864 and sugarcane AUC of 0.906, likewise out of sample). The work
-further reveals a relevant gap between potential suitability and current use --- 44\% of the
-territory for other annual crops and 41\% for soybean ---, especially in pastureland, pointing to
-intensification, rather than expansion onto native vegetation, as the most likely direction of
-land-use change in the region. Mid-century climate change is modest in magnitude, yet consistent
-across the ensemble: it affects mainly \textbf{photovoltaic generation}, which loses more than
-half of its suitable area under the hottest scenario, followed by conservation and the
-maize/cotton/sorghum group, while the prime soybean and sugarcane plateaus remain essentially
-stable. \textbf{Aquaculture is the only one of the seven segments that gains suitable area}, as
-the thermal constraint relaxes. The method runs entirely in the cloud from public data, making it
-reproducible at low marginal cost for other Cerrado states.
+Goiás and the Federal District (about 346,000~km\textsuperscript{2} of the Cerrado biome)
+embody the central tension of land use in the tropics: expanding and intensifying production
+without compromising the ecosystems and water resources it depends on. This dissertation builds an
+\textbf{open multi-segment agricultural suitability atlas, with zoning and climate projection}, for
+GO and DF at 250~m resolution, covering seven segments: soybean, sugarcane, other annual crops, fish
+farming, livestock, conservation, and photovoltaic generation. Current suitability results from an
+FAO-style multicriteria evaluation (fuzzy membership and AHP weights); zoning, from unsupervised
+$k$-means clustering over a decorrelated representation of the variables; and the mid-century
+projection, from the change-factor method applied to five CMIP6 models. All processing runs on Google
+Earth Engine, from public data and \textbf{without exporting any external asset to the platform}, and
+the outputs are validated against current land use (MapBiomas) and a productivity indicator (MODIS
+MOD17). The territory splits into \textbf{four zones}: two with a defined vocation (the escarpment, for
+conservation, and the drained lowland, for fish farming) and two, covering 74\% of the area, in which
+the two best-placed segments are practically indistinguishable. Built solely from biophysical
+variables, the zones separate observed productivity sharply ($F = 1{,}417$ on the half of the territory
+reserved for validation), and the suitability surfaces reproduce the current geography of cropping
+(AUC of 0.864 for soybean and 0.906 for sugarcane, also out of sample). The gap between suitability and
+current use is large (44\% of the territory for other annual crops and 41\% for soybean), mostly on
+pastureland, which points to intensification rather than expansion onto native vegetation. Projected
+change is modest but consistent across models. It mainly affects \textbf{photovoltaic generation},
+which loses more than half of its suitable area under the hottest scenario, followed by conservation
+and the maize, cotton and sorghum group. The soybean and sugarcane plateaus remain stable, and
+\textbf{fish farming is the only segment that gains suitable area}, as the thermal constraint relaxes.
+The method can be reproduced in other Cerrado states at low marginal cost.
 
-\vspace{1em}
+\vspace{0.4em}
 \noindent\textbf{Keywords:} agricultural land suitability; land evaluation (FAO);
 analytic hierarchy process (AHP); agro-environmental zoning; Cerrado; Google Earth Engine;
 CMIP6 climate projection; multicriteria decision analysis.

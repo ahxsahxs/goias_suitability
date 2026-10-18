@@ -40,7 +40,13 @@
 %                               % DEFAULT: school=nova/fct
 \ntsetup{doctype=msc}
 \ntsetup{school=nova/ims}
-\ntsetup{docstatus=working}
+\ntsetup{docstatus=provisional}
+% school=nova/ims leaves \@DEGREEACR empty, so nova-ims-csig-defaults.ldf (which turns the
+% copyright page off) is never loaded; switch it off here.
+\ntsetup{print/copyright=false}
+% The acronym list is filled with \glsaddall (Config/5_packages.tex), not by \gls in the text,
+% so its page references would all read "p. 1".
+\ntsetup{gnumberlist=false}
 \ntsetup{lang=pt}
 % Course and specialization for IMS cover design.
 \newcommand{\imsDegree}{mcsig}        % mgi, megi, mdsaa, mddm, ...

@@ -3,108 +3,105 @@
 \section{Contexto e motivação}
 
 Goiás e o Distrito Federal (daqui em diante GO~e~DF) constituem uma das fronteiras agrícolas mais dinâmicas do Brasil:
-aproximadamente 340.000~km\textsuperscript{2} situados inteiramente no Cerrado, uma savana seca tropical
-que fornece grande parte da produção nacional de soja, milho, cana-de-açúcar e carne bovina. A região incorpora
-o desafio central do planejamento produtivo dos trópicos: a pressão para expandir e intensificar a produção,
+aproximadamente 346.000~km\textsuperscript{2} situados inteiramente no Cerrado, uma savana seca tropical
+que fornece grande parte da produção nacional de soja, milho, cana-de-açúcar e carne bovina. A região sintetiza
+o desafio central do planejamento produtivo nos trópicos: a pressão para expandir e intensificar a produção,
 contraposta à necessidade de preservar a vegetação nativa, os corpos d'água e os serviços ecossistêmicos
 dos quais essa produção depende \citep{spera_agricultural_2017,gomes_agricultural_2019}.
 
-O uso do território é alocado parcela a parcela, em geral mais motivado pelo preço das commodities e
-inércia histórica do que por uma avaliação sistemática e geográfica da capacidade biofísica.
-Ainda assim essa capacidade --- que se manifesta na forma do regime de chuvas, do ciclo da água, da
-composição dos solos e do relevo --- varia continuamente e restringe o que cada lugar pode
-suportar de forma sustentável. Duas outras pressões incidem sobre um método de decisão espacial. Primeiro,
-parcelas consideráveis do território estão possivelmente mal alocadas: subutilizadas em relação
-a suas capacidades, ou destinadas a uma finalidade que o ambiente local
-não sustenta de forma ótima. Em escala global, cerca de metade da terra agricolamente adequada está
-sob uso agropecuário, e na América do Sul só cerca de 23\% da terra potencialmente disponível para
-lavoura é cultivada \citep[pp.~3--4, 10]{schneider_global_2022}. Em segundo lugar, o clima regional já
+O território é alocado parcela a parcela, em geral mais em função do preço das \emph{commodities} e
+da inércia histórica do que de uma avaliação sistemática da capacidade biofísica.
+Ainda assim, essa capacidade, expressa no regime de chuvas, no ciclo da água, na
+composição dos solos e no relevo, varia continuamente e restringe o que cada lugar pode
+suportar de forma sustentável. Duas outras pressões reforçam a necessidade de um método de decisão
+espacial. Em primeiro lugar, parcelas consideráveis do território podem estar mal alocadas, seja por
+subutilização, seja por um uso que o ambiente local não sustenta da melhor forma. Em escala global,
+cerca de metade da terra com aptidão agrícola está sob uso agropecuário, e na América do Sul apenas
+cerca de 23\% da terra potencialmente disponível para lavoura é cultivada
+\citep[pp.~3--4, 10]{schneider_global_2022}. Em segundo lugar, o clima regional já
 está mudando: a transição entre a Amazônia oriental e o Cerrado registra as tendências de aquecimento e
-ressecamento mais intensas da América do Sul tropical desde 1981, com pressão sobre a fronteira agrícola
-\citep[pp.~1, 6]{marengo_increased_2022}. Projeções indicam que a viabilidade estabelecida sob o clima
-de hoje pode contrair ou migrar até meados do século \citep[p.~11]{souza_climate-driven_2026}, e esse
-deslocamento não precisa ser uniforme entre municípios e segmentos de uso da terra.
+ressecamento mais intensas da América do Sul tropical desde 1981. Essa tendência pressiona a fronteira
+agrícola \citep[pp.~1, 6]{marengo_increased_2022}. Projeções indicam que a aptidão estabelecida sob o clima
+de hoje pode se contrair ou se deslocar até meados do século \citep[p.~11]{souza_climate-driven_2026}, e esse
+deslocamento não é necessariamente uniforme entre municípios e segmentos de uso da terra.
 
-Esta dissertação trata destas questões através do desenvolvimento de um mapa de viabilidade agrícola
-e uma projeção climática para GO~e~DF. Com uma resolução de 250~m, é mapeado o potencial biofísico e climático
-das células de uma grade para sete segmentos de uso da terra, particionando o terreno em zonas agroambientais
-homogêneas e projetando como o potencial produtivo muda nas próximas décadas sob os cenários do CMIP6.
-CMIP6 (\textit{Sixth Coupled Model Intercomparison Project}) é o conjunto coordenado de experimentos com
-modelos climáticos globais que fundamenta as avaliações do IPCC (Painel Intergovernamental sobre Mudança do
-Clima). Os cenários SSP (\textit{Shared Socioeconomic Pathways}) combinam trajetórias socioeconômicas com
-trajetórias de emissões; adotam-se aqui um cenário moderado (SSP2-4.5) e um cenário de altas emissões
-(SSP5-8.5). Os sete segmentos escolhidos são: soja, cana-de-açúcar, outras culturas anuais (milho,
-algodão, sorgo), piscicultura (aquicultura de tanques e reservatórios), pecuária (gado de corte em pastagem
-cultivada), conservação de floresta e Cerrado, e geração fotovoltaica. Deste modo, o trabalho apresenta
-genuinamente uma análise comparativa multissegmentar, e não um estudo de nicho focado em uma única
-\emph{commodity}.
+Esta dissertação trata dessas questões por meio de um mapa de aptidão agrícola
+e de uma projeção climática para GO~e~DF. Em uma grade de 250~m, mapeia-se o potencial biofísico e
+climático de cada célula para sete segmentos de uso da terra. Em seguida, o território é particionado
+em zonas agroambientais homogêneas, e projeta-se como esse potencial muda nas próximas décadas sob os
+cenários do CMIP6. O CMIP6 (\textit{Coupled Model Intercomparison Project Phase~6}) é o conjunto coordenado
+de experimentos com modelos climáticos globais que fundamenta as avaliações do IPCC (Painel
+Intergovernamental sobre Mudança do Clima). Os cenários SSP (\textit{Shared Socioeconomic Pathways})
+combinam trajetórias socioeconômicas com trajetórias de emissões; adotam-se aqui um cenário moderado
+(SSP2-4.5) e um cenário de altas emissões (SSP5-8.5). Os sete segmentos escolhidos são: soja;
+cana-de-açúcar; outras culturas anuais (milho, algodão e sorgo); piscicultura (aquicultura em viveiros e
+reservatórios); pecuária (gado de corte em pastagem cultivada); conservação de floresta e Cerrado; e
+geração fotovoltaica. Dessa forma, o trabalho apresenta uma análise comparativa multissegmento, e não
+um estudo de nicho focado em uma única \emph{commodity}.
 
 \section{Definição do problema}
 
-O problema situa-se no cruzamento de quatro linhas de trabalho: o zoneamento institucional
+O problema se situa no cruzamento de quatro linhas de trabalho: o zoneamento institucional
 brasileiro, a avaliação de terras na tradição da FAO e sua operacionalização global, a análise
 multicritério em SIG e a modelagem orientada a dados. O Capítulo~\ref{ch:sota} revisa essas linhas
-e localiza, em \S\ref{sec:sota-lacuna}, a lacuna que esta dissertação ocupa.
+e localiza, na Seção~\ref{sec:sota-lacuna}, a lacuna que esta dissertação ocupa.
 
-
-O enquadramento é deliberadamente restrito. O modelo caracteriza o potencial \emph{biofísico e
-agroclimático} apenas: ele não representa a economia do uso da terra, que envolve preços, posse
-da terra, acesso a crédito, logística e acessibilidade de mercado. O ``potencial''
-é fundamentado, e não simplesmente postulado: é validado contra o uso atual da terra e um indicador
-independente de produtividade, e toda superfície primária é acompanhada de uma medida quantificada de
-incerteza.
+O enquadramento é deliberadamente restrito. O modelo caracteriza apenas o potencial \emph{biofísico e
+agroclimático}: ele não representa a economia do uso da terra, que envolve preços, posse
+da terra, acesso a crédito, logística e acesso a mercados. O potencial modelado não é apenas
+postulado: ele é comparado com o uso atual da terra e com um indicador independente de produtividade,
+e cada superfície de aptidão é acompanhada de uma medida quantificada de incerteza.
 
 \section{Questões de pesquisa}
 
-O trabalho é organizado ao redor de três questões de pesquisa --- as duas primeiras sendo primárias e
-a terceira uma extensão voltada ao futuro.
+O trabalho é organizado em torno de três questões de pesquisa: as duas primeiras são centrais, e
+a terceira é uma extensão voltada ao futuro.
 
 \begin{itemize}
-  \item \textbf{QP1 --- Viabilidade e segmentação.} Como GO~e~DF podem ser particionados em regiões
-    agroambientais homogêneas, e qual é o perfil de potencial produtivo através dos sete segmentos?
-  \item \textbf{QP2 --- Potencial versus uso atual.} Onde o uso atual da terra diverge do potencial modelado? Isto é, onde a terra está sendo subutilizada ou seu
-    uso não corresponde ao segmento de melhor ajuste?
-  \item \textbf{QP3 --- Projeção.} Sob CMIP6 SSP2-4.5 e SSP5-8.5, como a viabilidade por segmento
-    e o mapa de zonas mudam ao longo de 2031--2050 e 2051--2070 --- quais segmentos e municípios
-    ganham ou perdem, e onde ocorre realocação entre segmentos?
+  \item \textbf{QP1: Aptidão e segmentação.} Como GO~e~DF podem ser particionados em regiões
+    agroambientais homogêneas, e qual é o perfil de potencial produtivo de cada região nos sete segmentos?
+  \item \textbf{QP2: Potencial \emph{versus} uso atual.} Onde o uso atual da terra diverge do potencial
+    modelado? Isto é, onde a terra está sendo subutilizada ou seu uso não corresponde ao segmento mais apto?
+  \item \textbf{QP3: Projeção.} Sob os cenários SSP2-4.5 e SSP5-8.5 do CMIP6, como a aptidão por segmento
+    e o mapa de zonas mudam nos períodos 2031--2050 e 2051--2070? Quais segmentos e municípios
+    ganham ou perdem aptidão, e onde ocorre realocação entre segmentos?
 \end{itemize}
 
 \section{Prévia dos resultados}
 
-A análise cobre as três questões. \textbf{QP1:} um agrupamento não supervisionado separa
-GO~e~DF em quatro zonas agroambientais, cada uma reportada com a sua vocação comparativa
-primária, a secundária e a margem entre as duas --- um planalto de cultivo alto e argiloso
-(outras culturas anuais / cana-de-açúcar), uma escarpa íngreme cujo melhor uso é a conservação
-também em termos absolutos, uma baixada drenada (piscicultura / soja) e uma baixada quente e
-arenosa (geração fotovoltaica / pecuária). Em duas
-dessas zonas a margem é ampla e o rótulo primário descreve a zona; nas outras duas, que somam
-74\% do território, os dois primeiros segmentos são praticamente indistinguíveis e o par é a
-leitura correta.
+A análise cobre as três questões. \textbf{QP1:} um agrupamento não supervisionado divide
+GO~e~DF em quatro zonas agroambientais, cada uma descrita com sua vocação comparativa
+primária, a secundária e a margem entre as duas. São elas: um planalto alto e argiloso, de uso agrícola
+(outras culturas anuais e cana-de-açúcar); uma escarpa íngreme, onde a conservação é o melhor uso não só
+em termos relativos, mas também absolutos; uma baixada drenada (piscicultura e soja); e uma baixada quente
+e arenosa (geração fotovoltaica e pecuária). Em duas dessas zonas, a margem é ampla e o rótulo primário
+descreve a zona. Nas outras duas, que somam 74\% do território, os dois primeiros segmentos são
+praticamente indistinguíveis, e a zona deve ser lida pelo par, e não pelo rótulo primário.
 
 \textbf{QP2:} as zonas, construídas apenas com variáveis biofísicas, separam fortemente a
-produtividade observada e acompanham a geografia atual do uso. Persiste, ainda assim, um hiato
-relevante entre potencial e uso atual: cerca de 41,5\% do território é viável para soja mas ainda
-não cultivado com ela --- e 44,3\% o é para as outras culturas anuais, a maior das quatro lacunas
-computadas ---, majoritariamente sobre pastagem, o que aponta para intensificação e não para
-abertura de novas áreas. \textbf{QP3:} a mudança em direção a meados do século é modesta em
-magnitude, mas direcionalmente robusta em todo o conjunto de modelos. Três segmentos estão
-expostos: a geração fotovoltaica mais do que os demais, com sua área viável (classes S1--S2)
-caindo a menos da metade no cenário mais quente por perda de desempenho térmico do painel;
-seguida da conservação e do grupo milho--algodão--sorgo. A soja e a cana-de-açúcar
-permanecem essencialmente inalteradas, e a piscicultura é o único segmento que \emph{ganha} área
-viável.
+produtividade observada e acompanham a geografia atual do uso. Ainda assim, persiste um hiato
+relevante entre potencial e uso atual: cerca de 41,5\% do território é apto à soja, mas ainda
+não é cultivado com ela. Para as outras culturas anuais, a proporção é de 44,3\%, a maior entre os
+quatro segmentos para os quais essa lacuna é calculada. Em ambos os casos, a lacuna recai
+majoritariamente sobre pastagem, o que aponta para intensificação, e não para abertura de novas áreas.
+\textbf{QP3:} a mudança até meados do século é modesta em magnitude, mas tem sinal consistente
+entre os modelos do conjunto. Três segmentos estão expostos. A geração fotovoltaica é a mais afetada:
+sua área apta (classes S1--S2) cai para menos da metade no cenário mais quente, por perda de desempenho
+térmico dos painéis. Seguem-se a conservação e o grupo de milho, algodão e sorgo. A soja e a
+cana-de-açúcar permanecem essencialmente inalteradas, e a piscicultura é o único segmento que
+\emph{ganha} área apta.
 
 \section{Escopo e delimitação}
 
-O estudo é delimitado da seguinte forma, e estes limites são restrições declaradas, em vez de pressupostos ocultos.
+Os limites do estudo são os seguintes, declarados explicitamente para que não funcionem como pressupostos ocultos.
 
 \begin{itemize}
-  \item \textbf{Espacial.} Goiás e Distrito Federal apenas; a análise é feita em uma grade de 250~m no sistema EPSG:4326.
+  \item \textbf{Espacial.} Apenas Goiás e o Distrito Federal; a análise é feita em uma grade de 250~m no sistema EPSG:4326.
   \item \textbf{Temática.} Sete segmentos produtivos, com o potencial expresso por indicadores
-    biofísicos e agroclimáticos; não é uma análise econômica do uso da terra, e nenhuma variável
-    derivada do uso ou da infraestrutura existentes entra em fator de viabilidade.
-  \item \textbf{Temporal.} Normal climatológica atual cobrindo 1991--2020; janelas futuras do CMIP6 para 2031--2050
-    e 2051--2070 sob os cenários SSP2-4.5 e SSP5-8.5.
+    biofísicos e agroclimáticos. Não se trata de uma análise econômica do uso da terra, e nenhuma variável
+    derivada do uso ou da infraestrutura existentes entra como fator de aptidão.
+  \item \textbf{Temporal.} Normal climatológica de 1991--2020; janelas futuras do CMIP6 em 2031--2050
+    e 2051--2070, sob os cenários SSP2-4.5 e SSP5-8.5.
   \item \textbf{Dados.} Exclusivamente produtos públicos de satélite, reanálise, projeção climática e mapas administrativos.
 \end{itemize}
 
@@ -113,7 +110,7 @@ O estudo é delimitado da seguinte forma, e estes limites são restrições decl
 As três questões acima são respondidas no Capítulo~\ref{ch:results}. Antes dele, o
 \textbf{Capítulo~\ref{ch:sota}} revisa as quatro linhas de trabalho em que o problema se situa e
 encerra com a lacuna de pesquisa; o \textbf{Capítulo~\ref{ch:materials}} reúne os materiais; e o
-\textbf{Capítulo~\ref{ch:method}} formaliza o procedimento, cada etapa com as suas equações
-governantes. O \textbf{Capítulo~\ref{ch:discussion}} interpreta os resultados, expõe limitações e
+\textbf{Capítulo~\ref{ch:method}} formaliza o procedimento, cada etapa com as equações que a regem.
+O \textbf{Capítulo~\ref{ch:discussion}} interpreta os resultados, expõe as limitações e
 indica a direção de trabalhos futuros. Tabelas de referência, fórmulas de derivação dos preditores
-e figuras de diagnóstico são compiladas nos \textbf{Anexos}.
+e figuras de diagnóstico estão reunidas nos \textbf{Anexos}.

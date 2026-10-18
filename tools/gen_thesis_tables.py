@@ -47,10 +47,11 @@ SEG_PT = {
     "conservation": "Conservação",
     "solar": "Geração fotovoltaica",
 }
-SEG_SHORT = {                      # for the narrow "melhor comparativo" row
-    "soybean": "soja", "sugarcane": "cana", "other_crops": "outras",
-    "pisciculture": "pisc.", "cattle": "pecuária", "conservation": "consv.",
-    "solar": "solar",
+SEG_SHORT = {                      # for the narrow "melhor comparativo" row:
+    # whole words, no ad-hoc abbreviations the reader would have to decode
+    "soybean": "soja", "sugarcane": "cana", "other_crops": "outras anuais",
+    "pisciculture": "piscicultura", "cattle": "pecuária",
+    "conservation": "conservação", "solar": "fotovoltaica",
 }
 FACTOR_PT = {
     "clim_aridity": "Índice de aridez (P/ETP)",
@@ -65,14 +66,14 @@ FACTOR_PT = {
     "cv_pa_dist": "Distância a área protegida (m)",
     "cv_ruggedness": "Rugosidade do terreno (m)",
     "rl_native_frac": "Fração de vegetação nativa",
-    "sit_clearness": "Índice de claridade (cobertura de nuvens)",
+    "sit_clearness": "Índice de claridade",
     "sit_water_dist_seas": "Distância à água sazonal (m)",
     "soil_awc": "Teor de água disponível para as plantas",
     "soil_clay": "Teor de argila (\\%)",
     "soil_ph": "pH do solo",
     "soil_soc": "Carbono orgânico do solo (g/kg)",
     "terr_northing": "Componente norte da orientação",
-    "terr_slope": "Declive ($^\\circ$)",
+    "terr_slope": "Declividade ($^\\circ$)",
     "terr_twi": "Índice de umidade topográfica",
     "water_drain_density": "Densidade de drenagem",
 }
@@ -86,7 +87,7 @@ DAGGER = {("conservation", "clim_aridity"), ("conservation", "clim_twarm_q")}
 # tab:zone-means rows: (zone_profiles.csv column, PT label, decimals)
 BIOPHYS = [
     ("terr_elev", "Elevação (m)", 0),
-    ("terr_slope", "Declive ($^\\circ$)", 1),
+    ("terr_slope", "Declividade ($^\\circ$)", 1),
     ("terr_twi", "Índice de umidade topográfica", 1),
     ("clim_twarm_q", "Temp. do trimestre mais quente ($^\\circ$C)", 1),
     ("clim_aridity", "Índice de aridez (P/ETP)", 2),
@@ -141,7 +142,29 @@ def signed(v, dec=3):
     """Aligned +/- for delta columns, as the thesis writes them."""
     if v is None or (isinstance(v, float) and pd.isna(v)):
         return "---"
+    if round(abs(v), dec) == 0:              # no "+0,000" / "-0,000"
+        return num(0.0, dec)
     return ("$+$" if v >= 0 else "$-$") + num(abs(v), dec)
+
+
+def thresholds(pts):
+    """Breakpoints as "4,5; 5,5; 6,8; 7,5".
+
+    Joined by semicolons because the decimal separator is a comma ("4,5, 5,5" is
+    unreadable); one precision per row, the smallest that shows every value; a
+    true minus sign; thousands separators on the integers ("2.500").
+    """
+    def need(v):
+        for d in (0, 1, 2):
+            if abs(round(v, d) - v) < 1e-9:
+                return d
+        return 2
+    dec = max(need(float(v)) for v in pts)
+    out = []
+    for v in pts:
+        t = num(abs(float(v)), dec)
+        out.append(("$-$" if float(v) < 0 else "") + t)
+    return "; ".join(out)
 
 
 def tabular(colspec, header, rows, *, midrules=(), tophead=None):
@@ -397,19 +420,18 @@ def ahp_weights():
             _w=[w.get((seg, f), float("nan")) for f in sub.factor],
         ).sort_values("_w", ascending=False)
         spec = seg_cfg.get(seg, {})
-        mask_pt = MASK_PT.get(spec.get("mask", "available"), spec.get("mask"))
-        if spec.get("aggregate") == "arithmetic":
-            mask_pt += "; compensatória"      # the one non-geometric segment
+        # mask_pt = MASK_PT.get(spec.get("mask", "available"), spec.get("mask"))
+        # if spec.get("aggregate") == "arithmetic":
+        #     mask_pt += "; compensatória"      # the one non-geometric segment
         first = True
         for _, r in sub.iterrows():
             name = FACTOR_PT.get(r.factor, r.factor.replace("_", "\\_"))
             if (seg, r.factor) in DAGGER:
                 name += " $\\dagger$"      # the prose after the table explains these
             pts = ast.literal_eval(r.points_adotados)
-            thresh = ", ".join(num(v, 2).rstrip("0").rstrip(",") if isinstance(v, float)
-                               else str(v) for v in pts)
+            thresh = thresholds(pts)
             weight = num(r._w, 2)
-            head = f"\\textbf{{{SEG_PT[seg]}}} ({mask_pt})" if first else ""
+            head = f"\\textbf{{{SEG_PT[seg]}}}" if first else ""
             first = False
             lines.append([head, name, weight, SHAPE_PT.get(r.type, r.type), thresh])
     # Body rows only: the target is a longtable that must break across pages, so
@@ -510,15 +532,18 @@ def presence_auc():
                          signed(gap, 3),
                          num(None if boy is None else boy.loc[s].get("calib"), 3),
                          num(None if boy is None else boy.loc[s].get("val"), 3),
-                         npres.get(s, "---")])
+                         num(int(npres[s]), 0) if s in npres else "---"])
         else:
             rows.append([SEG_PT[s], num(auc.loc[s].get("full"), 3),
                          num(None if boy is None else boy.loc[s].get("full"), 3)])
     if holdout:
+        # Two-level header: the flat one ("AUC calib.", ..., "Presenças (valid.)")
+        # ran past \\textwidth.
         write("presence_auc.tex", tabular(
             "lrrrrrr",
-            ["Segmento", "AUC calib.", "AUC valid.", "$\\Delta$",
-             "Boyce calib.", "Boyce valid.", "Presenças (valid.)"], rows))
+            ["Segmento", "calib.", "valid.", "$\\Delta$",
+             "calib.", "valid.", "(valid.)"], rows,
+            tophead=[("", 1), ("AUC", 3), ("Índice de Boyce", 2), ("Presenças", 1)]))
     else:
         write("presence_auc.tex", tabular(
             "lrr", ["Segmento", "AUC", "Índice de Boyce"], rows))
@@ -569,7 +594,8 @@ def variograma():
              .sort_values(["crop", "framing", "window_km"]))
     framing_pt = {"suit": "superfície ajustada", "pres": "presença",
                   "resid": "resíduo"}
-    crop_pt = {"soybean": "Soja", "sugarcane": "Cana", "other_crops": "Outras c."}
+    crop_pt = {"soybean": "Soja", "sugarcane": "Cana-de-açúcar",
+               "other_crops": "Outras culturas anuais"}
     rows, seen = [], None
     for r in one.itertuples():
         rng = ("---" if pd.isna(r.range_km) else num(r.range_km, 0))
@@ -592,7 +618,7 @@ def variograma():
 def split_balance():
     """tab:split-balance -- realized-role pixel counts per half of the holdout."""
     b = read_csv("split_balance.csv")
-    role_pt = {0: "Outros / sem classe", 1: "Soja", 2: "Cana-de-açúcar",
+    role_pt = {0: "Outros/sem classe", 1: "Soja", 2: "Cana-de-açúcar",
                3: "Outras culturas anuais", 4: "Piscicultura",
                5: "Pastagem", 6: "Vegetação nativa"}
     piv = b.pivot_table(index="rl_role", columns="half", values="n_pixels",
@@ -621,7 +647,10 @@ def realized_composition():
     cannot drift apart.
     """
     c = read_csv("realized_composition.csv").set_index("band")["share_pct"]
-    rows = [[lab, num(c[col], 1) + "\\%"] for col, lab in COMPOSITION if col in c.index]
+    # A share that rounds to 0,0% (aquaculture, ~0,0006%) is printed as "< 0,1%":
+    # the prose says the class is measured, and "0,0%" reads as absent.
+    rows = [[lab, (num(c[col], 1) + "\\%") if c[col] >= 0.05 else "$<$~0,1\\%"]
+            for col, lab in COMPOSITION if col in c.index]
     total = sum(c[col] for col, _ in COMPOSITION if col in c.index)
     # The five rl_*_frac bands do not exhaust the territory; the remainder is the
     # classes MapBiomas carries but this study never models (urban, mining, water,
@@ -648,7 +677,7 @@ def pot_real_gap():
     rows = [[SEG_PT.get(r.segment, r.segment), num(r.area_km2, 0),
              num(r.share_pct, 1) + "\\%"] for r in g.itertuples()]
     write("pot_real_gap.tex", tabular(
-        "lrr", ["Segmento", "Área (km²)", "Parcela do território"], rows))
+        "lrr", ["Segmento", "Área (km\\textsuperscript{2})", "Parcela do território"], rows))
 
 
 def municipal_rank():

@@ -20,7 +20,7 @@
 %-------------------------------------------------------------------
 %         You may use "\\" to force line breaks
 \nttitle(main,en){Agricultural Suitability and\\Climate Projection for the Goiás Cerrado}%
-\nttitle(main,pt){Viabilidade Agrícola e Projeção\\Climática do Cerrado Goiano}%
+\nttitle(main,pt){Aptidão Agrícola e Projeção\\Climática do Cerrado Goiano}%
 
 %         You may use "\\" to force line breaks
 % No subtitle in the source thesis -- left disabled
@@ -56,6 +56,14 @@
 %-------------------------------------------------------------------
 \ntdegreename*(pt){Ciência e Sistemas de Informação Geográfica}
 \ntdegreename*(en){Geographic Information Systems and Science}
+% The IMS front page (cover 2-1) prints \themajorfield(\@DEGREEACR,<lang>),
+% but school=nova/ims leaves \@DEGREEACR empty, so the majorfield(<lang>) keys
+% set above are never found and it printed "Mestre em ,". Define the exact key
+% it looks up. No \makeatletter/\makeatother: this file is read inside the
+% class, where @ is already a letter, and \makeatother would break the rest
+% of the class. school/imsDegree stay untouched (the cover depends on them).
+\majorfield(\@DEGREEACR,pt):={Ciência e Sistemas de Informação Geográfica}
+\majorfield(\@DEGREEACR,en):={Geographic Information Systems and Science}
 
 %-------------------------------------------------------------------
 % DEGREE SPECIALIZATION customization
@@ -93,7 +101,7 @@
 % AUTHOR previous degree
 % SYNTAX: \ntauthordegree{degree}
 %-------------------------------------------------------------------
-\ntauthordegree(en){Master/BSc in Name of Previous Degree}
+\ntauthordegree(en){BSc in Statistics}
 \ntauthordegree(pt){Bacharelado em Estatística}
 
 %-------------------------------------------------------------------
@@ -103,8 +111,8 @@
 %                   name in the cover language.
 %-------------------------------------------------------------------
 %Replay with your submission and exam dates in format YYYY-MM-DD
-\ntdate(submission){2026-9-12}
-\ntdate(exam){2026-9-12}
+\ntdate(submission){2026-10-31}
+\ntdate(exam){2026-10-31}
 
 %-------------------------------------------------------------------
 % ADVISERS LIST

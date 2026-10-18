@@ -27,7 +27,7 @@
 % File with the dedicatory text. Will only be considered for final documents,
 %   i.e., "bsc", "msc" and "phd", otherwise, it will be silently ignored
 %   syntax: \ntaddfile{dedicatory}{filename}
-\ntaddfile{dedicatory}{dedicatory}
+% \ntaddfile{dedicatory}{dedicatory}   % not in the NOVA IMS/CSIG front matter
 
 %%------------------------------------------------------------
 % File with the acknowledgments text. Will only be considered for final documents,
@@ -39,7 +39,11 @@
 % File with the quote text. Will only be considered for final documents,
 %   i.e., "bsc", "msc" and "phd", otherwise, it will be silently ignored
 %   syntax: \ntaddfile{quote}{filename}
-\ntaddfile{quote}{quote}
+% \ntaddfile{quote}{quote}             % not in the NOVA IMS/CSIG front matter
+
+% Statement of integrity. Replaces NOVAthesisFiles/Schools/nova/ims/nova-ims-pt-statement.tex,
+% whose date branch reads \thentdocdate((exam),year) and prints "0,day) de ,month)name".
+\ntaddfile{statement}{./Chapters/statement}
 
 %%------------------------------------------------------------
 % Abstract files in multiple languages
@@ -58,7 +62,7 @@
 %   syntax: \ntaddfile{glossaries}[list-type]{filename}
 \ntaddfile{glossaries}[glossary]{glossary}
 \ntaddfile{glossaries}[acronym]{acronyms}
-\ntaddfile{glossaries}[symbols]{symbols}
+% \ntaddfile{glossaries}[symbols]{symbols}  % template sample entries only
 % \ntaddfile{glossaries}[symbols]{chemical}
 
 %%------------------------------------------------------------

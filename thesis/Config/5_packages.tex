@@ -12,7 +12,7 @@
 %%============================================================
 %%  FOR DEMO PURPOSES ONLY --- YOU SHOULD REMOVE THESE PACKAGES
 %%============================================================
-\usepackage{float}        % FOR DEMO PURPOSES ONLY --- PLEASE REMOVE
+\usepackage{float}        % [H] specifier (kept for compatibility; the chapters use [htbp])
 \usepackage{wrapfig}      % FOR DEMO PURPOSES ONLY --- PLEASE REMOVE
 % \restylefloat{figure}     % DISABLED: redefines figure-caption internals (@fs@capt) in a way
                              % that conflicts with rotating's \sidewaysfigure (Undefined control
@@ -110,7 +110,24 @@
 \makeatletter
 \AtBeginDocument{%
   \linespread{1.15}\selectfont % aplica 1,15 de forma estável
+  % memoir defaults to \flushbottom (twoside), which stretches paragraph and
+  % float glue on every page to reach the bottom margin -- the source of the
+  % large, uneven gaps between paragraphs, figures and tables.
+  \raggedbottom
 }
+% Floats never drift past the end of their own section; above/below let them
+% share the page where the next section starts, so a tall float does not leave
+% the rest of the page empty (e.g. the chapter-opening page of ch. 4).
+\usepackage[section,above,below]{placeins}
+% Longtable captions as wide as the text, like every other caption.
+\setlength{\LTcapwidth}{\textwidth}
+% Float-only pages start at the top instead of being centred vertically (the
+% LaTeX default), which left large gaps above and below annex tables/figures.
+\makeatletter
+\setlength{\@fptop}{0pt}
+\setlength{\@fpsep}{\floatsep}
+\setlength{\@fpbot}{0pt plus 1fil}
+\makeatother
 \makeatother
 
 % ================== NOVA IMS — Tamanhos dos títulos ==================
@@ -174,3 +191,43 @@
 \usepackage{tikz}
 \usetikzlibrary{positioning, shapes.geometric, fit, calc, arrows}
 % ====================================================
+
+% ===== Títulos das listas em PT-BR =====
+% babel "portuguese" e o fix-babel do NOVAthesis usam a forma europeia
+% (Índice, Índice de Figuras, Bibliografia). Sobrescreve só os títulos, sem
+% mudar lang=pt (que comanda a escolha da capa da NOVA IMS).
+% fix-babel.tex registers these as option values that an \AtEndPreamble loop
+% copies into \captionsportuguese, so the values are overridden at the source.
+\options{/novathesis/babel/pt/contentsname = Sumário}
+\options{/novathesis/babel/pt/listfigurename = Lista de Figuras}
+\options{/novathesis/babel/pt/listtablename = Lista de Tabelas}
+\AtEndPreamble{%
+  \DefineBibliographyStrings{portuguese}{%
+    bibliography = {Referências},
+    references   = {Referências},
+  }%
+}
+
+% ===== Lista de siglas =====
+% glossaries só imprime entradas referenciadas com \gls{}, e o texto escreve as
+% siglas por extenso; sem isto a "Lista de Siglas e Abreviaturas" sai vazia.
+% \AtBeginDocument: as entradas de Chapters/acronyms.tex só existem depois do preâmbulo.
+\AtBeginDocument{\glsaddall[types={\acronymtype}]}
+
+% ===== Folha de rosto dos anexos =====
+% \ntprintannexes só acrescenta "Anexos" ao sumário; não há página que marque o
+% início do pós-texto. A divisória carrega a entrada do sumário (com número de
+% página e link, que o \addappheadtotoc da classe deixa vazios).
+\newcommand*{\ntannexdivider}{%
+  \clearforchapter
+  \thispagestyle{empty}%
+  \phantomsection\addcontentsline{toc}{chapter}{\appendixtocname}%
+  \vspace*{\fill}%
+  \begin{center}
+    {\Huge\bfseries\appendixtocname\par}%
+  \end{center}
+  \vspace*{\fill}%
+  \clearforchapter
+}
+\patchcmd{\ntprintannexes}{\annex\addappheadtotoc}{\annex\ntannexdivider}{}%
+  {\PackageWarningNoLine{5_packages}{could not add the annex divider page}}
