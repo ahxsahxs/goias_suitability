@@ -3,7 +3,7 @@
 Tables 4.3 (ΔS territory means), 4.4 (S1+S2 shares present→future), 4.5 (per-zone
 ΔS for crops), 4.6 (FAO-downgrade shares), 4.7 (other_crops transition matrix).
 
-Baseline rule (CLAUDE.md §11): the present used for shares/transitions is the
+Baseline rule (CLAUDE.md): the present used for shares/transitions is the
 **rederived** present = suit_future − delta (self-consistent per combo), NOT the
 suit_present asset — so the export-reprojection offset cancels. ΔS means come
 straight from the delta_* assets. Per-block try/except; tileScale; one reduceRegion

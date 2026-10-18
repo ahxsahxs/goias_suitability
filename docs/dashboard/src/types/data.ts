@@ -32,7 +32,7 @@ export interface AggregationConfig {
 export type MembershipType = 'increasing' | 'decreasing' | 'range'
 /**
  * Every factor is `limiting`: it enters the weighted aggregation and carries a
- * derived weight (`role: gate` was retired on 2026-10-02 — CLAUDE.md §11). A
+ * derived weight (`role: gate` was retired on 2026-10-02 — CLAUDE.md). A
  * factor may omit `role`; it is limiting either way. Factors that are spatially
  * constant today are handled by measuring sigma(mu) over the present pooled with
  * the CMIP6 horizon; some still land at weight exactly 0.
@@ -150,7 +150,7 @@ export interface ZoneProfileRow {
    * Row count of the STRATIFIED sample behind this zone -- NOT an area share.
    * Dividing it by the column total understates zone 1 by 8.5 points and
    * overstates zone 3 by 7.5. Territory shares come from ZoneAreaRow
-   * (csv/zone_area.csv, a pixelArea() group reduce). See CLAUDE.md §9.
+   * (csv/zone_area.csv, a pixelArea() group reduce). See CLAUDE.md.
    */
   n: number
   comparative_segment: string
@@ -183,7 +183,7 @@ export interface ZoneProfileRow {
 // --- csv/zone_area.csv ----------------------------------------------------------
 // The ONLY source for "how big is zone N": a pixelArea() group reduce written by
 // tools/extract_present.zone_shares. zone_profiles.csv's `n` is a sample count and
-// must never stand in for it (CLAUDE.md §9).
+// must never stand in for it (CLAUDE.md).
 export interface ZoneAreaRow {
   zone: number
   area_km2: number
@@ -199,7 +199,7 @@ export interface ZoneAreaRow {
 //     ari_holdout compares the calibration-fitted partition of that half against
 //     one fitted independently on it. The adopted k rests on these.
 // No fallback to the pre-holdout names: a CSV without the held-out columns is a
-// wrong table, not a missing one (CLAUDE.md §11), and the view refuses it.
+// wrong table, not a missing one (CLAUDE.md), and the view refuses it.
 export interface ZoningKselectRow {
   k: number
   inertia: number
@@ -359,7 +359,7 @@ export interface RfKappa {
 }
 export interface ValidationScorecard {
   /** Which half of the spatial holdout these metrics were scored on. `"val"` is
-   *  the held-out half the thesis quotes; see CLAUDE.md §7. */
+   *  the held-out half the thesis quotes; see CLAUDE.md. */
   half: string
   presence_auc_boyce: Record<string, PresenceAucBoyceRow>
   spearman_npp: Record<string, number>

@@ -1,4 +1,4 @@
-"""Generate thesis/Bibliography/bibliography.bib from the Zotero export (CLAUDE.md §12).
+"""Generate thesis/Bibliography/bibliography.bib from the Zotero export (CLAUDE.md).
 
 Zotero is the source of truth for the bibliography. Its BibLaTeX export
 (thesis/Bibliography/zotero_bibliography.bib) and attachment folder
@@ -43,7 +43,7 @@ KEY_OVERRIDES = {"Saaty1980": "saaty_analytic_1987"}
 HEADER = """\
 % bibliography.bib -- GERADO por tools/sync_zotero_bib.py a partir do export do
 % Zotero (thesis/Bibliography/zotero_bibliography.bib). NAO EDITAR A MAO: corrigir
-% ou acrescentar fontes no Zotero, reexportar e rodar o script (CLAUDE.md §12).
+% ou acrescentar fontes no Zotero, reexportar e rodar o script (CLAUDE.md).
 
 """
 

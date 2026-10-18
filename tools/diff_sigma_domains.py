@@ -12,7 +12,7 @@ sigma(mu) can only SHRINK on half the territory, and under the weighted geometri
 mean a weight of exactly zero removes a factor from the product entirely -- taking
 its CMIP6 lever with it. That is the failure the `sigma_mu_horizon` pooling was
 introduced to prevent (it replaced the `role: gate` category on 2026-10-02), and
-CLAUDE.md S11 treats it as a hard rule. Five factors already sit at w = 0 because
+CLAUDE.md treats it as a hard rule. Five factors already sit at w = 0 because
 their mu is identically 1 in both the present and the SSP5-8.5 horizon; halving the
 measurement domain must not add more.
 

@@ -13,7 +13,7 @@ Band sets that differ are reported too -- a band appearing or disappearing is
 itself a regression.
 
 Known non-bug: terr_tpi differs in ~0.1% of pixels between any two full exports
-(tile-edge noise in focalMean/reproject, CLAUDE.md S11). --eps is compared against
+(tile-edge noise in focalMean/reproject, CLAUDE.md). --eps is compared against
 the max |delta|, so a genuine catalog shift still shows up.
 
 Run::

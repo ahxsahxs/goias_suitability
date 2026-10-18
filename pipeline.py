@@ -8,7 +8,7 @@ Order for a NEW territory (edit config/territory.yaml first; see README.md):
     mesh                                    IBGE zips -> municipal mesh (local)
     build --until realized                  Parts 1-8 + MapBiomas realized use
     build --until suit                      provisional suitability (current weights)
-    split                                   50/50 spatial holdout (Gate 0)
+    split --new                             draw the 50/50 spatial holdout (Gate 0)
     horizon                                 cache the CMIP6 horizon climate
     calibrate breakpoints                   percentiles -> PROPOSED breakpoint edits
         (apply the printed edits to config/segments.yaml by hand)
@@ -69,7 +69,8 @@ def cmd_build(a):
 
 
 def cmd_split(a):
-    run("make_calib_val_split.py", *(["--check-only"] if a.check else []))
+    run("make_calib_val_split.py", "--check-only" if a.check else "--new" if a.new
+        else "--from-csv")
 
 
 def cmd_horizon(a):
@@ -147,8 +148,11 @@ def main():
     b.add_argument("--force", help="comma list of assets to rebuild "
                                    "(shorthands: suit, zones; or 'all')")
     b.add_argument("--k", type=int, help="pin the number of zones")
-    s = sub.add_parser("split", help="build the calib/val holdout (or --check it)")
-    s.add_argument("--check", action="store_true", help="audit only, export nothing")
+    s = sub.add_parser("split", help="export the calib/val holdout from the committed "
+                                    "blocks CSV (--new: draw one; --check: audit)")
+    g = s.add_mutually_exclusive_group()
+    g.add_argument("--new", action="store_true", help="draw a NEW split (new territory)")
+    g.add_argument("--check", action="store_true", help="audit only, export nothing")
     sub.add_parser("horizon", help="cache the CMIP6 horizon climate asset")
     c = sub.add_parser("calibrate", help="re-anchor breakpoints / derive AHP weights")
     c.add_argument("step", choices=["breakpoints", "weights"])

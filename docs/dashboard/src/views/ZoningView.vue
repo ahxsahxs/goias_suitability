@@ -39,7 +39,7 @@ const pairedZones = computed(() => zones.value.filter((z) => z.paired).map((z) =
 
 // --- k selection (zoning_kselect.csv, held-out columns only) -----------------------
 // No fallback to pre-holdout column names: a CSV without them is a WRONG table, not a
-// missing one (CLAUDE.md §11), so the chart refuses instead of plotting in-sample values.
+// missing one (CLAUDE.md), so the chart refuses instead of plotting in-sample values.
 const { data: kselect } = useCsv<ZoningKselectRow>('csv/zoning_kselect.csv')
 const kselectValid = computed(() => (kselect.value ?? []).every((r) => Number.isFinite(r.ari_holdout)))
 const kRows = computed(() => (kselectValid.value ? kselect.value ?? [] : []))

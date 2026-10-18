@@ -60,7 +60,7 @@ def block(name, fn):
 def zone_shares():
     """Zone area shares via pixelArea(), written to zone_area.csv.
 
-    CLAUDE.md §7: areas come from ee.Image.pixelArea(), never from a pixel count.
+    CLAUDE.md: areas come from ee.Image.pixelArea(), never from a pixel count.
     A frequencyHistogram counts pixels, which is neither equal-area under
     EPSG:4326 nor stable across reduction scales. zone_profiles.csv's `n` is a
     *sample* count and is not an area share either (it differs by ~6 points on

@@ -40,7 +40,7 @@ adaptation rule needs.
 
 It NEVER writes an Earth Engine asset. The realized masks only *report*; ``d`` is
 taken from the `available` population alone, so land use never enters the
-calibration (CLAUDE.md section 7).
+calibration (CLAUDE.md).
 
 The horizon half of ``discrimination`` is the one expensive part: a live 5-GCM x
 20-yr monthly ensemble can stall an interactive reduceRegion (CLAUDE.md section
@@ -363,7 +363,7 @@ def discrimination():
             sd_a, mn_a = _mem_stats(M, aoi, avail_h, scale)
             sd_f, mn_f = _mem_stats(Mf, aoi, avail_h, scale)
             # The realized column only ever REPORTS (land use must not enter the
-            # calibration, CLAUDE.md S7), but it is restricted too so the thesis
+            # calibration, CLAUDE.md), but it is restricted too so the thesis
             # can cite a realized-niche percentile measured on the same half.
             sd_r = (_mem_stats(M, aoi, utils.and_split(role.eq(code), project, half),
                                scale)[0] if code else {})

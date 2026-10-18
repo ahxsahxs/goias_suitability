@@ -1,4 +1,4 @@
-"""Build (or audit) the calibration/validation 50/50 spatial split for GO+DF.
+"""Build (or audit) the calibration/validation 50/50 spatial split of the territory.
 
 Strategy: build an N_SIDE x N_SIDE coarse grid over the AOI bounding box (default
 6, i.e. ~130 km blocks -- sized from the MEASURED residual autocorrelation range,
@@ -6,8 +6,12 @@ see variogram_check), determine the dominant realized role per block, then assig
 blocks to calibration (split=0) or validation (split=1) with a stratified 50/50
 shuffle (seed=2026).
 
-Two modes
----------
+Three modes
+-----------
+``--from-csv`` (reproduce; the default of `pipeline.py split`)
+    Exports the ``calib_val_split`` asset from the COMMITTED block CSV, without
+    re-sampling anything. Skips if the asset already exists.
+
 ``--check-only`` (the Gate-0 audit; writes no asset, rebuilds nothing)
     Reads the EXISTING split -- the exported ``calib_val_split`` asset, falling
     back to rebuilding it in memory from the committed block CSV -- and writes the
@@ -24,7 +28,7 @@ Two modes
     approaches 1 the variance is almost all noise at the sampling support and the
     range estimate carries no information about structural autocorrelation.
 
-(default, no flag) -- (re)build the split and export the asset
+``--new`` -- draw a NEW split and export the asset (`pipeline.py split --new`)
     WARNING: this re-samples ``rl_role`` and rewrites data/mart/calib_val_blocks.csv,
     so it invalidates the provenance of every result already computed against the
     committed split. Only run it to create the split for the first time, or
@@ -32,19 +36,19 @@ Two modes
 
 Outputs
 -------
-data/mart/calib_val_blocks.csv   (build mode only)
+territory `blocks_csv` (data/mart/calib_val_blocks.csv)   (--new only)
     Columns: block_id (int, 0..N_SIDE^2-1), dom_role (int 0–6),
     strat (= dom_role), split (0=calibration, 1=validation).  Committed to git.
 
-EE image asset: projects/<project>/assets/<subfolder>/calib_val_split   (build mode only)
+EE image asset: projects/<project>/assets/<subfolder>/calib_val_split   (--from-csv / --new)
     Single band "split" (Byte), 250 m, value 0/1.  Submitted async; prints task_id.
 
-thesis/Chapters/{variogram_suit,split_balance}.csv   (both modes; $SCRATCHPAD overrides)
+<output_dir>/{variogram_suit,split_balance}.csv   (--check-only / --new)
 
 Run:
     EE_PROJECT=<your-project> uv run python tools/make_calib_val_split.py --check-only
-    EE_PROJECT=<your-project> uv run python tools/make_calib_val_split.py   # rebuilds!
-    SPLIT_NSIDE=8 EE_PROJECT=<your-project> uv run python tools/make_calib_val_split.py
+    EE_PROJECT=<your-project> uv run python tools/make_calib_val_split.py --from-csv
+    EE_PROJECT=<your-project> uv run python tools/make_calib_val_split.py --new   # re-draws!
 """
 from __future__ import annotations
 
@@ -66,8 +70,7 @@ import metrics     # noqa: E402
 
 P = utils.init()
 AOI = utils.load_aoi(P)
-MART_DIR = ROOT / "data" / "mart"
-BLOCKS_CSV = MART_DIR / "calib_val_blocks.csv"
+BLOCKS_CSV = ROOT / utils.territory()["blocks_csv"]
 
 OUT = utils.out_dir()
 
@@ -417,6 +420,23 @@ def load_split_image() -> "ee.Image":
     return build_split_image(zoning.build_strat_band(AOI, n_side=N_SIDE), split_ser)
 
 
+def export_from_csv() -> None:
+    """Export calib_val_split from the committed block CSV (exact reproduction)."""
+    if utils.asset_exists(P, "calib_val_split"):
+        log("calib_val_split exists -- skip (use --new to draw a new split)")
+        return
+    if not BLOCKS_CSV.exists():
+        raise SystemExit(f"{BLOCKS_CSV} not found -- draw a split with --new")
+    blocks = pd.read_csv(BLOCKS_CSV)
+    n_side = int(blocks["n_side"].iloc[0])
+    split_ser = pd.Series(blocks["split"].values, index=blocks["block_id"].values,
+                          name="split")
+    img = build_split_image(zoning.build_strat_band(AOI, n_side=n_side), split_ser)
+    log(f"exporting calib_val_split from {BLOCKS_CSV.name} (n_side={n_side}) ...")
+    task = utils.export_image(img.toByte(), P, "calib_val_split", AOI)
+    utils.wait_for(P, "calib_val_split", tasks=[task])
+
+
 def check_only() -> None:
     """Gate 0: audit the EXISTING split. Writes no asset and rebuilds nothing."""
     log(f"=== Gate 0: audit calib/val split  project={P} ===")
@@ -473,7 +493,7 @@ def build() -> None:
         f"val={a1:,.0f} km2 ({a1/(a0+a1)*100:.1f}%)")
 
     # Step 4: write CSV
-    MART_DIR.mkdir(parents=True, exist_ok=True)
+    BLOCKS_CSV.parent.mkdir(parents=True, exist_ok=True)
     csv_df = pd.DataFrame({
         "block_id": dom_role.index,
         "dom_role": dom_role.values,
@@ -490,7 +510,7 @@ def build() -> None:
     split_img = build_split_image(block_img, split_ser)
     log("Submitting EE export for calib_val_split ...")
     # overwrite=True deletes the old asset BEFORE submitting, so a failed task
-    # leaves no asset at all (CLAUDE.md S4). The block CSV written above is the
+    # leaves no asset at all (CLAUDE.md). The block CSV written above is the
     # recovery path: --check-only rebuilds the image from it in memory.
     task = utils.export_image(split_img.toByte(), P, "calib_val_split", AOI,
                               overwrite=True)
@@ -509,12 +529,8 @@ def build() -> None:
 
 
 if __name__ == "__main__":
-    args = set(sys.argv[1:])
-    unknown = args - {"--check-only"}
-    if unknown:
-        raise SystemExit(f"unknown argument(s) {sorted(unknown)}; "
-                         f"usage: make_calib_val_split.py [--check-only]")
-    if "--check-only" in args:
-        check_only()
-    else:
-        build()
+    modes = {"--check-only": check_only, "--from-csv": export_from_csv, "--new": build}
+    args = sys.argv[1:]
+    if len(args) != 1 or args[0] not in modes:
+        raise SystemExit(f"usage: make_calib_val_split.py {{{'|'.join(modes)}}}")
+    modes[args[0]]()

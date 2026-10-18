@@ -10,7 +10,7 @@
 #   - `zones` must have exactly K entries (K = rows of zone_profiles.csv).
 #
 # Zone entries are LANDFORM descriptors only. Zone numbering is canonical by
-# descending terr_elev (CLAUDE.md §11), so "Zona 1 = highest ground" is stable by
+# descending terr_elev (CLAUDE.md), so "Zona 1 = highest ground" is stable by
 # construction; the VOCATION is not, and is therefore never written here — the
 # dashboard reads it from zone_profiles.csv (comparative_segment[_2]), exactly as
 # tools/make_figures.zone_labels() does. Re-read these descriptors whenever K moves.

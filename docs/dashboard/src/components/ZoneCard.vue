@@ -10,7 +10,7 @@ const props = defineProps<{ profile: ZoneProfileRow }>()
 
 // Name, vocation, area share and the pair rule all come from manifest.json:
 //  - the area share is a pixelArea() group reduce (zone_area.csv), NOT profile.n,
-//    which counts rows of a stratified sample (CLAUDE.md §9);
+//    which counts rows of a stratified sample (CLAUDE.md);
 //  - `paired` applies ZONE_PAIR_MARGIN from tools/palettes.py, the same constant
 //    fig_4_3's legend uses, so atlas and thesis read a zone the same way.
 const { manifest, zone, zoneName, segmentKeys, segmentLabel, segmentShort } = useManifest()

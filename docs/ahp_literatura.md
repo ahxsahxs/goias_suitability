@@ -345,7 +345,7 @@ Coluna do gado, tab. 2, p. 10. RC = 0,05. Bloco único.
 | `clim_dry_months` | — | — | — | **porta** (§4) |
 
 **Sem correspondente aqui:** LULC 0,3375 — empatado em primeiro na fonte, **vetado pela salvaguarda
-de cobertura da terra** (CLAUDE.md §7: uso da terra é máscara, contexto e validação, nunca entrada
+de cobertura da terra** (CLAUDE.md: uso da terra é máscara, contexto e validação, nunca entrada
 de viabilidade — usá-lo seria prever uso da terra com uso da terra); e Water accessibility 0,1665,
 sem fator correspondente no segmento (a pecuária do modelo não carrega distância à água).
 

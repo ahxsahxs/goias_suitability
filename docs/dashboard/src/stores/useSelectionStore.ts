@@ -10,7 +10,7 @@ import { ref } from 'vue'
  * v0: defined and type-checked, consumed by nothing yet.
  */
 export const useSelectionStore = defineStore('selection', () => {
-  /** IBGE NM_MUN value, matching the municipal mesh join key (CLAUDE.md §7). */
+  /** IBGE NM_MUN value, matching the municipal mesh join key (CLAUDE.md). */
   const selectedMunicipality = ref<string | null>(null)
 
   function select(name: string): void {

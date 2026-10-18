@@ -10,7 +10,7 @@ re-export, and the fuzzy engine is never re-run server-side.
 
 **This is a diagnostic, not a calibration.** lambda is fixed a priori at 0.5 and is NOT
 retuned from this output: MapBiomas is a validation and masking layer, never a
-calibration target (CLAUDE.md section 7). Moving lambda to the argmax would make the
+calibration target (CLAUDE.md). Moving lambda to the argmax would make the
 realized map an input.
 
 What the sweep actually shows (thesis/Chapters/lambda_auc.csv) is that AUC rises

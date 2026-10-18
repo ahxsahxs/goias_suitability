@@ -3,7 +3,7 @@
 ``tools/anchor_breakpoints.py discrimination`` measures ``sigma_mu_horizon`` -- the
 discriminating power of each factor over the present UNION the future -- which means
 it needs the future climate. Built live, that is a 5-GCM x 20-yr monthly graph under
-an interactive ``reduceRegion``, and CLAUDE.md section 11 is explicit that such a
+an interactive ``reduceRegion``, and CLAUDE.md is explicit that such a
 call can run well past ten minutes and stall. Caching the ensemble as an asset first
 is the documented remedy: once this asset exists, ``anchor_breakpoints`` finds it by
 name and the discrimination pass is as cheap as the present-only one ever was.

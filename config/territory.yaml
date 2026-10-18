@@ -28,6 +28,7 @@ growing_months: [10, 11, 12, 1, 2, 3]
 # box. Choose it so the block edge exceeds the residual autocorrelation range that
 # `pipeline.py split --check` reports (Goiás: ~130 km blocks).
 split_n_side: 6
+blocks_csv: data/mart/calib_val_blocks.csv   # the committed split (block -> half)
 
 # Where every CSV the tools write lands (the thesis \inputs them from here).
 # $SCRATCHPAD overrides it for throw-away runs.

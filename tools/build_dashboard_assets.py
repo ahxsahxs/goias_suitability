@@ -24,7 +24,7 @@ so the maps were non-informative and were dropped from the dashboard.
 
 Zones: the count is read from zone_profiles.csv at run time, never hardcoded. The
 zones_present raster is 0-based; every file this script writes is 1-based, like
-zone_profiles.csv, the thesis and its figures (CLAUDE.md §11). The +1 is applied
+zone_profiles.csv, the thesis and its figures (CLAUDE.md). The +1 is applied
 exactly once, where a raster value is read (municipal ranking, PCA sample).
 
 Words vs numbers: every NUMBER the dashboard shows comes from a file written here;
@@ -78,7 +78,7 @@ DATA_DIR = REPO_ROOT / "docs" / "dashboard" / "public" / "data"
 SCRATCH_DIR = REPO_ROOT / "docs" / "dashboard" / ".build-scratch"
 CONFIG_DIR = REPO_ROOT / "config"
 
-TS = 8  # tileScale — see CLAUDE.md §11 "validation is compute-heavy" gotcha
+TS = 8  # tileScale — see CLAUDE.md "validation is compute-heavy" gotcha
 THESIS_DIR = utils.out_dir()   # where the pipeline wrote its CSVs
 
 # The one SSP/window the municipal click-panel and the Home chip summarize (the
@@ -196,7 +196,7 @@ DIAG_CSVS = {
     "factor_discrimination.csv": THESIS_DIR / "factor_discrimination.csv",
     # Zone AREA shares via pixelArea() (tools/extract_present.zone_shares). The ONLY
     # source for "how big is zone N": zone_profiles.csv's `n` is a stratified-sample
-    # count, not an area share (CLAUDE.md §9).
+    # count, not an area share (CLAUDE.md).
     "zone_area.csv": THESIS_DIR / "zone_area.csv",
     # Part 9 discrimination / λ sensitivity (tools/anchor_breakpoints.py, derive_weights.py)
     "lambda_auc.csv": THESIS_DIR / "lambda_auc.csv",
@@ -218,7 +218,7 @@ def build_diagnostics() -> None:
     out = DATA_DIR / "csv"
     out.mkdir(parents=True, exist_ok=True)
     # A missing source used to be logged and skipped, which left the PREVIOUS copy in
-    # public/data -- a stale table shipped with exit code 0 (CLAUDE.md §11). Refuse.
+    # public/data -- a stale table shipped with exit code 0 (CLAUDE.md). Refuse.
     missing = [str(src) for src in DIAG_CSVS.values() if not src.exists()]
     if missing:
         raise SystemExit("missing diagnostic sources:\n  " + "\n  ".join(missing))
@@ -247,7 +247,7 @@ def build_home_stats() -> None:
     # The biggest zone and its share come from zone_area.csv (a pixelArea() group
     # reduce), NOT from zone_profiles.csv's `n`. `n` counts rows of a STRATIFIED
     # sample: using it reported zone 1 at 37.9% of the territory when its real area
-    # share is 46.4% -- the exact error CLAUDE.md §9 flags, on the Home route of a
+    # share is 46.4% -- the exact error CLAUDE.md flags, on the Home route of a
     # dashboard the thesis links to.
     area = pd.read_csv(DIAG_CSVS["zone_area.csv"])
     top_zone = area.loc[area["share_pct"].idxmax()]
@@ -671,7 +671,7 @@ def build_band_percentiles() -> None:
 # drift: it shipped 2026-09 numbers (soybean AUC 0,871) through the 2026-10 rebuild
 # while build_home_stats() read them for the Home route's stat chips. It now reads
 # the CSVs, so it cannot silently go stale again, and it refuses rather than
-# falling back when they predate the spatial holdout (CLAUDE.md §11).
+# falling back when they predate the spatial holdout (CLAUDE.md).
 # =============================================================================
 SCORECARD_HALF = "val"
 

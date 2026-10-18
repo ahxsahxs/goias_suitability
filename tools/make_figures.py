@@ -84,7 +84,7 @@ TR = {
         },
         # Landform descriptors ONLY -- the vocation in parentheses is appended by
         # zone_labels() from zone_profiles.csv. These are safe as literals because
-        # zone numbering is canonical by descending terr_elev (CLAUDE.md §11), so
+        # zone numbering is canonical by descending terr_elev (CLAUDE.md), so
         # zone 1 is always the highest ground; the VOCATION is what drifts.
         "zone": [
             "Zone 1 — high clayey cropping plateau",
@@ -311,7 +311,7 @@ def zone_labels():
     the tables and the abstracts all used the correct order.
 
     Only the landform descriptor stays editorial: zone numbering is canonical by
-    descending terr_elev (CLAUDE.md §11), so "Zona 1 = highest ground" is stable
+    descending terr_elev (CLAUDE.md), so "Zona 1 = highest ground" is stable
     by construction in a way the vocation is not.
     """
     desc = _tr()["zone"]
@@ -600,7 +600,7 @@ class Renderer:
         for a mostly-square raster. Two legend columns keep the long zone labels
         legible without pushing the figure too tall. Palette/value-range are
         derived from the zone count (zone_palette(n)/max=n-1), not hardcoded —
-        zoning is re-run under different K over time (see CLAUDE.md §11).
+        zoning is re-run under different K over time (see CLAUDE.md).
         """
         labels = zone_labels()
         pal = zone_palette(len(labels))
@@ -863,7 +863,7 @@ class Renderer:
 
     def fig_4_10(self):
         """k-selection: validity indices + cluster stability vs k, swept over
-        k=2..20 (CLAUDE.md §11: the extended sweep that shows the chosen k is not
+        k=2..20 (CLAUDE.md: the extended sweep that shows the chosen k is not
         a truncated-range artifact). The marked k is read from zone_profiles.csv,
         i.e. from what was actually exported. 2x2 grid instead of 1x4: four panels
         in one row left each too narrow to read once the sweep doubled in length."""
