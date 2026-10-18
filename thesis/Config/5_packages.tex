@@ -211,8 +211,9 @@
 % ===== Lista de siglas =====
 % glossaries só imprime entradas referenciadas com \gls{}, e o texto escreve as
 % siglas por extenso; sem isto a "Lista de Siglas e Abreviaturas" sai vazia.
-% \AtBeginDocument: as entradas de Chapters/acronyms.tex só existem depois do preâmbulo.
-\AtBeginDocument{\glsaddall[types={\acronymtype}]}
+% \AtEndDocument: no \AtBeginDocument o \glsaddall emite material antes da capa e
+% gera duas páginas em branco no início do PDF.
+\AtEndDocument{\glsaddall[types={\acronymtype}]}
 
 % ===== Folha de rosto dos anexos =====
 % \ntprintannexes só acrescenta "Anexos" ao sumário; não há página que marque o
