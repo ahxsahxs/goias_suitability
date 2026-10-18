@@ -69,21 +69,17 @@ AOI = utils.load_aoi(P)
 MART_DIR = ROOT / "data" / "mart"
 BLOCKS_CSV = MART_DIR / "calib_val_blocks.csv"
 
-# House pattern: evidence CSVs land in thesis/Chapters/; $SCRATCHPAD overrides.
-OUT = Path(os.environ.get("SCRATCHPAD", str(ROOT / "thesis" / "Chapters")))
+OUT = utils.out_dir()
 
 # Crop bands whose autocorrelation range has to be shorter than the block.
 # All three, not just soybean: sugarcane and other_crops are the metrics with the
 # least statistical power, so their range is the one that binds.
 VARIO_CROPS = {"soybean": 1, "sugarcane": 2, "other_crops": 3}
 
-# Grid granularity. 2026-10-03: moved from 16 (~49 km) to 6 (~130 km) because the
-# measured residual autocorrelation range over GO+DF is 105-150 km, so 49 km
-# blocks left roughly half the spatially structured variance shared across the
-# block boundary -- i.e. they did not decorrelate the halves at all. Coarsening
-# costs almost nothing in balance (the rare roles are limited by realized AREA,
-# not by block count) and buys the only thing the holdout exists for.
-N_SIDE = int(os.environ.get("SPLIT_NSIDE", "6"))
+# Grid granularity (config/territory.yaml `split_n_side`; $SPLIT_NSIDE overrides).
+# The block edge must exceed the measured residual autocorrelation range, or the
+# halves share structured variance across the boundary (Goias: 6 -> ~130 km).
+N_SIDE = int(os.environ.get("SPLIT_NSIDE") or utils.territory()["split_n_side"])
 
 
 def block_km(aoi) -> float:

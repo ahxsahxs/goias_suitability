@@ -59,11 +59,12 @@ import yaml  # noqa: E402
 from ruamel.yaml import YAML  # noqa: E402
 
 import membership  # noqa: E402
+import utils  # noqa: E402
 
 ROOT = os.path.normpath(os.path.join(os.path.dirname(__file__), ".."))
 AHP_YAML = os.path.join(ROOT, "config", "ahp_matrices.yaml")
 SEG_YAML = os.path.join(ROOT, "config", "segments.yaml")
-CHAPTERS = os.path.join(ROOT, "thesis", "Chapters")
+CHAPTERS = str(utils.out_dir())
 DISCRIM_CSV = os.path.join(CHAPTERS, "factor_discrimination.csv")
 WEIGHTS_CSV = os.path.join(CHAPTERS, "ahp_weights.csv")
 LAMBDA_CSV = os.path.join(CHAPTERS, "lambda_sweep.csv")

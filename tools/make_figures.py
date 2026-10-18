@@ -55,14 +55,14 @@ from palettes import (  # noqa: E402
     zone_palette,
 )
 
-PROJECT = "probformer"
+# Resolved like utils.init() ($EE_PROJECT -> credentials file), without an EE call.
+PROJECT = os.environ.get("EE_PROJECT") or utils.credentials_project()
 FIG_DIR = Path(__file__).resolve().parent.parent / "thesis" / "Chapters" / "Figures"
 LATEX_FIG = {
     "pt": FIG_DIR,
     "en": FIG_DIR,
 }
 DIMS = 1024
-AOI_EXTENT = [-53.25, -45.90, -19.50, -12.39]   # [lon0, lon1, lat0, lat1] fallback (CLAUDE.md)
 
 # runtime config (set by main() before Renderer() is constructed)
 LANG = "pt"
@@ -330,9 +330,7 @@ def zone_labels():
 def _zone_profiles():
     """zone_profiles.csv rows as dicts, or None if unreadable. Same lookup as zone_k()."""
     import pandas as pd
-    path = Path(os.environ.get("SCRATCHPAD", str(FIG_DIR.parent.parent.parent))) / "zone_profiles.csv"
-    if not path.exists():
-        path = FIG_DIR.parent.parent.parent / "zone_profiles.csv"
+    path = utils.out_path("zone_profiles.csv")
     if not path.exists():
         return None
     return pd.read_csv(path).to_dict("records")
@@ -349,9 +347,7 @@ def zone_k():
     the zone-label check before any Renderer exists.
     """
     import pandas as pd
-    path = Path(os.environ.get("SCRATCHPAD", str(FIG_DIR.parent.parent.parent))) / "zone_profiles.csv"
-    if not path.exists():
-        path = FIG_DIR.parent.parent.parent / "zone_profiles.csv"
+    path = utils.out_path("zone_profiles.csv")
     if not path.exists():
         raise SystemExit(
             f"{path} not found -- fig_4_10 marks the k that was actually exported, "
@@ -462,8 +458,9 @@ class Renderer:
             ys = [p[1] for p in ring]
             self.extent = [min(xs), max(xs), min(ys), max(ys)]
         except Exception as e:
-            print(f"  extent: falling back to AOI_EXTENT ({e})")
-            self.extent = list(AOI_EXTENT)
+            print(f"  extent: falling back to the local mesh bounds ({e})")
+            w, s, e_, n = utils.aoi_bounds()
+            self.extent = [w, e_, s, n]
 
     def A(self, name):
         return ee.Image(utils.asset_id(PROJECT, name))
@@ -667,7 +664,7 @@ class Renderer:
         Stacked vertically (not side by side): GO~e~DF is taller than it is wide, so two
         square-ish panels side by side each shrank to a fraction of the page width; stacking
         lets each map use the full page width instead."""
-        muni = ee.FeatureCollection(utils.asset_id(PROJECT, "municipal_godf"))
+        muni = ee.FeatureCollection(utils.asset_id(PROJECT, utils.territory()["municipal_asset"]))
         suit_img = ee.Image().float().paint(muni, "suit_soybean")
         vuln = muni.filter(ee.Filter.lt("delta_other_crops", -0.05))
         vuln_img = ee.Image().byte().paint(vuln, 1).paint(muni, 0, 1)  # fill flag + muni borders
@@ -694,7 +691,7 @@ class Renderer:
     def fig_4_13(self):
         """Municipal choropleth of mean suitability, all 7 segments (companion to fig_4_9,
         which only shows soybean at municipal level)."""
-        muni = ee.FeatureCollection(utils.asset_id(PROJECT, "municipal_godf"))
+        muni = ee.FeatureCollection(utils.asset_id(PROJECT, utils.territory()["municipal_asset"]))
         panels = [(seg_title(s), self.thumb(
             ee.Image().float().paint(muni, f"suit_{s}").visualize(min=0, max=1, palette=PAL_SUIT)))
             for s in SEGMENTS]
@@ -847,7 +844,7 @@ class Renderer:
 
     # --- CSV-based diagnostic figures (WS-D; no EE) -------------------------
     def _data_dir(self):
-        return Path(os.environ.get("SCRATCHPAD", str(FIG_DIR.parent)))
+        return utils.out_dir()
 
     def _read_diag(self, name):
         path = self._data_dir() / name

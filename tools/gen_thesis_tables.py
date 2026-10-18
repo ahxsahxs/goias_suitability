@@ -33,7 +33,10 @@ import yaml
 
 REPO = Path(__file__).resolve().parent.parent
 CHAPTERS = REPO / "thesis" / "Chapters"
-IN = Path(os.environ.get("SCRATCHPAD", str(CHAPTERS)))
+sys.path.insert(0, str(REPO / "src"))
+import utils  # noqa: E402
+
+IN = utils.out_dir()
 OUT = CHAPTERS / "Tables"
 
 # Thesis-facing PT names. These are the strings already used in the chapters, so
@@ -210,16 +213,8 @@ def write(name, body):
 
 
 def read_csv(name):
-    """$SCRATCHPAD -> thesis/Chapters -> thesis/Chapters/Figures -> repo root.
-
-    The repo-root leg is for zone_profiles.csv, which the Part-10 cascade writes
-    beside the code rather than into thesis/Chapters (make_figures.zone_k() does
-    the same dance). The Figures leg is for municipal_ranking.csv, which
-    extract_present.municipal() writes next to the figures because that is where
-    make_figures reads it from.
-    """
-    for path in (IN / name, CHAPTERS / name, CHAPTERS / "Figures" / name,
-                 REPO / name):
+    """utils.out_dir() -> thesis/Chapters -> <out_dir>/Figures (municipal_ranking.csv)."""
+    for path in (IN / name, CHAPTERS / name, IN / "Figures" / name):
         if path.exists():
             return pd.read_csv(path)
     raise FileNotFoundError(name)

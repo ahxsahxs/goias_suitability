@@ -15,7 +15,7 @@ import sys
 import time
 from pathlib import Path
 
-sys.path.insert(0, "src")
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "src"))
 
 import ee  # noqa: E402
 import pandas as pd  # noqa: E402
@@ -31,9 +31,7 @@ TS, CAP = 8, 4500
 
 # House pattern (see tools/anchor_breakpoints.py): CSVs land in thesis/Chapters/
 # so make_figures._read_diag finds them; $SCRATCHPAD overrides for scratch runs.
-REPO = Path(__file__).resolve().parent.parent
-CHAPTERS = REPO / "thesis" / "Chapters"
-OUT = Path(os.environ.get("SCRATCHPAD", str(CHAPTERS)))
+OUT = utils.out_dir()
 OUT.mkdir(parents=True, exist_ok=True)
 
 
@@ -180,10 +178,10 @@ def realized_composition():
 
 # F. municipal summary + rankings (Table 4.13) -----------------------------------
 def municipal():
-    # IBGE malha municipal, built client-side (src/ibge_mesh.py) on every run —
-    # NOT the stale `municipal_godf` export, which still reflects GAUL until an
-    # explicitly-approved Part 12 asset rebuild (CLAUDE.md §4/§10).
+    # IBGE malha municipal, built client-side (src/ibge_mesh.py) on every run.
     muni = external.municipal_fc()
+    key = utils.cfg()["municipal_mesh"]["join_key"]
+    ids = [key] if key == "NM_MUN" else [key, "NM_MUN"]
     # add per-municipality underused shares for the opportunity score
     uu = ee.Image(aid("realized_vs_potential")).select(
         ["underused_soybean", "underused_sugarcane"]).unmask(0)
@@ -193,7 +191,7 @@ def municipal():
            .addBands(delta.select("delta_other_crops"))
            .addBands(uu))
     uu_m = external.municipal_means(muni, agg, scale=250)
-    props = ["NM_MUN", "zone", "suit_soybean", "suit_sugarcane",
+    props = [*ids, "zone", "suit_soybean", "suit_sugarcane",
              "delta_other_crops", "underused_soybean", "underused_sugarcane"]
     feats = uu_m.select(props, None, False).getInfo()["features"]
     df = pd.DataFrame([f["properties"] for f in feats]).dropna(subset=["suit_soybean"])
@@ -203,7 +201,7 @@ def municipal():
           f"min={df.suit_soybean.min():.3f} max={df.suit_soybean.max():.3f}")
     print(f"  S1-level (>=0.75): {(df.suit_soybean >= 0.75).sum()}   "
           f"S2+ (>=0.50): {(df.suit_soybean >= 0.50).sum()}")
-    # municipal_godf aggregates the 0-based raster, so shift to 1-based reporting
+    # the municipal means aggregate the 0-based raster, so shift to 1-based reporting
     df["zone"] = df.zone.round().astype(int) + 1
     zc = df.zone.value_counts().sort_index()
     print(f"  municipalities by majority zone: {zc.to_dict()}")
@@ -218,9 +216,9 @@ def municipal():
     print("  TOP-5 VULNERABILITY (most negative delta_other_crops):")
     for _, r in df.nsmallest(5, "delta_other_crops").iterrows():
         print(f"    {r.NM_MUN:28s} dS={r.delta_other_crops:.3f} zone={int(r.zone)}")
-    out_path = CHAPTERS / "Figures" / "municipal_ranking.csv"   # not CWD-relative
+    out_path = OUT / "Figures" / "municipal_ranking.csv"
     df.to_csv(out_path, index=False,
-              columns=["NM_MUN", "delta_other_crops", "suit_soybean", "suit_sugarcane",
+              columns=[*ids, "delta_other_crops", "suit_soybean", "suit_sugarcane",
                        "underused_soybean", "underused_sugarcane", "zone", "opportunity"])
     print(f"  wrote {out_path}")
 

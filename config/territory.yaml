@@ -1,0 +1,34 @@
+# =============================================================================
+# THE TERRITORY. The only file you need to edit to run the pipeline elsewhere in
+# Brazil (any UF or set of UFs). See README.md, "Adaptar a outro território".
+# =============================================================================
+
+name: "Goiás + Distrito Federal"
+
+# EE assets go to projects/$EE_PROJECT/assets/<asset_subfolder>/<name>.
+# Use a new subfolder per territory so runs never overwrite each other.
+asset_subfolder: goias
+
+# IBGE "Malha Municipal Digital". Download one <UF>_Municipios_<year>.zip per UF from
+# https://www.ibge.gov.br/geociencias/organizacao-do-territorio/malhas-territoriais/15774-malhas.html
+# into data/input/ibge/, then run `uv run python pipeline.py mesh`.
+ufs: [GO, DF]
+ibge_year: 2025
+mesh_path: data/mart/malha_municipal.gpkg   # built by `pipeline.py mesh`; AOI = its dissolve
+join_key: NM_MUN          # municipal key in the outputs; use CD_MUN if names repeat across UFs
+simplify_tolerance_deg: 0.001   # ~111 m vertex simplification before geometries go to EE
+
+# Name of the municipal-aggregation table asset (Part 12).
+municipal_asset: municipal_godf
+
+# Rainy-season canopy window (months) used by the MOD17 GPP within-crop validator.
+growing_months: [10, 11, 12, 1, 2, 3]
+
+# Calibration/validation spatial holdout: n_side x n_side grid over the AOI bounding
+# box. Choose it so the block edge exceeds the residual autocorrelation range that
+# `pipeline.py split --check` reports (Goiás: ~130 km blocks).
+split_n_side: 6
+
+# Where every CSV the tools write lands (the thesis \inputs them from here).
+# $SCRATCHPAD overrides it for throw-away runs.
+output_dir: thesis/Chapters

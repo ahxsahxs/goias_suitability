@@ -7,7 +7,7 @@ human applies it; tools/derive_weights.py --check then confirms the weights foll
 Inputs
 ------
 anchor_breakpoints.csv   from ``SPLIT_HALF=all tools/anchor_breakpoints.py percentiles``
-                         ($SCRATCHPAD, else CWD -- pass --pctl to point at it)
+                         (data/scratch/ or $SCRATCHPAD -- pass --pctl to point elsewhere)
 config/segments.yaml     the `anchor:` block of each factor says HOW it was placed
 
 THE THREE ANCHOR RULES (config/segments.yaml `anchor.rule`)
@@ -71,8 +71,9 @@ ROOT = os.path.normpath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, os.path.join(ROOT, "src"))
 
 import membership  # noqa: E402
+import utils  # noqa: E402
 
-CHAPTERS = os.environ.get("SCRATCHPAD", os.path.join(ROOT, "thesis", "Chapters"))
+CHAPTERS = str(utils.out_dir())
 SEG_YAML = os.path.join(ROOT, "config", "segments.yaml")
 OUT_CSV = os.path.join(CHAPTERS, "breakpoint_shift.csv")
 
@@ -94,15 +95,14 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--half", choices=["calib", "val"], default="calib")
     ap.add_argument("--pctl", default=None,
-                    help="path to anchor_breakpoints.csv (default: $SCRATCHPAD/CWD)")
+                    help="path to anchor_breakpoints.csv (default: data/scratch/ or $SCRATCHPAD)")
     args = ap.parse_args()
 
-    src = args.pctl or os.path.join(os.environ.get("SCRATCHPAD", os.getcwd()),
-                                    "anchor_breakpoints.csv")
+    src = args.pctl or str(utils.scratch_path("anchor_breakpoints.csv"))
     if not os.path.exists(src):
         raise SystemExit(f"[FALHA] {src} ausente. Rode:\n"
-                         "  SPLIT_HALF=all ANCHOR_SCALE=1000 EE_PROJECT=probformer "
-                         "uv run python tools/anchor_breakpoints.py percentiles")
+                         "  SPLIT_HALF=all ANCHOR_SCALE=1000 uv run python "
+                         "tools/anchor_breakpoints.py percentiles")
     pct = pd.read_csv(src)
     if "half" not in pct.columns:
         raise SystemExit(f"[FALHA] {src} nao tem coluna 'half' (SPLIT_HALF=all).")

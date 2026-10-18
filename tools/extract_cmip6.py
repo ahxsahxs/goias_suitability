@@ -18,7 +18,7 @@ import sys
 import time
 from pathlib import Path
 
-sys.path.insert(0, "src")
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "src"))
 
 import ee  # noqa: E402
 import pandas as pd  # noqa: E402
@@ -33,10 +33,7 @@ COMBOS = [("ssp245", "2031_2050"), ("ssp245", "2051_2070"),
 TS = 8
 RR = dict(geometry=AOI, scale=250, maxPixels=1e10, tileScale=TS)
 
-# House pattern: CSVs land in thesis/Chapters/; $SCRATCHPAD overrides.
-REPO = Path(__file__).resolve().parent.parent
-CHAPTERS = REPO / "thesis" / "Chapters"
-OUT = Path(os.environ.get("SCRATCHPAD", str(CHAPTERS)))
+OUT = utils.out_dir()
 OUT.mkdir(parents=True, exist_ok=True)
 
 

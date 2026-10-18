@@ -79,7 +79,7 @@ SCRATCH_DIR = REPO_ROOT / "docs" / "dashboard" / ".build-scratch"
 CONFIG_DIR = REPO_ROOT / "config"
 
 TS = 8  # tileScale — see CLAUDE.md §11 "validation is compute-heavy" gotcha
-THESIS_DIR = REPO_ROOT / "thesis" / "Chapters"
+THESIS_DIR = utils.out_dir()   # where the pipeline wrote its CSVs
 
 # The one SSP/window the municipal click-panel and the Home chip summarize (the
 # thesis' worst case, §sec:shift / tab:municipal-rank). Exported in manifest.json so
@@ -154,8 +154,9 @@ def build_municipal_ranking() -> None:
         .addBands(uu.select(uu_bands))
     )
     means = external.municipal_means(muni, agg, scale=250)
+    key = utils.cfg()["municipal_mesh"]["join_key"]
     props = [
-        "NM_MUN", "SIGLA_UF", "zone",
+        *([key] if key == "NM_MUN" else [key, "NM_MUN"]), "SIGLA_UF", "zone",
         *[f"suit_{s}" for s in SEGMENTS],
         *[f"delta_{s}" for s in SEGMENTS],
         *uu_bands,
@@ -175,7 +176,7 @@ def build_municipal_ranking() -> None:
     m = utils.cfg()["municipal_mesh"]
     gdf = ibge_mesh._load_gdf()
     gdf = gdf.assign(geometry=gdf.geometry.simplify(m["simplify_tolerance_deg"], preserve_topology=True))
-    merged = gdf.merge(df, on="NM_MUN", how="inner", validate="one_to_one", suffixes=("", "_dup"))
+    merged = gdf.merge(df, on=key, how="inner", validate="one_to_one", suffixes=("", "_dup"))
     merged = merged.drop(columns=[c for c in merged.columns if c.endswith("_dup")])
     out_geojson = DATA_DIR / "geojson" / "municipal_ranking.geojson"
     merged.to_file(out_geojson, driver="GeoJSON")
@@ -186,17 +187,17 @@ def build_municipal_ranking() -> None:
 # 4. Diagnostic CSV passthrough (already produced by tools/gen_diag_csvs.py / src/zoning.py)
 # =============================================================================
 DIAG_CSVS = {
-    "zone_profiles.csv": REPO_ROOT / "zone_profiles.csv",
-    "zoning_kselect.csv": REPO_ROOT / "thesis" / "Chapters" / "zoning_kselect.csv",
-    "factor_variance.csv": REPO_ROOT / "thesis" / "Chapters" / "factor_variance.csv",
+    "zone_profiles.csv": THESIS_DIR / "zone_profiles.csv",
+    "zoning_kselect.csv": THESIS_DIR / "zoning_kselect.csv",
+    "factor_variance.csv": THESIS_DIR / "factor_variance.csv",
     # Part 9 weight derivation (tools/derive_weights.py): w_lit | d | w_final
-    "ahp_weights.csv": REPO_ROOT / "thesis" / "Chapters" / "ahp_weights.csv",
-    "lambda_sweep.csv": REPO_ROOT / "thesis" / "Chapters" / "lambda_sweep.csv",
-    "factor_discrimination.csv": REPO_ROOT / "thesis" / "Chapters" / "factor_discrimination.csv",
+    "ahp_weights.csv": THESIS_DIR / "ahp_weights.csv",
+    "lambda_sweep.csv": THESIS_DIR / "lambda_sweep.csv",
+    "factor_discrimination.csv": THESIS_DIR / "factor_discrimination.csv",
     # Zone AREA shares via pixelArea() (tools/extract_present.zone_shares). The ONLY
     # source for "how big is zone N": zone_profiles.csv's `n` is a stratified-sample
     # count, not an area share (CLAUDE.md §9).
-    "zone_area.csv": REPO_ROOT / "thesis" / "Chapters" / "zone_area.csv",
+    "zone_area.csv": THESIS_DIR / "zone_area.csv",
     # Part 9 discrimination / λ sensitivity (tools/anchor_breakpoints.py, derive_weights.py)
     "lambda_auc.csv": THESIS_DIR / "lambda_auc.csv",
     "factor_variance_theme.csv": THESIS_DIR / "factor_variance_theme.csv",
@@ -785,7 +786,7 @@ def build_validation_scorecard() -> None:
 # =============================================================================
 # 6g. Feature Stack PCA comparison — naive full z-stack vs the curated,
 # theme-weighted 13-band ZONING_BANDS space that Part 10 actually clusters on
-# (src/zoning.py). Same stratified sample + seed as tools/rezone.py, so the 13-band
+# (src/zoning.py). Same stratified sample + seed as the Part-10 zoning, so the 13-band
 # PCA is the zoning's own decorrelated space (fit_pca's var_keep only truncates it).
 # =============================================================================
 PCA_N_POINTS = 3000         # scatter subsample shipped to the browser

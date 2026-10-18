@@ -52,8 +52,8 @@ Run::
     EE_PROJECT=probformer uv run python tools/anchor_breakpoints.py percentiles
     EE_PROJECT=probformer uv run python tools/anchor_breakpoints.py discrimination
 
-Percentiles go to ``$SCRATCHPAD`` (or CWD); the discrimination tables are
-committed artifacts under ``thesis/Chapters/``.
+Percentiles go to ``data/scratch/anchor_breakpoints.csv`` (``$SCRATCHPAD`` overrides);
+the discrimination tables go to the territory ``output_dir``.
 """
 from __future__ import annotations
 
@@ -70,6 +70,8 @@ import cmip6  # noqa: E402
 import external  # noqa: E402
 import features  # noqa: E402
 import membership  # noqa: E402
+
+PCTL_CSV = utils.scratch_path("anchor_breakpoints.csv")   # read by diff_breakpoints
 
 # The analysis horizon that defines ``sigma_mu_horizon``: the hottest/driest
 # corner of the CMIP6 grid actually reported in the thesis. Using the extreme of
@@ -241,8 +243,8 @@ def main():
             rows.append({"mask": label, "half": half, "field": sb, **p, "iqr": iqr})
 
     df = pd.DataFrame(rows)
-    scratch = os.environ.get("SCRATCHPAD", os.getcwd())
-    out = os.path.join(scratch, "anchor_breakpoints.csv")
+    out = str(PCTL_CSV)
+    PCTL_CSV.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(out, index=False)
     pd.set_option("display.width", 200, "display.max_columns", 20)
     print("\n", df.to_string(index=False))
@@ -390,8 +392,7 @@ def discrimination():
                 "type": spec["type"], "points_adotados": str(spec["points"]),
             })
 
-    out = os.path.join(os.path.dirname(__file__), "..", "thesis", "Chapters")
-    out = os.environ.get("SCRATCHPAD", os.path.normpath(out))
+    out = str(utils.out_dir())
     df = pd.DataFrame(rows)
     df.to_csv(os.path.join(out, "factor_discrimination.csv"), index=False)
     pd.DataFrame(anchor_rows).to_csv(

@@ -10,19 +10,12 @@
                            window radius (fig_4_12; revision point 5 companion
                            to factor_variance.csv's pooled decomposition)
 
-The first two are normally emitted as a side effect of the heavy re-export
-cascades (``tools/run_conservation_recal.py`` Stage 4 and
-``tools/run_ws_analysis.py`` D1). This tool reproduces *only* those computations
-from the already-built assets — no asset is written, no export is submitted. The
-zoning sweep is deterministic (seed=42) and label-identical to the cascade; the
-variance decomposition and the roughness decomposition use the same
-capped-sample pattern.
-
-Output goes where ``tools/make_figures.py`` looks for it: ``$SCRATCHPAD`` if set,
-otherwise ``thesis/Chapters/``.
+Read-only: computed from the already-built assets, no export is submitted. The
+zoning panel is deterministic (seed=42) and identical to the one
+tools/run_rebuild_full.py uses to pick K. Output: utils.out_dir().
 
 Run:
-    EE_PROJECT=probformer uv run python tools/gen_diag_csvs.py [zoning|variance|roughness|all]
+    EE_PROJECT=<your-project> uv run python tools/gen_diag_csvs.py [zoning|variance|roughness|all]
 """
 from __future__ import annotations
 
@@ -46,8 +39,7 @@ P = utils.init()
 AOI = utils.load_aoi(P)
 SEG = utils.cfg("segments")
 SEGS = list(SEG["segments"])
-THESIS_DIR = Path(__file__).resolve().parent.parent / "thesis" / "Chapters"
-OUT = Path(os.environ.get("SCRATCHPAD", str(THESIS_DIR)))
+OUT = utils.out_dir()
 TS = 8
 CAP = 4500
 
@@ -60,51 +52,22 @@ def aid(n):
     return utils.asset_id(P, n)
 
 
-# --- zoning_kselect.csv (mirrors run_conservation_recal.py Stage 4) ------------
+# --- zoning_kselect.csv (same procedure run_rebuild_full uses to pick K) --------
 def gen_zoning_kselect():
-    z = ee.Image(aid("feature_stack_250m_z"))
-    raw = ee.Image(aid("feature_stack_250m"))
-    suit_a = ee.Image(aid("suit_present"))
-    realized = ee.Image(aid("feat_realized"))
-    frac_bands = [f"rl_{r}_frac" for r in
-                  ("soybean", "sugarcane", "other_crops", "pasture", "native")]
-    bands = zoning.ZONING_BANDS
-    log("zoning: sample + PCA + k-sweep + gap + stability + holdout (seed=42) ...")
-    # The split rides in through `extra`, which build_sample adds to `combo`
-    # BEFORE its closing select(), so no signature change is needed.
-    split = utils.split_image(P).rename("split")
-    sample = zoning.build_sample(z, raw, suit_a, AOI, bands, segments=SEGS, seed=42,
-                                 extra=realized.select(frac_bands).addBands(split))
-    df = zoning.fc_to_df(sample)
-    X = zoning.cluster_matrix(df, bands)
-    # PCA is fitted on the CALIBRATION rows only and then applied to both halves,
-    # so the held-out rows are scored in a space that was not fitted to them.
-    # Fitting one PCA on everything would leak the held-out covariance into the
-    # representation the holdout columns are measured in.
-    calib = (df["split"].to_numpy() == 0)
-    log(f"  sample n={len(df)}  calib={int(calib.sum())}  val={int((~calib).sum())}")
-    pca = zoning.fit_pca(X[calib], var_keep=0.90)
-    S = pca.transform(X)
-    log(f"  PCA fitted on calib: {pca.n_components_} components")
-    ks = range(2, 21)
-    sweep = zoning.kmeans_sweep(S[calib], ks=ks, seed=42)
-    gap = zoning.gap_statistic(S[calib], ks=ks, B=10, seed=42)
-    stab = zoning.stability_sweep(S[calib], ks=ks, B=20, seed=42)
-    hold = zoning.holdout_sweep(S, df["split"].to_numpy(), ks=ks, seed=42)
-    # Rename so the CSV itself encodes what each column means: the in-sample
-    # indices are now explicitly "calib", and the resampling ARI is explicitly
-    # "subsample" so it cannot be read as a holdout (see zoning.stability_sweep).
-    sweep = sweep.rename(columns={"silhouette": "silhouette_calib",
-                                  "davies_bouldin": "davies_bouldin_calib"})
-    stab = stab.rename(columns={"ari": "ari_subsample",
-                                "ari_std": "ari_subsample_std"})
-    swp = sweep.merge(gap, on="k").merge(stab, on="k").merge(hold, on="k")
+    log("zoning: sample + calib-fitted PCA + k=2..20 panel (seed=42) ...")
+    df, pca, S, calib = zoning.holdout_sample(
+        ee.Image(aid("feature_stack_250m_z")), ee.Image(aid("feature_stack_250m")),
+        ee.Image(aid("suit_present")), AOI, utils.split_image(P),
+        ee.Image(aid("feat_realized")), SEGS)
+    log(f"  sample n={len(df)}  calib={int(calib.sum())}  val={int((~calib).sum())}  "
+        f"PCs={pca.n_components_}")
+    swp = zoning.kselect_panel(S, df["split"].to_numpy())
     out = OUT / "zoning_kselect.csv"
     swp.to_csv(out, index=False)
     log(f"  wrote {out}\n" + swp.round(3).to_string(index=False))
 
 
-# --- factor_variance.csv (mirrors run_ws_analysis.py D1) ----------------------
+# --- factor_variance.csv ------------------------------------------------------
 def gen_factor_variance():
     stack = ee.Image(aid("feature_stack_250m"))
     lc = ee.Image(aid("feat_landcover"))
@@ -169,7 +132,7 @@ def _variance_theme_group(factor):
 def gen_factor_variance_theme():
     src = OUT / "factor_variance.csv"
     if not src.exists():
-        src = THESIS_DIR / "factor_variance.csv"
+        src = utils.CHAPTERS / "factor_variance.csv"
     df = pd.read_csv(src)
     df["theme_raw"] = df["factor"].apply(
         lambda f: "climate" if f.startswith("clim_")

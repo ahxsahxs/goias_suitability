@@ -1,38 +1,30 @@
-"""Full headless rebuild, Part 1 -> Part 13 (2026-09-19).
+"""Headless build of every Earth Engine asset, Part 1 -> Part 13.
 
-Rebuilds the whole cascade from the AOI up, because Part 1 now derives the AOI
-from the IBGE malha municipal mesh instead of GAUL (src/ibge_mesh.py) -- every
-downstream export region shifts, however slightly, so everything that depends
-on `aoi` must be re-exported, not just the T8/T10/recalibration-affected parts.
-
-Combines in one pass:
-  - the pending IBGE-mesh AOI rebuild (CLAUDE.md S4/S7),
-  - T10 (feat_landcover now sourced from MapBiomas instead of ESA WorldCover),
-  - T8 (larger/stratified sampling for zoning -- already in zoning.build_sample),
-  - the 2026-09 fuzzy-membership/AHP recalibration (config/segments.yaml).
-
-DAG (each stage idempotent: skips if its output asset already exists, so a
-crash mid-run resumes cleanly on re-invocation):
+DAG (each stage is idempotent: it skips when its output asset exists, so an
+interrupted run resumes on re-invocation):
 
   aoi -> feat_climate/terrain/soil/water/landcover/siting/conservation
-       -> feature_stack_250m(_z)
-       -> feat_realized (Part 13, needed by zoning profiling + suit extras)
-       -> suit_present/_comp/_sens (Part 9)
-       -> zones_present (Part 10, T8 stratified sample)
-       -> CMIP6 suit_future_*/delta_*/agreement_* (Part 11)
-       -> realized_vs_potential (Part 13)
-       -> municipal_godf (Part 12, IBGE join key)
+      -> feature_stack_250m(_z) -> feat_realized
+      -> suit_present/_comp/_sens (Part 9, weights from config/segments.yaml)
+      -> zones_present (Part 10, needs calib_val_split)
+      -> CMIP6 suit_future_*/delta_*/agreement_* (Part 11)
+      -> realized_vs_potential (Part 13) -> municipal table (Part 12)
 
-Run (background):  EE_PROJECT=probformer uv run python tools/run_rebuild_full.py
-Monitor:            uv run earthengine task list   (+ the printed log)
+Environment (normally set by `pipeline.py build`):
+  REBUILD_UNTIL  features|stack|realized|suit|zones|cmip6|all   stop after a stage
+  REBUILD_FORCE  comma list of asset names (or "all") to rebuild even if present.
+                 Forcing DELETES the asset before exporting: back up first.
+  ZONE_K         pin the number of zones (read zoning_kselect.csv first)
+
+Run:  EE_PROJECT=<your-project> uv run python pipeline.py build [--until ...]
 """
 from __future__ import annotations
 
 import os
 import sys
-import time
+from pathlib import Path
 
-sys.path.insert(0, "src")
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 import ee  # noqa: E402
 import utils  # noqa: E402
@@ -41,14 +33,34 @@ import membership  # noqa: E402
 import external  # noqa: E402
 import cmip6  # noqa: E402
 import zoning  # noqa: E402
+from utils import log  # noqa: E402
 
 PROJECT = utils.init()
 SEG = utils.cfg("segments")
 SEGS = list(SEG["segments"])
+MUNICIPAL = utils.territory()["municipal_asset"]
+
+FORCE = {n.strip() for n in os.environ.get("REBUILD_FORCE", "").split(",") if n.strip()}
+FORCE_ALL = "all" in FORCE
+
+# The holdout split was derived from `aoi` (block grid over its bounds) and from
+# `feat_realized` (block roles). Re-exporting either while a half is selected would
+# silently desynchronise calib_val_split from its own provenance -- refuse.
+SPLIT_PINNED = {"aoi", "feat_realized"}
+if os.environ.get("SPLIT_HALF") and (FORCE_ALL or SPLIT_PINNED & FORCE):
+    raise SystemExit(
+        f"REBUILD_FORCE would re-export {sorted(SPLIT_PINNED)}, which the calib/val "
+        f"split is derived from, while SPLIT_HALF is set. Unset SPLIT_HALF and rebuild "
+        f"the split afterwards (`pipeline.py split`), or drop them from REBUILD_FORCE.")
+
+STAGES = ["features", "stack", "realized", "suit", "zones", "cmip6", "all"]
+UNTIL = os.environ.get("REBUILD_UNTIL", "all").strip() or "all"
+if UNTIL not in STAGES:
+    raise SystemExit(f"REBUILD_UNTIL must be one of {STAGES}, got {UNTIL!r}")
 
 
-def log(msg):
-    print(f"[{time.strftime('%H:%M:%S')}] {msg}", flush=True)
+def stop_after(stage):
+    return STAGES.index(stage) >= STAGES.index(UNTIL)
 
 
 def aid(name):
@@ -59,92 +71,14 @@ def img(name):
     return ee.Image(aid(name))
 
 
-# REBUILD_FORCE: comma-separated asset names (or "all") to rebuild even when the
-# asset already exists. Each stage short-circuits on exists(), so without this the
-# script can only ever fill gaps -- it cannot re-run a stage whose output is there.
-# Forcing goes through utils.export_image(overwrite=True), which DELETES the asset
-# up front and only then submits the export -- so a failed task leaves no asset at
-# all. Always run tools/backup_assets.py first (CLAUDE.md S4).
-FORCE = {n.strip() for n in os.environ.get("REBUILD_FORCE", "").split(",") if n.strip()}
-FORCE_ALL = "all" in FORCE
-
-# The spatial holdout pins itself to the `calib_val_split` asset, which was built
-# by binning ee.Geometry(aoi).bounds() and by sampling feat_realized's rl_role for
-# each block's modal role. Re-exporting either input therefore silently changes
-# which pixels are "calibration" -- without changing calib_val_split, so every
-# tool would keep reading a split that no longer matches its own provenance, and
-# nothing would error. Refuse instead of discovering it in the results.
-# Rebuild those two deliberately with $SPLIT_HALF unset, then re-run
-# tools/make_calib_val_split.py and re-commit data/mart/calib_val_blocks.csv.
-SPLIT_PINNED = {"aoi", "feat_realized"}
-if os.environ.get("SPLIT_HALF"):
-    clash = SPLIT_PINNED & FORCE
-    if FORCE_ALL or clash:
-        raise SystemExit(
-            f"REBUILD_FORCE={'all' if FORCE_ALL else sorted(clash)} would re-export "
-            f"{sorted(SPLIT_PINNED)}, which the calibration/validation split is "
-            f"derived from, while SPLIT_HALF={os.environ['SPLIT_HALF']!r} is set.\n"
-            f"The split asset would NOT be rebuilt, so the halves would stop "
-            f"matching data/mart/calib_val_blocks.csv and no error would be raised.\n"
-            f"Either unset SPLIT_HALF for this rebuild and regenerate the split "
-            f"afterwards (tools/make_calib_val_split.py), or drop "
-            f"{sorted(SPLIT_PINNED)} from REBUILD_FORCE."
-        )
-
-# REBUILD_UNTIL: stop cleanly after a named stage instead of running to Part 12.
-# Used to gate a from-scratch run: rebuild Parts 1-8, stop, diff the features
-# against the backup (tools/diff_vs_backup.py), and only then let Part 9+ run.
-STAGES = ["features", "stack", "realized", "suit", "zones", "cmip6", "all"]
-UNTIL = os.environ.get("REBUILD_UNTIL", "all").strip() or "all"
-if UNTIL not in STAGES:
-    raise SystemExit(f"REBUILD_UNTIL must be one of {STAGES}, got {UNTIL!r}")
-
-
-def stop_after(stage):
-    """True when ``stage`` is the last one REBUILD_UNTIL asks for."""
-    return STAGES.index(stage) >= STAGES.index(UNTIL)
-
-
-def forced(name):
-    return FORCE_ALL or name in FORCE
-
-
-def asset_exists(name):
-    """Raw server-side check: is the asset there right now?"""
-    try:
-        ee.data.getAsset(aid(name))
-        return True
-    except ee.EEException:
-        return False
-
-
 def exists(name):
-    """Skip decision for a build stage -- a forced asset is treated as absent.
-
-    Deliberately NOT what wait_for() uses: a forced asset is reported absent for as
-    long as REBUILD_FORCE names it, so polling on this would never see the new export
-    land. wait_for() calls asset_exists() instead.
-    """
-    return False if forced(name) else asset_exists(name)
+    """Skip decision: a forced asset counts as absent. (wait_for polls the raw
+    existence instead, or it would never see a forced export land.)"""
+    return False if (FORCE_ALL or name in FORCE) else utils.asset_exists(PROJECT, name)
 
 
-def wait_for(names, tasks=None, timeout=28800, poll=45):
-    names = [names] if isinstance(names, str) else names
-    tasks = tasks or []
-    t0 = time.time()
-    while True:
-        have = [n for n in names if asset_exists(n)]
-        if len(have) == len(names):
-            log(f"  ready: {', '.join(names)}")
-            return
-        for t in tasks:
-            st = t.status()
-            if st["state"] in ("FAILED", "CANCELLED"):
-                raise RuntimeError(f"task {st.get('description')} {st['state']}: "
-                                   f"{st.get('error_message', '')}")
-        if time.time() - t0 > timeout:
-            raise TimeoutError(f"timeout waiting for {set(names) - set(have)}")
-        time.sleep(poll)
+def wait_for(names, tasks=(), timeout=28800):
+    utils.wait_for(PROJECT, names, tasks=[t for t in tasks if t], timeout=timeout)
 
 
 def export(image, name, region):
@@ -152,26 +86,21 @@ def export(image, name, region):
     return utils.export_image(image, PROJECT, name, region, overwrite=True)
 
 
-def export_table_fresh(fc, name):
-    try:
-        ee.data.deleteAsset(aid(name))
-        log(f"  deleted stale {name}")
-    except ee.EEException:
-        pass
+def export_table(fc, name):
     log(f"  submit export {name}")
-    return utils.export_table(fc, PROJECT, name)
+    return utils.export_table(fc, PROJECT, name, overwrite=True)
 
 
 def main():
-    log(f"=== full rebuild Part 1->13 (project={PROJECT}) ===")
+    log(f"=== rebuild Part 1->13 (project={PROJECT}, "
+        f"territory={utils.territory()['name']}, until={UNTIL}) ===")
 
     # ---- Part 1: AOI (IBGE malha municipal) ---------------------------------
     utils.ensure_folder(PROJECT)
     if exists("aoi"):
         log("  aoi exists -- skip")
     else:
-        t_aoi = export_table_fresh(features.aoi_dissolved_fc(), "aoi")
-        wait_for("aoi", tasks=[t_aoi])
+        wait_for("aoi", tasks=[export_table(features.aoi_dissolved_fc(), "aoi")])
     AOI = utils.load_aoi(PROJECT)
     log(f"  AOI area (km^2): {round(AOI.area(1000).divide(1e6).getInfo(), 1)}")
 
@@ -181,7 +110,7 @@ def main():
         ("feat_terrain", lambda: features.terrain_features(AOI)),
         ("feat_soil", lambda: features.soil_features(AOI)),
         ("feat_water", lambda: features.water_features(AOI)),
-        ("feat_landcover", lambda: features.landcover_features_mapbiomas(AOI)),  # T10
+        ("feat_landcover", lambda: features.landcover_features_mapbiomas(AOI)),
         ("feat_siting", lambda: features.siting_features(AOI)),
         ("feat_conservation", lambda: features.conservation_features(AOI)),
     ]
@@ -195,221 +124,156 @@ def main():
         log("  waiting on Parts 2-7d feature exports ...")
         wait_for([n for n, _ in theme_jobs], tasks=theme_tasks, timeout=7200)
     if stop_after("features"):
-        log("=== STOP after Parts 1-7d (REBUILD_UNTIL=features) ===")
+        log("=== STOP after Parts 1-7d ===")
         return
 
     # ---- Part 8: feature stack (raw + z-scored) ------------------------------
     if exists("feature_stack_250m") and exists("feature_stack_250m_z"):
         log("  feature_stack_250m(_z) exist -- skip")
     else:
-        imgs = features.load_stack_images(PROJECT)
-        raw, z = features.assemble_stack(imgs, AOI)
-        t1 = export(raw, "feature_stack_250m", AOI)
-        t2 = export(z, "feature_stack_250m_z", AOI)
-        wait_for(["feature_stack_250m", "feature_stack_250m_z"], tasks=[t1, t2])
-
+        raw, z = features.assemble_stack(features.load_stack_images(PROJECT), AOI)
+        wait_for(["feature_stack_250m", "feature_stack_250m_z"],
+                 tasks=[export(raw, "feature_stack_250m", AOI),
+                        export(z, "feature_stack_250m_z", AOI)])
     if stop_after("stack"):
-        log("=== STOP after Part 8 (REBUILD_UNTIL=stack) ===")
-        log("Next: EE_PROJECT=probformer uv run python tools/diff_vs_backup.py "
-            "--backup <folder> <assets...>")
+        log("=== STOP after Part 8 ===")
         return
 
     stack = img("feature_stack_250m")
     z = img("feature_stack_250m_z")
     lc = img("feat_landcover")
 
-    # ---- Part 13 (early): feat_realized (needed for extras + zoning profiling)
+    # ---- Part 13 (early): feat_realized (suitability extras + zoning profiles)
     if exists("feat_realized"):
         log("  feat_realized exists -- skip")
     else:
-        realized_img = external.realized_features(AOI)
-        t_r = export(realized_img, "feat_realized", AOI)
-        wait_for("feat_realized", tasks=[t_r])
+        wait_for("feat_realized",
+                 tasks=[export(external.realized_features(AOI), "feat_realized", AOI)])
     realized = img("feat_realized")
-
     if stop_after("realized"):
-        log("=== STOP after feat_realized (REBUILD_UNTIL=realized) ===")
+        log("=== STOP after feat_realized ===")
         return
 
-    siting = img("feat_siting")
-    consv = img("feat_conservation")
-    extras = {"sit_": siting, "rl_": realized, "cv_": consv}
+    extras = {"sit_": img("feat_siting"), "rl_": realized, "cv_": img("feat_conservation")}
 
     # ---- Part 9: suitability + comparative + sensitivity ---------------------
     present = ["suit_present", "suit_present_comp", "suit_present_sens"]
+    suit_tasks = []
     if all(exists(n) for n in present):
         log("  suit_present/_comp/_sens exist -- skip")
-        suit_tasks = []
     else:
         suit = membership.suit_present(stack, lc, SEG, extras)
         comp = membership.comparative_present(suit, AOI, SEGS, scale=1000)
         sens = membership.sensitivity_present(stack, lc, SEG, extras)
-        suit_tasks = [
-            export(suit, "suit_present", AOI),
-            export(comp, "suit_present_comp", AOI),
-            export(sens, "suit_present_sens", AOI),
-        ]
-    # Only suit_present gates the next stage (zoning stratifies on it), so the zoning
-    # path waits on that one alone.
-    wait_for("suit_present", tasks=suit_tasks)
+        suit_tasks = [export(suit, "suit_present", AOI),
+                      export(comp, "suit_present_comp", AOI),
+                      export(sens, "suit_present_sens", AOI)]
+    wait_for("suit_present", tasks=suit_tasks)   # zoning stratifies on it
     suit_a = img("suit_present")
-
     if stop_after("suit"):
-        # ... but a run that STOPS here must not return while _comp/_sens are still in
-        # flight: REBUILD_FORCE deletes the asset before submitting, so an early return
-        # leaves them simply absent, and the K gate that follows reads suit_present_comp.
-        log("  waiting on suit_present_comp/_sens before stopping ...")
-        wait_for(present, tasks=suit_tasks)
-        log("=== STOP after Part 9 (REBUILD_UNTIL=suit) ===")
-        log("Next: pick K from the full validity+stability panel, then rerun "
-            "with ZONE_K=<k>.")
+        wait_for(present, tasks=suit_tasks)      # don't return with _comp/_sens in flight
+        log("=== STOP after Part 9 ===")
         return
 
-    # ---- Part 10: zoning (offline sklearn; T8 stratified sample) -------------
+    # ---- Part 10: zoning (offline sklearn on a calib-fitted PCA) -------------
     if exists("zones_present"):
         log("  zones_present exists -- skip")
     else:
-        log("  zoning: stratified sample + PCA + k-sweep ...")
-        frac_bands = [f"rl_{r}_frac" for r in
-                      ("soybean", "sugarcane", "other_crops", "pasture", "native")]
+        log("  zoning: stratified sample + PCA + k=2..20 panel ...")
         bands = zoning.ZONING_BANDS
-        split = utils.split_image(PROJECT).rename("split")
-        sample = zoning.build_sample(z, stack, suit_a, AOI, bands, segments=SEGS, seed=42,
-                                     extra=realized.select(frac_bands).addBands(split))
-        df = zoning.fc_to_df(sample)
-        X = zoning.cluster_matrix(df, bands)
-        # Fit on the calibration half only; project both. See the same comment in
-        # tools/gen_diag_csvs.py -- a PCA fitted on everything would leak the
-        # held-out covariance into the space the holdout columns are measured in.
-        calib = (df["split"].to_numpy() == 0)
+        df, pca, S, calib = zoning.holdout_sample(
+            z, stack, suit_a, AOI, utils.split_image(PROJECT), realized, SEGS)
         log(f"  sample n={len(df)}  calib={int(calib.sum())}  val={int((~calib).sum())}")
-        pca = zoning.fit_pca(X[calib], var_keep=0.90)
-        S = pca.transform(X)
-        # Full validity + stability panel over k = 2..20, identical to
-        # tools/gen_diag_csvs.py:gen_zoning_kselect() -- which is the tool that
-        # wrote thesis/Chapters/zoning_kselect.csv. The two used to disagree: this
-        # script swept only k = 2..10 and computed no ARI, so the K it exported and
-        # the K the thesis justified came from different procedures. One sweep now
-        # serves both, and the CSV is written from the same run that exports the asset.
-        ks = range(2, 21)
-        sweep = zoning.kmeans_sweep(S[calib], ks=ks, seed=42)
-        gap = zoning.gap_statistic(S[calib], ks=ks, B=10, seed=42)
-        stab = zoning.stability_sweep(S[calib], ks=ks, B=20, seed=42)
-        hold = zoning.holdout_sweep(S, df["split"].to_numpy(), ks=ks, seed=42)
-        sweep = sweep.rename(columns={"silhouette": "silhouette_calib",
-                                      "davies_bouldin": "davies_bouldin_calib"})
-        stab = stab.rename(columns={"ari": "ari_subsample",
-                                    "ari_std": "ari_subsample_std"})
-        swp = sweep.merge(gap, on="k").merge(stab, on="k").merge(hold, on="k")
-        kcsv = os.path.join(os.path.dirname(__file__), "..", "thesis", "Chapters")
-        kcsv = os.path.join(os.environ.get("SCRATCHPAD", os.path.normpath(kcsv)),
-                            "zoning_kselect.csv")
+        swp = zoning.kselect_panel(S, df["split"].to_numpy())
+        kcsv = utils.out_path("zoning_kselect.csv")
         swp.to_csv(kcsv, index=False)
-        log(f"  wrote {kcsv}")
-        log("  k panel (decorrelated PC space):\n" + swp.round(3).to_string(index=False))
+        log(f"  wrote {kcsv}\n" + swp.round(3).to_string(index=False))
 
-        # ZONE_K pins k deliberately (same mechanism as tools/rezone.py). The
-        # silhouette here is near-flat, so argmax-silhouette alone is a coin flip
-        # between adjacent k -- it is a fallback, not a decision procedure. Read the
-        # panel (silhouette + Davies-Bouldin + gap + ARI) and pin the result.
+        # Silhouette is near-flat, so argmax alone is not a decision: read the
+        # panel and pin K with ZONE_K. The fallback uses the HOLDOUT column.
         if os.environ.get("ZONE_K"):
             K = int(os.environ["ZONE_K"])
             log(f"  K = {K} (pinned via ZONE_K)")
         else:
             cand = swp[swp.k >= 3]
-            # silhouette_val, not silhouette_calib: the fallback has to read the
-            # same column the k claim rests on (CLAUDE.md §11), and the calib
-            # column is the in-sample one by construction.
             K = int(cand.loc[cand.silhouette_val.idxmax(), "k"])
-            log(f"  K = {K} (fallback: argmax silhouette_val over k>=3, NOT pinned) "
-                f"(PCs={pca.n_components_}); review the panel above")
-        # Final centroids from the calibration half; the raster is then produced
-        # for the WHOLE AOI by nearest-centroid band math below -- the product
-        # covers the territory, only the estimation is restricted.
-        # Canonical labels: zones numbered by descending mean elevation, not by
-        # k-means++ init order, so "Zona N" in the thesis keeps meaning the same
-        # zone across re-derivations (zoning.fit_kmeans).
+            log(f"  K = {K} (fallback argmax silhouette_val, NOT pinned; "
+                f"PCs={pca.n_components_}) -- review the panel and set ZONE_K")
+        # Centroids from the calibration half; zones canonically numbered by
+        # descending mean elevation; the raster covers the whole AOI.
         km = zoning.fit_kmeans(S[calib], K, seed=42,
                                order_by=df.loc[calib, zoning.CANONICAL_ORDER_BAND])
-        theme_w = zoning.theme_weight_vector(bands)
-        pc_img = zoning.pca_project_image(z, bands, theme_w, pca)
-        zones = zoning.nearest_centroid_image(pc_img, zoning.pc_names(pca), km.cluster_centers_)
-        # Profile on the full sample, labelled by the calibration-fitted model, so
-        # the zone cards describe the territory the raster actually paints.
+        pc_img = zoning.pca_project_image(z, bands, zoning.theme_weight_vector(bands), pca)
+        zones = zoning.nearest_centroid_image(pc_img, zoning.pc_names(pca),
+                                              km.cluster_centers_)
         prof = zoning.profile_zones(df, km.predict(S), bands, SEGS,
-                                    realized_fracs=frac_bands)
-        prof.to_csv("zone_profiles.csv", index=False)
+                                    realized_fracs=zoning.REALIZED_FRAC_BANDS)
+        prof.to_csv(utils.out_path("zone_profiles.csv"), index=False)
         log("  zone profiles:\n" + prof[["zone", "n", "comparative_segment",
             "dominant_segment", "top_features"]].to_string(index=False))
-        t_zones = export(zones.toByte(), "zones_present", AOI)
-        wait_for("zones_present", tasks=[t_zones])
-
+        wait_for("zones_present", tasks=[export(zones.toByte(), "zones_present", AOI)])
     if stop_after("zones"):
-        log("=== STOP after Part 10 (REBUILD_UNTIL=zones) ===")
+        log("=== STOP after Part 10 ===")
         return
 
     # ---- Part 11: CMIP6 (independent of zones) -------------------------------
     cc = utils.cfg()["cmip6"]
-    fut_names = [f"suit_future_{s}_{w}" for s in cc["scenarios"] for w in cc["windows"]]
-    delta_names = [f"delta_{s}_{w}" for s in cc["scenarios"] for w in cc["windows"]]
-    agree_names = [f"agreement_{s}_{w}" for s in cc["scenarios"] for w in cc["windows"]]
-    if all(exists(n) for n in fut_names + delta_names + agree_names):
+    combos = [(s, w) for s in cc["scenarios"] for w in cc["windows"]]
+    fut_names = [f"suit_future_{s}_{w}" for s, w in combos]
+    delta_names = [f"delta_{s}_{w}" for s, w in combos]
+    agree_names = [f"agreement_{s}_{w}" for s, w in combos]
+    cmip_names = fut_names + delta_names + agree_names
+    cmip_tasks = []
+    if all(exists(n) for n in cmip_names):
         log("  CMIP6 suit_future/delta/agreement all exist -- skip")
-        cmip_tasks = []
     else:
         base = cmip6.baseline_monthly(AOI)
         sp_re = cmip6.suit_present_rederived(PROJECT, AOI, lc, SEG, extras=extras)
-        cmip_tasks = []
-        for ssp in cc["scenarios"]:
-            for win_name, win in cc["windows"].items():
-                if exists(f"suit_future_{ssp}_{win_name}") and exists(f"delta_{ssp}_{win_name}"):
-                    continue
+        for ssp, win_name in combos:
+            win = cc["windows"][win_name]
+            if not (exists(f"suit_future_{ssp}_{win_name}")
+                    and exists(f"delta_{ssp}_{win_name}")):
                 sf = cmip6.suit_future(PROJECT, cc["models"], ssp, win, AOI, lc, SEG,
                                        base=base, extras=extras)
-                dl = cmip6.delta(sf, sp_re, SEGS)
                 cmip_tasks.append(export(sf, f"suit_future_{ssp}_{win_name}", AOI))
-                cmip_tasks.append(export(dl, f"delta_{ssp}_{win_name}", AOI))
-        for ssp in cc["scenarios"]:
-            for win_name, win in cc["windows"].items():
-                if exists(f"agreement_{ssp}_{win_name}"):
-                    continue
-                ag = cmip6.agreement(PROJECT, cc["models"], ssp, win, AOI, sp_re, lc, SEG,
-                                     base=base, extras=extras)
+                cmip_tasks.append(export(cmip6.delta(sf, sp_re, SEGS),
+                                         f"delta_{ssp}_{win_name}", AOI))
+        for ssp, win_name in combos:
+            if not exists(f"agreement_{ssp}_{win_name}"):
+                ag = cmip6.agreement(PROJECT, cc["models"], ssp, cc["windows"][win_name],
+                                     AOI, sp_re, lc, SEG, base=base, extras=extras)
                 cmip_tasks.append(export(ag, f"agreement_{ssp}_{win_name}", AOI))
-
     if stop_after("cmip6"):
         log("  waiting on CMIP6 exports ...")
-        wait_for(fut_names + delta_names + agree_names, tasks=cmip_tasks)
-        log("=== STOP after Part 11 (REBUILD_UNTIL=cmip6) ===")
+        wait_for(cmip_names, tasks=cmip_tasks)
+        log("=== STOP after Part 11 ===")
         return
 
     # ---- Part 13: realized_vs_potential --------------------------------------
+    t_uu = None
     if exists("realized_vs_potential"):
         log("  realized_vs_potential exists -- skip")
-        t_uu = None
     else:
         uu = external.underutilization(suit_a, realized, SEGS)
         t_uu = export(uu.toByte(), "realized_vs_potential", AOI)
 
     # ---- Part 12: municipal aggregation (needs zones + a delta asset) -------
     wait_for(["zones_present", "delta_ssp585_2051_2070"], tasks=cmip_tasks)
-    if exists("municipal_godf"):
-        log("  municipal_godf exists -- skip")
-        t_muni = None
+    t_muni = None
+    if exists(MUNICIPAL):
+        log(f"  {MUNICIPAL} exists -- skip")
     else:
-        zones_a = img("zones_present").rename("zone")
-        delta_a = img("delta_ssp585_2051_2070")
-        agg = suit_a.select([f"suit_{s}" for s in SEGS]).addBands(zones_a).addBands(delta_a)
-        muni = external.municipal_means(external.municipal_fc(), agg)
-        t_muni = export_table_fresh(muni, "municipal_godf")
+        agg = (suit_a.select([f"suit_{s}" for s in SEGS])
+               .addBands(img("zones_present").rename("zone"))
+               .addBands(img("delta_ssp585_2051_2070")))
+        t_muni = export_table(external.municipal_means(external.municipal_fc(), agg),
+                              MUNICIPAL)
 
-    log("  waiting on CMIP6 + realized_vs_potential + municipal_godf ...")
-    wait_for(fut_names + delta_names + agree_names + ["realized_vs_potential", "municipal_godf"],
-             tasks=cmip_tasks + ([t_uu] if t_uu else []) + ([t_muni] if t_muni else []))
-
-    log("=== FULL REBUILD COMPLETE (Parts 1-13) ===")
-    log("Next: EE_PROJECT=probformer uv run python tools/verify_assets.py")
-    log("Then: EE_PROJECT=probformer uv run python tools/run_validation.py  (Part 14)")
+    log("  waiting on CMIP6 + realized_vs_potential + municipal table ...")
+    wait_for(cmip_names + ["realized_vs_potential", MUNICIPAL],
+             tasks=cmip_tasks + [t_uu, t_muni])
+    log("=== REBUILD COMPLETE (Parts 1-13) ===")
+    log("Next: pipeline.py verify, then pipeline.py validate (Part 14)")
 
 
 if __name__ == "__main__":

@@ -1,40 +1,49 @@
-"""Verify the geographic footprint / projection / scale of the built EE assets.
+"""Verify the footprint / projection / scale of the built EE assets.
 
-Reads each asset's stored metadata only (band crs + crs_transform + dimensions),
-so it works even in EE 'restricted mode' (no compute). For every image asset it
-reconstructs the pixel-grid bounding box and compares it to the expected
-Goiás + DF envelope, flagging displacement or wrong scale.
+Reads stored metadata only (band crs + affine transform + dimensions), so it works
+even in EE restricted (no-compute) mode. Each asset's pixel-grid bounding box is
+compared with the territory envelope (from the local mesh) and the grid scale.
 
-Run:  EE_PROJECT=probformer ../.venv/bin/python tools/verify_assets.py
+Run:  EE_PROJECT=<your-project> uv run python pipeline.py verify
 """
 from __future__ import annotations
 
-import os
 import sys
+from pathlib import Path
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 import ee  # noqa: E402
 import utils  # noqa: E402
 
-# Expected GO+DF envelope (WGS84) and target grid scale.
-EXP = dict(west=-53.25, east=-45.90, south=-19.50, north=-12.39)
-TOL = 0.5                      # deg slack on each edge
-EXP_SCALE_DEG = 250 / 111320.0  # ~0.002246 deg ~ 250 m at the equator
+TOL = 0.5  # deg slack on each edge
 
-ASSETS = [
-    "aoi",
-    "feat_climate", "feat_terrain", "feat_soil", "feat_water",
-    "feat_landcover", "feat_siting", "feat_conservation",
-    "feature_stack_250m", "feature_stack_250m_z",
-    "suit_present", "suit_present_comp", "suit_present_sens", "zones_present",
-    # Phase B (Parts 12–14)
-    "feat_realized", "realized_vs_potential",
-]
-# Part 11 — CMIP6 outputs (MISSING until the export tasks complete, then verified).
-for _ssp in ("ssp245", "ssp585"):
-    for _win in ("2031_2050", "2051_2070"):
-        ASSETS += [f"suit_future_{_ssp}_{_win}", f"delta_{_ssp}_{_win}",
-                   f"agreement_{_ssp}_{_win}"]
+
+def expected():
+    w, s, e, n = utils.aoi_bounds()
+    scale_deg = utils.scale_m() / 111320.0   # EPSG:4326 grid step at the equator
+    return dict(west=w, east=e, south=s, north=n), scale_deg
+
+
+def asset_list():
+    names = [
+        "aoi",
+        "feat_climate", "feat_terrain", "feat_soil", "feat_water",
+        "feat_landcover", "feat_siting", "feat_conservation",
+        "feature_stack_250m", "feature_stack_250m_z",
+        "feat_realized", utils.SPLIT_ASSET,
+        "suit_present", "suit_present_comp", "suit_present_sens", "zones_present",
+        "realized_vs_potential",
+    ]
+    cc = utils.cfg()["cmip6"]
+    for ssp in cc["scenarios"]:
+        for win in cc["windows"]:
+            names += [f"suit_future_{ssp}_{win}", f"delta_{ssp}_{win}",
+                      f"agreement_{ssp}_{win}"]
+    names.append("clim_future_ssp585_2051_2070")   # horizon cache (export_horizon_climate)
+    return names
+
+
+EXP, EXP_SCALE_DEG = None, None
 
 
 def bbox_from_transform(t, w, h):
@@ -50,8 +59,10 @@ def fmt(v):
 
 
 def main():
-    p = utils.init(os.environ.get("EE_PROJECT", "probformer"))
-    print(f"project = {p}")
+    global EXP, EXP_SCALE_DEG
+    EXP, EXP_SCALE_DEG = expected()
+    p = utils.init()
+    print(f"project = {p}   territory = {utils.territory()['name']}")
     print(f"expected envelope: lon[{EXP['west']}, {EXP['east']}]  "
           f"lat[{EXP['south']}, {EXP['north']}]   scale~{EXP_SCALE_DEG:.6f} deg\n")
 
@@ -59,7 +70,7 @@ def main():
     print(hdr)
     print("-" * len(hdr))
 
-    for name in ASSETS:
+    for name in asset_list():
         aid = utils.asset_id(p, name)
         try:
             info = ee.data.getAsset(aid)

@@ -48,7 +48,9 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 import derive_weights as dw  # noqa: E402
 
 ROOT = os.path.normpath(os.path.join(os.path.dirname(__file__), ".."))
-CHAPTERS = os.environ.get("SCRATCHPAD", os.path.join(ROOT, "thesis", "Chapters"))
+import utils  # noqa: E402
+
+CHAPTERS = str(utils.out_dir())
 DISCRIM = os.path.join(CHAPTERS, "factor_discrimination.csv")
 OUT_CSV = os.path.join(CHAPTERS, "sigma_domain_diff.csv")
 

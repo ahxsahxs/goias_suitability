@@ -123,8 +123,7 @@ def main():
             print(f"     lambda={lam:<5} AUC={rows[-1]['auc']:.4f}")
 
     df = pd.DataFrame(rows)
-    out = os.path.join(os.path.dirname(__file__), "..", "thesis", "Chapters")
-    out = os.environ.get("SCRATCHPAD", os.path.normpath(out))
+    out = str(utils.out_dir())
     dest = os.path.join(out, "lambda_auc.csv")
     df.to_csv(dest, index=False)
     print("\n", df.pivot(index="segment", columns="lambda", values="auc").to_string())

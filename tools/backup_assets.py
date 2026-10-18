@@ -8,10 +8,11 @@ Run:  EE_PROJECT=probformer ../.venv/bin/python tools/backup_assets.py [suffix]
 """
 from __future__ import annotations
 
+import os
 import sys
 from datetime import date
 
-sys.path.insert(0, "src")
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "src"))
 
 import ee  # noqa: E402
 import utils  # noqa: E402

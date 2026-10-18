@@ -2,9 +2,8 @@
 
 > Material de apoio visual para reuniões de orientação e apresentações/pósteres.
 > Os diagramas seguem a estrutura do Capítulo 3 (Metodologia) da dissertação e o pipeline
-> efetivamente implementado no repositório (`notebooks/`, `src/`, `tools/`). Fonte de verdade
-> textual: `../thesis/Chapters/04_methodology.tex` (racional completo) e `../CLAUDE.md` (estado de
-> execução).
+> efetivamente implementado no repositório (`pipeline.py`, `src/`, `tools/`). Fonte de verdade
+> textual: `../thesis/Chapters/04_methodology.tex` (racional completo) e `../README.md` (execução).
 
 ---
 
@@ -149,15 +148,15 @@ flowchart LR
 
 Tabela de apoio para quando um orientador perguntar "isso está implementado onde?".
 
-| Bloco do diagrama | Secção da tese | Notebook | Módulo `src/` |
+| Bloco do diagrama | Secção da tese | Comando (`pipeline.py`) | Módulo `src/` |
 |---|---|---|---|
-| Engenharia de atributos (29 bandas) | §4.1 | `01`–`08` | `src/features.py`, `src/utils.py` |
-| Viabilidade fuzzy + AHP | §3.2 | `09_suitability_fuzzy_ahp.ipynb` | `src/membership.py`, `config/segments.yaml`, `config/ahp_matrices.yaml` |
-| Zoneamento (PCA + k-means) | §3.3 | `10_zoning_kmeans.ipynb` | `src/zoning.py` (`tools/rezone.py`) |
-| Projeção CMIP6 (fatores de mudança) | §3.4 | `11_cmip6_shift.ipynb` | `src/cmip6.py` |
-| Uso atual da terra / municípios | §3.5 | `12_municipal_gaul.ipynb`, `13_mapbiomas.ipynb` | `src/external.py` |
-| Validação (AUC, Boyce, κ, ANOVA, GPP sazonal) | §3.5 | `14_validation_proxy_rf.ipynb` | `src/external.py`, `src/metrics.py` |
-| Atlas final / figuras / ranking municipal | Cap. 4 | `15_atlas_app.ipynb` | `tools/make_figures.py`, `gee_js/atlas_app.js` |
+| Engenharia de atributos (29 bandas) | §4.1 | `build --until stack` | `src/features.py`, `src/utils.py` |
+| Viabilidade fuzzy + AHP | §3.2 | `calibrate`, `build --until suit` | `src/membership.py`, `config/segments.yaml`, `config/ahp_matrices.yaml` |
+| Zoneamento (PCA + k-means) | §3.3 | `build --until zones --k K` | `src/zoning.py` |
+| Projeção CMIP6 (fatores de mudança) | §3.4 | `build --until cmip6` | `src/cmip6.py` |
+| Uso atual da terra / municípios | §3.5 | `build` | `src/external.py` |
+| Validação (AUC, Boyce, κ, ANOVA, GPP sazonal) | §3.5 | `validate` | `src/external.py`, `src/metrics.py` |
+| Atlas final / figuras / ranking municipal | Cap. 5 | `report`, `dashboard` | `tools/make_figures.py`, `docs/dashboard/` |
 
 ---
 

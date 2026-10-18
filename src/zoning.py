@@ -429,6 +429,50 @@ def holdout_sweep(X, split, ks=range(2, 11), seed=42, n_init=10, sil_sample=5000
     return pd.DataFrame(rows)
 
 
+# Realized-use fractions (feat_realized) carried in the zoning sample for profiling.
+REALIZED_FRAC_BANDS = [f"rl_{r}_frac" for r in
+                       ("soybean", "sugarcane", "other_crops", "pasture", "native")]
+
+
+def holdout_sample(z, raw, suit, region, split_img, realized, segments,
+                   band_names=ZONING_BANDS, seed=42):
+    """Zoning sample + PCA fitted on the CALIBRATION rows only.
+
+    Returns ``(df, pca, S, calib)``: S is every row projected into the calib-fitted
+    PC space, ``calib`` the boolean calibration mask. Fitting the PCA on all rows
+    would leak the held-out covariance into the space the holdout indices use.
+    """
+    extra = realized.select(REALIZED_FRAC_BANDS).addBands(split_img.rename("split"))
+    sample = build_sample(z, raw, suit, region, band_names, segments=segments,
+                          seed=seed, extra=extra)
+    df = fc_to_df(sample)
+    X = cluster_matrix(df, band_names)
+    calib = df["split"].to_numpy() == 0
+    pca = fit_pca(X[calib], var_keep=0.90)
+    return df, pca, pca.transform(X), calib
+
+
+def kselect_panel(S, split, ks=range(2, 21), seed=42):
+    """The k-selection panel behind zoning_kselect.csv.
+
+    In-sample indices on the calibration half (``*_calib``), gap statistic,
+    subsample stability (``ari_subsample`` -- reproducibility, NOT validity) and
+    the true holdout scores (``silhouette_val``/``davies_bouldin_val``/``ari_holdout``).
+    """
+    import numpy as np
+
+    split = np.asarray(split)
+    calib = split == 0
+    sweep = (kmeans_sweep(S[calib], ks=ks, seed=seed)
+             .rename(columns={"silhouette": "silhouette_calib",
+                              "davies_bouldin": "davies_bouldin_calib"}))
+    gap = gap_statistic(S[calib], ks=ks, B=10, seed=seed)
+    stab = (stability_sweep(S[calib], ks=ks, B=20, seed=seed)
+            .rename(columns={"ari": "ari_subsample", "ari_std": "ari_subsample_std"}))
+    hold = holdout_sweep(S, split, ks=ks, seed=seed)
+    return sweep.merge(gap, on="k").merge(stab, on="k").merge(hold, on="k")
+
+
 CANONICAL_ORDER_BAND = "terr_elev"
 
 

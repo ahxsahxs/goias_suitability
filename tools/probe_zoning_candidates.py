@@ -69,10 +69,7 @@ P = utils.init()
 AOI = utils.load_aoi(P)
 SEG = utils.cfg("segments")
 SEGS = list(SEG["segments"])
-THESIS_DIR = Path(__file__).resolve().parent.parent / "thesis" / "Chapters"
-# An EMPTY $SCRATCHPAD must mean "unset", not Path("") == the cwd, which would
-# scatter the CSVs into whatever directory the tool was invoked from.
-OUT = Path(os.environ.get("SCRATCHPAD") or str(THESIS_DIR))
+OUT = utils.out_dir()
 
 # Kept in step with features.assemble_stack (src/features.py:565-574). If those
 # reducer parameters ever change, the claim that this probe's z-scores equal a
@@ -210,16 +207,8 @@ def vif(df, target, predictors):
 
 
 def panel(S, split, label):
-    """The production k-selection panel (gen_diag_csvs.gen_zoning_kselect)."""
-    calib = split == 0
-    sweep = (zoning.kmeans_sweep(S[calib], ks=KS, seed=42)
-             .rename(columns={"silhouette": "silhouette_calib",
-                              "davies_bouldin": "davies_bouldin_calib"}))
-    gap = zoning.gap_statistic(S[calib], ks=KS, B=10, seed=42)
-    stab = (zoning.stability_sweep(S[calib], ks=KS, B=20, seed=42)
-            .rename(columns={"ari": "ari_subsample", "ari_std": "ari_subsample_std"}))
-    hold = zoning.holdout_sweep(S, split, ks=KS, seed=42)
-    out = sweep.merge(gap, on="k").merge(stab, on="k").merge(hold, on="k")
+    """The production k-selection panel (zoning.kselect_panel)."""
+    out = zoning.kselect_panel(S, split, ks=KS)
     out.insert(0, "space", label)
     return out
 

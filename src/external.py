@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import ee
 
-from utils import cfg, grid_projection, to_grid_bilinear
+from utils import cfg, grid_projection, territory, to_grid_bilinear
 
 # Segment-role codes for the majority-role band `rl_role` (0 = other/none).
 ROLE_CODES = {
@@ -32,12 +32,10 @@ _MOD17_FILL_MIN = 32701
 # MOD17A2H Gpp valid raw range is [0, 30000]; 32761-32767 are fills.
 _MOD17_GPP_FILL_MIN = 32761
 
-# Austral summer crop canopy window for the growing-season GPP validator: the
-# months when annual summer crops (soy / corn / cotton / sorghum) carry green
-# canopy in the Cerrado. Integrating GPP over this window (not the whole year)
-# removes the dry-season bare-fallow artifact that made annual NPP anti-correlate
-# with crop suitability. Sugarcane (near year-round) overrides with all 12 months.
-GROWING_MONTHS = [10, 11, 12, 1, 2, 3]
+# Crop canopy window for the growing-season GPP validator (config/territory.yaml).
+# Integrating GPP over the rainy season, not the whole year, removes the dry-season
+# bare-fallow artifact. Sugarcane (near year-round) overrides with all 12 months.
+GROWING_MONTHS = list(territory()["growing_months"])
 
 
 # =============================================================================
