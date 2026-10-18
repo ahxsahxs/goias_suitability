@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router'
 import AppSidebar from './components/AppSidebar.vue'
+import { useManifest } from './composables/useManifest'
 
-const baseUrl = import.meta.env.BASE_URL
+// Build provenance: when the data files were generated and from which commit.
+const { manifest } = useManifest()
 </script>
 
 <template>
@@ -15,9 +17,11 @@ const baseUrl = import.meta.env.BASE_URL
       </main>
 
       <footer class="app-footer">
-        <span>v2</span>
-        <span>base: <code>{{ baseUrl }}</code></span>
-        <a href="https://github.com/ahxsahxs/goias_suitability">Repositório</a>
+        <span v-if="manifest">
+          Dados gerados em {{ new Date(`${manifest.generated_at}T12:00`).toLocaleDateString('pt-BR')
+          }}<template v-if="manifest.git_sha"> (commit <code>{{ manifest.git_sha }}</code>)</template>
+        </span>
+        <a href="https://github.com/ahxsahxs/goias_suitability">Repositório <code>goias_suitability</code></a>
       </footer>
     </div>
   </div>

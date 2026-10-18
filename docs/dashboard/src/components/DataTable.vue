@@ -93,7 +93,7 @@ function onRowClick(row: T): void {
         </tr>
       </tbody>
     </table>
-    <p v-if="rows.length === 0" class="empty-hint">Sem dados.</p>
+    <p v-if="rows.length === 0" class="empty-hint">Nenhum registro.</p>
   </div>
 </template>
 

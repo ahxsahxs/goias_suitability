@@ -26,21 +26,25 @@ export interface AggregationConfig {
   sensitivity_delta: number
   /** Exponent of the regional adaptation w = normalize(w_lit * sigma(mu)^lambda). */
   lambda_regional: number
+  /** Spatial-holdout half sigma(mu) was measured on (machine-written by derive_weights). */
+  derived_half: 'calib' | 'val' | 'full'
 }
 export type MembershipType = 'increasing' | 'decreasing' | 'range'
 /**
  * Every factor is `limiting`: it enters the weighted aggregation and carries a
- * derived weight. `gate` is RETIRED (2026-10-02) and no longer appears in
- * config/segments.yaml -- it is kept in the union only so an archived config
- * still parses. Factors that are spatially constant today are handled by
- * measuring sigma(mu) over the present pooled with the CMIP6 horizon, not by an
- * exemption; five still land at weight exactly 0.
+ * derived weight (`role: gate` was retired on 2026-10-02 — CLAUDE.md §11). A
+ * factor may omit `role`; it is limiting either way. Factors that are spatially
+ * constant today are handled by measuring sigma(mu) over the present pooled with
+ * the CMIP6 horizon; some still land at weight exactly 0.
  */
-export type FactorRole = 'limiting' | 'gate'
+export type FactorRole = 'limiting'
+/** How a factor's BREAKPOINTS were placed (segments.yaml `anchor.rule`). */
+export type AnchorRule = 'percentile' | 'mu_one' | 'agronomic'
 export interface FactorConfig {
   /** Machine-written by tools/derive_weights.py; never hand-edited. */
   weight: number
-  role: FactorRole
+  role?: FactorRole
+  anchor?: { rule: AnchorRule; mask?: string; points?: Record<string, string> }
   type: MembershipType
   points: number[]
   /** How the BREAKPOINTS were set, not how the weight was derived. */
@@ -149,7 +153,6 @@ export interface ZoneProfileRow {
    * (csv/zone_area.csv, a pixelArea() group reduce). See CLAUDE.md §9.
    */
   n: number
-  dominant_segment: string
   comparative_segment: string
   /** Runner-up comparative vocation, and the z-gap from it to the winner. */
   comparative_segment_2: string
@@ -195,27 +198,22 @@ export interface ZoneAreaRow {
 //   *_val / ari_holdout      measured on the HELD-OUT half of the spatial split.
 //     ari_holdout compares the calibration-fitted partition of that half against
 //     one fitted independently on it. The adopted k rests on these.
-// All optional: a CSV written before the holdout existed carries only the legacy
-// `silhouette` / `davies_bouldin` / `ari` names, which readers fall back to.
+// No fallback to the pre-holdout names: a CSV without the held-out columns is a
+// wrong table, not a missing one (CLAUDE.md §11), and the view refuses it.
 export interface ZoningKselectRow {
   k: number
   inertia: number
   gap: number
   s_k: number
   /** calibration half */
-  silhouette_calib?: number
-  davies_bouldin_calib?: number
-  ari_subsample?: number
-  ari_subsample_std?: number
+  silhouette_calib: number
+  davies_bouldin_calib: number
+  ari_subsample: number
+  ari_subsample_std: number
   /** held-out half */
-  silhouette_val?: number
-  davies_bouldin_val?: number
-  ari_holdout?: number
-  /** legacy (pre-holdout) names */
-  silhouette?: number
-  davies_bouldin?: number
-  ari?: number
-  ari_std?: number
+  silhouette_val: number
+  davies_bouldin_val: number
+  ari_holdout: number
 }
 
 // --- csv/factor_variance.csv -----------------------------------------------------
@@ -224,21 +222,6 @@ export interface FactorVarianceRow {
   factor: string
   weight: number
   variance_share: number
-}
-
-// --- csv/theme_roughness.csv / theme_roughness_points.csv ------------------------
-export interface ThemeRoughnessRow {
-  group: string
-  radius_m: number
-  mean_std: number
-  median_std: number
-  n: number
-}
-export interface ThemeRoughnessPointRow {
-  longitude: number
-  latitude: number
-  rough_climate_r4750: number
-  rough_terrain_soil_r4750: number
 }
 
 // --- csv/municipal_ranking.csv (7 suit_*, zone, 7 delta_* off delta_ssp585_2051_2070,
@@ -281,7 +264,7 @@ export interface MunicipioProperties {
   NM_UF: string
 }
 
-// --- json/datasets_catalog.json (config/datasets.yaml, hand-curated) -------------
+// --- json/datasets_catalog.json (config/datasets.yaml) ---------------------------
 export interface DatasetCatalogEntry {
   theme: string
   source: string
@@ -290,10 +273,12 @@ export interface DatasetCatalogEntry {
   period: string
 }
 
-// --- json/stack_composition.json (static, from STACK_THEMES) ---------------------
+// --- json/stack_composition.json (band names of the exported feature_stack_250m) ---
 export interface StackComposition {
   themes: Record<string, number>
   total_bands: number
+  bands: string[]
+  zoning_bands: string[]
   excluded: string[]
   note: string
 }
@@ -321,6 +306,7 @@ export interface PcaVariant {
 export interface PcaPoints {
   pc_full: [number, number, number][]
   pc_curated: [number, number, number][]
+  /** 1-based zone ids (zones_present + 1), like zone_profiles.csv. */
   zone: number[]
   lon: number[]
   lat: number[]
@@ -345,10 +331,13 @@ export interface BandPercentileSummary {
 }
 export type BandPercentiles = Record<string, BandPercentileSummary>
 
-// --- json/validation_scorecard.json (hand-transcribed from the thesis tables) ----
+// --- json/validation_scorecard.json (validation_metrics.csv, held-out half) ------
 export interface PresenceAucBoyceRow {
   auc: number
   boyce: number
+  /** evaluated pixels / of which presences, on the held-out half */
+  n: number
+  presences: number | null
 }
 export interface WithinCropGradientRow {
   rho: number
@@ -358,6 +347,8 @@ export interface ZoneAnova {
   f: number
   p_approx: number
   zone_mean_range: [number, number]
+  /** 1-based zone ids; mean MOD17 NPP (scaled units) and sample size per zone */
+  zones: { zone: number; mean_npp: number; n: number }[]
 }
 export interface RfKappa {
   soybean: number
@@ -372,6 +363,7 @@ export interface ValidationScorecard {
   half: string
   presence_auc_boyce: Record<string, PresenceAucBoyceRow>
   spearman_npp: Record<string, number>
+  spearman_npp_p: Record<string, number>
   spearman_npp_n_municipalities: number
   spearman_npp_notes: Record<string, string>
   within_crop_gpp_gradient: Record<string, WithinCropGradientRow>
@@ -393,5 +385,103 @@ export interface HomeStats {
   auc_soybean: number | null
   boyce_soybean: number | null
   underused_soybean_pct: number | null
-  mean_delta_other_crops_ssp585_2051_2070: number | null
+  /** Most negative territory-mean ΔS over every segment x scenario (tab:shift-mean). */
+  worst_delta: { segment: string; ssp: string; window: string; delta_s: number }
+}
+
+// --- json/manifest.json (build_dashboard_assets.build_manifest) --------------------
+// Every count, list, domain and pt-BR label the views would otherwise hardcode. The
+// numbers come from the pipeline; the words from config/dashboard.yaml, checked at
+// build time against the thesis' own table labels and against K.
+export interface ManifestSegment {
+  key: string
+  label: string
+  short: string
+}
+export interface ManifestZone {
+  /** 1-based, canonical (descending mean elevation). */
+  zone: number
+  /** Landform descriptor (editorial, config/dashboard.yaml). */
+  name: string
+  comparative_segment: string
+  comparative_segment_2: string
+  comparative_margin: number
+  /** margin < zone_pair_margin: the zone reads as a PAIR of vocations. */
+  paired: boolean
+  area_km2: number
+  share_pct: number
+  mean_elev_m: number
+}
+export interface ManifestWindow {
+  key: string
+  start: number
+  end: number
+}
+export interface Manifest {
+  generated_at: string
+  git_sha: string | null
+  segments: ManifestSegment[]
+  zones: ManifestZone[]
+  zone_pair_margin: number
+  /** rl_role raster code -> label (JSON keys are strings). */
+  roles: Record<string, string>
+  realized_bands: Record<string, string>
+  fao_classes: { code: string; label: string }[]
+  fao_breaks: number[]
+  ssps: { key: string; label: string }[]
+  windows: ManifestWindow[]
+  gcms: string[]
+  baseline: { start: number; end: number }
+  municipal_delta: { ssp: string; window: string }
+  /** ssp -> window -> segments with a shipped delta PMTiles (scanned, not assumed). */
+  delta_layers: Record<string, Record<string, string[]>>
+  delta_domain: [number, number]
+  aoi: { area_km2: number; n_municipalities: number; municipalities_by_uf: Record<string, number> }
+  grid_m: number
+  /** pca_var_keep = variance share the zoning PCA retains (zoning.fit_pca default); n_pc_90 counts against it */
+  stack: { total_bands: number; themes: Record<string, number>; n_zoning_bands: number; pca_var_keep: number }
+  hero_bands: { theme: string; band: string; stacked: boolean }[]
+  themes: Record<string, string>
+  anchor_rules: Record<AnchorRule, string>
+  membership_types: Record<string, string>
+  bands: Record<string, string>
+}
+
+// --- thesis/Chapters CSVs copied by build_diagnostics ------------------------------
+export interface Cmip6ShiftMeanRow { segment: string; ssp: string; window: string; delta_s: number }
+export interface Cmip6ShiftShareRow {
+  segment: string; ssp: string; window: string; present_share: number; future_share: number
+}
+export interface Cmip6DowngradeRow { segment: string; ssp: string; window: string; downgrade_share: number }
+/** FAO class transition present -> future, outras culturas anuais, worst case. */
+export interface Cmip6TransitionRow { present: string; future: string; share_pct: number; ssp: string; window: string }
+export interface Cmip6ZoneShiftRow { ssp: string; window: string; segment: string; zone: number; delta_s: number }
+export interface RealizedCompositionRow { band: string; share_pct: number }
+export interface RealizedGapRow { band: string; segment: string; area_km2: number; share_pct: number }
+export interface FactorDiscriminationRow {
+  segment: string
+  factor: string
+  half: string
+  role: string
+  type: string
+  points: string
+  sigma_mu_available: number
+  sigma_mu_future: number
+  sigma_mu_horizon: number
+  sigma_mu_realized: number
+  mean_mu_available: number
+  mean_mu_future: number
+  frac_saturated: number
+  frac_vetoed: number
+}
+export interface LambdaSweepRow { half: string; segment: string; factor: string; lambda: number; weight: number }
+export interface LambdaAucRow { segment: string; half: string; lambda: number; n: number; presences: number; auc: number }
+export interface FactorVarianceThemeRow {
+  segment: string
+  raw_climate: number
+  raw_terrain_soil: number
+  raw_other: number
+  theme_climate: number
+  theme_terrain_soil: number
+  theme_other: number
 }

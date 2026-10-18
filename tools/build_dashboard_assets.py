@@ -13,17 +13,23 @@ cattle/conservation/solar have none by construction, see external.ROLE_CODES). T
 is a separate file from thesis/Chapters/Figures/municipal_ranking.csv (produced by
 tools/extract_present.py::municipal()) — this script never touches that file.
 
-Delta raster coverage is deliberately curated, not exhaustive: delta_* PMTiles cover 5
-segments (soybean/sugarcane/other_crops/conservation/solar) x 4 SSP/window combos = 20
-files. The dashboard no longer ships
+Delta raster coverage follows config: every segment in SEGMENTS x every
+`cmip6.scenarios` x `cmip6.windows` in config/datasets.yaml. The dashboard learns
+which layers exist from manifest.json (`delta_layers`, a scan of pmtiles/), never
+from a list of its own. The dashboard no longer ships
 agreement_* (GCM ensemble agreement) rasters — the territory-mean agreement is ~0.999
 and near-uniform everywhere regardless of scenario/segment (see
 thesis/Chapters/04_methodology.tex's concordância paragraph and fig:ensemble-agreement),
 so the maps were non-informative and were dropped from the dashboard.
 
-Note: the zone count is read from zone_profiles.csv at run time, NOT hardcoded — the
-zoning asset currently has 10 zones (0-9), not the 7 that CLAUDE.md's Part-10 row used
-to describe.
+Zones: the count is read from zone_profiles.csv at run time, never hardcoded. The
+zones_present raster is 0-based; every file this script writes is 1-based, like
+zone_profiles.csv, the thesis and its figures (CLAUDE.md §11). The +1 is applied
+exactly once, where a raster value is read (municipal ranking, PCA sample).
+
+Words vs numbers: every NUMBER the dashboard shows comes from a file written here;
+every human-readable LABEL comes from config/dashboard.yaml via manifest.json.
+`--only offline` runs every stage that needs no Earth Engine compute.
 
 Run:
   EE_PROJECT=probformer uv run python tools/build_dashboard_assets.py [--only <stage>]
@@ -55,6 +61,7 @@ import features  # noqa: E402
 import ibge_mesh  # noqa: E402
 import utils  # noqa: E402
 from palettes import (  # noqa: E402
+    DELTA_DOMAIN,
     FAO_ORDER,
     PAL_DIV,
     PAL_FAO,
@@ -62,6 +69,7 @@ from palettes import (  # noqa: E402
     PAL_SUIT,
     PAL_UNDERUSED,
     SEGMENTS,
+    ZONE_PAIR_MARGIN,
     zone_palette,
 )
 
@@ -71,6 +79,12 @@ SCRATCH_DIR = REPO_ROOT / "docs" / "dashboard" / ".build-scratch"
 CONFIG_DIR = REPO_ROOT / "config"
 
 TS = 8  # tileScale — see CLAUDE.md §11 "validation is compute-heavy" gotcha
+THESIS_DIR = REPO_ROOT / "thesis" / "Chapters"
+
+# The one SSP/window the municipal click-panel and the Home chip summarize (the
+# thesis' worst case, §sec:shift / tab:municipal-rank). Exported in manifest.json so
+# the dashboard never has to restate it.
+MUNICIPAL_DELTA = ("ssp585", "2051_2070")
 
 
 def log(msg: str) -> None:
@@ -128,7 +142,7 @@ def build_municipal_ranking() -> None:
 
     suit = ee.Image(aid("suit_present"))
     zones = ee.Image(aid("zones_present")).rename("zone")
-    delta = ee.Image(aid("delta_ssp585_2051_2070"))
+    delta = ee.Image(aid("delta_{}_{}".format(*MUNICIPAL_DELTA)))
     uu = ee.Image(aid("realized_vs_potential"))
     uu_bands = uu.bandNames().getInfo()  # discovered, not assumed — see module docstring
     muni = external.municipal_fc()
@@ -149,7 +163,9 @@ def build_municipal_ranking() -> None:
     feats = means.select(props, None, False).getInfo()["features"]
 
     df = pd.DataFrame([f["properties"] for f in feats]).dropna(subset=[f"suit_{SEGMENTS[0]}"])
-    df["zone"] = df["zone"].round().astype(int)
+    # zones_present is 0-based; shift once to the 1-based ids every other file uses
+    # (same rule as tools/extract_present.municipal, which the thesis counts come from).
+    df["zone"] = df["zone"].round().astype(int) + 1
 
     out_csv = DATA_DIR / "csv" / "municipal_ranking.csv"
     out_csv.parent.mkdir(parents=True, exist_ok=True)
@@ -173,8 +189,6 @@ DIAG_CSVS = {
     "zone_profiles.csv": REPO_ROOT / "zone_profiles.csv",
     "zoning_kselect.csv": REPO_ROOT / "thesis" / "Chapters" / "zoning_kselect.csv",
     "factor_variance.csv": REPO_ROOT / "thesis" / "Chapters" / "factor_variance.csv",
-    "theme_roughness.csv": REPO_ROOT / "thesis" / "Chapters" / "theme_roughness.csv",
-    "theme_roughness_points.csv": REPO_ROOT / "thesis" / "Chapters" / "theme_roughness_points.csv",
     # Part 9 weight derivation (tools/derive_weights.py): w_lit | d | w_final
     "ahp_weights.csv": REPO_ROOT / "thesis" / "Chapters" / "ahp_weights.csv",
     "lambda_sweep.csv": REPO_ROOT / "thesis" / "Chapters" / "lambda_sweep.csv",
@@ -183,16 +197,31 @@ DIAG_CSVS = {
     # source for "how big is zone N": zone_profiles.csv's `n` is a stratified-sample
     # count, not an area share (CLAUDE.md §9).
     "zone_area.csv": REPO_ROOT / "thesis" / "Chapters" / "zone_area.csv",
+    # Part 9 discrimination / λ sensitivity (tools/anchor_breakpoints.py, derive_weights.py)
+    "lambda_auc.csv": THESIS_DIR / "lambda_auc.csv",
+    "factor_variance_theme.csv": THESIS_DIR / "factor_variance_theme.csv",
+    # Part 11 summary tables (tools/extract_cmip6.py) -- tab:shift-mean, tab:shift-share,
+    # tab:downgrade-share, tab:transition-othercrops, tab:zone-shift
+    "cmip6_shift_mean.csv": THESIS_DIR / "cmip6_shift_mean.csv",
+    "cmip6_shift_share.csv": THESIS_DIR / "cmip6_shift_share.csv",
+    "cmip6_downgrade.csv": THESIS_DIR / "cmip6_downgrade.csv",
+    "cmip6_transition_othercrops.csv": THESIS_DIR / "cmip6_transition_othercrops.csv",
+    "cmip6_zone_shift.csv": THESIS_DIR / "cmip6_zone_shift.csv",
+    # Parts 12-13 (tools/extract_present.py) -- tab:realized-composition, tab:pot-real-gap
+    "realized_composition.csv": THESIS_DIR / "realized_composition.csv",
+    "realized_gap.csv": THESIS_DIR / "realized_gap.csv",
 }
 
 
 def build_diagnostics() -> None:
     out = DATA_DIR / "csv"
     out.mkdir(parents=True, exist_ok=True)
+    # A missing source used to be logged and skipped, which left the PREVIOUS copy in
+    # public/data -- a stale table shipped with exit code 0 (CLAUDE.md §11). Refuse.
+    missing = [str(src) for src in DIAG_CSVS.values() if not src.exists()]
+    if missing:
+        raise SystemExit("missing diagnostic sources:\n  " + "\n  ".join(missing))
     for name, src in DIAG_CSVS.items():
-        if not src.exists():
-            log(f"  !! missing {src}, skipped")
-            continue
         shutil.copyfile(src, out / name)
         log(f"copied {src} -> {out / name}")
 
@@ -206,9 +235,9 @@ def zone_count() -> int:
 def build_home_stats() -> None:
     """Small aggregate for the Home route's stat-chip strip — computed once here
     from files this script already writes (municipal_ranking.csv, zone_profiles.csv,
-    validation_scorecard.json), never recomputed client-side. Run `--only
-    validation_scorecard` and `--only municipal` before this stage (the full run,
-    with no --only, already orders them correctly)."""
+    validation_scorecard.json) plus thesis/Chapters/cmip6_shift_mean.csv, never
+    recomputed client-side. No EE call. Run `--only validation_scorecard` and
+    `--only municipal` before this stage (the full run already orders them)."""
     out = DATA_DIR / "json"
     out.mkdir(parents=True, exist_ok=True)
 
@@ -223,15 +252,15 @@ def build_home_stats() -> None:
     top_zone = area.loc[area["share_pct"].idxmax()]
 
     scorecard_path = out / "validation_scorecard.json"
-    scorecard = json.loads(scorecard_path.read_text()) if scorecard_path.exists() else {}
+    if not scorecard_path.exists():
+        raise SystemExit("run --only validation_scorecard first")
+    scorecard = json.loads(scorecard_path.read_text())
 
-    project = utils.init()
-    aoi = utils.load_aoi(project)
-    delta = ee.Image(utils.asset_id(project, "delta_ssp585_2051_2070"))
-    mean_delta = delta.select("delta_other_crops").reduceRegion(
-        reducer=ee.Reducer.mean(), geometry=aoi, scale=1000, bestEffort=True,
-        tileScale=TS, maxPixels=int(1e9),
-    ).getInfo().get("delta_other_crops")
+    # Worst projected change = most negative territory-mean ΔS over every segment x
+    # scenario, read from the thesis' own table (tab:shift-mean) rather than a fresh,
+    # bestEffort EE reduction that could disagree with it in the 3rd decimal.
+    shift = pd.read_csv(THESIS_DIR / "cmip6_shift_mean.csv")
+    worst = shift.loc[shift["delta_s"].idxmin()]
 
     stats = {
         "n_zones": len(zones),
@@ -244,7 +273,10 @@ def build_home_stats() -> None:
         "auc_soybean": scorecard.get("presence_auc_boyce", {}).get("soybean", {}).get("auc"),
         "boyce_soybean": scorecard.get("presence_auc_boyce", {}).get("soybean", {}).get("boyce"),
         "underused_soybean_pct": scorecard.get("underuse_pct", {}).get("soybean"),
-        "mean_delta_other_crops_ssp585_2051_2070": round(float(mean_delta), 4) if mean_delta is not None else None,
+        "worst_delta": {
+            "segment": str(worst["segment"]), "ssp": str(worst["ssp"]),
+            "window": str(worst["window"]), "delta_s": round(float(worst["delta_s"]), 4),
+        },
     }
     dest = out / "home_stats.json"
     dest.write_text(json.dumps(stats, indent=2))
@@ -420,10 +452,12 @@ def build_rasters(only_band: str | None = None) -> None:
 # =============================================================================
 # 6b. CMIP6 shift rasters: delta_<ssp>_<window>_<segment> (diverging)
 # =============================================================================
-CMIP6_SCENARIOS = ["ssp245", "ssp585"]
-CMIP6_WINDOWS = ["2031_2050", "2051_2070"]
-CMIP6_DELTA_SEGMENTS = ["soybean", "sugarcane", "other_crops", "conservation", "solar"]
-DELTA_DOMAIN = (-0.15, 0.15)  # matches make_figures.py's fig_4_4 vis params
+def cmip6_scenarios() -> list[str]:
+    return list(utils.cfg()["cmip6"]["scenarios"])
+
+
+def cmip6_windows() -> list[str]:
+    return list(utils.cfg()["cmip6"]["windows"])
 
 
 def build_future_rasters(only_band: str | None = None) -> None:
@@ -432,10 +466,10 @@ def build_future_rasters(only_band: str | None = None) -> None:
     region = ee.FeatureCollection(aid("aoi")).geometry()
 
     jobs = []
-    for ssp in CMIP6_SCENARIOS:
-        for win in CMIP6_WINDOWS:
+    for ssp in cmip6_scenarios():
+        for win in cmip6_windows():
             delta_img = ee.Image(aid(f"delta_{ssp}_{win}"))
-            for seg in CMIP6_DELTA_SEGMENTS:
+            for seg in SEGMENTS:
                 jobs.append({
                     "image": delta_img, "band": f"delta_{seg}", "palette": PAL_DIV,
                     "out_name": f"delta_{ssp}_{win}_{seg}", "categorical": False,
@@ -518,13 +552,19 @@ def build_datasets_catalog() -> None:
     out = DATA_DIR / "json"
     out.mkdir(parents=True, exist_ok=True)
     ds = utils.cfg()  # config/datasets.yaml
+    span = lambda a, b: f"{a}–{b}"  # noqa: E731  (en dash, as in the thesis)
+    clim_start = ds["climate"]["terraclimate"]["period"][0][:4]
+    clim_end = int(ds["climate"]["terraclimate"]["period"][1][:4]) - 1  # exclusive end
+    wins = list(ds["cmip6"]["windows"].values())
+    mb_years = ds["mapbiomas"]["years"]
+    prod = ds["productivity"]["period"]
 
     rows = [
         {"theme": "Malha municipal", "source": "IBGE Malha Municipal Digital 2025",
          "id": ds["municipal_mesh"]["path"], "native_res": "vetorial", "period": "2025"},
         {"theme": "Clima", "source": "TerraClimate",
          "id": ds["climate"]["terraclimate"]["id"], "native_res": "~4,6 km",
-         "period": "normal 1991-2020"},
+         "period": f"normal climatológica {span(clim_start, clim_end)}"},
         {"theme": "Relevo", "source": "SRTM GL1",
          "id": ds["terrain"]["srtm"], "native_res": "30 m", "period": "estático"},
         {"theme": "Solo", "source": "OpenLandMap",
@@ -546,30 +586,53 @@ def build_datasets_catalog() -> None:
          "id": ds["conservation"]["biomass"]["id"], "native_res": "300 m", "period": "2010"},
         {"theme": "Projeção climática CMIP6", "source": "NASA NEX-GDDP-CMIP6",
          "id": ds["cmip6"]["id"], "native_res": "~25 km",
-         "period": "2031-2070 (2 SSP x 2 janelas)"},
-        {"theme": "Uso realizado da terra", "source": "MapBiomas",
-         "id": ds["mapbiomas"]["asset"], "native_res": "30 m", "period": "1985-2024"},
-        {"theme": "Validação de produtividade", "source": "MODIS MOD17 NPP/GPP",
-         "id": ds["productivity"]["npp"]["id"], "native_res": "500 m", "period": "2001-2020"},
+         "period": (f"{span(wins[0][0], wins[-1][1])} ({len(ds['cmip6']['scenarios'])} SSP × "
+                    f"{len(wins)} janelas; {len(ds['cmip6']['models'])} GCMs)")},
+        {"theme": "Uso atual da terra", "source": "MapBiomas coleção 10",
+         "id": ds["mapbiomas"]["asset"], "native_res": "30 m",
+         "period": span(mb_years[0], mb_years[-1])},
+        {"theme": "Contexto de produtividade", "source": "MODIS MOD17 NPP/GPP",
+         "id": ds["productivity"]["npp"]["id"], "native_res": "500 m",
+         "period": span(prod[0], prod[1])},
     ]
     dest = out / "datasets_catalog.json"
     dest.write_text(json.dumps(rows, indent=2))
     log(f"wrote {dest} ({len(rows)} rows)")
 
 
+# Band-name prefix -> theme key (the same prefix rule as zoning._theme_of).
+PREFIX_THEME = {"clim": "climate", "terr": "terrain", "soil": "soil", "water": "water"}
+
+
 def build_stack_composition() -> None:
+    """Per-theme band counts of the EXPORTED feature_stack_250m, read from its band
+    names (metadata only -- works under restricted EE quota). Until 2026-10 this was a
+    literal {14, 6, 6, 3}, i.e. a number that would not follow a theme change."""
+    import zoning
+
     out = DATA_DIR / "json"
     out.mkdir(parents=True, exist_ok=True)
-    # Static — matches STACK_THEMES in src/features.py / CLAUDE.md's own band breakdown.
-    composition = {"climate": 14, "terrain": 6, "soil": 6, "water": 3}
+    project = utils.init()
+    bands = ee.Image(utils.asset_id(project, "feature_stack_250m")).bandNames().getInfo()
+    composition = {t: 0 for t in features.STACK_THEMES}
+    for b in bands:
+        theme = PREFIX_THEME.get(b.split("_", 1)[0])
+        if theme not in composition:
+            raise SystemExit(f"stack band {b!r} has no theme in STACK_THEMES {features.STACK_THEMES}")
+        composition[theme] += 1
+    missing = sorted(set(zoning.ZONING_BANDS) - set(bands))
+    if missing:
+        raise SystemExit(f"ZONING_BANDS not in the exported stack: {missing}")
     dest = out / "stack_composition.json"
     dest.write_text(json.dumps({
         "themes": composition,
-        "total_bands": sum(composition.values()),
+        "total_bands": len(bands),
+        "bands": bands,
+        "zoning_bands": list(zoning.ZONING_BANDS),
         "excluded": ["landcover"],
-        "note": ("A cobertura da terra é deliberadamente excluída da pilha — apenas "
-                 "máscara/contexto, nunca uma entrada de aptidão ou de agrupamento."),
-    }, indent=2))
+        "note": ("A cobertura da terra é deliberadamente excluída do conjunto: serve apenas "
+                 "de máscara e contexto, nunca de entrada da aptidão ou do agrupamento."),
+    }, indent=2, ensure_ascii=False))
     log(f"wrote {dest}")
 
 
@@ -609,7 +672,6 @@ def build_band_percentiles() -> None:
 # falling back when they predate the spatial holdout (CLAUDE.md §11).
 # =============================================================================
 SCORECARD_HALF = "val"
-THESIS_DIR = REPO_ROOT / "thesis" / "Chapters"
 
 
 def _scorecard_metrics() -> "pd.DataFrame":
@@ -670,13 +732,20 @@ def build_validation_scorecard() -> None:
     notes = {seg: f"n.s., p={p:.2f}".replace(".", ",")
              for seg, p in p_npp.items() if p >= 0.05}
 
+    def presences(segment: str) -> int | None:
+        s = v[(v.metric == "auc") & (v.segment == segment)]
+        extra = str(s.extra.iloc[0]) if len(s) else ""
+        return int(extra.split("=", 1)[1]) if extra.startswith("presences=") else None
+
     scorecard = {
         "half": SCORECARD_HALF,
         "presence_auc_boyce": {
-            seg: {"auc": round(auc[seg], 4), "boyce": round(boyce[seg], 4)}
+            seg: {"auc": round(auc[seg], 4), "boyce": round(boyce[seg], 4),
+                  "n": n_of("auc", seg), "presences": presences(seg)}
             for seg in auc
         },
         "spearman_npp": {seg: round(r, 4) for seg, r in rho_npp.items()},
+        "spearman_npp_p": {seg: p for seg, p in p_npp.items()},
         "spearman_npp_n_municipalities": n_of("spearman_mod17", "soybean"),
         "spearman_npp_notes": notes,
         "within_crop_gpp_gradient": {
@@ -688,13 +757,18 @@ def build_validation_scorecard() -> None:
             "p_approx": float(an.p.iloc[0]),
             "zone_mean_range": [round(float(an.mean_npp.min()), 3),
                                 round(float(an.mean_npp.max()), 3)],
+            # zone ids are 1-based in validation_zone_anova.csv (extract tools shift once)
+            # full precision: the dashboard rounds once for display (rounding here to 4
+            # places and again to 3 gave 0,836 where the thesis prints 0,835)
+            "zones": [{"zone": int(r.zone), "mean_npp": float(r.mean_npp), "n": int(r.n)}
+                      for r in an.sort_values("zone").itertuples()],
         },
         "rf_kappa": {
             "soybean": round(kappa.get("soybean", float("nan")), 4),
             "n": n_of("cohen_kappa_rf", "soybean"),
             "knowledge_area_pct": round(100 * pick("kb_s2plus_share")["soybean"], 1),
             "rf_area_pct": round(100 * pick("rf_highprob_share")["soybean"], 1),
-            "note": "Landis & Koch: concordância razoável, mas não forte",
+            "note": "concordância razoável, e não forte, na escala de Landis e Koch",
         },
         # From realized_gap.csv (extract_present.under_util), which that block started
         # writing on 2026-10-07. Until then it only printed, so these four numbers were
@@ -797,7 +871,7 @@ def build_pca_compare(only_band: str | None = None) -> None:
         S = pca.transform(X)[:, :3]
         scores[key] = S
         evr = pca.explained_variance_ratio_
-        n90 = int(np.searchsorted(np.cumsum(evr), 0.90) + 1)
+        n90 = int(np.searchsorted(np.cumsum(evr), pca_var_keep()) + 1)
         domain = [(float(np.percentile(S[:, j], 2)), float(np.percentile(S[:, j], 98))) for j in range(3)]
         log(f"  PCA-{key}: PC1-3 = {evr[:3].round(3).tolist()}; {n90} PCs reach 90%")
         payload["variants"][key] = {
@@ -823,7 +897,8 @@ def build_pca_compare(only_band: str | None = None) -> None:
     payload["points"] = {
         "pc_full": [r3(scores["full"][i]) for i in idx],
         "pc_curated": [r3(scores["curated"][i]) for i in idx],
-        "zone": [int(df["zone"].iloc[i]) for i in idx],
+        # zones_present is 0-based; 1-based here like zone_profiles.csv (module docstring)
+        "zone": [int(df["zone"].iloc[i]) + 1 for i in idx],
         "lon": r3(df["longitude"].iloc[idx]),
         "lat": r3(df["latitude"].iloc[idx]),
         **{b: r3(df[b].iloc[idx]) for b in PCA_COLOR_BANDS},
@@ -841,11 +916,162 @@ def build_pca_compare(only_band: str | None = None) -> None:
     shutil.rmtree(SCRATCH_DIR, ignore_errors=True)
 
 
+# =============================================================================
+# 7. manifest.json — every count, list, domain and label the dashboard would
+# otherwise have to hardcode. Offline (no EE). Refuses to write when the words in
+# config/dashboard.yaml drift from the thesis or from the data they label.
+# =============================================================================
+AOI_EQUAL_AREA_CRS = "+proj=aea +lat_0=-32 +lon_0=-60 +lat_1=-5 +lat_2=-42 +datum=WGS84 +units=m"  # Albers, South America
+
+
+def pca_var_keep() -> float:
+    """The variance share the zoning PCA retains -- zoning.fit_pca's own default, so
+    the dashboard's "n PCs for X%" can never quote a threshold the zoning does not use."""
+    import inspect
+
+    import zoning
+    return float(inspect.signature(zoning.fit_pca).parameters["var_keep"].default)
+
+
+def _git_sha() -> str | None:
+    try:
+        return subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=REPO_ROOT,
+                              capture_output=True, text=True, check=True).stdout.strip()
+    except (OSError, subprocess.CalledProcessError):
+        return None
+
+
+def _labels() -> dict:
+    with open(CONFIG_DIR / "dashboard.yaml") as fh:
+        lab = yaml.safe_load(fh)
+    # Segment names must be the thesis' own (tools/gen_thesis_tables.SEG_PT/SEG_SHORT).
+    import gen_thesis_tables as gtt
+    if list(lab["segments"]) != list(SEGMENTS):
+        raise SystemExit(f"config/dashboard.yaml segments {list(lab['segments'])} != {SEGMENTS}")
+    for k, v in lab["segments"].items():
+        if v["label"] != gtt.SEG_PT[k] or v["short"] != gtt.SEG_SHORT[k]:
+            raise SystemExit(f"config/dashboard.yaml segment {k!r} != gen_thesis_tables "
+                             f"({gtt.SEG_PT[k]!r}/{gtt.SEG_SHORT[k]!r})")
+    codes = {0, *external.ROLE_CODES.values()}
+    if set(lab["roles"]) != codes:
+        raise SystemExit(f"config/dashboard.yaml roles {sorted(lab['roles'])} != ROLE_CODES {sorted(codes)}")
+    return lab
+
+
+def _zones(lab: dict) -> list[dict]:
+    prof = pd.read_csv(DIAG_CSVS["zone_profiles.csv"]).sort_values("zone")
+    area = pd.read_csv(DIAG_CSVS["zone_area.csv"]).set_index("zone")
+    k = len(prof)
+    names = {int(z): n for z, n in lab["zones"].items()}
+    if sorted(names) != list(range(1, k + 1)) or sorted(prof["zone"]) != list(range(1, k + 1)):
+        raise SystemExit(
+            f"config/dashboard.yaml has zone descriptors {sorted(names)} but zone_profiles.csv "
+            f"has K={k} (zones {sorted(prof['zone'])}). The zoning moved: re-read the zone "
+            f"means (tab:zone-means) and rewrite the descriptors before publishing.")
+    out = []
+    for r in prof.itertuples():
+        z = int(r.zone)
+        out.append({
+            "zone": z,
+            "name": names[z],
+            "comparative_segment": r.comparative_segment,
+            "comparative_segment_2": r.comparative_segment_2,
+            "comparative_margin": round(float(r.comparative_margin), 3),
+            "paired": bool(r.comparative_margin < ZONE_PAIR_MARGIN),
+            "area_km2": round(float(area.loc[z, "area_km2"]), 0),
+            "share_pct": round(float(area.loc[z, "share_pct"]), 1),
+            "mean_elev_m": round(float(r.terr_elev), 0),
+        })
+    elev = [z["mean_elev_m"] for z in out]
+    if elev != sorted(elev, reverse=True):
+        raise SystemExit(f"zone_profiles.csv is not in canonical order (descending terr_elev): {elev}")
+    return out
+
+
+def _delta_layers() -> dict:
+    """{ssp: {window: [segments with a shipped delta PMTiles]}} -- scanned, not assumed,
+    so a layer that failed to export is absent from the selector instead of a blank map."""
+    pm = DATA_DIR / "pmtiles"
+    return {
+        ssp: {win: [seg for seg in SEGMENTS if (pm / f"delta_{ssp}_{win}_{seg}.pmtiles").exists()]
+              for win in cmip6_windows()}
+        for ssp in cmip6_scenarios()
+    }
+
+
+def build_manifest() -> None:
+    import zoning
+
+    lab = _labels()
+    ds = utils.cfg()
+    seg_cfg = yaml.safe_load((CONFIG_DIR / "segments.yaml").read_text())
+
+    stack_path = DATA_DIR / "json" / "stack_composition.json"
+    if not stack_path.exists():
+        raise SystemExit("run --only stack_composition first (needs EE metadata only)")
+    stack = json.loads(stack_path.read_text())
+
+    # Every band/factor the dashboard can name must have a label.
+    factors = {f for s in seg_cfg["segments"].values() for f in s["factors"]}
+    unlabeled = sorted((set(stack["bands"]) | factors) - set(lab["bands"]))
+    if unlabeled:
+        raise SystemExit(f"config/dashboard.yaml `bands` lacks labels for {unlabeled}")
+
+    gdf = ibge_mesh._load_gdf()
+    aoi_km2 = float(gdf.to_crs(AOI_EQUAL_AREA_CRS).union_all().area / 1e6)
+    uf_col = ds["municipal_mesh"]["uf_col"]
+    by_uf = gdf[uf_col].value_counts().to_dict() if uf_col in gdf.columns else {}
+
+    clim = ds["climate"]["terraclimate"]["period"]
+    manifest = {
+        "generated_at": time.strftime("%Y-%m-%d"),
+        "git_sha": _git_sha(),
+        "segments": [{"key": k, **v} for k, v in lab["segments"].items()],
+        "zones": _zones(lab),
+        "zone_pair_margin": ZONE_PAIR_MARGIN,
+        "roles": {int(k): v for k, v in lab["roles"].items()},
+        "realized_bands": lab["realized_bands"],
+        "fao_classes": [
+            {"code": c, "label": lab["fao_classes"][c]} for c in FAO_ORDER
+        ],
+        "fao_breaks": seg_cfg["fao_classes"]["breaks"],
+        "ssps": [{"key": k, "label": lab["ssps"][k]} for k in cmip6_scenarios()],
+        "windows": [{"key": k, "start": int(v[0]), "end": int(v[1])}
+                    for k, v in ds["cmip6"]["windows"].items()],
+        "gcms": list(ds["cmip6"]["models"]),
+        "baseline": {"start": int(clim[0][:4]), "end": int(clim[1][:4]) - 1},
+        "municipal_delta": {"ssp": MUNICIPAL_DELTA[0], "window": MUNICIPAL_DELTA[1]},
+        "delta_layers": _delta_layers(),
+        "delta_domain": list(DELTA_DOMAIN),
+        "aoi": {"area_km2": round(aoi_km2, 0), "n_municipalities": int(len(gdf)),
+                "municipalities_by_uf": by_uf},
+        "grid_m": int(utils.scale_m()),
+        "stack": {"total_bands": stack["total_bands"], "themes": stack["themes"],
+                  "n_zoning_bands": len(zoning.ZONING_BANDS), "pca_var_keep": pca_var_keep()},
+        # one representative band per theme (feat_<band>.pmtiles); `stacked` = the
+        # theme is in features.STACK_THEMES (siting/conservation are side images)
+        "hero_bands": [{"theme": t, "band": b, "stacked": t in features.STACK_THEMES}
+                       for t, b in HERO_BANDS.items()],
+        "themes": lab["themes"],
+        "anchor_rules": lab["anchor_rules"],
+        "membership_types": lab["membership_types"],
+        "bands": lab["bands"],
+    }
+    dest = DATA_DIR / "json" / "manifest.json"
+    dest.write_text(json.dumps(manifest, indent=2, ensure_ascii=False))
+    log(f"wrote {dest}")
+
+
+# Stages that need no Earth Engine COMPUTE (stack_composition reads band names only,
+# which still works when the project is in restricted-quota mode).
+OFFLINE_STAGES = ["config", "diagnostics", "datasets_catalog", "stack_composition",
+                  "validation_scorecard", "home_stats", "manifest"]
+
 STAGE_CHOICES = [
     "vectors", "config", "municipal", "diagnostics", "sensitivity", "rasters",
     "future_rasters", "realized_rasters", "datasets_catalog", "stack_composition",
     "band_percentiles", "theme_rasters", "validation_scorecard", "home_stats",
-    "pca_compare",
+    "pca_compare", "manifest", "offline",
 ]
 
 
@@ -880,8 +1106,14 @@ def main() -> None:
         "validation_scorecard": build_validation_scorecard,
         "home_stats": build_home_stats,
         "pca_compare": lambda: build_pca_compare(args.raster),
+        "manifest": build_manifest,  # last: scans the pmtiles the raster stages wrote
     }
 
+    if args.only == "offline":
+        for name in OFFLINE_STAGES:
+            log(f"=== {name} ===")
+            stages[name]()
+        return
     if args.only:
         stages[args.only]()
         return

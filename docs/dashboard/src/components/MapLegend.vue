@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { fmtNum } from '../format'
 import type { LegendSpec } from '../types/legend'
 
 const props = defineProps<{ spec: LegendSpec }>()
 
-const defaultFormat = (v: number): string => (Number.isInteger(v) ? String(v) : v.toFixed(2))
+const defaultFormat = (v: number): string => fmtNum(v, Number.isInteger(v) ? 0 : 2)
 
 const gradientCss = computed(() => {
   if (props.spec.kind !== 'gradient') return ''

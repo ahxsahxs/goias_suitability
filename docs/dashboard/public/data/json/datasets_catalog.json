@@ -11,7 +11,7 @@
     "source": "TerraClimate",
     "id": "IDAHO_EPSCOR/TERRACLIMATE",
     "native_res": "~4,6 km",
-    "period": "normal 1991-2020"
+    "period": "normal climatol\u00f3gica 1991\u20132020"
   },
   {
     "theme": "Relevo",
@@ -60,20 +60,20 @@
     "source": "NASA NEX-GDDP-CMIP6",
     "id": "NASA/GDDP-CMIP6",
     "native_res": "~25 km",
-    "period": "2031-2070 (2 SSP x 2 janelas)"
+    "period": "2031\u20132070 (2 SSP \u00d7 2 janelas; 5 GCMs)"
   },
   {
-    "theme": "Uso realizado da terra",
-    "source": "MapBiomas",
+    "theme": "Uso atual da terra",
+    "source": "MapBiomas cole\u00e7\u00e3o 10",
     "id": "projects/mapbiomas-public/assets/brazil/lulc/collection10/mapbiomas_brazil_collection10_integration_v1",
     "native_res": "30 m",
-    "period": "1985-2024"
+    "period": "2016\u20132024"
   },
   {
-    "theme": "Valida\u00e7\u00e3o de produtividade",
+    "theme": "Contexto de produtividade",
     "source": "MODIS MOD17 NPP/GPP",
     "id": "MODIS/061/MOD17A3HGF",
     "native_res": "500 m",
-    "period": "2001-2020"
+    "period": "2001\u20132020"
   }
 ]

@@ -1,97 +1,100 @@
 /** Builds LegendSpec objects for every map layer kind in the dashboard, keeping
  * the legend colors in lockstep with the palettes actually baked into each
- * PMTiles raster (see src/palettes.ts) or passed to a MapLibre choropleth. */
-import { FAO_ORDER, PAL_DIV, PAL_FAO, PAL_ROLE, PAL_SUIT, PAL_UNDERUSED, ROLE_LABELS_PT, zonePalette } from './palettes'
+ * PMTiles raster (see src/palettes.ts) or passed to a MapLibre choropleth.
+ *
+ * Labels and domains are ARGUMENTS (from manifest.json via useManifest), never
+ * literals here: the FAO class names, the ΔS window and the realized-use roles all
+ * have a single source in config/ or in the pipeline. */
+import { fmtNum, fmtSigned } from './format'
+import { PAL_DIV, PAL_FAO, PAL_ROLE, PAL_SUIT, PAL_UNDERUSED, zonePalette } from './palettes'
 import type { CategoricalLegend, GradientLegend } from './types/legend'
-
-const FAO_LABELS_PT: Record<(typeof FAO_ORDER)[number], string> = {
-  N: 'N — não viável',
-  S3: 'S3 — marginalmente viável',
-  S2: 'S2 — moderadamente viável',
-  S1: 'S1 — altamente viável',
-}
 
 export function suitabilityLegend(segmentLabel: string): GradientLegend {
   const n = PAL_SUIT.length
   return {
     kind: 'gradient',
-    title: `Viabilidade — ${segmentLabel}`,
+    title: `Aptidão — ${segmentLabel}`,
     stops: PAL_SUIT.map((color, i) => [i / (n - 1), color]),
-    format: (v) => v.toFixed(2),
-    caption: '0 = não viável · 1 = altamente viável',
+    format: (v) => fmtNum(v, 2),
+    caption: '0 = inapto · 1 = aptidão máxima',
   }
 }
 
-export function faoClassLegend(): CategoricalLegend {
+/** `classes` in raster-code order (N, S3, S2, S1), as manifest.fao_classes. */
+export function faoClassLegend(classes: { code: string; label: string }[], breaks: number[]): CategoricalLegend {
+  // S >= breaks[i-1] and < breaks[i]: N < b0 <= S3 < b1 <= S2 < b2 <= S1
+  const range = (i: number): string => {
+    const lo = i === 0 ? null : breaks[i - 1]
+    const hi = i < breaks.length ? breaks[i] : null
+    if (lo === null || lo === undefined) return `S < ${fmtNum(hi, 2)}`
+    if (hi === null || hi === undefined) return `S ≥ ${fmtNum(lo, 2)}`
+    return `${fmtNum(lo, 2)} ≤ S < ${fmtNum(hi, 2)}`
+  }
   return {
     kind: 'categorical',
-    title: 'Classe FAO',
-    items: FAO_ORDER.map((code, i) => ({ label: FAO_LABELS_PT[code], color: PAL_FAO[i]! })),
+    title: 'Classe de aptidão (FAO)',
+    items: classes.map((c, i) => ({ label: `${c.code} — ${c.label} (${range(i)})`, color: PAL_FAO[i]! })),
   }
 }
 
-/** `zoneLabels[i]` (optional) is the comparative-segment label for the zone drawn
- * with palette slot `i`, shown alongside its name when the caller already has that
- * mapping (e.g. from zone_profiles.csv) — falls back to a bare zone number.
- *
- * Zones are named 1..n. The `zones_present` raster stores 0..n-1, and palette slot
- * `i` paints raster value `i`, so slot `i` is zone `i + 1`; `zoneLabels` stays keyed
- * by the 0-based slot to match the raster. Every user-facing surface — this legend,
- * the thesis and zone_profiles.csv — numbers zones from 1. */
+/** `zoneLabels` is keyed by the 1-BASED zone id (as zone_profiles.csv, the thesis and
+ * the manifest). The zones_present raster stores 0..n-1 and palette slot `i` paints
+ * raster value `i` — i.e. zone `i + 1`. That offset lives here and nowhere else. */
 export function zoneLegend(n: number, zoneLabels?: Record<number, string>): CategoricalLegend {
   const colors = zonePalette(n)
   return {
     kind: 'categorical',
     title: 'Zona agroambiental',
     items: Array.from({ length: n }, (_, i) => ({
-      label: zoneLabels?.[i] ? `Zona ${i + 1} — ${zoneLabels[i]}` : `Zona ${i + 1}`,
+      label: zoneLabels?.[i + 1] ? `Zona ${i + 1} — ${zoneLabels[i + 1]}` : `Zona ${i + 1}`,
       color: colors[i]!,
     })),
   }
 }
 
-export function deltaLegend(segmentLabel: string, ssp: string, windowLabel: string): GradientLegend {
+export function deltaLegend(segmentLabel: string, scenario: string, domain: [number, number]): GradientLegend {
   return {
     kind: 'gradient',
-    title: `ΔViabilidade — ${segmentLabel}`,
+    title: `ΔS — ${segmentLabel}`,
     stops: [
-      [-0.15, PAL_DIV[0]!],
+      [domain[0], PAL_DIV[0]!],
       [0, PAL_DIV[1]!],
-      [0.15, PAL_DIV[2]!],
+      [domain[1], PAL_DIV[2]!],
     ],
-    format: (v) => (v > 0 ? `+${v.toFixed(2)}` : v.toFixed(2)),
-    caption: `${ssp.toUpperCase()}, ${windowLabel} — vermelho: perda de viabilidade · azul: ganho`,
+    format: (v) => fmtSigned(v, 2),
+    caption: `${scenario} · vermelho: perda de aptidão; azul: ganho. Valores fora da escala saturam a cor.`,
   }
 }
 
-export function roleLegend(): CategoricalLegend {
+/** `labels[code]` for rl_role codes 0..n-1, in PAL_ROLE order. */
+export function roleLegend(labels: string[]): CategoricalLegend {
   return {
     kind: 'categorical',
-    title: 'Uso realizado da terra (MapBiomas)',
-    items: ROLE_LABELS_PT.map((label, i) => ({ label, color: PAL_ROLE[i]! })),
+    title: 'Uso atual da terra (MapBiomas, classe majoritária)',
+    items: labels.map((label, i) => ({ label, color: PAL_ROLE[i]! })),
   }
 }
 
-export function underusedLegend(cropLabel: string): GradientLegend {
+export function underusedLegend(cropLabel: string): CategoricalLegend {
   return {
-    kind: 'gradient',
+    kind: 'categorical',
     title: `Subutilização — ${cropLabel}`,
-    stops: [
-      [0, PAL_UNDERUSED[0]!],
-      [1, PAL_UNDERUSED[1]!],
+    items: [
+      { label: 'Apta (S2+) e sem o uso', color: PAL_UNDERUSED[1]! },
+      { label: 'Demais células avaliadas', color: PAL_UNDERUSED[0]! },
     ],
-    format: (v) => (v >= 1 ? 'subutilizado' : 'não subutilizado'),
   }
 }
 
 export function continuousBandLegend(bandLabel: string, vmin: number, vmax: number): GradientLegend {
   const n = PAL_SUIT.length
-  const fmt = (v: number) => (Math.abs(v) >= 10 ? v.toFixed(0) : v.toFixed(2))
+  const fmt = (v: number) => fmtNum(v, Math.abs(v) >= 10 ? 0 : 2)
   return {
     kind: 'gradient',
     title: bandLabel,
     stops: PAL_SUIT.map((color, i) => [vmin + ((vmax - vmin) * i) / (n - 1), color]),
     format: fmt,
+    caption: 'escala entre os percentis 5 e 95 do território',
   }
 }
 

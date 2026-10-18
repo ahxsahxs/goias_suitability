@@ -53,7 +53,7 @@ function closeOnMobile(): void {
       </button>
       <RouterLink to="/" class="brand" title="Início" @click="closeOnMobile">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" v-html="NAV_ICONS.home" />
-        <span class="brand-text">Atlas de Viabilidade<br/>de Goiás</span>
+        <span class="brand-text">Atlas de aptidão<br/>GO e DF</span>
       </RouterLink>
     </div>
 
@@ -65,14 +65,14 @@ function closeOnMobile(): void {
             <RouterLink
               v-if="item.enabled"
               :to="item.path"
-              :title="`${item.label} — ${item.part}`"
+              :title="item.part === '—' ? item.label : `${item.label} (pipeline: ${item.part})`"
               class="nav-link"
               @click="closeOnMobile"
             >
               <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" v-html="NAV_ICONS[item.path]" />
               <span class="nav-label">{{ item.label }}</span>
             </RouterLink>
-            <span v-else class="nav-link nav-disabled" :title="`${item.label} — ${item.part} — ainda não construído`">
+            <span v-else class="nav-link nav-disabled" :title="`${item.label} — ${item.part} — indisponível`">
               <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" v-html="NAV_ICONS[item.path]" />
               <span class="nav-label">{{ item.label }}</span>
             </span>

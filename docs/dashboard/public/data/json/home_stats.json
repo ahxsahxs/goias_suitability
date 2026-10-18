@@ -9,5 +9,10 @@
   "auc_soybean": 0.8638,
   "boyce_soybean": 0.9758,
   "underused_soybean_pct": 41.5,
-  "mean_delta_other_crops_ssp585_2051_2070": -0.0519
+  "worst_delta": {
+    "segment": "solar",
+    "ssp": "ssp585",
+    "window": "2051_2070",
+    "delta_s": -0.0905
+  }
 }

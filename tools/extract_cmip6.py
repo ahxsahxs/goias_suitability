@@ -181,7 +181,9 @@ def t47():
             v = 100 * hist.get(str(pi * 4 + fi), 0) / tot
             cells.append(f"{v:5.1f}")
             rowtot += v
-            rows.append({"present": names[pi], "future": names[fi], "share_pct": v})
+            # ssp/window recorded so readers (dashboard, tables) never restate them
+            rows.append({"present": names[pi], "future": names[fi], "share_pct": v,
+                         "ssp": ssp, "window": win})
         print(f"  {names[pi]:>4s} {'  '.join(cells)} | {rowtot:5.1f}")
     path = OUT / "cmip6_transition_othercrops.csv"
     pd.DataFrame(rows).to_csv(path, index=False)

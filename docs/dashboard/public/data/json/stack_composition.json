@@ -6,8 +6,54 @@
     "water": 3
   },
   "total_bands": 29,
+  "bands": [
+    "clim_pr_annual",
+    "clim_pet_annual",
+    "clim_def_annual",
+    "clim_aet_annual",
+    "clim_pr_cv",
+    "clim_dry_months",
+    "clim_pr_wet",
+    "clim_aridity",
+    "clim_soil_moist",
+    "clim_vpd",
+    "clim_srad",
+    "clim_gdd",
+    "clim_twarm_q",
+    "clim_tcold_q",
+    "terr_elev",
+    "terr_slope",
+    "terr_northing",
+    "terr_easting",
+    "terr_tpi",
+    "terr_twi",
+    "soil_clay",
+    "soil_sand",
+    "soil_soc",
+    "soil_ph",
+    "soil_bdod",
+    "soil_awc",
+    "water_dist",
+    "water_seasonality",
+    "water_drain_density"
+  ],
+  "zoning_bands": [
+    "clim_aridity",
+    "clim_soil_moist",
+    "clim_twarm_q",
+    "clim_def_annual",
+    "terr_elev",
+    "terr_slope",
+    "terr_twi",
+    "soil_clay",
+    "soil_soc",
+    "soil_ph",
+    "soil_awc",
+    "water_dist",
+    "water_drain_density"
+  ],
   "excluded": [
     "landcover"
   ],
-  "note": "A cobertura da terra \u00e9 deliberadamente exclu\u00edda da pilha \u2014 apenas m\u00e1scara/contexto, nunca uma entrada de aptid\u00e3o ou de agrupamento."
+  "note": "A cobertura da terra é deliberadamente excluída do conjunto: serve apenas de máscara e contexto, nunca de entrada da aptidão ou do agrupamento."
 }

@@ -4,17 +4,17 @@ import { computed, ref } from 'vue'
 import MapLegend from '../components/MapLegend.vue'
 import MapPanel from '../components/MapPanel.vue'
 import PlotlyChart from '../components/PlotlyChart.vue'
-import { useCsv } from '../composables/useCsv'
 import { useJson } from '../composables/useJson'
+import { useManifest } from '../composables/useManifest'
+import { fmtInt, fmtNum, fmtShare } from '../format'
 import { zoneLegend } from '../legends'
 import { zonePalette } from '../palettes'
 import type { CategoricalLegend } from '../types/legend'
-import type { PcaCompare, PcaVariant, SegmentsConfig, StackComposition, ZoneProfileRow } from '../types/data'
+import type { PcaCompare, PcaVariant, StackComposition } from '../types/data'
 
 const { data: composition } = useJson<StackComposition>('json/stack_composition.json')
 const { data: pca } = useJson<PcaCompare>('json/pca_compare.json')
-const { data: segmentsCfg } = useJson<SegmentsConfig>('json/segments.json')
-const { data: profiles } = useCsv<ZoneProfileRow>('csv/zone_profiles.csv')
+const { manifest, zones, zoneVocation, themeLabel: themeName, bandLabel: bandName } = useManifest()
 
 // Variant keys are semantic, never band counts — they must match the keys written by
 // tools/build_dashboard_assets.py and they also name the pca_rgb_<key>.pmtiles raster.
@@ -22,16 +22,17 @@ const { data: profiles } = useCsv<ZoneProfileRow>('csv/zone_profiles.csv')
 // 34 -> 29 bands and ZONING_BANDS 15 -> 13; every count below is read from the data.
 type VariantKey = 'full' | 'curated'
 
-// Band-name prefix -> theme label (same labels as FeatureThemesView). These four are
-// features.STACK_THEMES in full; land cover stays out as a mask/context layer.
-const THEMES: { prefix: string; label: string }[] = [
-  { prefix: 'clim', label: 'Clima' },
-  { prefix: 'terr', label: 'Relevo' },
-  { prefix: 'soil', label: 'Solo' },
-  { prefix: 'water', label: 'Água' },
-]
-const themeLabel = (prefix: string) => THEMES.find((t) => t.prefix === prefix)?.label ?? prefix
-const bandLabel = (band: string) => band.replace(/^[a-z]+_/, '')
+// Band-name prefix -> theme key: the naming convention of src/zoning._theme_of (and of
+// build_stack_composition). Labels come from the manifest.
+const PREFIX_THEME: Record<string, string> = { clim: 'climate', terr: 'terrain', soil: 'soil', water: 'water' }
+const THEMES = computed(() =>
+  Object.keys(composition.value?.themes ?? {}).map((theme) => ({
+    prefix: Object.keys(PREFIX_THEME).find((p) => PREFIX_THEME[p] === theme) ?? theme,
+    label: themeName(theme),
+  })),
+)
+const themeLabel = (prefix: string) => themeName(PREFIX_THEME[prefix] ?? prefix)
+const bandLabel = (band: string) => bandName(band)
 
 const vFull = computed(() => pca.value?.variants.full ?? null)
 const vCurated = computed(() => pca.value?.variants.curated ?? null)
@@ -39,7 +40,7 @@ const variant = (key: VariantKey) => (key === 'full' ? vFull.value : vCurated.va
 const nBands = (key: VariantKey) => variant(key)?.bands.length ?? null
 
 const VARIANTS = computed<{ key: VariantKey; title: string }[]>(() => [
-  { key: 'full', title: `Pilha completa — ${nBands('full') ?? '—'} bandas` },
+  { key: 'full', title: `Conjunto completo — ${nBands('full') ?? '—'} bandas` },
   { key: 'curated', title: `Subconjunto do zoneamento — ${nBands('curated') ?? '—'} bandas ponderadas` },
 ])
 
@@ -49,7 +50,7 @@ const bandGroups = computed(() => {
   const sub = vCurated.value
   if (!full || !sub) return []
   const weightOf = new Map(sub.bands.map((b, i) => [b, sub.weights[i]!]))
-  return THEMES.map((t) => {
+  return THEMES.value.map((t) => {
     const bands = full.bands.filter((b) => b.startsWith(`${t.prefix}_`))
     return {
       ...t,
@@ -68,7 +69,7 @@ function themeShares(v: PcaVariant, j: number): { label: string; share: number }
     .map(([prefix, share]) => ({ label: themeLabel(prefix), share }))
     .sort((a, b) => b.share - a.share)
 }
-const pct = (x: number | undefined, digits = 0) => `${((x ?? 0) * 100).toFixed(digits)}%`
+const pct = (x: number | undefined, digits = 0) => fmtShare(x ?? 0, digits)
 /** e.g. "clima 64%, solo 16%" — the themes that make up ≥80% of the PC. */
 function pcThemes(key: VariantKey, j: number): string {
   const v = variant(key)
@@ -94,19 +95,24 @@ const screeData = computed<PlotlyDatum[]>(() =>
     return [{
       type: 'scatter',
       mode: 'lines+markers',
-      name: `${key} bandas (90% com ${v.n_pc_90} PCs)`,
+      name: `${v.bands.length} bandas (${varKeepPct.value} com ${v.n_pc_90} CPs)`,
       x: y.map((_, i) => i + 1),
       y,
     } as PlotlyDatum]
   }),
 )
-const screeLayout: Partial<Layout> = {
+// The variance share the zoning PCA keeps (zoning.fit_pca's var_keep, via the manifest).
+const varKeep = computed(() => manifest.value?.stack.pca_var_keep ?? null)
+const varKeepPct = computed(() => fmtShare(varKeep.value ?? Number.NaN, 0))
+const screeLayout = computed<Partial<Layout>>(() => ({
   height: 300,
-  xaxis: { title: { text: 'nº de componentes principais' } },
+  xaxis: { title: { text: 'número de componentes principais' } },
   yaxis: { title: { text: 'variância acumulada (%)' }, range: [0, 101] },
-  shapes: [{ type: 'line', xref: 'paper', x0: 0, x1: 1, y0: 90, y1: 90, line: { dash: 'dot', color: '#5c6459' } }],
+  shapes: varKeep.value === null
+    ? []
+    : [{ type: 'line', xref: 'paper', x0: 0, x1: 1, y0: 100 * varKeep.value, y1: 100 * varKeep.value, line: { dash: 'dot', color: '#5c6459' } }],
   legend: { orientation: 'h', y: -0.3 },
-}
+}))
 
 // --- 3. PCA scatter ------------------------------------------------------------
 const dims = ref<2 | 3>(2)
@@ -114,21 +120,19 @@ type ColorBy = 'zone' | 'terr_elev' | 'clim_aridity' | 'soil_clay'
 const colorBy = ref<ColorBy>('zone')
 const COLOR_OPTIONS: { key: ColorBy; label: string }[] = [
   { key: 'zone', label: 'Zona agroambiental' },
-  { key: 'terr_elev', label: 'Altitude (m)' },
-  { key: 'clim_aridity', label: 'Índice de aridez' },
-  { key: 'soil_clay', label: 'Argila (%)' },
+  { key: 'terr_elev', label: 'Elevação (m)' },
+  { key: 'clim_aridity', label: 'Índice de aridez (P/ETP)' },
+  { key: 'soil_clay', label: 'Teor de argila (%)' },
 ]
 
-const zoneCount = computed(() => profiles.value?.length ?? 0)
-const zoneLabels = computed<Record<number, string>>(() => {
-  const segs = segmentsCfg.value?.segments ?? {}
-  return Object.fromEntries(
-    (profiles.value ?? []).map((p) => [p.zone, segs[p.comparative_segment]?.label ?? p.comparative_segment]),
-  )
-})
+const zoneCount = computed(() => zones.value.length)
+// Keyed by the 1-based zone id, like pca_compare.json's points.zone and the manifest.
+const zoneLabels = computed<Record<number, string>>(() =>
+  Object.fromEntries(zones.value.map((z) => [z.zone, zoneVocation(z.zone)])),
+)
 // Shared HTML legend under both panels — a Plotly legend per panel squeezes the plot.
 const scatterZoneLegend = computed(() => zoneLegend(zoneCount.value, zoneLabels.value))
-const fmtSil = (x: number | undefined) => (Math.abs(x ?? 0) < 0.005 ? '0,00' : (x ?? 0).toFixed(2).replace('.', ','))
+const fmtSil = (x: number | undefined) => fmtNum(x, 2)
 
 function scatterData(key: VariantKey, showScale: boolean): PlotlyDatum[] {
   const pts = pca.value?.points
@@ -145,14 +149,16 @@ function scatterData(key: VariantKey, showScale: boolean): PlotlyDatum[] {
 
   if (colorBy.value === 'zone') {
     const colors = zonePalette(zoneCount.value || 1)
-    return Array.from({ length: zoneCount.value }, (_, z) => {
-      const idx = pts.zone.flatMap((zz, i) => (zz === z ? [i] : []))
+    // points.zone is 1-based; palette slot z-1 paints zone z (see legends.zoneLegend)
+    return Array.from({ length: zoneCount.value }, (_, i) => {
+      const z = i + 1
+      const idx = pts.zone.flatMap((zz, j) => (zz === z ? [j] : []))
       return {
         ...base,
         ...coords(idx),
         name: `Zona ${z} — ${zoneLabels.value[z] ?? ''}`,
         showlegend: false,
-        marker: { size, color: colors[z], opacity: 0.7 },
+        marker: { size, color: colors[i], opacity: 0.7 },
       } as PlotlyDatum
     })
   }
@@ -176,7 +182,7 @@ function scatterData(key: VariantKey, showScale: boolean): PlotlyDatum[] {
 
 function pcTitle(key: VariantKey, j: number): string {
   const r = variant(key)?.explained_variance_ratio[j]
-  return r === undefined ? `PC${j + 1}` : `PC${j + 1} (${(r * 100).toFixed(1)}%)`
+  return r === undefined ? `CP${j + 1}` : `CP${j + 1} (${fmtShare(r, 1)})`
 }
 
 function scatterLayout(key: VariantKey): Partial<Layout> {
@@ -202,13 +208,13 @@ function scatterLayout(key: VariantKey): Partial<Layout> {
 function rgbLegend(key: VariantKey): CategoricalLegend {
   return {
     kind: 'categorical',
-    title: 'Composição RGB dos PCs',
+    title: 'Composição RGB dos componentes principais',
     items: [
       { label: `R = ${pcTitle(key, 0)} — ${pcThemes(key, 0)}`, color: '#e41a1c' },
       { label: `G = ${pcTitle(key, 1)} — ${pcThemes(key, 1)}`, color: '#4daf4a' },
       { label: `B = ${pcTitle(key, 2)} — ${pcThemes(key, 2)}`, color: '#377eb8' },
     ],
-    caption: 'cada PC esticado entre os percentis 2 e 98 da amostra',
+    caption: 'cada componente esticado entre os percentis 2 e 98 da amostra',
   }
 }
 
@@ -230,22 +236,22 @@ function loadingsData(key: VariantKey): PlotlyDatum[] {
   } as PlotlyDatum]
 }
 function loadingsLayout(key: VariantKey): Partial<Layout> {
-  const n = variant(key)?.bands.length ?? 15
-  return { height: 60 + n * 16, margin: { t: 8, r: 8, b: 40, l: 8 }, yaxis: { autorange: 'reversed', tickfont: { size: 10 } } }
+  const n = variant(key)?.bands.length ?? 0
+  return { height: 60 + n * 18, margin: { t: 8, r: 8, b: 40, l: 8 }, yaxis: { autorange: 'reversed', tickfont: { size: 10 } } }
 }
 </script>
 
 <template>
   <section>
-    <h1>Pilha de Atributos ({{ composition?.total_bands ?? nBands('full') }} bandas)</h1>
+    <h1>Conjunto de {{ composition?.total_bands ?? nBands('full') }} bandas</h1>
     <p>
-      Os quatro temas contínuos formam uma única imagem harmonizada de 250 m (Parte 8),
-      padronizada em z-score. A cobertura da terra é deliberadamente excluída — apenas
-      máscara/contexto, nunca empilhada ou agrupada. O zoneamento (Parte 10), porém,
-      <strong>não</strong> agrupa as {{ nBands('full') }} bandas: usa um subconjunto curado
-      de {{ nBands('curated') }}, sem quase-duplicatas, com cada tema ponderado por
-      1/√(nº de bandas do tema) e descorrelacionado por PCA. Esta página compara os dois
-      espaços.
+      Os {{ THEMES.length }} temas contínuos formam um único conjunto harmonizado na grade de
+      {{ manifest?.grid_m ?? '…' }}&nbsp;m e padronizado por escore <em>z</em>. A cobertura da terra é
+      deliberadamente excluída: serve apenas de máscara e contexto. O zoneamento, porém,
+      <strong>não</strong> agrupa as {{ nBands('full') }} bandas: usa um subconjunto selecionado de
+      {{ nBands('curated') }}, sem quase-duplicatas, com cada banda dividida por √(número de bandas
+      do seu tema) e descorrelacionada por análise de componentes principais (ACP). Esta página
+      compara os dois espaços.
     </p>
 
     <h2>Composição</h2>
@@ -253,7 +259,7 @@ function loadingsLayout(key: VariantKey): Partial<Layout> {
       <div v-for="g in bandGroups" :key="g.prefix" class="theme-card">
         <p class="theme-head">
           <strong>{{ g.label }}</strong>
-          <span class="muted">{{ g.kept }}/{{ g.bands.length }} no zoneamento<template v-if="g.weight"> · peso {{ g.weight.toFixed(2) }}</template></span>
+          <span class="muted">{{ g.kept }}/{{ g.bands.length }} no zoneamento<template v-if="g.weight"> · peso {{ fmtNum(g.weight, 2) }}</template></span>
         </p>
         <ul class="chips">
           <li v-for="b in g.bands" :key="b.band" :class="['chip', { kept: b.kept }]" :title="b.band">
@@ -263,33 +269,34 @@ function loadingsLayout(key: VariantKey): Partial<Layout> {
       </div>
     </div>
     <p class="note">
-      <span class="chip kept inline">destacadas</span> = as {{ nBands('curated') }} bandas de
-      <code>ZONING_BANDS</code>.
+      <span class="chip kept inline">destacadas</span> = as {{ nBands('curated') }} bandas do
+      zoneamento.
       <template v-if="composition">{{ composition.note }}</template>
     </p>
 
     <template v-if="pca">
       <h2>Variância explicada</h2>
       <p>
-        Nas {{ nBands('full') }} bandas, os dois primeiros componentes são essencialmente
-        climáticos (PC1: {{ pcThemes('full', 0) }}; PC2: {{ pcThemes('full', 1) }}) — os 14
-        índices climáticos colineares dominam a distância euclidiana, embora o território seja
-        quase uniforme em clima. São precisos <strong>{{ vFull?.n_pc_90 }} PCs</strong> para 90% da
-        variância. No subconjunto ponderado, bastam <strong>{{ vCurated?.n_pc_90 }}</strong>, e os três
-        primeiros já somam {{ pct(cum3('curated')) }} (contra {{ pct(cum3('full')) }}), repartidos entre
-        temas distintos (PC1: {{ pcThemes('curated', 0) }}; PC3: {{ pcThemes('curated', 2) }}).
+        Nas {{ nBands('full') }} bandas, os dois primeiros componentes são dominados pelo clima
+        (CP1: {{ pcThemes('full', 0) }}; CP2: {{ pcThemes('full', 1) }}): os
+        {{ composition?.themes.climate ?? '…' }} índices climáticos, colineares entre si, pesam
+        mais na distância euclidiana, embora o território seja quase uniforme em clima. São
+        necessários <strong>{{ vFull?.n_pc_90 }} componentes</strong> para {{ varKeepPct }} da variância. No
+        subconjunto ponderado bastam <strong>{{ vCurated?.n_pc_90 }}</strong>, e os três primeiros já
+        somam {{ pct(cum3('curated')) }} (contra {{ pct(cum3('full')) }}), repartidos entre temas
+        distintos (CP1: {{ pcThemes('curated', 0) }}; CP3: {{ pcThemes('curated', 2) }}).
       </p>
       <PlotlyChart :data="screeData" :layout="screeLayout" />
 
-      <h2>Espaço PCA</h2>
+      <h2>Espaço dos componentes principais</h2>
       <p>
-        {{ pca.points.zone.length.toLocaleString('pt-BR') }} pixels da amostra estratificada
-        (n = {{ pca.n_sample.toLocaleString('pt-BR') }}, a mesma do zoneamento), projetados
-        nos três primeiros componentes de cada espaço, coloridos pela zona final
-        (<code>zones_present</code>). As zonas se separam no espaço de {{ nBands('curated') }} bandas
-        (silhueta em PC1–3 = {{ fmtSil(vCurated?.zone_silhouette_pc3) }}) e se sobrepõem no de
-        {{ nBands('full') }} (silhueta = {{ fmtSil(vFull?.zone_silhouette_pc3) }}: em média, um pixel fica tão perto de
-        outras zonas quanto da sua).
+        {{ fmtInt(pca.points.zone.length) }} pixels da amostra estratificada
+        (n = {{ fmtInt(pca.n_sample) }}, a mesma do zoneamento), projetados nos três primeiros
+        componentes de cada espaço e coloridos pela zona agroambiental. A silhueta das zonas nos
+        três primeiros componentes é {{ fmtSil(vCurated?.zone_silhouette_pc3) }} no espaço de
+        {{ nBands('curated') }} bandas e {{ fmtSil(vFull?.zone_silhouette_pc3) }} no de
+        {{ nBands('full') }}; valores próximos de zero indicam que, em média, um pixel está tão perto
+        de outras zonas quanto da sua.
       </p>
       <div class="controls">
         <div class="mode-toggle" role="tablist">
@@ -323,7 +330,7 @@ function loadingsLayout(key: VariantKey): Partial<Layout> {
       <h2>Distribuição espacial</h2>
       <p>
         Os três primeiros componentes de cada espaço, calculados para todos os pixels de
-        GO+DF e compostos em RGB. Cores parecidas indicam pixels próximos no espaço PCA.
+        GO e DF e compostos em RGB. Cores parecidas indicam pixels próximos no espaço PCA.
         A legenda de cada mapa diz quais temas compõem cada canal.
       </p>
       <div class="pair">
@@ -337,8 +344,8 @@ function loadingsLayout(key: VariantKey): Partial<Layout> {
 
       <h2>Cargas dos componentes</h2>
       <p>
-        Peso de cada banda em PC1–PC3 — é o que as cores do mapa acima significam
-        (vermelho = PC1, verde = PC2, azul = PC3).
+        Carga de cada banda nos três primeiros componentes, que define as cores do mapa acima
+        (vermelho = CP1, verde = CP2, azul = CP3).
       </p>
       <div class="pair">
         <figure v-for="v in VARIANTS" :key="v.key">

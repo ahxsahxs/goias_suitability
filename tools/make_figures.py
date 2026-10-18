@@ -43,6 +43,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 import utils  # noqa: E402
 import cmip6  # noqa: E402
 from palettes import (  # noqa: E402
+    DELTA_DOMAIN,
     PAL_DIV,
     PAL_FAO,
     PAL_PR,
@@ -50,6 +51,7 @@ from palettes import (  # noqa: E402
     PAL_SUIT,
     PAL_TEMP,
     SEGMENTS,
+    ZONE_PAIR_MARGIN,
     zone_palette,
 )
 
@@ -291,12 +293,11 @@ def seg_title(s):
     return _tr()["seg"].get(s, TR["en"]["seg"].get(s, s))
 
 
-# Below this z-gap between a zone's first and second comparative segment, the
-# legend prints BOTH -- the rule §sec:zoning-results states in prose: "em duas
-# dessas zonas a margem é ampla e o rótulo primário descreve a zona; nas outras
-# duas os dois primeiros segmentos são praticamente indistinguíveis e o par é a
-# leitura correta". Current margins split cleanly: 0.042 / 0.053 vs 0.598 / 1.312.
-ZONE_PAIR_MARGIN = 0.25
+# Below ZONE_PAIR_MARGIN (tools/palettes.py, shared with the dashboard) the legend
+# prints BOTH comparative segments -- the rule §sec:zoning-results states in prose:
+# "em duas dessas zonas a margem é ampla e o rótulo primário descreve a zona; nas
+# outras duas os dois primeiros segmentos são praticamente indistinguíveis e o par
+# é a leitura correta".
 
 
 def zone_labels():
@@ -775,13 +776,13 @@ class Renderer:
         fig, axes = plt.subplots(2, 2, figsize=(12, 11.5))
         for i, (ax, s) in enumerate(zip(axes.ravel(), segs)):
             arr = self.thumb(dl.select(f"delta_{s}")
-                             .visualize(min=-0.15, max=0.15, palette=PAL_DIV))
+                             .visualize(min=DELTA_DOMAIN[0], max=DELTA_DOMAIN[1], palette=PAL_DIV))
             self._imshow_map(ax, arr, left=(i % 2 == 0), bottom=(i // 2 == 1), labels=True)
             ax.set_title(t("fig_4_4.panel", seg=seg_title(s)), fontsize=11)
         fig.subplots_adjust(left=0.08, right=0.97, top=0.95, bottom=0.12,
                             wspace=0.06, hspace=0.12)
         cax = fig.add_axes([0.30, 0.055, 0.40, 0.018])
-        cb = fig.colorbar(ScalarMappable(Normalize(-0.15, 0.15), _cmap(PAL_DIV)),
+        cb = fig.colorbar(ScalarMappable(Normalize(*DELTA_DOMAIN), _cmap(PAL_DIV)),
                           cax=cax, orientation="horizontal")
         cb.set_label(t("cbar.deltaS"))
         self._save(fig, "fig_4_4", tight=False)

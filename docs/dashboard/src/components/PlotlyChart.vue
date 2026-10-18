@@ -15,6 +15,8 @@ const container = ref<HTMLDivElement | null>(null)
 
 const BASE_LAYOUT: Partial<Plotly.Layout> = {
   margin: { t: 24, r: 16, b: 40, l: 48 },
+  // pt-BR: decimal comma, dot thousands — every axis tick and hover label, as in the thesis
+  separators: ',.',
   font: { family: 'system-ui, sans-serif', size: 12, color: '#1b1f1a' },
   paper_bgcolor: 'transparent',
   plot_bgcolor: 'transparent',

@@ -3,15 +3,21 @@
   "presence_auc_boyce": {
     "soybean": {
       "auc": 0.8638,
-      "boyce": 0.9758
+      "boyce": 0.9758,
+      "n": 23752,
+      "presences": 2665
     },
     "sugarcane": {
       "auc": 0.9062,
-      "boyce": 0.9666
+      "boyce": 0.9666,
+      "n": 23752,
+      "presences": 298
     },
     "other_crops": {
       "auc": 0.6778,
-      "boyce": 0.3129
+      "boyce": 0.3129,
+      "n": 23752,
+      "presences": 152
     }
   },
   "spearman_npp": {
@@ -22,6 +28,15 @@
     "cattle": 0.5057,
     "conservation": 0.4183,
     "solar": 0.3766
+  },
+  "spearman_npp_p": {
+    "soybean": 0.0043616034042006,
+    "sugarcane": 0.000225745625086,
+    "other_crops": 1.358216931668016e-13,
+    "pisciculture": 0.0001312573829825,
+    "cattle": 1.0499016291897445e-11,
+    "conservation": 4.0954565607355335e-08,
+    "solar": 9.930656149870065e-07
   },
   "spearman_npp_n_municipalities": 159,
   "spearman_npp_notes": {},
@@ -45,6 +60,28 @@
     "zone_mean_range": [
       0.583,
       0.835
+    ],
+    "zones": [
+      {
+        "zone": 1,
+        "mean_npp": 0.8354709327076373,
+        "n": 2534
+      },
+      {
+        "zone": 2,
+        "mean_npp": 0.8274815764896714,
+        "n": 801
+      },
+      {
+        "zone": 3,
+        "mean_npp": 0.6689525883966079,
+        "n": 1370
+      },
+      {
+        "zone": 4,
+        "mean_npp": 0.5832334780130856,
+        "n": 2825
+      }
     ]
   },
   "rf_kappa": {
@@ -52,7 +89,7 @@
     "n": 8376,
     "knowledge_area_pct": 45.4,
     "rf_area_pct": 18.3,
-    "note": "Landis & Koch: concordância razoável, mas não forte"
+    "note": "concordância razoável, e não forte, na escala de Landis e Koch"
   },
   "underuse_pct": {
     "other_crops": 44.3,

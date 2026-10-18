@@ -1,79 +1,91 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { computed } from 'vue'
+import { useManifest } from '../composables/useManifest'
+import { fmtKm2, fmtRange } from '../format'
+
+const { manifest } = useManifest()
+const segmentList = computed(() => {
+  const s = (manifest.value?.segments ?? []).map((x) => x.label.toLowerCase())
+  return s.length > 1 ? `${s.slice(0, -1).join(', ')} e ${s[s.length - 1]}` : (s[0] ?? '')
+})
+const horizon = computed(() => {
+  const w = manifest.value?.windows ?? []
+  return w.length ? fmtRange(w[0]!.start, w[w.length - 1]!.end) : ''
+})
+</script>
 
 <template>
-  <section>
-    <h1>Sobre este Atlas</h1>
+  <section v-if="manifest" class="about">
+    <h1>Sobre o atlas</h1>
 
-    <h2>O que é</h2>
+    <h2>Objeto</h2>
     <p>
-      Um atlas de viabilidade territorial multicritério nos moldes da FAO, totalmente
-      executado no Google Earth Engine, com zoneamento agroambiental de Goiás +
-      Distrito Federal (~340.000 km², bioma Cerrado), para sete segmentos de uso da
-      terra: soja, cana-de-açúcar, outras culturas anuais, piscicultura, pecuária,
-      conservação de floresta &amp; Cerrado, e geração fotovoltaica. Cada célula de
-      250 m recebe um escore de viabilidade por pertinência fuzzy + pesos AHP, o
-      território é agrupado em zonas agroambientais, e toda a superfície é projetada
-      para 2031-2070 sob dois cenários CMIP6 (método dos fatores de mudança, conjunto
-      de 5 GCMs). Validado contra o uso realizado da terra (MapBiomas) e um indicador
-      de produtividade MODIS MOD17.
+      Este atlas interativo acompanha a dissertação e expande os seus resultados. Ele mapeia o
+      potencial biofísico e agroclimático de Goiás e do Distrito Federal
+      ({{ fmtKm2(manifest.aoi.area_km2) }}, bioma Cerrado), em grade de {{ manifest.grid_m }}&nbsp;m,
+      para {{ manifest.segments.length }} segmentos de uso da terra: {{ segmentList }}. A aptidão é
+      obtida por avaliação multicritério nos moldes da FAO; o território é particionado em
+      {{ manifest.zones.length }} zonas agroambientais; e a mudança de aptidão é projetada para
+      {{ horizon }} sob {{ manifest.ssps.length }} cenários CMIP6, com {{ manifest.gcms.length }} modelos
+      climáticos globais. Os resultados são confrontados com o uso atual da terra (MapBiomas) e com a
+      produtividade observada pelo MODIS MOD17.
     </p>
 
-    <h2>O que não é</h2>
+    <h2>Limites de interpretação</h2>
     <p>
-      Não é um modelo de produtividade, não é um modelo econômico, e não substitui a
-      diligência prévia em campo. A viabilidade reflete apenas o potencial
-      biofísico/agroclimático — não precifica terra, acesso a crédito, posse
-      fundiária ou logística, fatores que moldam onde a terra é de fato convertida.
+      A aptidão expressa apenas o potencial biofísico e agroclimático. O atlas não é um modelo de
+      produtividade nem um modelo econômico: não considera preço da terra, crédito, situação
+      fundiária ou logística, fatores que condicionam onde a terra é de fato convertida, e não
+      substitui a avaliação em campo.
     </p>
 
-    <h2>Guardrails</h2>
+    <h2>Salvaguardas metodológicas</h2>
     <ul>
       <li>
-        <strong>Cobertura da terra é apenas máscara/contexto, nunca uma entrada de
-        viabilidade ou de agrupamento.</strong> Usar o uso realizado da terra para prever
-        o uso da terra seria circular; a única exceção sancionada é uma fração
-        rebaixada de cobertura nativa dentro do segmento de conservação.
+        <strong>A cobertura e o uso da terra nunca são variáveis de entrada</strong> da aptidão ou do
+        agrupamento, apenas máscara, validação e descrição, pois usar o uso da terra para prever o uso
+        da terra seria circular. A única exceção é a fração de vegetação nativa, que entra com peso
+        reduzido no índice de conservação.
       </li>
       <li>
-        <strong>Conservação agrega pela média aritmética ponderada
-        (compensatória)</strong>, não pela média geométrica ponderada usada pelos
-        outros seis segmentos — é um índice de valor/prioridade (distância a UCs,
-        rugosidade, carbono), não uma viabilidade de fator limitante.
+        <strong>A conservação é um índice de valor</strong> (distância a áreas protegidas,
+        rugosidade, carbono da biomassa), agregado pela média aritmética ponderada (compensatória);
+        os demais segmentos usam a média geométrica ponderada, em que um fator limitante não é
+        compensado pelos demais.
       </li>
       <li>
-        <strong>Zonas são rotuladas por <code>comparative_segment</code></strong>
-        &mdash; o argmax da viabilidade z-normalizada de cada segmento &mdash; não pela
-        dominância bruta, já que a pecuária deixou de vencer o argmax absoluto em
-        toda parte após a recalibração de forragem.
+        <strong>Os pesos são derivados, e não arbitrados:</strong> a prioridade da literatura (AHP) é
+        ajustada pelo poder discriminante regional de cada fator, medido na metade de calibração da
+        partição espacial. As métricas de validação são medidas na outra metade.
       </li>
       <li>
-        <strong>O zoneamento roda KMeans do sklearn offline</strong> sobre uma
-        entrada PCA descorrelacionada, classificado no servidor por matemática de
-        banda do centróide mais próximo; o agrupamento sobre a pilha bruta colapsa
-        para poucas zonas de baixa expressividade.
-      </li>
-      <li>
-        <strong>O clima é mais grosseiro que tudo o mais</strong> (~4,6 km do
-        TerraClimate vs. 250 m de relevo/solo) &mdash; ver Pilha de Atributos e a
-        análise de descompasso de escala da dissertação; a variabilidade local de
-        relevo+solo é de 42x a 320x a do clima mesmo na escala nativa do próprio
-        TerraClimate.
+        <strong>O zoneamento é um dispositivo de partição.</strong> O <em>k</em>-médias opera sobre
+        {{ manifest.stack.n_zoning_bands }} das {{ manifest.stack.total_bands }} bandas, ponderadas por
+        tema e descorrelacionadas; as zonas são rotuladas pelo melhor segmento comparativo (aptidão
+        padronizada por escore <em>z</em>), não pela aptidão absoluta.
       </li>
     </ul>
 
-    <h2>Proveniência dos dados &amp; citação</h2>
+    <h2>Proveniência e reprodutibilidade</h2>
     <p>
-      Construído inteiramente no lado do servidor no Google Earth Engine (nível de
-      pesquisa) a partir de conjuntos de dados públicos do catálogo, além da Malha
-      Municipal Digital 2025 oficial do IBGE (a única entrada local, fora do EE,
-      carregada no lado do cliente a cada execução &mdash; nunca enviada como um
-      asset persistente). Ver Área de Estudo para o catálogo completo de dados.
+      Todo o processamento é feito no Google Earth Engine a partir de conjuntos de dados públicos do
+      catálogo; a única entrada local é a Malha Municipal Digital do IBGE, carregada em memória a cada
+      execução. Os arquivos deste atlas são gerados pelo próprio <em>pipeline</em>
+      (<code>tools/build_dashboard_assets.py</code>), e cada número exibido vem desses arquivos.
+      O catálogo de dados está em <RouterLink to="/study-area">Área de estudo e dados</RouterLink>.
     </p>
 
-    <h2>Dissertação completa &amp; código-fonte</h2>
+    <h2>Código-fonte e dissertação</h2>
     <p>
-      <a href="https://github.com/ahxsahxs/goias_suitability">Repositório</a>
-      (inclui o código-fonte completo da dissertação em LaTeX em <code>thesis/</code>).
+      O código-fonte completo (configurações, módulos de análise, ferramentas de exportação e o texto
+      da dissertação em LaTeX) está disponível no repositório
+      <a href="https://github.com/ahxsahxs/goias_suitability"><code>goias_suitability</code></a>.
     </p>
   </section>
 </template>
+
+<style scoped>
+.about {
+  max-width: 80ch;
+}
+</style>

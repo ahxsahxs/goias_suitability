@@ -13,32 +13,32 @@ export interface NavItem {
 /** Sidebar nav, grouped exactly as docs/dashboard_ux_plan.md §3. */
 export const navSections: ReadonlyArray<{ title: string; items: readonly NavItem[] }> = [
   {
-    title: 'Engenharia de atributos',
+    title: 'Dados e atributos',
     items: [
       { label: 'Área de estudo e dados', path: '/study-area', part: 'Parte 1', enabled: true },
-      { label: 'Temas de atributos', path: '/feature-themes', part: 'Partes 2–7d', enabled: true },
-      { label: 'Pilha de atributos', path: '/feature-stack', part: 'Parte 8', enabled: true },
+      { label: 'Temas biofísicos', path: '/feature-themes', part: 'Partes 2–7d', enabled: true },
+      { label: 'Conjunto de bandas', path: '/feature-stack', part: 'Parte 8', enabled: true },
     ],
   },
   {
     title: 'Modelagem',
     items: [
-      { label: 'Viabilidade', path: '/suitability', part: 'Parte 9', enabled: true },
+      { label: 'Aptidão do presente', path: '/suitability', part: 'Parte 9', enabled: true },
       { label: 'Zoneamento', path: '/zoning', part: 'Parte 10', enabled: true },
     ],
   },
   {
     title: 'Projeção e validação',
     items: [
-      { label: 'Mudança climática', path: '/cmip6', part: 'Parte 11', enabled: true },
-      { label: 'Uso realizado', path: '/realized-use', part: 'Partes 12–13', enabled: true },
+      { label: 'Mudança projetada', path: '/cmip6', part: 'Parte 11', enabled: true },
+      { label: 'Uso atual da terra', path: '/realized-use', part: 'Partes 12–13', enabled: true },
       { label: 'Validação', path: '/validation', part: 'Parte 14', enabled: true },
     ],
   },
   {
-    title: 'Explorar',
+    title: 'Consulta',
     items: [
-      { label: 'Explorador municipal', path: '/municipal', part: 'transversal', enabled: true },
+      { label: 'Unidades municipais', path: '/municipal', part: 'Partes 9–13', enabled: true },
       { label: 'Sobre', path: '/about', part: '—', enabled: true },
     ],
   },

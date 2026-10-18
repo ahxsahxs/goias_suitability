@@ -1,57 +1,50 @@
 <script setup lang="ts">
 import type { Data as PlotlyDatum } from 'plotly.js'
 import { computed } from 'vue'
+import { useManifest } from '../composables/useManifest'
+import { fmtNum, fmtPct, fmtShare } from '../format'
 import type { ZoneProfileRow } from '../types/data'
 import PlotlyChart from './PlotlyChart.vue'
 
-const props = defineProps<{
-  profile: ZoneProfileRow
-  segments: string[]
-  labels: Record<string, string>
-  /**
-   * Share of the AOI this zone covers, from csv/zone_area.csv (a pixelArea()
-   * group reduce). Passed in rather than derived here: this card used to compute
-   * it as profile.n / totalN, but `n` counts rows of a stratified sample, which
-   * put zone 1 at 37.9% of the territory when its area share is 46.4% and zone 3
-   * at 22.7% when it is 15.2%. See CLAUDE.md §9.
-   */
-  areaShare: number
-}>()
+const props = defineProps<{ profile: ZoneProfileRow }>()
 
-// Below this z-gap between a zone's first and second comparative segment, both are
-// shown: the rule §sec:zoning-results states in prose, and the same threshold
-// tools/make_figures.py carries as ZONE_PAIR_MARGIN for fig_4_3's legend. Keep the
-// two in step -- they are two surfaces of one editorial rule.
-const ZONE_PAIR_MARGIN = 0.25
+// Name, vocation, area share and the pair rule all come from manifest.json:
+//  - the area share is a pixelArea() group reduce (zone_area.csv), NOT profile.n,
+//    which counts rows of a stratified sample (CLAUDE.md §9);
+//  - `paired` applies ZONE_PAIR_MARGIN from tools/palettes.py, the same constant
+//    fig_4_3's legend uses, so atlas and thesis read a zone the same way.
+const { manifest, zone, zoneName, segmentKeys, segmentLabel, segmentShort } = useManifest()
+const meta = computed(() => zone(props.profile.zone))
 
-const segLabel = (s: string) => props.labels[s] ?? s
-const showsPair = computed(() => props.profile.comparative_margin < ZONE_PAIR_MARGIN)
-const vocation = computed(() =>
-  showsPair.value
-    ? `${segLabel(props.profile.comparative_segment)} / ${segLabel(props.profile.comparative_segment_2)}`
-    : segLabel(props.profile.comparative_segment),
-)
+const vocation = computed(() => {
+  const m = meta.value
+  if (!m) return ''
+  return m.paired
+    ? `${segmentShort(m.comparative_segment)} / ${segmentShort(m.comparative_segment_2)}`
+    : segmentShort(m.comparative_segment)
+})
 
-const barData = computed<PlotlyDatum[]>(() => [
-  {
-    type: 'bar',
-    orientation: 'h',
-    x: props.segments.map((s) => Number(props.profile[`rel_suit_${s}`] ?? 0)),
-    y: props.segments.map((s) => props.labels[s] ?? s),
-  },
-])
+const barData = computed<PlotlyDatum[]>(() => {
+  const keys = segmentKeys.value
+  return [
+    {
+      type: 'bar',
+      orientation: 'h',
+      x: keys.map((s) => Number(props.profile[`suit_${s}`] ?? 0)),
+      y: keys.map(segmentLabel),
+      text: keys.map((s) => fmtNum(Number(props.profile[`suit_${s}`] ?? 0), 2)),
+      textposition: 'outside',
+      cliponaxis: false,
+      hoverinfo: 'y+text',
+    },
+  ]
+})
 
-const REALIZED_ROLE_LABELS_PT: Record<string, string> = {
-  soybean: 'soja',
-  sugarcane: 'cana-de-açúcar',
-  other_crops: 'outras culturas',
-  pasture: 'pastagem',
-  native: 'vegetação nativa',
-}
-
+// rl_<role>_frac columns present in zone_profiles.csv, labelled from manifest.realized_bands
 const realizedFracs = computed(() =>
-  (['soybean', 'sugarcane', 'other_crops', 'pasture', 'native'] as const)
-    .map((role) => ({ role, frac: Number(props.profile[`rl_${role}_frac`] ?? 0) }))
+  Object.entries(manifest.value?.realized_bands ?? {})
+    .filter(([band]) => band in props.profile)
+    .map(([band, label]) => ({ band, label, frac: Number(props.profile[band] ?? 0) }))
     .filter((r) => r.frac > 0)
     .sort((a, b) => b.frac - a.frac),
 )
@@ -59,28 +52,31 @@ const realizedFracs = computed(() =>
 
 <template>
   <div class="zone-card">
-    <h3>Zona {{ profile.zone }}</h3>
-    <p class="zone-meta">
-      comparativa: <strong>{{ vocation }}</strong>
-      (margem {{ profile.comparative_margin.toFixed(2).replace('.', ',') }})
-      &middot; {{ areaShare.toFixed(1).replace('.', ',') }}% do território
-      &middot; {{ profile.n }} células na amostra
+    <h3>Zona {{ profile.zone }}<template v-if="zoneName(profile.zone)"> — {{ zoneName(profile.zone) }}</template></h3>
+    <p v-if="meta" class="zone-meta">
+      Vocação comparativa: <strong>{{ vocation }}</strong>
+      (margem z = {{ fmtNum(meta.comparative_margin, 2) }})
+      &middot; {{ fmtPct(meta.share_pct) }} do território
+      &middot; elevação média {{ fmtNum(meta.mean_elev_m, 0) }} m
     </p>
-    <p v-if="showsPair" class="zone-note">
-      A margem entre os dois primeiros segmentos é estreita: a zona é melhor lida pelo par do que
-      por um rótulo único.
+    <p v-if="meta?.paired" class="zone-note">
+      A margem entre os dois primeiros segmentos é inferior a
+      {{ fmtNum(manifest?.zone_pair_margin, 2) }}: a zona deve ser lida como um par de usos, e
+      não por um rótulo único.
     </p>
     <PlotlyChart
       :data="barData"
       :layout="{
-        height: 220,
-        xaxis: { title: { text: 'viabilidade relativa (desvio da média dos sete segmentos)' } },
+        height: 320,
+        margin: { l: 160 },
+        yaxis: { dtick: 1 },
+        xaxis: { title: { text: 'aptidão média na zona (0–1)' }, range: [0, 1] },
       }"
     />
     <p class="zone-realized">
-      Composição realizada:
-      <span v-for="r in realizedFracs" :key="r.role">
-        {{ (100 * r.frac).toFixed(0) }}% {{ REALIZED_ROLE_LABELS_PT[r.role] ?? r.role }}&nbsp;
+      Uso atual da terra:
+      <span v-for="(r, i) in realizedFracs" :key="r.band">
+        {{ r.label.toLowerCase() }} {{ fmtShare(r.frac) }}<template v-if="i < realizedFracs.length - 1">; </template>
       </span>
     </p>
   </div>

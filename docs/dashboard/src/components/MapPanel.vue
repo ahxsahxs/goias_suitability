@@ -37,7 +37,7 @@ const props = withDefaults(
     choropleth: null,
     outline: true,
     highlightMunicipality: null,
-    // AOI centroid + a zoom that fits ~340,000 km2 of Goias/DF in a ~4:3 panel.
+    // AOI centroid + a zoom that fits all of GO+DF in a ~4:3 panel.
     center: () => [-49.6, -15.95] as LngLatLike,
     zoom: 5.4,
     satellite: false,

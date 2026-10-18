@@ -14,17 +14,6 @@ export const PAL_UNDERUSED = ['#f7f7f7', '#d7301f'] // binary, potential-vs-real
 
 export const FAO_ORDER = ['N', 'S3', 'S2', 'S1'] as const
 
-/** rl_role band codes (src/external.py ROLE_CODES), 0 = other/none, in PAL_ROLE order. */
-export const ROLE_LABELS_PT = [
-  'Outro / nenhum',
-  'Soja',
-  'Cana-de-açúcar',
-  'Outras culturas anuais',
-  'Piscicultura',
-  'Pastagem',
-  'Vegetação nativa',
-]
-
 const TAB10 = [
   '#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
   '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf',

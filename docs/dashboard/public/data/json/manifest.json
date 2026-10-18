@@ -1,0 +1,318 @@
+{
+  "generated_at": "2026-10-18",
+  "git_sha": "5167805",
+  "segments": [
+    {
+      "key": "soybean",
+      "label": "Soja",
+      "short": "soja"
+    },
+    {
+      "key": "sugarcane",
+      "label": "Cana-de-açúcar",
+      "short": "cana"
+    },
+    {
+      "key": "other_crops",
+      "label": "Outras culturas anuais",
+      "short": "outras anuais"
+    },
+    {
+      "key": "pisciculture",
+      "label": "Piscicultura",
+      "short": "piscicultura"
+    },
+    {
+      "key": "cattle",
+      "label": "Pecuária",
+      "short": "pecuária"
+    },
+    {
+      "key": "conservation",
+      "label": "Conservação",
+      "short": "conservação"
+    },
+    {
+      "key": "solar",
+      "label": "Geração fotovoltaica",
+      "short": "fotovoltaica"
+    }
+  ],
+  "zones": [
+    {
+      "zone": 1,
+      "name": "Planalto de cultivo alto e argiloso",
+      "comparative_segment": "other_crops",
+      "comparative_segment_2": "sugarcane",
+      "comparative_margin": 0.042,
+      "paired": true,
+      "area_km2": 159719.0,
+      "share_pct": 46.4,
+      "mean_elev_m": 784.0
+    },
+    {
+      "zone": 2,
+      "name": "Escarpa íngreme de conservação",
+      "comparative_segment": "conservation",
+      "comparative_segment_2": "cattle",
+      "comparative_margin": 1.312,
+      "paired": false,
+      "area_km2": 35682.0,
+      "share_pct": 10.4,
+      "mean_elev_m": 733.0
+    },
+    {
+      "zone": 3,
+      "name": "Baixada drenada",
+      "comparative_segment": "pisciculture",
+      "comparative_segment_2": "soybean",
+      "comparative_margin": 0.598,
+      "paired": false,
+      "area_km2": 52318.0,
+      "share_pct": 15.2,
+      "mean_elev_m": 483.0
+    },
+    {
+      "zone": 4,
+      "name": "Baixada quente e arenosa de pastagem",
+      "comparative_segment": "solar",
+      "comparative_segment_2": "cattle",
+      "comparative_margin": 0.053,
+      "paired": true,
+      "area_km2": 96663.0,
+      "share_pct": 28.1,
+      "mean_elev_m": 445.0
+    }
+  ],
+  "zone_pair_margin": 0.25,
+  "roles": {
+    "0": "Outros usos",
+    "1": "Soja",
+    "2": "Cana-de-açúcar",
+    "3": "Outras culturas anuais",
+    "4": "Aquicultura",
+    "5": "Pastagem",
+    "6": "Vegetação nativa"
+  },
+  "realized_bands": {
+    "rl_soybean_frac": "Soja",
+    "rl_sugarcane_frac": "Cana-de-açúcar",
+    "rl_other_crops_frac": "Outras culturas anuais",
+    "rl_pisciculture_frac": "Aquicultura",
+    "rl_pasture_frac": "Pastagem",
+    "rl_native_frac": "Vegetação nativa"
+  },
+  "fao_classes": [
+    {
+      "code": "N",
+      "label": "Inapto"
+    },
+    {
+      "code": "S3",
+      "label": "Marginalmente apto"
+    },
+    {
+      "code": "S2",
+      "label": "Moderadamente apto"
+    },
+    {
+      "code": "S1",
+      "label": "Muito apto"
+    }
+  ],
+  "fao_breaks": [
+    0.25,
+    0.5,
+    0.75
+  ],
+  "ssps": [
+    {
+      "key": "ssp245",
+      "label": "SSP2-4.5"
+    },
+    {
+      "key": "ssp585",
+      "label": "SSP5-8.5"
+    }
+  ],
+  "windows": [
+    {
+      "key": "2031_2050",
+      "start": 2031,
+      "end": 2050
+    },
+    {
+      "key": "2051_2070",
+      "start": 2051,
+      "end": 2070
+    }
+  ],
+  "gcms": [
+    "ACCESS-CM2",
+    "EC-Earth3",
+    "GFDL-ESM4",
+    "MPI-ESM1-2-HR",
+    "MRI-ESM2-0"
+  ],
+  "baseline": {
+    "start": 1991,
+    "end": 2020
+  },
+  "municipal_delta": {
+    "ssp": "ssp585",
+    "window": "2051_2070"
+  },
+  "delta_layers": {
+    "ssp245": {
+      "2031_2050": [
+        "soybean",
+        "sugarcane",
+        "other_crops",
+        "pisciculture",
+        "cattle",
+        "conservation",
+        "solar"
+      ],
+      "2051_2070": [
+        "soybean",
+        "sugarcane",
+        "other_crops",
+        "pisciculture",
+        "cattle",
+        "conservation",
+        "solar"
+      ]
+    },
+    "ssp585": {
+      "2031_2050": [
+        "soybean",
+        "sugarcane",
+        "other_crops",
+        "pisciculture",
+        "cattle",
+        "conservation",
+        "solar"
+      ],
+      "2051_2070": [
+        "soybean",
+        "sugarcane",
+        "other_crops",
+        "pisciculture",
+        "cattle",
+        "conservation",
+        "solar"
+      ]
+    }
+  },
+  "delta_domain": [
+    -0.15,
+    0.15
+  ],
+  "aoi": {
+    "area_km2": 346004.0,
+    "n_municipalities": 247,
+    "municipalities_by_uf": {
+      "GO": 246,
+      "DF": 1
+    }
+  },
+  "grid_m": 250,
+  "stack": {
+    "total_bands": 29,
+    "themes": {
+      "climate": 14,
+      "terrain": 6,
+      "soil": 6,
+      "water": 3
+    },
+    "n_zoning_bands": 13,
+    "pca_var_keep": 0.9
+  },
+  "hero_bands": [
+    {
+      "theme": "climate",
+      "band": "clim_aridity",
+      "stacked": true
+    },
+    {
+      "theme": "terrain",
+      "band": "terr_slope",
+      "stacked": true
+    },
+    {
+      "theme": "soil",
+      "band": "soil_clay",
+      "stacked": true
+    },
+    {
+      "theme": "water",
+      "band": "water_dist",
+      "stacked": true
+    },
+    {
+      "theme": "siting",
+      "band": "sit_clearness",
+      "stacked": false
+    },
+    {
+      "theme": "conservation",
+      "band": "cv_pa_dist",
+      "stacked": false
+    }
+  ],
+  "themes": {
+    "climate": "Clima",
+    "terrain": "Terreno",
+    "soil": "Solo",
+    "water": "Água",
+    "siting": "Localização (imagem lateral)",
+    "conservation": "Conservação (imagem lateral)"
+  },
+  "anchor_rules": {
+    "percentile": "Percentil da distribuição regional",
+    "mu_one": "μ = 1 no presente (alavanca climática)",
+    "agronomic": "Limiar agronômico"
+  },
+  "membership_types": {
+    "increasing": "crescente",
+    "decreasing": "decrescente",
+    "range": "intervalar"
+  },
+  "bands": {
+    "clim_pr_annual": "Precipitação anual (mm)",
+    "clim_pr_cv": "CV da precipitação",
+    "clim_dry_months": "Meses secos (n)",
+    "clim_pet_annual": "Evapotranspiração potencial anual (mm)",
+    "clim_aet_annual": "Evapotranspiração real anual (mm)",
+    "clim_def_annual": "Déficit hídrico anual (mm)",
+    "clim_pr_wet": "Precipitação da estação chuvosa (mm)",
+    "clim_aridity": "Índice de aridez (P/ETP)",
+    "clim_vpd": "Déficit de pressão de vapor (kPa)",
+    "clim_gdd": "Graus-dia de crescimento",
+    "clim_srad": "Radiação solar (W/m²)",
+    "clim_twarm_q": "Temp. do trimestre mais quente (°C)",
+    "clim_tcold_q": "Temp. do trimestre mais frio (°C)",
+    "clim_soil_moist": "Umidade do solo (mm)",
+    "terr_elev": "Elevação (m)",
+    "terr_slope": "Declividade (°)",
+    "terr_northing": "Componente norte da orientação",
+    "terr_easting": "Componente leste da orientação",
+    "terr_tpi": "Índice de posição topográfica",
+    "terr_twi": "Índice de umidade topográfica",
+    "soil_clay": "Teor de argila (%)",
+    "soil_sand": "Teor de areia (%)",
+    "soil_soc": "Carbono orgânico do solo (g/kg)",
+    "soil_ph": "pH do solo",
+    "soil_bdod": "Densidade do solo",
+    "soil_awc": "Teor de água disponível para as plantas",
+    "water_dist": "Distância à água permanente (m)",
+    "water_seasonality": "Sazonalidade da água",
+    "water_drain_density": "Densidade de drenagem",
+    "sit_clearness": "Índice de claridade",
+    "sit_water_dist_seas": "Distância à água sazonal (m)",
+    "cv_pa_dist": "Distância a área protegida (m)",
+    "cv_ruggedness": "Rugosidade do terreno (m)",
+    "cv_carbon": "Carbono em biomassa acima do solo (Mg C/ha)",
+    "rl_native_frac": "Fração de vegetação nativa"
+  }
+}

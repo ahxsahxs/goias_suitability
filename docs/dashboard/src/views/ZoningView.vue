@@ -1,216 +1,150 @@
 <script setup lang="ts">
 import type { Data as PlotlyDatum } from 'plotly.js'
 import { computed, ref } from 'vue'
+import DataTable from '../components/DataTable.vue'
+import type { DataTableColumn } from '../components/DataTable.vue'
 import MapLegend from '../components/MapLegend.vue'
 import MapPanel from '../components/MapPanel.vue'
 import PlotlyChart from '../components/PlotlyChart.vue'
 import ZoneCard from '../components/ZoneCard.vue'
 import { useCsv } from '../composables/useCsv'
-import { useJson } from '../composables/useJson'
+import { useManifest } from '../composables/useManifest'
+import { fmtKm2, fmtNum, fmtPct } from '../format'
 import { zoneLegend } from '../legends'
-import type {
-  FactorVarianceRow,
-  SegmentsConfig,
-  ThemeRoughnessPointRow,
-  ThemeRoughnessRow,
-  ZoneAreaRow,
-  ZoneProfileRow,
-  ZoningKselectRow,
-} from '../types/data'
+import type { ManifestZone, ZoneProfileRow, ZoningKselectRow } from '../types/data'
 
-const { data: segmentsCfg } = useJson<SegmentsConfig>('json/segments.json')
-const segmentOrder = computed(() => (segmentsCfg.value ? Object.keys(segmentsCfg.value.segments) : []))
-const labels = computed<Record<string, string>>(() =>
-  segmentsCfg.value
-    ? Object.fromEntries(Object.entries(segmentsCfg.value.segments).map(([k, v]) => [k, v.label]))
-    : {},
-)
-
+const { manifest, zones, zoneVocation, segmentShort } = useManifest()
 const { data: profiles } = useCsv<ZoneProfileRow>('csv/zone_profiles.csv')
-const zoneCount = computed(() => profiles.value?.length ?? 0)
+const zoneCount = computed(() => zones.value.length)
 
-// Territory shares come from pixelArea(), never from zone_profiles.csv's `n`
-// (a stratified-sample row count — CLAUDE.md §9). Keyed by the 1-based zone id.
-const { data: zoneAreas } = useCsv<ZoneAreaRow>('csv/zone_area.csv')
-const areaShareByZone = computed<Record<number, number>>(() =>
-  Object.fromEntries((zoneAreas.value ?? []).map((a) => [a.zone, a.share_pct])),
+const mapLegend = computed(() =>
+  zoneLegend(zoneCount.value, Object.fromEntries(zones.value.map((z) => [z.zone, z.name]))),
 )
 
-// Same threshold as ZoneCard.vue and tools/make_figures.py's ZONE_PAIR_MARGIN:
-// below it the two leading segments are practically indistinguishable and the
-// legend names both, as fig_4_3 does in the thesis.
-const ZONE_PAIR_MARGIN = 0.25
-const segLabel = (s: string) => labels.value[s] ?? s
+const selectedZone = ref<number>(1)
+const selectedProfile = computed(() => profiles.value?.find((p) => p.zone === selectedZone.value) ?? null)
 
-// Keyed by the 0-based palette slot (= the zones_present raster value), while
-// p.zone is the 1-based reported name — hence the -1. See zoneLegend().
-const zoneLabelsByIndex = computed(() =>
-  Object.fromEntries(
-    (profiles.value ?? []).map((p) => [
-      p.zone - 1,
-      p.comparative_margin < ZONE_PAIR_MARGIN
-        ? `${segLabel(p.comparative_segment)} / ${segLabel(p.comparative_segment_2)}`
-        : segLabel(p.comparative_segment),
-    ]),
-  ),
-)
-const mapLegend = computed(() => zoneLegend(zoneCount.value, zoneLabelsByIndex.value))
+// --- zone summary (tab:zone-suit's label rows + zone_area.csv) ------------------
+const zoneColumns: DataTableColumn<ManifestZone>[] = [
+  { key: 'zone', label: 'Zona', format: (r) => `Z${r.zone}` },
+  { key: 'name', label: 'Descrição' },
+  { key: 'area_km2', label: 'Área', format: (r) => fmtKm2(r.area_km2) },
+  { key: 'share_pct', label: 'Parcela', format: (r) => fmtPct(r.share_pct) },
+  { key: 'comparative_segment', label: 'Vocação primária', format: (r) => segmentShort(r.comparative_segment) },
+  { key: 'comparative_segment_2', label: 'Vocação secundária', format: (r) => segmentShort(r.comparative_segment_2) },
+  { key: 'comparative_margin', label: 'Margem (z)', format: (r) => fmtNum(r.comparative_margin, 2) },
+]
+const pairedShare = computed(() => zones.value.filter((z) => z.paired).reduce((a, z) => a + z.share_pct, 0))
+const pairedZones = computed(() => zones.value.filter((z) => z.paired).map((z) => String(z.zone)))
 
-const selectedZone = ref<number | null>(null)
-const selectedProfile = computed(() =>
-  profiles.value?.find((p) => p.zone === selectedZone.value) ?? null,
-)
-
+// --- k selection (zoning_kselect.csv, held-out columns only) -----------------------
+// No fallback to pre-holdout column names: a CSV without them is a WRONG table, not a
+// missing one (CLAUDE.md §11), so the chart refuses instead of plotting in-sample values.
 const { data: kselect } = useCsv<ZoningKselectRow>('csv/zoning_kselect.csv')
+const kselectValid = computed(() => (kselect.value ?? []).every((r) => Number.isFinite(r.ari_holdout)))
+const kRows = computed(() => (kselectValid.value ? kselect.value ?? [] : []))
+const kBest = computed(() => {
+  const rows = kRows.value
+  if (!rows.length) return null
+  return rows.reduce((a, b) => (b.ari_holdout > a.ari_holdout ? b : a))
+})
+const kAdoptedRow = computed(() => kRows.value.find((r) => r.k === zoneCount.value) ?? null)
+const silRange = computed(() => {
+  const s = kRows.value.map((r) => r.silhouette_val)
+  return s.length ? [Math.min(...s), Math.max(...s)] : null
+})
 const kselectData = computed<PlotlyDatum[]>(() => {
-  const rows = kselect.value ?? []
-  // Prefer the held-out columns; fall back to the legacy pre-holdout names so the
-  // chart still renders against an older zoning_kselect.csv.
-  // null, not undefined: Plotly renders null as a gap in the series, while
-  // undefined is not a valid Datum and fails the type-check.
-  const pick = (r: ZoningKselectRow, ...keys: (keyof ZoningKselectRow)[]): number | null => {
-    for (const key of keys) {
-      const v = r[key]
-      if (typeof v === 'number' && Number.isFinite(v)) return v
-    }
-    return null
-  }
-  const held = rows.some((r) => pick(r, 'silhouette_val') !== null)
+  const rows = kRows.value
+  const x = rows.map((r) => r.k)
   return [
+    { type: 'scatter', mode: 'lines+markers', name: 'ARI de validação espacial (↑)', x, y: rows.map((r) => r.ari_holdout) },
+    { type: 'scatter', mode: 'lines+markers', name: 'silhueta, metade de validação (↑)', x, y: rows.map((r) => r.silhouette_val) },
     {
-      type: 'scatter', mode: 'lines+markers',
-      name: held ? 'silhueta (metade retida)' : 'silhueta',
-      x: rows.map((r) => r.k),
-      y: rows.map((r) => pick(r, 'silhouette_val', 'silhouette_calib', 'silhouette')),
+      type: 'scatter', mode: 'lines+markers', name: 'Davies–Bouldin, metade de validação (↓)',
+      x, y: rows.map((r) => r.davies_bouldin_val), yaxis: 'y2', line: { dash: 'dot' },
     },
-    {
-      type: 'scatter', mode: 'lines+markers',
-      name: held ? 'davies_bouldin (metade retida)' : 'davies_bouldin',
-      x: rows.map((r) => r.k),
-      y: rows.map((r) => pick(r, 'davies_bouldin_val', 'davies_bouldin_calib', 'davies_bouldin')),
-      yaxis: 'y2',
-    },
-    ...(held
-      ? [{
-          type: 'scatter' as const, mode: 'lines+markers' as const,
-          name: 'ARI do holdout',
-          x: rows.map((r) => r.k),
-          y: rows.map((r) => pick(r, 'ari_holdout')),
-        }]
-      : []),
   ]
 })
-
-// Mark the k that was actually exported. Neither curve peaks at the selected k
-// (the territory is only weakly clustered at every k — the choice rests on
-// stability, not on a silhouette maximum), so without this line the chart gives
-// the reader no indication of which k was adopted. Mirrors fig_4_10 in the thesis.
 const kselectLayout = computed(() => ({
-  height: 280,
-  xaxis: { title: { text: 'k' } },
-  yaxis: { title: { text: 'silhueta' } },
-  yaxis2: { title: { text: 'davies-bouldin' }, overlaying: 'y' as const, side: 'right' as const },
+  height: 320,
+  xaxis: { title: { text: 'k' }, dtick: 2 },
+  yaxis: { title: { text: 'ARI / silhueta' } },
+  yaxis2: { title: { text: 'Davies–Bouldin' }, overlaying: 'y' as const, side: 'right' as const },
+  legend: { orientation: 'h' as const, y: -0.25 },
   shapes: zoneCount.value
     ? [{
-        type: 'line' as const,
-        x0: zoneCount.value, x1: zoneCount.value,
-        yref: 'paper' as const, y0: 0, y1: 1,
+        type: 'line' as const, x0: zoneCount.value, x1: zoneCount.value, yref: 'paper' as const, y0: 0, y1: 1,
         line: { color: '#d7191c', width: 1, dash: 'dash' as const },
       }]
     : [],
   annotations: zoneCount.value
     ? [{
-        x: zoneCount.value, yref: 'paper' as const, y: 1,
-        text: `k = ${zoneCount.value}`, showarrow: false,
-        yanchor: 'bottom' as const, font: { color: '#d7191c', size: 11 },
+        x: zoneCount.value, yref: 'paper' as const, y: 1, text: `k adotado = ${zoneCount.value}`,
+        showarrow: false, yanchor: 'bottom' as const, font: { color: '#d7191c', size: 11 },
       }]
     : [],
 }))
-
-const { data: factorVariance } = useCsv<FactorVarianceRow>('csv/factor_variance.csv')
-const selectedFvSegment = ref('soybean')
-const factorVarianceData = computed<PlotlyDatum[]>(() => {
-  const rows = (factorVariance.value ?? []).filter((r) => r.segment === selectedFvSegment.value)
-  return [{ type: 'bar', x: rows.map((r) => r.factor), y: rows.map((r) => r.variance_share) }]
-})
-
-const { data: roughness } = useCsv<ThemeRoughnessRow>('csv/theme_roughness.csv')
-const { data: roughnessPoints } = useCsv<ThemeRoughnessPointRow>('csv/theme_roughness_points.csv')
-const roughnessRatio = computed(() => {
-  const r4750 = (roughness.value ?? []).filter((r) => r.radius_m === 4750)
-  const climate = r4750.find((r) => r.group === 'climate')
-  const terrain = r4750.find((r) => r.group === 'terrain_soil')
-  if (!climate || !terrain || climate.mean_std === 0) return null
-  return terrain.mean_std / climate.mean_std
-})
-const hexbinData = computed<PlotlyDatum[]>(() => {
-  const pts = roughnessPoints.value ?? []
-  return [
-    {
-      type: 'histogram2d',
-      x: pts.map((p) => p.longitude),
-      y: pts.map((p) => p.latitude),
-      z: pts.map((p) => p.rough_terrain_soil_r4750 - p.rough_climate_r4750),
-      histfunc: 'avg',
-      colorscale: 'RdYlGn',
-    } as PlotlyDatum,
-  ]
-})
 </script>
 
 <template>
   <section>
-    <h1>Zoneamento Agroambiental (K={{ zoneCount }})</h1>
-    <p>
-      KMeans do sklearn offline sobre uma entrada PCA descorrelacionada, classificado
-      no servidor por matemática de banda do centróide mais próximo (Parte 10). As
-      zonas são rotuladas por <code>comparative_segment</code> — o argmax da viabilidade
-      z-normalizada de cada segmento, não a dominância bruta.
+    <h1>Zoneamento agroambiental</h1>
+    <p v-if="manifest">
+      O território é particionado em <strong>{{ zoneCount }} zonas agroambientais</strong> por
+      <em>k</em>-médias aplicado a {{ manifest.stack.n_zoning_bands }} bandas biofísicas selecionadas,
+      ponderadas por tema e descorrelacionadas por análise de componentes principais. A aptidão nunca
+      é variável de agrupamento: serve apenas para estratificar a amostra e descrever as zonas. As
+      zonas são numeradas por elevação média decrescente e rotuladas pelo
+      <strong>melhor segmento comparativo</strong>, isto é, o segmento cuja aptidão, padronizada por
+      escore <em>z</em> entre as zonas, é a mais alta.
     </p>
 
     <MapPanel raster-path="zones_present.pmtiles">
       <template #legend><MapLegend :spec="mapLegend" /></template>
     </MapPanel>
 
-    <div class="zone-buttons">
+    <h2>Síntese das zonas</h2>
+    <DataTable :columns="zoneColumns" :rows="zones" />
+    <p v-if="pairedZones.length" class="note">
+      {{ pairedZones.length > 1 ? `Nas Zonas ${pairedZones.join(' e ')}` : `Na Zona ${pairedZones[0]}` }}
+      ({{ fmtPct(pairedShare) }} do território), a margem entre os dois
+      primeiros segmentos é inferior a {{ fmtNum(manifest?.zone_pair_margin, 2) }} desvio-padrão: essas
+      zonas devem ser lidas como pares de usos, e não por um rótulo único.
+    </p>
+
+    <h2>Perfil da zona</h2>
+    <div class="zone-buttons" role="tablist" aria-label="Zona">
       <button
-        v-for="p in profiles"
-        :key="p.zone"
+        v-for="z in zones"
+        :key="z.zone"
         type="button"
-        :class="['zone-btn', { active: p.zone === selectedZone }]"
-        @click="selectedZone = p.zone"
+        role="tab"
+        :aria-selected="z.zone === selectedZone"
+        :class="['zone-btn', { active: z.zone === selectedZone }]"
+        :title="z.name"
+        @click="selectedZone = z.zone"
       >
-        Z{{ p.zone }}
+        Zona {{ z.zone }} · {{ zoneVocation(z.zone) }}
       </button>
     </div>
+    <ZoneCard v-if="selectedProfile" :profile="selectedProfile" />
 
-    <ZoneCard
-      v-if="selectedProfile"
-      :profile="selectedProfile"
-      :segments="segmentOrder"
-      :labels="labels"
-      :area-share="areaShareByZone[selectedProfile.zone] ?? 0"
-    />
-    <p v-else class="hint">Selecione uma zona acima para ver seu perfil.</p>
-
-    <h2>Por que K={{ zoneCount }}? (diagnóstico de seleção de k)</h2>
-    <PlotlyChart
-      :data="kselectData"
-      :layout="kselectLayout"
-    />
-
-    <h2>Decomposição da variância dos fatores</h2>
-    <select v-model="selectedFvSegment">
-      <option v-for="s in segmentOrder" :key="s" :value="s">{{ labels[s] ?? s }}</option>
-    </select>
-    <PlotlyChart :data="factorVarianceData" :layout="{ height: 260 }" />
-
-    <h2>Descompasso de escala: rugosidade clima vs. relevo+solo</h2>
-    <p v-if="roughnessRatio">
-      Mesmo na escala nativa do TerraClimate (4.750 m), a variabilidade local de
-      relevo+solo é <strong>{{ roughnessRatio.toFixed(0) }}x</strong> a do clima.
+    <h2>Seleção do número de zonas</h2>
+    <p v-if="kRows.length && kBest && silRange" class="note">
+      O número de zonas foi varrido de k = {{ kRows[0]!.k }} a {{ kRows[kRows.length - 1]!.k }}, com a
+      partição ajustada na metade de calibração e avaliada na metade de validação. O ARI de validação
+      espacial é máximo em k = {{ kBest.k }} ({{ fmtNum(kBest.ari_holdout, 3) }})<template
+        v-if="kAdoptedRow && kAdoptedRow.k !== kBest.k">; o k adotado tem ARI {{ fmtNum(kAdoptedRow.ari_holdout, 3) }}</template>.
+      A silhueta na metade de validação varia apenas entre {{ fmtNum(silRange[0], 3) }} e
+      {{ fmtNum(silRange[1], 3) }} em toda a varredura: o território não tem estrutura de agrupamento
+      forte em nenhum k, e o zoneamento é um dispositivo de partição, não a descoberta de grupos
+      naturais.
     </p>
-    <PlotlyChart :data="hexbinData" :layout="{ height: 320 }" />
+    <p v-else-if="kselect && !kselectValid" role="alert">
+      O arquivo <code>zoning_kselect.csv</code> não traz as colunas da metade de validação e foi
+      recusado; regenere-o com <code>tools/gen_diag_csvs.py zoning</code>.
+    </p>
+    <PlotlyChart v-if="kRows.length" :data="kselectData" :layout="kselectLayout" />
   </section>
 </template>
 
@@ -225,6 +159,7 @@ const hexbinData = computed<PlotlyDatum[]>(() => {
 .zone-btn {
   border: 1px solid var(--color-border);
   background: var(--color-surface);
+  color: var(--color-text);
   padding: var(--space-1) var(--space-2);
   border-radius: var(--radius);
   cursor: pointer;
@@ -237,7 +172,9 @@ const hexbinData = computed<PlotlyDatum[]>(() => {
   color: white;
 }
 
-.hint {
+.note {
   color: var(--color-muted);
+  font-size: 0.875rem;
+  max-width: 80ch;
 }
 </style>

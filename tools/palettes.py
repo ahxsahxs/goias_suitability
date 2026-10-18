@@ -31,6 +31,15 @@ SEGMENTS = [
     "solar",
 ]
 
+# Shared vis params (not colours, but the same "thesis figure == dashboard" contract).
+# ΔS is visualized on a CLIPPED symmetric window, not a hard bound (see
+# build_dashboard_assets._prep_band): out-of-window pixels saturate the ramp.
+DELTA_DOMAIN = (-0.15, 0.15)
+# Below this z-gap between a zone's first and second comparative segment, the zone
+# is read as a PAIR of vocations (§sec:zoning-results). Current margins split
+# cleanly: 0.042 / 0.053 vs 0.598 / 1.312.
+ZONE_PAIR_MARGIN = 0.25
+
 FAO_CODES = {"N": 0, "S3": 1, "S2": 2, "S1": 3}
 FAO_ORDER = ["N", "S3", "S2", "S1"]
 

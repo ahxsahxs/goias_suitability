@@ -6,39 +6,22 @@ import MapLegend from '../components/MapLegend.vue'
 import MapPanel from '../components/MapPanel.vue'
 import PlotlyChart from '../components/PlotlyChart.vue'
 import { useJson } from '../composables/useJson'
+import { useManifest } from '../composables/useManifest'
+import { fmtNum } from '../format'
 import { continuousBandLegend } from '../legends'
 import type { BandPercentiles } from '../types/data'
 
-interface ThemeDef {
-  key: string
-  label: string
-  band: string
-  part: string
-  /** In features.STACK_THEMES, i.e. part of the feature stack the zoning clusters. */
-  stacked: boolean
-}
-
-// One representative ("hero") band per theme — mirrors HERO_BANDS in
-// tools/build_dashboard_assets.py. The remaining ~30 bands per theme are not
-// shipped as a PNG gallery in this pass (see docs/dashboard_ux_plan.md §9).
-// `stacked` mirrors features.STACK_THEMES. Two of the six themes are built but
-// deliberately kept OUT of the stack: siting and conservation are routed straight into
-// suitability as `sit_`/`cv_` extras, so they never enter the clustering input.
-// Parts 6 (phenology) and 7 (market access) were removed from the project on
-// 2026-10-12 and their part numbers are left vacant on purpose.
-const THEMES: ThemeDef[] = [
-  { key: 'climate', label: 'Clima', band: 'clim_aridity', part: 'Parte 2', stacked: true },
-  { key: 'terrain', label: 'Relevo', band: 'terr_slope', part: 'Parte 3', stacked: true },
-  { key: 'soil', label: 'Solo', band: 'soil_clay', part: 'Parte 4', stacked: true },
-  { key: 'water', label: 'Água', band: 'water_dist', part: 'Parte 5', stacked: true },
-  { key: 'siting', label: 'Localização (solar/piscicultura)', band: 'sit_clearness', part: 'Parte 7c', stacked: false },
-  { key: 'conservation', label: 'Conservação', band: 'cv_pa_dist', part: 'Parte 7d', stacked: false },
-]
+// One representative band per theme, from manifest.hero_bands (HERO_BANDS in
+// tools/build_dashboard_assets.py). `stacked` = the theme is in features.STACK_THEMES;
+// siting and conservation are side images routed straight into suitability.
+const { manifest, themeLabel, bandLabel } = useManifest()
+const themes = computed(() => manifest.value?.hero_bands ?? [])
+const nStacked = computed(() => themes.value.filter((t) => t.stacked).length)
 
 const route = useRoute()
 const router = useRouter()
 
-const selectedTheme = ref((route.params.theme as string) || THEMES[0]!.key)
+const selectedTheme = ref((route.params.theme as string) || 'climate')
 watch(selectedTheme, (theme) => router.replace({ name: 'feature-themes', params: { theme } }))
 watch(
   () => route.params.theme,
@@ -48,33 +31,34 @@ watch(
 )
 
 // Bookmarks to removed themes (/feature-themes/phenology, /access) must not silently
-// render Clima as though it were the requested theme.
-const match = computed(() => THEMES.find((t) => t.key === selectedTheme.value) ?? null)
-const unknownTheme = computed(() => match.value === null)
-const current = computed(() => match.value ?? THEMES[0]!)
+// render the first theme as though it were the requested one.
+const match = computed(() => themes.value.find((t) => t.theme === selectedTheme.value) ?? null)
+const unknownTheme = computed(() => themes.value.length > 0 && match.value === null)
+const current = computed(() => match.value ?? themes.value[0] ?? null)
 
 const { data: percentiles } = useJson<BandPercentiles>('json/band_percentiles.json')
-const currentPercentiles = computed(() => percentiles.value?.[current.value.band] ?? null)
+const currentPercentiles = computed(() => (current.value ? percentiles.value?.[current.value.band] ?? null : null))
 
 const legend = computed(() => {
   const p = currentPercentiles.value
-  const title = `${current.value.band} (${current.value.part})`
-  return continuousBandLegend(title, p?.p5 ?? 0, p?.p95 ?? 1)
+  if (!current.value || !p) return null
+  return continuousBandLegend(bandLabel(current.value.band), p.p5, p.p95)
 })
 
-const histogramData = computed<PlotlyDatum[]>(() => {
+const boxData = computed<PlotlyDatum[]>(() => {
   const p = currentPercentiles.value
-  if (!p) return []
+  if (!p || !current.value) return []
   return [
     {
       type: 'box',
-      name: current.value.band,
+      name: '',
       q1: [p.p25],
       median: [p.p50],
       q3: [p.p75],
       lowerfence: [p.p5],
       upperfence: [p.p95],
       orientation: 'h',
+      hoverinfo: 'x',
     } as PlotlyDatum,
   ]
 })
@@ -82,43 +66,53 @@ const histogramData = computed<PlotlyDatum[]>(() => {
 
 <template>
   <section>
-    <h1>Temas de Atributos</h1>
+    <h1>Temas biofísicos</h1>
     <p>
-      Seis temas biofísicos (Partes 2-7d) harmonizados na grade de análise de 250 m.
-      A cobertura da terra (Parte 7b) é apenas uma máscara — nunca uma entrada de
-      viabilidade ou de agrupamento.
-    </p>
-    <p class="note">
-      Dois destes temas <strong>não</strong> entram na pilha de atributos agrupada pelo
-      zoneamento (marcados com <span class="off-stack inline">∘</span>): localização e
-      conservação vão diretamente à aptidão, como extras <code>sit_</code> e <code>cv_</code>.
+      Os atributos de entrada são organizados por tema e harmonizados na grade de análise. Os
+      {{ nStacked }} temas contínuos (clima, terreno, solo e água) formam o conjunto padronizado de
+      {{ manifest?.stack.total_bands ?? '…' }} bandas; as imagens laterais de localização e de
+      conservação (marcadas com <span class="off-stack inline">∘</span>) entram apenas na aptidão
+      dos segmentos que as usam, nunca no agrupamento. A cobertura da terra é usada somente como
+      máscara e contexto.
     </p>
 
     <p v-if="unknownTheme" class="note unknown">
-      O tema <code>{{ selectedTheme }}</code> não existe. Fenologia e acessibilidade ao mercado
-      foram removidas do projeto: nunca entraram na pilha de atributos nem em qualquer fator de
-      viabilidade. Abaixo está <strong>{{ current.label }}</strong>, não o tema pedido.
+      O tema <code>{{ selectedTheme }}</code> não existe. Fenologia da vegetação e acessibilidade a
+      mercados foram removidas do modelo, por medirem o resultado do uso e não a capacidade do
+      lugar. Abaixo está <strong>{{ current ? themeLabel(current.theme) : '' }}</strong>, não o tema
+      pedido.
     </p>
 
     <div class="theme-strip">
       <button
-        v-for="t in THEMES"
-        :key="t.key"
+        v-for="t in themes"
+        :key="t.theme"
         type="button"
-        :class="['theme-btn', { active: t.key === selectedTheme }]"
-        :title="t.stacked ? `${t.part} — na pilha` : `${t.part} — fora da pilha`"
-        @click="selectedTheme = t.key"
+        :class="['theme-btn', { active: t.theme === current?.theme }]"
+        :title="t.stacked ? 'no conjunto de bandas' : 'imagem lateral, fora do conjunto de bandas'"
+        @click="selectedTheme = t.theme"
       >
-        {{ t.label }}<span v-if="!t.stacked" class="off-stack">&nbsp;∘</span>
+        {{ themeLabel(t.theme) }}<span v-if="!t.stacked" class="off-stack">&nbsp;∘</span>
       </button>
     </div>
 
-    <MapPanel :raster-path="`feat_${current.band}.pmtiles`">
-      <template #legend><MapLegend :spec="legend" /></template>
-    </MapPanel>
+    <template v-if="current">
+      <p class="note">Banda representativa: <strong>{{ bandLabel(current.band) }}</strong>.</p>
+      <MapPanel :raster-path="`feat_${current.band}.pmtiles`">
+        <template #legend><MapLegend v-if="legend" :spec="legend" /></template>
+      </MapPanel>
 
-    <h2>Faixa de percentis (P5 / P25 / P50 / P75 / P95)</h2>
-    <PlotlyChart :data="histogramData" :layout="{ height: 160 }" />
+      <h2>Distribuição no território</h2>
+      <p v-if="currentPercentiles" class="note">
+        Mediana {{ fmtNum(currentPercentiles.p50, 2) }}; intervalo interquartil
+        {{ fmtNum(currentPercentiles.p25, 2) }} a {{ fmtNum(currentPercentiles.p75, 2) }}; bigodes nos
+        percentis 5 e 95.
+      </p>
+      <PlotlyChart
+        :data="boxData"
+        :layout="{ height: 160, xaxis: { title: { text: bandLabel(current.band) } } }"
+      />
+    </template>
   </section>
 </template>
 

@@ -1,17 +1,18 @@
 <script setup lang="ts">
+import { computed } from 'vue'
+import { useManifest } from '../composables/useManifest'
+
 export interface Scenario {
   ssp: string
   window: string
 }
 
-const SSPS = [
-  { value: 'ssp245', label: 'SSP2-4.5' },
-  { value: 'ssp585', label: 'SSP5-8.5' },
-]
-const WINDOWS = [
-  { value: '2031_2050', label: '2031-2050' },
-  { value: '2051_2070', label: '2051-2070' },
-]
+// Scenarios and windows are config/datasets.yaml's `cmip6` block, via manifest.json.
+const { manifest, windowLabel } = useManifest()
+const SSPS = computed(() => (manifest.value?.ssps ?? []).map((s) => ({ value: s.key, label: s.label })))
+const WINDOWS = computed(() =>
+  (manifest.value?.windows ?? []).map((w) => ({ value: w.key, label: windowLabel(w.key) })),
+)
 
 const props = defineProps<{ modelValue: Scenario }>()
 const emit = defineEmits<{ 'update:modelValue': [scenario: Scenario] }>()
@@ -26,7 +27,7 @@ function setWindow(window: string): void {
 
 <template>
   <div class="scenario-selector">
-    <div class="scenario-group" role="tablist" aria-label="Cenário">
+    <div class="scenario-group" role="tablist" aria-label="Cenário SSP">
       <button
         v-for="s in SSPS"
         :key="s.value"
@@ -39,7 +40,7 @@ function setWindow(window: string): void {
         {{ s.label }}
       </button>
     </div>
-    <div class="scenario-group" role="tablist" aria-label="Janela">
+    <div class="scenario-group" role="tablist" aria-label="Janela temporal">
       <button
         v-for="w in WINDOWS"
         :key="w.value"

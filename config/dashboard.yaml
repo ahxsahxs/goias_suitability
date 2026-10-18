@@ -1,0 +1,118 @@
+# Part 15 — pt-BR display labels for the interactive atlas (docs/dashboard/).
+#
+# The ONLY place the dashboard gets human-readable text for a machine key. Every
+# NUMBER it shows comes from an exported file; this file holds words, never results.
+# tools/build_dashboard_assets.py (`--only manifest`) merges it into
+# public/data/json/manifest.json and REFUSES to write when it drifts from the thesis:
+#   - `segments` must equal tools/gen_thesis_tables.SEG_PT / SEG_SHORT (the strings the
+#     chapters' tables already use), so the atlas and the PDF never name a segment
+#     differently;
+#   - `zones` must have exactly K entries (K = rows of zone_profiles.csv).
+#
+# Zone entries are LANDFORM descriptors only. Zone numbering is canonical by
+# descending terr_elev (CLAUDE.md §11), so "Zona 1 = highest ground" is stable by
+# construction; the VOCATION is not, and is therefore never written here — the
+# dashboard reads it from zone_profiles.csv (comparative_segment[_2]), exactly as
+# tools/make_figures.zone_labels() does. Re-read these descriptors whenever K moves.
+
+segments:            # order = thesis table order
+  soybean:      {label: Soja,                   short: soja}
+  sugarcane:    {label: Cana-de-açúcar,         short: cana}
+  other_crops:  {label: Outras culturas anuais, short: outras anuais}
+  pisciculture: {label: Piscicultura,           short: piscicultura}
+  cattle:       {label: Pecuária,               short: pecuária}
+  conservation: {label: Conservação,            short: conservação}
+  solar:        {label: Geração fotovoltaica,   short: fotovoltaica}
+
+zones:               # 1-based, canonical (descending mean elevation)
+  1: Planalto de cultivo alto e argiloso
+  2: Escarpa íngreme de conservação
+  3: Baixada drenada
+  4: Baixada quente e arenosa de pastagem
+
+# rl_role raster codes (src/external.ROLE_CODES + 0 = none). Checked against
+# ROLE_CODES at build time.
+roles:
+  0: Outros usos
+  1: Soja
+  2: Cana-de-açúcar
+  3: Outras culturas anuais
+  4: Aquicultura
+  5: Pastagem
+  6: Vegetação nativa
+
+# rl_<role>_frac bands of realized_composition.csv / zone_profiles.csv
+realized_bands:
+  rl_soybean_frac: Soja
+  rl_sugarcane_frac: Cana-de-açúcar
+  rl_other_crops_frac: Outras culturas anuais
+  rl_pisciculture_frac: Aquicultura
+  rl_pasture_frac: Pastagem
+  rl_native_frac: Vegetação nativa
+
+fao_classes:         # 04_methodology.tex, FAO (1976) class names
+  S1: Muito apto
+  S2: Moderadamente apto
+  S3: Marginalmente apto
+  N: Inapto
+
+ssps:
+  ssp245: SSP2-4.5
+  ssp585: SSP5-8.5
+
+themes:
+  climate: Clima
+  terrain: Terreno
+  soil: Solo
+  water: Água
+  siting: Localização (imagem lateral)
+  conservation: Conservação (imagem lateral)
+
+anchor_rules:        # segments.yaml `anchor.rule`
+  percentile: Percentil da distribuição regional
+  mu_one: "μ = 1 no presente (alavanca climática)"
+  agronomic: Limiar agronômico
+
+membership_types:
+  increasing: crescente
+  decreasing: decrescente
+  range: intervalar
+
+# Band / factor names with units. Plain text (no LaTeX) — mirrors
+# tools/gen_thesis_tables.FACTOR_PT / BIOPHYS.
+bands:
+  clim_pr_annual: Precipitação anual (mm)
+  clim_pr_cv: CV da precipitação
+  clim_dry_months: Meses secos (n)
+  clim_pet_annual: Evapotranspiração potencial anual (mm)
+  clim_aet_annual: Evapotranspiração real anual (mm)
+  clim_def_annual: Déficit hídrico anual (mm)
+  clim_pr_wet: Precipitação da estação chuvosa (mm)
+  clim_aridity: Índice de aridez (P/ETP)
+  clim_vpd: Déficit de pressão de vapor (kPa)
+  clim_gdd: Graus-dia de crescimento
+  clim_srad: Radiação solar (W/m²)
+  clim_twarm_q: Temp. do trimestre mais quente (°C)
+  clim_tcold_q: Temp. do trimestre mais frio (°C)
+  clim_soil_moist: Umidade do solo (mm)
+  terr_elev: Elevação (m)
+  terr_slope: Declividade (°)
+  terr_northing: Componente norte da orientação
+  terr_easting: Componente leste da orientação
+  terr_tpi: Índice de posição topográfica
+  terr_twi: Índice de umidade topográfica
+  soil_clay: Teor de argila (%)
+  soil_sand: Teor de areia (%)
+  soil_soc: Carbono orgânico do solo (g/kg)
+  soil_ph: pH do solo
+  soil_bdod: Densidade do solo
+  soil_awc: Teor de água disponível para as plantas
+  water_dist: Distância à água permanente (m)
+  water_seasonality: Sazonalidade da água
+  water_drain_density: Densidade de drenagem
+  sit_clearness: Índice de claridade
+  sit_water_dist_seas: Distância à água sazonal (m)
+  cv_pa_dist: Distância a área protegida (m)
+  cv_ruggedness: Rugosidade do terreno (m)
+  cv_carbon: Carbono em biomassa acima do solo (Mg C/ha)
+  rl_native_frac: Fração de vegetação nativa

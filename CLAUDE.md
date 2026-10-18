@@ -117,6 +117,10 @@ config/ahp_matrices.yaml      # Part 9: AHP INPUT -- hand-written anchors (one o
                                 # factor + the published priority where one exists); the matrix,
                                 # eigenvector, CI/RI/CR are written back by tools/derive_weights.py
 config/mapbiomas_classes.yaml # MapBiomas code -> segment-role remap (Phase B, Part 13)
+config/dashboard.yaml         # Part 15: pt-BR LABELS only (segments, zone landform descriptors, roles,
+                                # FAO classes, bands) -> json/manifest.json. Never numbers. The manifest
+                                # stage refuses to write if segment labels drift from gen_thesis_tables.SEG_PT
+                                # or if the zone descriptors stop matching K / canonical order.
 src/utils.py                  # EE init, config loader, 250 m grid, asset/export helpers
 src/features.py               # ALL Part 1-8 feature builders (one source of truth; lazy ee, import-safe)
                                 # + theme_roughness_image (revision point 5: local-stdDev magnitude
@@ -165,7 +169,11 @@ docs/                          # supporting notes: _search_terms.md (lit-search 
                                 # dashboard_ux_plan.md (Part 15 architecture reference),
                                 # dashboard/ (the Vue 3 + TS + Vite dashboard project itself)
 thesis/                        # the LaTeX dissertation itself (NOVAthesis/NOVA IMS template) — see §9
-tools/build_dashboard_assets.py # Part 15: exports GEE assets + config YAML into docs/dashboard/public/data/
+tools/build_dashboard_assets.py # Part 15: exports GEE assets + config YAML into docs/dashboard/public/data/.
+                                # `--only offline` = every stage needing no EE compute (CSV copies, scorecard,
+                                # home_stats, manifest). manifest.json carries every count/list/domain/label
+                                # the Vue app would otherwise hardcode (scanned delta layers, K, zone names,
+                                # AOI area, GCMs, windows); the app formats numbers only via src/format.ts (pt-BR).
 tools/palettes.py              # shared vis-param/color-ramp definitions (make_figures.py + build_dashboard_assets.py)
 .github/workflows/deploy-dashboard.yml # CI: type-check + vite build + GitHub Pages deploy on push to docs/dashboard/**
 ```
